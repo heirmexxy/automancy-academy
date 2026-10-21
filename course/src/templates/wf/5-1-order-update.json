@@ -1,0 +1,488 @@
+{
+ "name": "HL · Order dispatched WhatsApp update",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Order dispatched WhatsApp update (Lesson 5.1)\nWhen an order is dispatched: opted in? -> inside the 24-hour window? free-form message : approved utility template order_ready.\n\nTemplate (create in WhatsApp Manager, category Utility, wait for approval):\nHello (1), your Harvest Lane order (2) is on its way and should arrive (3). Reply here if you have any questions.\n(WhatsApp Manager writes the variables as 1, 2, 3 in double curly braces.)\n\nCredentials: WhatsApp API on Free-form update and on Send Template order_ready (HTTP Request, Predefined credential type WhatsApp API), Google Sheets on Window log.\nPlaceholders: YOUR_PHONE_NUMBER_ID, YOUR_SHEET_ID (tab Window log: order_id, phone, path, template_name, category, sent_at).\n\nIn your real order workflow, replace the manual trigger and test data with the dispatch event.",
+    "height": 460,
+    "width": 500
+   },
+   "id": "84cd3b87-c89c-4b13-b320-3fcec0962a70",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -300
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "85b698ea-8ca4-4c06-aa5c-8b7646fa9eda",
+   "name": "Test: order dispatched",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "f76cd0ba-ca11-4b25-bb50-1a9a64da846c",
+       "name": "order_id",
+       "value": "HL-0412",
+       "type": "string"
+      },
+      {
+       "id": "128586ee-55ad-48c6-9477-86a95e3e4162",
+       "name": "customer_name",
+       "value": "Iya Basira",
+       "type": "string"
+      },
+      {
+       "id": "87ecfbb4-1456-4e62-aae7-1fd795946be4",
+       "name": "phone",
+       "value": "+2348000000000",
+       "type": "string"
+      },
+      {
+       "id": "e433d14a-9047-4c80-82ec-dd31a8ffcc2a",
+       "name": "eta",
+       "value": "today by 4 p.m.",
+       "type": "string"
+      },
+      {
+       "id": "057cb31b-0843-4cea-9087-8bbbfa5a1750",
+       "name": "opted_in",
+       "value": true,
+       "type": "boolean"
+      },
+      {
+       "id": "64a2d6c5-2485-451e-b2ad-e45175c7237c",
+       "name": "last_customer_msg_at",
+       "value": "={{ $now.minus({ hours: 30 }).toISO() }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "46e7428f-f632-47d3-9f2f-b5751771bf49",
+   "name": "Dispatched order (test data)",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "2e9079fd-7229-421b-9b4a-3315d3f58069",
+       "leftValue": "={{ $json.opted_in }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "d1bedd62-30cb-42d6-9efa-2b92dadba0fd",
+   "name": "Opted in?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "50211bd4-682b-4b85-85cb-bb50b33b2524",
+   "name": "Not opted in: send nothing",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    660,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const hours = (Date.now() - new Date($json.last_customer_msg_at)) / 36e5;\nreturn { ...$json, hours_since_last_msg: Math.round(hours * 10) / 10, inside_window: hours < 24 };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "37b98212-3aa5-4911-9a84-5b8e03e0c0e1",
+   "name": "Hours since last message",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "f5ccc6b6-650a-447e-bda2-02733c32b5cc",
+       "leftValue": "={{ $json.inside_window }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "072ce67f-0eb0-485f-8bd0-d5fdc12231c3",
+   "name": "Inside 24-hour window?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "send",
+    "phoneNumberId": "YOUR_PHONE_NUMBER_ID",
+    "recipientPhoneNumber": "={{ $json.phone }}",
+    "textBody": "=Hello {{ $json.customer_name }}, your Harvest Lane order {{ $json.order_id }} is on its way and should arrive {{ $json.eta }}. Reply here if you have any questions.",
+    "additionalFields": {}
+   },
+   "id": "fc97146b-2071-474b-b56e-f713c4d9fb8b",
+   "name": "Free-form update",
+   "type": "n8n-nodes-base.whatsApp",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/YOUR_PHONE_NUMBER_ID/messages",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "whatsAppApi",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $json.phone, type: 'template', template: { name: 'order_ready', language: { code: 'en' }, components: [ { type: 'body', parameters: [ { type: 'text', text: $json.customer_name }, { type: 'text', text: $json.order_id }, { type: 'text', text: $json.eta } ] } ] } }) }}",
+    "options": {}
+   },
+   "id": "3da51fd5-1433-45bb-8020-d2ee600f8fbe",
+   "name": "Send Template order_ready",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "d9d70082-37e0-43bb-bad7-41862cc44818",
+       "name": "order_id",
+       "value": "={{ $('Hours since last message').item.json.order_id }}",
+       "type": "string"
+      },
+      {
+       "id": "17f5dafe-8674-4b12-83c4-8453f81a3270",
+       "name": "phone",
+       "value": "={{ $('Hours since last message').item.json.phone }}",
+       "type": "string"
+      },
+      {
+       "id": "88a61ee3-9b3e-4774-911d-a3cad2536571",
+       "name": "path",
+       "value": "free-form (inside 24 h)",
+       "type": "string"
+      },
+      {
+       "id": "261fa256-bfc1-4e61-85fe-a4da301057ec",
+       "name": "template_name",
+       "value": "",
+       "type": "string"
+      },
+      {
+       "id": "2c319acf-3727-49d4-9fa4-de45b7ed2c6a",
+       "name": "category",
+       "value": "service",
+       "type": "string"
+      },
+      {
+       "id": "1868f415-f158-40fa-9bfc-b3f648df4904",
+       "name": "sent_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "8d06ef4e-a4a7-41b3-ab82-b0890dd87362",
+   "name": "Log: free-form",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    1320,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "3fb33215-721d-414c-9c8a-6af614a8b31f",
+       "name": "order_id",
+       "value": "={{ $('Hours since last message').item.json.order_id }}",
+       "type": "string"
+      },
+      {
+       "id": "f5f45f7c-1e39-422d-8696-bac5ff5a0b47",
+       "name": "phone",
+       "value": "={{ $('Hours since last message').item.json.phone }}",
+       "type": "string"
+      },
+      {
+       "id": "c4771c7d-0784-4fc7-bd59-ab4a0dee4298",
+       "name": "path",
+       "value": "template (outside 24 h)",
+       "type": "string"
+      },
+      {
+       "id": "ebeff451-78a0-40da-bbf2-3a1f7ae1e904",
+       "name": "template_name",
+       "value": "order_ready",
+       "type": "string"
+      },
+      {
+       "id": "38b399ff-2b30-461b-8267-f91a72ecdafb",
+       "name": "category",
+       "value": "utility",
+       "type": "string"
+      },
+      {
+       "id": "edabb3b1-2eaf-4ff4-ba2d-1d2177b5af96",
+       "name": "sent_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "65cf3e05-cd06-419f-a07b-5363a6c9c8a2",
+   "name": "Log: template",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Window log",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "2c948da8-5565-46d8-b5ea-2786664a8cde",
+   "name": "Window log",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1540,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Template language\nlanguage.code must match the language you submitted the template in (for example en or en_US). The HTTP Request calls the Cloud API messages endpoint directly so you can see the exact template payload.",
+    "height": 200,
+    "width": 360
+   },
+   "id": "545744ad-1c10-4345-bb21-2f224ff73740",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    200
+   ]
+  }
+ ],
+ "connections": {
+  "Test: order dispatched": {
+   "main": [
+    [
+     {
+      "node": "Dispatched order (test data)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Dispatched order (test data)": {
+   "main": [
+    [
+     {
+      "node": "Opted in?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Opted in?": {
+   "main": [
+    [
+     {
+      "node": "Hours since last message",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Not opted in: send nothing",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Hours since last message": {
+   "main": [
+    [
+     {
+      "node": "Inside 24-hour window?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Inside 24-hour window?": {
+   "main": [
+    [
+     {
+      "node": "Free-form update",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Send Template order_ready",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Free-form update": {
+   "main": [
+    [
+     {
+      "node": "Log: free-form",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Log: free-form": {
+   "main": [
+    [
+     {
+      "node": "Window log",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Send Template order_ready": {
+   "main": [
+    [
+     {
+      "node": "Log: template",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Log: template": {
+   "main": [
+    [
+     {
+      "node": "Window log",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

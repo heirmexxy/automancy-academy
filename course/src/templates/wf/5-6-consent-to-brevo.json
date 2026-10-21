@@ -1,0 +1,316 @@
+{
+ "name": "HL · Consent at checkout → Brevo",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Consent at checkout -> Brevo (Lesson 5.6)\nCalled by the payment workflow (HL·03) after a verified payment.\n- Ticked the unticked box \"Send me weekly prices and offers\"? -> create or update the Brevo contact (FIRSTNAME, SEGMENT, FAV_CATEGORY, LAST_ORDER_DATE, USUAL_ORDER_DAY), add to the list \"Customers · opted in\", store consent_at and consent_source in Supabase.\n- Not ticked -> never added. If they opted in earlier (and haven't left), only LAST_ORDER_DATE is updated so the win-back stops.\nAn email from an order is not consent.\n\nCredentials: Header Auth \"Brevo API key\" (Name api-key, Value your Brevo API key); Postgres (Supabase).\nPlaceholders: YOUR_BREVO_LIST_ID.\nMailchimp instead: Mailchimp node, Member -> Create, with tags.",
+    "height": 380,
+    "width": 560
+   },
+   "id": "06261417-bdeb-4696-a633-53d83fae45ee",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    -400
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## In Brevo, not n8n\nAutomations (free plan, up to 2,000 contacts):\n- Welcome: contact added to list -> email 1 -> wait 3 days -> email 2 -> wait 4 days -> email 3.\n- Win-back: LAST_ORDER_DATE is 60 days old -> win-back email (offer only from Tolu's approved list); stops if they order.\n- Re-order reminder: the day before USUAL_ORDER_DAY.\nAuthenticate mail.harvestlane.example first: Brevo's DKIM and verification records, DMARC v=DMARC1; p=none; rua=mailto:dmarc@harvestlane.example, and one SPF record only, ending in ~all.\n\n-- Run once in Supabase\ncreate table marketing_consent (\n  email text primary key,\n  consent_at timestamptz,\n  consent_source text,\n  status text default 'subscribed',  -- subscribed | unsubscribed | hard_bounce | complaint\n  suppressed_at timestamptz);",
+    "height": 420,
+    "width": 560
+   },
+   "id": "c2eedce4-f6b6-466f-852a-b64923f8636a",
+   "name": "Brevo setup",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    20
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "4c6bac5c-06d8-40e6-ae4b-8018680d7bb2",
+   "name": "When called after a verified payment",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "return { ...$json, email: String($json.email || '').trim().toLowerCase(), consent: $json.marketing_consent === true };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "fbe28004-1ae6-4a06-b64d-9a1dd162a3ec",
+   "name": "Normalise",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "76382644-746f-4f10-a8ed-28f08f7e372d",
+       "leftValue": "={{ $json.consent }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c0aaca72-b9c2-4193-b48e-0ff7dbf1b4c7",
+   "name": "Ticked the box?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.brevo.com/v3/contacts",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ email: $json.email, updateEnabled: true, listIds: [ Number('YOUR_BREVO_LIST_ID') ], attributes: { FIRSTNAME: $json.first_name, SEGMENT: $json.segment, FAV_CATEGORY: $json.fav_category, LAST_ORDER_DATE: $json.order_date, USUAL_ORDER_DAY: $json.usual_order_day } }) }}",
+    "options": {}
+   },
+   "id": "06599206-3c01-46e6-bcff-50ed5d4be48c",
+   "name": "Brevo · create or update contact",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "insert into marketing_consent (email, consent_at, consent_source, status)\nvalues ($1, now(), $2, 'subscribed')\non conflict (email) do update set consent_at = now(), consent_source = excluded.consent_source, status = 'subscribed', suppressed_at = null;",
+    "options": {
+     "queryReplacement": "={{ [ $('Normalise').item.json.email, $('Normalise').item.json.consent_source || 'checkout' ] }}"
+    }
+   },
+   "id": "d7738726-0101-458f-86ac-f48670e5123c",
+   "name": "Store consent",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select email from marketing_consent where email = $1 and status = 'subscribed';",
+    "options": {
+     "queryReplacement": "={{ [ $json.email ] }}"
+    }
+   },
+   "id": "507a61f8-8148-49b1-a49e-f8703f002f27",
+   "name": "Already opted in?",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    125
+   ],
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "b8c5bc17-93c8-413f-906d-da0bba524775",
+       "leftValue": "={{ $json.email }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "7a327030-6278-4c05-bea8-b625f3aa453f",
+   "name": "Found?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    125
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PUT",
+    "url": "=https://api.brevo.com/v3/contacts/{{ encodeURIComponent($('Normalise').item.json.email) }}",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ attributes: { LAST_ORDER_DATE: $('Normalise').item.json.order_date } }) }}",
+    "options": {}
+   },
+   "id": "1dd037ab-c9bd-418d-81c2-0319e1ed9b59",
+   "name": "Brevo · update LAST_ORDER_DATE",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    54
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "b4a540b6-d668-4345-9217-1d57b810f9a8",
+   "name": "No consent: not added",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    216
+   ]
+  }
+ ],
+ "connections": {
+  "When called after a verified payment": {
+   "main": [
+    [
+     {
+      "node": "Normalise",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Normalise": {
+   "main": [
+    [
+     {
+      "node": "Ticked the box?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ticked the box?": {
+   "main": [
+    [
+     {
+      "node": "Brevo · create or update contact",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Already opted in?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Brevo · create or update contact": {
+   "main": [
+    [
+     {
+      "node": "Store consent",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Already opted in?": {
+   "main": [
+    [
+     {
+      "node": "Found?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Found?": {
+   "main": [
+    [
+     {
+      "node": "Brevo · update LAST_ORDER_DATE",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "No consent: not added",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called after a verified payment": [
+   {
+    "json": {
+     "email": "Test.Customer@Example.com",
+     "first_name": "Bisi",
+     "segment": "household",
+     "fav_category": "vegetables",
+     "order_date": "2026-10-07",
+     "usual_order_day": "Friday",
+     "marketing_consent": true,
+     "consent_source": "checkout"
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

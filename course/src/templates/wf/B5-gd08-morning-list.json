@@ -1,0 +1,163 @@
+{
+  "name": "GD·08 CRM · 7:30 call list",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·08 Morning call list (Boss 5 · D6b)\nEvery day 7:30: \"call first\" = ready contacts (harvest_score ≥ 65) with no call logged; \"going cold\" = open deals with no activity for 7 days. One Telegram message to Tolu.\n\n**Credentials:** HubSpot App Token, Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 240,
+        "width": 400
+      },
+      "id": "fe57c4a3-8b31-441d-a7f4-4a266fbeb13e",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "730f470d-5fa3-461f-b1f1-397a68c6b440",
+      "name": "Every day 07:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [\n    { propertyName: 'harvest_score', operator: 'GTE', value: '65' },\n    { propertyName: 'notes_last_contacted', operator: 'NOT_HAS_PROPERTY' }\n  ]}],\n  properties: ['firstname', 'lastname', 'company', 'phone', 'harvest_score', 'lead_source'],\n  sorts: [{ propertyName: 'harvest_score', direction: 'DESCENDING' }],\n  limit: 10\n}) }}",
+        "options": {}
+      },
+      "id": "eb936379-c4a7-4c14-ba86-726f57471a27",
+      "name": "Call first",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [\n    { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' },\n    { propertyName: 'notes_last_updated', operator: 'LT', value: String(Date.now() - 7 * 864e5) }\n  ]}],\n  properties: ['dealname', 'dealstage', 'notes_last_updated', 'hubspot_owner_id'],\n  limit: 10\n}) }}",
+        "options": {}
+      },
+      "id": "b78db588-1f7d-48ce-b0ba-a83f72d2549e",
+      "name": "Going cold",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const call = $('Call first').first().json.results || [];\nconst cold = $('Going cold').first().json.results || [];\nconst days = d => d ? Math.floor((Date.now() - new Date(d)) / 864e5) + ' days' : 'never';\nconst lines = ['☕ CRM · today'];\nlines.push(call.length ? '📞 Call first:\\n' + call.map((c, i) => `${i + 1}. ${c.properties.company || ''} ${c.properties.firstname || ''} ${c.properties.phone || ''} · score ${c.properties.harvest_score} · ${c.properties.lead_source || ''}`.replace(/\\s+/g, ' ')).join('\\n') : '📞 No new leads to call first.');\nlines.push(cold.length ? '🥶 Going cold:\\n' + cold.map(d => `• ${d.properties.dealname} · quiet ${days(d.properties.notes_last_updated)}`).join('\\n') : '🥶 No deals going cold.');\nreturn [{ json: { text: lines.join('\\n\\n') } }];"
+      },
+      "id": "56dc354c-787e-4251-b9b5-db500b76ad36",
+      "name": "Write the list",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "ca3d431a-5fe7-4e1a-ae4c-f1ace7b05248",
+      "name": "Send to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every day 07:30": {
+      "main": [
+        [
+          {
+            "node": "Call first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call first": {
+      "main": [
+        [
+          {
+            "node": "Going cold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Going cold": {
+      "main": [
+        [
+          {
+            "node": "Write the list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write the list": {
+      "main": [
+        [
+          {
+            "node": "Send to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

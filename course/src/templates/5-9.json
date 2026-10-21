@@ -1,0 +1,223 @@
+{
+  "id": "5.9",
+  "items": [
+    {
+      "file": "5-9-crm-upsert-lead.json",
+      "name": "CRM · Upsert lead",
+      "what": "The one sub-workflow every channel calls for a business lead: normalises keys, upserts the company by domain and the contact by email, associates them, creates a New enquiry deal only if there's buying intent and no open deal, saves the CRM IDs in Supabase, scores the lead in code and, when ready, moves it to Sales qualified lead with a Call today task.",
+      "setup": [
+        "In HubSpot: Settings, Integrations, Private apps (may be listed under legacy apps). Create \"n8n Growth Desk\" with only contact, company and deal read/write scopes (plus tasks). Use a test portal or test records first.",
+        "Create a HubSpot App Token credential with that token and select it in the HubSpot node and every HTTP Request node (Authentication: Predefined credential type, HubSpot App Token). Never paste the token into a node.",
+        "Create the custom contact property harvest_score (number), one of the 2 spare from 5.8.",
+        "Run the SQL from the Tables sticky note in CRM · Ops Agent (it adds crm_contact_id and crm_deal_id to customers). Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Replace YOUR_STAGE_ID_NEW_ENQUIRY (the internal ID of New enquiry), YOUR_TOLU_OWNER_ID (Settings, Users) and YOUR_TELEGRAM_CHAT_ID; select your Telegram credential.",
+        "From each engine (5.2 replies, 5.5 save_lead, 5.7 Inbox), call this with an Execute Workflow node."
+      ],
+      "test": "Click Test workflow with the pinned lead (messy email, www. domain, 0800 phone): one company (bodijasuites.example), one contact (lowercase email), one New enquiry deal associated to both, harvest_score 85 and a Call today task. Run it again: still one contact, one company and one deal.",
+      "walk": {
+        "title": "Build it: every lead lands in the CRM by itself",
+        "sample": "Lead from Instagram · Adaeze Bello · Procurement@BodijaSuites.example · https://www.bodijasuites.example/ · hotel, 40 staff, asked for a tasting",
+        "steps": [
+          {
+            "at": null,
+            "say": "First, a HubSpot private app called n8n Growth Desk, with only contact, company, deal and task scopes. The token goes into an n8n credential, never into a node or a sheet. Use test records first.",
+            "show": [
+              "HubSpot › Settings › Integrations › Private apps",
+              "Scopes: contacts, companies, deals (+ tasks)",
+              "n8n credential: HubSpot App Token"
+            ]
+          },
+          {
+            "at": "When called by an engine",
+            "say": "This one sub-workflow is called by every engine that finds a business lead: outreach replies, social inbox, and the one inbox.",
+            "show": [
+              "In: name, email, phone, company, domain",
+              "business_type, lead_source, consent, intent"
+            ],
+            "data": "1 lead · Bodija Suites"
+          },
+          {
+            "at": "1 Normalise",
+            "say": "We clean the keys first: lowercase email, plus two three four phone, and a domain without https or www. These keys are what stop duplicates.",
+            "show": [
+              "email → lowercase",
+              "phone → +234…",
+              "domain → no https://, no www., no path"
+            ],
+            "data": "procurement@bodijasuites.example"
+          },
+          {
+            "at": "2 Company: search by domain",
+            "say": "Upsert, don't create. We search for the company by domain, then update it if found or create it if not.",
+            "show": [
+              "POST crm/v3/objects/companies/search",
+              "filter: domain EQ bodijasuites.example"
+            ],
+            "data": "not found → create"
+          },
+          {
+            "at": "3 Contact: create or update",
+            "say": "The contact uses HubSpot's create or update by email, carrying lead source and consent with it.",
+            "show": [
+              "HubSpot · Contact · Create or Update",
+              "Key: email",
+              "lead_source · marketing_consent"
+            ],
+            "data": "1 contact"
+          },
+          {
+            "at": "4 Associate contact and company",
+            "say": "Then we associate the contact with the company, every time. A record with no company is invisible in most reports.",
+            "show": [
+              "PUT crm/v4/…/contact/{id}/associations/default/company/{id}"
+            ]
+          },
+          {
+            "at": "5 Buying intent?",
+            "say": "Only buying intent can open a deal, and only if the company has no open deal already, so three messages don't become three deals.",
+            "show": [
+              "intent: buying or lead",
+              "Open deals for this company: hs_is_closed false"
+            ],
+            "data": "buying · no open deal"
+          },
+          {
+            "at": "Deal: create at New enquiry",
+            "say": "The new deal starts at New enquiry, with Tolu as owner, linked to both the company and the contact.",
+            "show": [
+              "dealstage: YOUR_STAGE_ID_NEW_ENQUIRY",
+              "hubspot_owner_id: YOUR_TOLU_OWNER_ID",
+              "associations: company + contact"
+            ],
+            "data": "Bodija Suites · weekly supply"
+          },
+          {
+            "at": "6 Save CRM IDs in Supabase",
+            "say": "We store the CRM's contact and deal IDs on the customer row, so later updates go straight to the right record.",
+            "show": [
+              "update customers set crm_contact_id, crm_deal_id"
+            ]
+          },
+          {
+            "at": "Score",
+            "say": "The score is code, with weights calibrated against last quarter's real buyers. Outside the delivery zone is a knock-out rule, whatever the points.",
+            "show": [
+              "delivery_zone ≠ in → score 0, not ready",
+              "type 20 · asked 25 · opens 5 · size 10",
+              "ready: score ≥ 65"
+            ],
+            "data": "hotel, asked, 40 staff → ready"
+          },
+          {
+            "at": "Score",
+            "say": "Email opens get only five points. Apple Mail opens emails by itself, so we weight what people do, like asking for a tasting.",
+            "show": [
+              "email_opens ≥ 3 → +5 only",
+              "asked_price_or_tasting → +25"
+            ]
+          },
+          {
+            "at": "Write harvest_score",
+            "say": "The score goes back to the contact, into one of the two spare custom properties from 5.8.",
+            "show": [
+              "PATCH contact · harvest_score"
+            ]
+          },
+          {
+            "at": "Lifecycle: Sales qualified lead",
+            "say": "If the lead is ready and still below Sales qualified lead, we move the lifecycle forward. It only ever moves forward.",
+            "show": [
+              "ready && lifecycle below SQL",
+              "lifecyclestage: salesqualifiedlead"
+            ]
+          },
+          {
+            "at": "Task: Call today",
+            "say": "Then a Call today task for Tolu and a Telegram ping. Automation creates tasks; people move deals. The workflow never touches the deal stage.",
+            "show": [
+              "Task: Call today: Bodija Suites (score …)",
+              "Telegram: Call today … Task created in HubSpot"
+            ],
+            "data": "1 task · 1 ping"
+          },
+          {
+            "at": "Result",
+            "say": "On Mondays the Ops Agent checks the CRM's health with read-only tools and only proposes changes. Tolu approves each one, and a separate executor does only allow-listed actions, never deletes.",
+            "show": [
+              "Ops Agent: read-only + propose_change",
+              "Tolu: Approve or Reject on Telegram",
+              "Executor: allow-list only, saves before-values"
+            ]
+          }
+        ],
+        "end": "Run the pinned lead twice: one company, one lowercase contact, one New enquiry deal linked to both, a Call today task, and still only one of each after the second run."
+      }
+    },
+    {
+      "file": "5-9-stage-change.json",
+      "name": "CRM · Deal stage changed → tasks",
+      "what": "When a person moves a deal, creates the Card 4 follow-ups (tasting reminder task, a proposal follow-up task with an AI draft for Tolu after 3 days of silence, Customer lifecycle on won, lost-reason and 6-month check-in tasks on lost) without ever writing the deal stage.",
+      "setup": [
+        "Create a HubSpot Developer API credential for the HubSpot Trigger (needs a HubSpot developer app). If you can't, replace the trigger with a 15-minute Schedule Trigger and a deals search on hs_lastmodifieddate.",
+        "Select your HubSpot App Token credential in every HTTP Request node.",
+        "Replace YOUR_STAGE_ID_TASTING_BOOKED, YOUR_STAGE_ID_PROPOSAL_SENT and YOUR_TOLU_OWNER_ID (check closedwon and closedlost match your pipeline).",
+        "Select your OpenAI credential and replace YOUR_MODEL; select Telegram and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "On a test deal, move the stage to Tasting booked in HubSpot: one task appears and the execution runs once. Move it to Lost with no lost reason: an Add the lost reason task appears. Check executions: no run was triggered by the workflow's own changes."
+    },
+    {
+      "file": "5-9-morning-list.json",
+      "name": "CRM · Morning call list",
+      "what": "Every day at 07:30, sends Tolu one message: who to call first (ready, no call logged) and which open deals are going cold (no activity for 7 days).",
+      "setup": [
+        "Select your HubSpot App Token credential in both HTTP Request nodes.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "After the upsert test, click Test workflow: Bodija Suites appears under Call first with its score."
+    },
+    {
+      "file": "5-9-monday-report.json",
+      "name": "CRM · Monday pipeline report",
+      "what": "Every Monday at 08:00, sends new deals by source, open value by stage, won and lost with reasons, the weighted forecast and the three oldest stuck deals with an AI one-line summary from their notes.",
+      "setup": [
+        "Select your HubSpot App Token credential in every HTTP Request node.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Click Test workflow on a portal with a few test deals: the message shows the numbers; a deal with no notes is summarised with 'not recorded'."
+    },
+    {
+      "file": "5-9-ops-agent.json",
+      "name": "CRM · Ops Agent (weekly health check)",
+      "what": "Every Monday at 07:00, an agent with read-only HubSpot tools checks data, pipeline, score and adoption, records proposals through propose_change only, sends a five-line health report, and asks Tolu to approve or reject each proposal.",
+      "setup": [
+        "Run the SQL in the Tables sticky note in Supabase. Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Create a SECOND HubSpot private app, \"n8n CRM Ops (read-only)\", with read scopes only. Create a Header Auth credential \"HubSpot read-only\": Name Authorization, Value Bearer followed by that token. Select it in all seven HubSpot tool nodes.",
+        "Import TOOL · propose_change and replace YOUR_PROPOSE_CHANGE_WORKFLOW_ID.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select your Telegram credential in both Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Create two test contacts with lead_source IG and insta, then click Test workflow: the health report arrives and a bulk_update_property proposal waits for Approve or Reject. Reject it: its status becomes rejected and nothing changes in HubSpot."
+    },
+    {
+      "file": "5-9-propose-change.json",
+      "name": "TOOL · propose_change",
+      "what": "The Ops Agent's only write tool: validates the action against the allowed list and saves it to crm_proposals as proposed.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node."
+      ],
+      "test": "Click Test workflow with the pinned proposal: a crm_proposals row with status proposed. Change action to delete_contacts: it is refused and nothing is saved."
+    },
+    {
+      "file": "5-9-executor.json",
+      "name": "CRM · Executor (approved proposals only)",
+      "what": "Every 15 minutes, applies proposals Tolu approved, after an allow-list check in code, saving before-values and logging each result; anything else is blocked.",
+      "setup": [
+        "Select your HubSpot App Token credential (the read/write one) in every HTTP Request node.",
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Select your Telegram credential in both Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Approve the IG/insta proposal from the Ops Agent test, then click Test workflow: both contacts now say Instagram, and the proposal row has status executed with the old values in before_values. Set a proposal's details.property to dealstage and approve it: it is blocked."
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "id": "5.8",
+  "items": [
+    {
+      "file": "5-8-import-cleaner.json",
+      "name": "HL · CRM import cleaner",
+      "what": "Applies the Card 4 import checklist to the Growth Desk leads sheet (lowercase emails, +234 phones, domains without www., dropdown values, consent, no test or staff rows, no duplicates) and splits it into company, contact and deal import tabs plus a problems tab; the HubSpot setup itself is listed in a sticky note.",
+      "setup": [
+        "Export the Growth Desk leads into a tab called Leads export with columns name, email, phone, company, website, business_type, lead_source, delivery_zone, marketing_consent, consent_date, deal_stage, weekly_value_ngn, owner, next_step_date, lost_reason, role.",
+        "Add empty tabs Import · Companies, Import · Contacts, Import · Deals and Import · Problems (n8n adds the headers on first append).",
+        "Create a Google Sheets credential, select it in every sheet node and replace YOUR_SHEET_ID.",
+        "Follow the HubSpot steps sticky note for the pipeline, properties, owners, view and dashboard."
+      ],
+      "test": "Put 12 rows in Leads export, including IG and insta sources, a www. website, a staff row and a WhatsApp contact marked consent yes with no date. Run it: sources become Instagram, the domain loses www., the staff row and the consent are listed in Import · Problems, and the first 10 people are marked batch 1.",
+      "walk": {
+        "title": "Build it: a clean import for Harvest Lane's first CRM",
+        "sample": "12 rows in Leads export · sources IG and insta · www.bodijasuites.example · a staff row · a WhatsApp contact marked consent yes with no date",
+        "steps": [
+          {
+            "at": null,
+            "say": "The CRM itself is set up in HubSpot's screens, after Tolu agrees a one-page design: five stages with exit rules, at most ten custom properties, owners Tolu and Bisi. This helper makes the import clean.",
+            "show": [
+              "Pipeline: New enquiry 10% · Tasting booked 25%",
+              "Proposal sent 50% · Trial order 75% · Won / Lost",
+              "8 custom properties, 2 spare"
+            ]
+          },
+          {
+            "at": "Run the checklist",
+            "say": "We run it by hand when the leads export is ready. It sends nothing and changes nothing in HubSpot.",
+            "show": [
+              "Manual trigger"
+            ]
+          },
+          {
+            "at": "Read Leads export",
+            "say": "We read the leads exported from Growth Desk, one row per person, with the company's website in its own column.",
+            "show": [
+              "Tab: Leads export",
+              "name, email, phone, company, website, lead_source…"
+            ],
+            "data": "12 rows"
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "First, test rows, staff and suppliers come out, and a repeated email is caught. HubSpot matches contacts on email, so duplicates start here.",
+            "show": [
+              "role staff, supplier, test → removed",
+              "same email twice → duplicate"
+            ],
+            "data": "1 staff row removed"
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "Emails go lowercase, phones become plus two three four, and websites lose the www, because HubSpot matches companies on domain. Otherwise Bodija Suites becomes three companies.",
+            "show": [
+              "email.trim().toLowerCase()",
+              "phone → +234XXXXXXXXXX",
+              "domain: no https://, no www."
+            ],
+            "data": "bodijasuites.example"
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "Sources and business types must match the dropdown values. IG, insta and Instagram ad all become Instagram, so the report shows one source, not four.",
+            "show": [
+              "ig, insta, instagram ad → Instagram",
+              "business_type: restaurant, hotel, caterer, household"
+            ],
+            "data": "lead_source: Instagram"
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "Consent travels with the record. Yes without a date becomes unknown, because a WhatsApp contact is not consent to email.",
+            "show": [
+              "consent yes + no date → unknown + problem",
+              "marketing_consent: yes, no, unknown"
+            ],
+            "data": "1 consent set to unknown"
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "Deals must use one of the five stages, and every open deal needs an owner and a next step date. A lost deal needs a reason.",
+            "show": [
+              "open deal: owner Tolu or Bisi",
+              "open deal: next_step_date required",
+              "Lost: lost_reason required"
+            ]
+          },
+          {
+            "at": "Clean (Card 4 checklist)",
+            "say": "The first ten people are marked batch one. Import those, check the associations, then the rest.",
+            "show": [
+              "people < 10 → batch 1 (first 10)",
+              "else → batch 2"
+            ],
+            "data": "10 in batch 1"
+          },
+          {
+            "at": "Record type",
+            "say": "Each record goes to its own tab: company, contact, deal, or problem.",
+            "show": [
+              "company · contact · deal · problem"
+            ]
+          },
+          {
+            "at": "Import · Companies",
+            "say": "Import companies first, so contacts can be matched to them by domain.",
+            "show": [
+              "Append · Import · Companies",
+              "name, domain, business_type, delivery_zone"
+            ],
+            "data": "companies tab"
+          },
+          {
+            "at": "Import · Contacts",
+            "say": "Then contacts, linked to their company by domain, then open deals. Check that each deal shows its company and contact before importing the rest.",
+            "show": [
+              "Order: Companies → Contacts → Deals",
+              "company_domain links contact to company"
+            ]
+          },
+          {
+            "at": "Import · Problems",
+            "say": "Problems are fixed by hand before importing. Then give every open deal an owner, save a view of deals needing a next step, and book a 20-minute Monday review with Tolu.",
+            "show": [
+              "row, problem",
+              "Saved view: My deals needing a next step",
+              "Monday dashboard: 4 reports"
+            ],
+            "data": "staff row, consent, no owner…"
+          }
+        ],
+        "end": "Run it on your twelve rows: sources become Instagram, the domain loses its www, the staff row and the dateless consent land in Problems, and the first ten people are batch one."
+      }
+    }
+  ]
+}

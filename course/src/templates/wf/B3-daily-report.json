@@ -1,0 +1,261 @@
+{
+  "name": "HL · Daily report",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Daily report (Boss 3 · D6)\nAt 20:00: today's confirmed orders and revenue, top three products, low stock, open summaries older than 2 hours, and how many messages were passed to Tolu today, as one Telegram message.\n\n**Credentials:** Google Sheets OAuth2 in the four Sheets nodes; Telegram API in Report to Tolu.\n**Placeholders:** YOUR_SHEET_ID (same workbook as the bot), YOUR_TELEGRAM_CHAT_ID.\n\nThe reads after Orders have **Execute Once** on, and all four have **Always Output Data**, so an empty sheet doesn't stop the report. Settings → Error workflow → HL · Error alerts.",
+        "height": 380,
+        "width": 440
+      },
+      "id": "9a7f91fd-1ea0-4cc9-9cc3-d2eb4fd54de1",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -234
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 20,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "6f456f0a-25f1-4876-ad17-a36dfac230b0",
+      "name": "Schedule 20:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "5a1b62e3-18fd-48af-a450-a2a637968cd8",
+      "name": "Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Pending",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "2f4013fa-cefd-49c4-9b87-d83ee6aaac78",
+      "name": "Pending",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Price_List",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "9cc5077c-5aff-4b2d-a0d5-2a377e2b59e2",
+      "name": "Price_List",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        0
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Conversation_Log",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "b7d1a330-a8d2-4901-acbb-66cdc9e2e2be",
+      "name": "Conversation_Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        0
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tolu's 20:00 report. Each sheet node ran once (Execute Once) with Always Output Data,\n// so empty sheets give one empty item: filter those out.\nconst today = $today.toISODate();\nconst rows = n => $(n).all().map(i => i.json).filter(r => Object.keys(r).length);\nconst isToday = r => String(r.created_at ?? r.at ?? '').startsWith(today);\nconst naira = n => '₦' + Number(n).toLocaleString('en-NG');\n\nconst orders = rows('Orders').filter(r => isToday(r) && r.status === 'confirmed');\nconst revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);\n\nconst byProduct = {};\nfor (const o of orders) {\n  let lines = [];\n  try { lines = JSON.parse(o.items_json); } catch (e) {}\n  for (const l of lines) {\n    byProduct[l.name] ??= { name: l.name, unit: l.unit, qty: 0 };\n    byProduct[l.name].qty += Number(l.qty) || 0;\n  }\n}\nconst top = Object.values(byProduct).sort((a, b) => b.qty - a.qty).slice(0, 3)\n  .map(p => `${p.name} (${p.qty} ${p.unit})`).join(' · ') || 'none';\n\nconst LOW = 5;                                         // low-stock threshold\nconst low = rows('Price_List').filter(p => p.active !== 'no' && Number(p.stock) < LOW)\n  .map(p => `${p.name} ${p.stock} ${p.unit}`).join(' · ') || 'none';\n\nconst cutoff = $now.minus({ hours: 2 });\nconst stale = rows('Pending').filter(p => p.status === 'open' && DateTime.fromISO(String(p.created_at)) < cutoff).length;\nconst waiting = rows('Conversation_Log').filter(r => isToday(r) && r.direction === 'to_tolu').length;\n\nconst text = [\n  `🌙 Harvest Lane · ${$today.toFormat('ccc d LLL')}`,\n  `Orders confirmed: ${orders.length} · Revenue: ${naira(revenue)}`,\n  `Top: ${top}`,\n  `Low stock (under ${LOW}): ${low}`,\n  `Waiting for you: ${waiting} message(s) passed to you today`,\n  `Open summaries older than 2 h: ${stale}`,\n].join('\\n');\nreturn [{ json: { text } }];\n"
+      },
+      "id": "49423652-b021-42e3-adf6-7d6177ef240c",
+      "name": "Build report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1b37d6f6-fa5f-41a8-88d6-5635eb065103",
+      "name": "Report to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Schedule 20:00": {
+      "main": [
+        [
+          {
+            "node": "Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders": {
+      "main": [
+        [
+          {
+            "node": "Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending": {
+      "main": [
+        [
+          {
+            "node": "Price_List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price_List": {
+      "main": [
+        [
+          {
+            "node": "Conversation_Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation_Log": {
+      "main": [
+        [
+          {
+            "node": "Build report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build report": {
+      "main": [
+        [
+          {
+            "node": "Report to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,9 @@
+.pricing .cur{display:inline-flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;justify-self:start;margin-top:6px}
+.pricing .cur a{padding:9px 14px;font-weight:700;text-decoration:none;color:var(--ink);background:var(--card)}
+.pricing .cur a[aria-current="true"]{background:var(--ink);color:var(--paper)}
+.pricing .refnote{margin-top:14px}
+.pricing table.cmp th[scope="row"]{font-family:var(--body);font-size:.92rem;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:400;min-width:220px}
+.pricing table.cmp td{text-align:center;white-space:nowrap}
+.pricing table.cmp thead th:not(:first-child){text-align:center}
+.pricing .yes{color:var(--volt);font-weight:800}
+.pricing .no{color:var(--muted)}

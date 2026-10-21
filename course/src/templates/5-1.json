@@ -1,0 +1,177 @@
+{
+  "id": "5.1",
+  "items": [
+    {
+      "file": "5-1-sage-desk-brain.json",
+      "name": "SUB · Sage Desk brain",
+      "what": "The shared agent brain every channel adapter calls, with inputs channel, user_id and text and outputs reply and handover.",
+      "setup": [
+        "Import this first and note its workflow ID.",
+        "Create an OpenAI credential and select it in OpenAI Chat Model; replace YOUR_MODEL with the model you use.",
+        "Replace the stand-in agent with Boss 4's agent (tools, guardrails, Check If Evaluating), keeping the same inputs and outputs."
+      ],
+      "test": "Click Test workflow: the pinned test input (a wa- user asking about Akobo delivery) should return one item with reply and handover."
+    },
+    {
+      "file": "5-1-whatsapp-adapter.json",
+      "name": "HL · WhatsApp adapter",
+      "what": "Receives WhatsApp messages on the Cloud API test number, ignores receipts, asks for typed text on voice notes or images, and replies through the shared brain.",
+      "setup": [
+        "In Meta for Developers, create an app with the WhatsApp product, add your phone as a verified recipient and send the hello_world template to confirm it arrives.",
+        "Create a WhatsApp OAuth credential (Meta app ID and app secret) and select it in WhatsApp Trigger.",
+        "Create a WhatsApp API credential with a permanent system user access token and your WhatsApp Business Account ID; select it in Send reply and Please type your message.",
+        "Create a Telegram credential and select it in Forward to Tolu.",
+        "Replace YOUR_PHONE_NUMBER_ID (twice), YOUR_TELEGRAM_CHAT_ID and YOUR_BRAIN_WORKFLOW_ID (the ID of SUB · Sage Desk brain).",
+        "Publish the workflow on your HTTPS server so Meta registers the production webhook. Test with a separate Meta app, not the live one."
+      ],
+      "test": "From your verified phone, send a text to the test number: you get the brain's reply and the brain's execution shows user_id wa-<your number>. Send a voice note: you get the please-type reply and Tolu gets a Telegram. Delivery and read receipts end at Receipt: ignore.",
+      "walk": {
+        "title": "Build it: Sage Desk answers on WhatsApp",
+        "sample": "Iya Basira on WhatsApp · \"Do you deliver to Akobo?\" · then a voice note · then a read receipt",
+        "steps": [
+          {
+            "at": null,
+            "say": "Before n8n, set up Meta. Create an app with the WhatsApp product, add your own phone as a verified recipient, and send the hello world template from the dashboard to prove it reaches you.",
+            "show": [
+              "Meta for Developers › app with WhatsApp",
+              "Verified recipient: your phone",
+              "Send hello_world from the dashboard"
+            ]
+          },
+          {
+            "at": "WhatsApp Trigger",
+            "say": "Our trigger is the WhatsApp Trigger, listening for messages. Its credential uses your Meta app's ID and secret, and the workflow runs on your HTTPS server.",
+            "show": [
+              "Updates: messages",
+              "Credential: WhatsApp OAuth (app ID + secret)"
+            ],
+            "data": "1 webhook event"
+          },
+          {
+            "at": "WhatsApp Trigger",
+            "say": "Meta allows one webhook per app. Testing on the live app replaces the production URL and real customers stop getting through, so publish this one and test with a separate Meta app and number.",
+            "show": [
+              "Publish → Meta registers production URL",
+              "Tests: a separate Meta app"
+            ]
+          },
+          {
+            "at": "Text message?",
+            "say": "Delivery and read receipts arrive on the same webhook as messages. We only pass real text on, or the agent replies twice and even answers delivered.",
+            "show": [
+              "{{ $json.messages?.[0]?.type }} equals text"
+            ],
+            "data": "text → true · receipts, voice → false"
+          },
+          {
+            "at": "Edit Fields",
+            "say": "Now we normalise. The channel prefix on user_id keeps a WhatsApp number from ever mixing with a Telegram chat in memory.",
+            "show": [
+              "channel = whatsapp",
+              "user_id = wa-{{ $json.messages[0].from }}",
+              "text = {{ $json.messages[0].text.body }}"
+            ],
+            "data": "wa-234803… · \"Do you deliver to Akobo?\""
+          },
+          {
+            "at": "SUB · Sage Desk brain",
+            "say": "We call the shared brain, Boss 4's agent moved into a sub-workflow. Every channel uses it, so you fix and test it in one place.",
+            "show": [
+              "Execute Sub-workflow",
+              "Workflow: SUB · Sage Desk brain (its ID)",
+              "In: channel, user_id, text · Out: reply, handover"
+            ],
+            "data": "reply · handover false"
+          },
+          {
+            "at": "Send reply",
+            "say": "We reply from our phone number ID to the sender. The customer just wrote, so we're inside the 24-hour window and a free-form reply is allowed and free.",
+            "show": [
+              "Phone number ID: YOUR_PHONE_NUMBER_ID",
+              "To: $('WhatsApp Trigger') … messages[0].from",
+              "Text: {{ $json.reply }}"
+            ],
+            "data": "\"Yes, we deliver to Akobo…\""
+          },
+          {
+            "at": "Send reply",
+            "say": "Its credential is the WhatsApp API one: business account ID and a permanent system user token. The dashboard's temporary token expires, and every send fails the next morning.",
+            "show": [
+              "Credential: WhatsApp API",
+              "Token: permanent system user token"
+            ]
+          },
+          {
+            "at": "Customer message (not text)?",
+            "say": "On the false side we split again. If there's a sender, it's a customer who sent a voice note or picture. If not, it's only a receipt.",
+            "show": [
+              "{{ $json.messages?.[0]?.from }} exists"
+            ],
+            "data": "voice note → true · receipt → false"
+          },
+          {
+            "at": "Please type your message",
+            "say": "A voice note gets a polite reply asking them to type, so the brain never wastes a call on something it can't read.",
+            "show": [
+              "To: {{ $json.messages[0].from }}",
+              "Text: Please type your message so we can help…"
+            ],
+            "data": "1 polite reply"
+          },
+          {
+            "at": "Forward to Tolu",
+            "say": "And Tolu gets a Telegram, so a customer who can't type is still seen by a person.",
+            "show": [
+              "Chat ID: YOUR_TELEGRAM_CHAT_ID",
+              "WhatsApp non-text message (audio) from wa-…"
+            ],
+            "data": "Tolu alerted"
+          },
+          {
+            "at": "Receipt: ignore",
+            "say": "Receipts end here, doing nothing. Point your Telegram adapter at the same brain with tg- user IDs, and both channels share one set of tools and guardrails.",
+            "show": [
+              "No Operation",
+              "Telegram adapter: user_id = tg-{chat_id}"
+            ],
+            "data": "sent, delivered, read: dropped"
+          },
+          {
+            "at": "Receipt: ignore",
+            "say": "One rule this adapter doesn't need, but your order updates do: after 24 hours since the customer's last message, only an approved template like order_ready can go, and only to customers who opted in.",
+            "show": [
+              "order_ready: utility template, 3 variables",
+              "Inside 24 h → free-form · outside → template",
+              "opted_in false → send nothing"
+            ]
+          }
+        ],
+        "end": "Text from your verified phone, then send a voice note: one brain reply, one please-type message, a Telegram for Tolu, and the receipts quietly ignored."
+      }
+    },
+    {
+      "file": "5-1-telegram-adapter.json",
+      "name": "HL · Telegram adapter",
+      "what": "Points the existing Telegram bot at the same shared brain with tg- user IDs.",
+      "setup": [
+        "Create a Telegram credential with your bot token and select it in the trigger and both Telegram send nodes.",
+        "Replace YOUR_BRAIN_WORKFLOW_ID with the ID of SUB · Sage Desk brain.",
+        "Turn off your old Telegram bot workflow so only one listens to the bot."
+      ],
+      "test": "Message your bot: it answers as before, and the brain's execution shows user_id tg-<chat id>."
+    },
+    {
+      "file": "5-1-order-update.json",
+      "name": "HL · Order dispatched WhatsApp update",
+      "what": "Sends an order-dispatched update only to opted-in customers: free-form inside the 24-hour window, the approved utility template order_ready outside it, and logs which path ran.",
+      "setup": [
+        "In WhatsApp Manager, create the utility template order_ready with three body variables (name, order number, arrival time) and wait for approval.",
+        "Select your WhatsApp API credential in Free-form update, and in Send Template order_ready (HTTP Request, Authentication: Predefined credential type, WhatsApp API).",
+        "Create a Google Sheets credential and select it in Window log.",
+        "Replace YOUR_PHONE_NUMBER_ID (twice) and YOUR_SHEET_ID; add a tab Window log with columns order_id, phone, path, template_name, category, sent_at.",
+        "In Dispatched order (test data), put your own verified phone number in phone instead of +2348000000000. Check the template language code matches the one you submitted."
+      ],
+      "test": "Run it as is (last message 30 hours ago): the template path runs and Window log shows order_ready / utility. Change last_customer_msg_at to an expression of 2 hours ago and run again: the free-form path runs. Set opted_in to false: nothing is sent."
+    }
+  ]
+}

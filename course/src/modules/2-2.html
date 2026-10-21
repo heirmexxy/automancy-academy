@@ -1,0 +1,348 @@
+<template data-mod="2.2" id="tpl-2-2">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.2</span>
+    <h1>Mapping &amp; Functions</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Weave</span><span class="pill">Tools: Make, Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#weave"/></svg>
+</header>
+<p class="lede">In Zapier, each cleaning job was its own Formatter step. In Make, you write the cleaning right inside the field, with functions, and they cost no credits. Learn a dozen functions and you can shape almost any data on the way through.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Use the mapping panel and read Make's data types.</span></div>
+  <div><b>02</b><span>Clean text with trim, case, replace and split.</span></div>
+  <div><b>03</b><span>Parse, shift and format dates and numbers correctly.</span></div>
+  <div><b>04</b><span>Use if, ifempty, get and map to handle choices and lists.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The receipt nobody could read</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer's phone shows a messy automatic receipt message.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="16" width="156" height="160" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="160" y="34" width="136" height="100" rx="12" fill="var(--volt)" opacity=".25"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)"><text x="168" y="54">Hi  mrs ADEBAYO ,</text><text x="168" y="72">Total: 26500</text><text x="168" y="90">Delivery:</text><text x="168" y="104">2026-10-11T00:00:00Z</text><text x="168" y="122">Phone: 8031234567</text></g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The first auto-receipt</b>It works, technically. It's also embarrassing.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A calendar showing Sunday circled in red, with a delivery scheduled on it.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="70" y="30" width="180" height="130" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="160" y="60" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="var(--ink)">SUNDAY</text>
+        <circle cx="160" cy="105" r="30" fill="none" stroke="var(--glitch)" stroke-width="4"/>
+        <text x="160" y="114" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="26" fill="var(--ink)">11</text>
+      </svg>
+      <div class="cap"><b>The problem</b>"Delivery tomorrow" on a Saturday means Sunday. Harvest Lane doesn't deliver on Sundays.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch adding an extra step bubble for every small fix, making a long chain.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><line x1="160" y1="40" x2="300" y2="40"/><line x1="160" y1="90" x2="300" y2="90"/><line x1="160" y1="140" x2="300" y2="140"/></g>
+        <g stroke="var(--ink)" stroke-width="2"><circle cx="170" cy="40" r="12" fill="var(--sun)"/><circle cx="210" cy="40" r="12" fill="var(--sun)"/><circle cx="250" cy="40" r="12" fill="var(--sun)"/><circle cx="290" cy="40" r="12" fill="var(--sun)"/><circle cx="170" cy="90" r="12" fill="var(--sun)"/><circle cx="210" cy="90" r="12" fill="var(--sun)"/><circle cx="250" cy="90" r="12" fill="var(--sun)"/><circle cx="290" cy="90" r="12" fill="var(--sun)"/><circle cx="170" cy="140" r="12" fill="var(--sun)"/><circle cx="210" cy="140" r="12" fill="var(--sun)"/></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"One module per fix! Ten fixes, ten credits, every single order."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave writing a formula inside a single field.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="140" y="50" width="170" height="80" rx="10" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10"><text x="150" y="76" fill="var(--sun)">startcase(</text><text x="150" y="94" fill="var(--paper)">  lower(trim(1.name))</text><text x="150" y="112" fill="var(--sun)">)</text></g>
+        <use href="#weave" x="0" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Weave</b>"Cleaning goes inside the field. No extra bubbles. No extra credits."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The mapping panel and Make's data types</h3>
+    <p>Click any field and the <b>mapping panel</b> opens: data from earlier modules on one tab, and tabs of functions (general, math, text, date and time, arrays). Drop items into the field and wrap them in functions. Everything you learned in 0.3 appears with Make's names:</p>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Make calls it</th><th>You know it as (0.3)</th></tr></thead>
+      <tbody>
+        <tr><td>Text</td><td>String</td></tr><tr><td>Number</td><td>Number</td></tr><tr><td>Boolean</td><td>Boolean</td></tr>
+        <tr><td>Date</td><td>An ISO date-time, shown in your organisation's time zone</td></tr>
+        <tr><td>Collection</td><td>Object <code>{ }</code></td></tr><tr><td>Array</td><td>Array <code>[ ]</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="analogy"><b>Set your time zone first:</b> Make formats dates in your organisation's (or profile's) time zone. Set it to Africa/Lagos in settings before building anything with dates.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Text functions</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Function</th><th>Example</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>trim(text)</code></td><td><code>trim("  Ade  ")</code></td><td>Ade</td></tr>
+        <tr><td><code>lower / upper</code></td><td><code>lower("ADEBAYO")</code></td><td>adebayo</td></tr>
+        <tr><td><code>startcase(text)</code></td><td><code>startcase("mrs adebayo")</code></td><td>Mrs Adebayo</td></tr>
+        <tr><td><code>replace(text; find; with)</code></td><td><code>replace("0803 123"; " "; emptystring)</code></td><td>0803123</td></tr>
+        <tr><td><code>replace</code> with a pattern</td><td><code>replace(1.phone; /[^0-9]/g; emptystring)</code></td><td>digits only</td></tr>
+        <tr><td><code>split(text; separator)</code></td><td><code>split("Tunde Bakare"; " ")</code></td><td>[Tunde, Bakare]</td></tr>
+        <tr><td><code>substring(text; start; end)</code></td><td><code>substring("08031234567"; 1; 11)</code></td><td>8031234567</td></tr>
+        <tr><td><code>length(text)</code></td><td><code>length("08031234567")</code></td><td>11</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.9rem;color:var(--muted)">In Make, arguments are separated by semicolons, and <code>emptystring</code> is a keyword for "". Substring positions count from 0.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Dates and numbers: parse in, format out</h3>
+    <div class="why">
+      <div class="box"><h5>Dates</h5><ul><li><code>parseDate("06/10/2026"; "DD/MM/YYYY")</code> turns text into a real date. Always give the format.</li><li><code>addDays(date; 1)</code>, <code>addHours</code>, <code>addMonths</code> shift it.</li><li><code>formatDate(date; "YYYY-MM-DD")</code> turns it back into text.</li><li>Tokens: <code>YYYY</code> year · <code>MM</code> month · <code>DD</code> day · <code>HH:mm</code> time · <code>dddd</code> weekday name · <code>d</code> weekday number (0 = Sunday).</li></ul></div>
+      <div class="box"><h5>Numbers</h5><ul><li><code>parseNumber("12500")</code> turns text into a number.</li><li><code>formatNumber(26500; 0; "."; ",")</code> → 26,500 for display.</li><li><code>round</code>, <code>ceil</code>, <code>floor</code>, <code>sum</code>, <code>max</code>, <code>min</code>.</li><li>Maths in fields: <code>{{1.qty * 1.unit_price + 1.fee}}</code>.</li></ul></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Case matters in date tokens. <code>MM</code> is month; <code>mm</code> is minutes. <code>YYYY-mm-DD</code> is a classic bug that looks almost right.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Decisions inside a field</h3>
+    <div class="vocab">
+      <div><b><code>if(condition; yes; no)</code></b><code>if(1.total &gt; 50000; "PRIORITY"; "standard")</code></div>
+      <div><b><code>ifempty(value; fallback)</code></b><code>ifempty(1.area; "Area not given")</code>, the lookup-table fallback from 1.2, in one word.</div>
+      <div><b><code>switch(value; case1; result1; …; else)</code></b><code>switch(1.area; "Bodija"; 1500; "Challenge"; 2000; 2500)</code>, a whole lookup table in one field.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Lists: get() and map()</h3>
+    <p>When a bundle carries an array, like an order's items (0.3), two functions reach inside it without extra modules. Remember: <b>Make counts array positions from 1</b>.</p>
+<pre class="codebox"><span class="c">// items = [ {sku:"TOM-CRATE", qty:2}, {sku:"PEP-TATASHE-L", qty:1} ]  · path "1.sku" = item 1, field sku</span>
+get(1.items; 1.sku)                  <span class="c">→ TOM-CRATE   (first item)</span>
+map(1.items; "sku")                  <span class="c">→ [TOM-CRATE, PEP-TATASHE-L]</span>
+join(map(1.items; "sku"); ", ")      <span class="c">→ "TOM-CRATE, PEP-TATASHE-L"</span>
+length(1.items)                      <span class="c">→ 2</span></pre>
+  </div>
+</section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PLAYGROUND</span><h2>Try the formulas</h2></div>
+  <div class="dissect" data-fnlab>
+    <label class="crit" for="fn-2-2-recipe">Recipe</label>
+    <select id="fn-2-2-recipe" style="font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--paper);color:var(--ink)"></select>
+    <label class="crit" for="fn-2-2-input">Input value (edit it)</label>
+    <input id="fn-2-2-input" type="text" value="">
+    <span class="crit">Make formula</span>
+    <pre class="codebox" data-o="formula"></pre>
+    <span class="crit">Result</span>
+    <div class="jl-out" data-o="result"></div>
+    <p style="font-size:.84rem;color:var(--muted)">This page imitates the formulas in JavaScript so you can experiment; always confirm with "Run once" in Make.</p>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy · Basics path: data types and built-in functions</b><small>Look for: text, date, math and array functions used inside fields.</small></span></a>
+    <a class="wcard" href="https://academy-content.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy public lessons: "get() and map()" and functions</b><small>Read: when to use get(), when to use map(), and combining them.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+functions+formatDate+parseDate+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make date functions" video</b><small>Look for: parseDate with a format, and time zones.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: a receipt customers can actually read</h2></div>
+  <div class="prose"><p><b>The goal.</b> Extend the 2.1 scenario. For each new order row, clean the phone and name, work out a delivery day that's never Sunday, format the total for people, write a readable receipt message, and save it all back to the row, using functions only, with no extra modules for cleaning.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Add columns to Orders</h4>
+      <p>Add <code>phone_clean</code>, <code>first_name</code>, <code>delivery_day</code> and <code>receipt_text</code> to the Orders tab. The automation will fill them in.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add one Update a Row module</h4>
+      <p>After the trigger, add <b>Google Sheets · Update a Row</b>. Row number: <code>1. Row number</code> from the trigger. Leave the original columns alone and fill only the new ones.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>phone_clean</h4>
+<pre class="codebox">if(substring(replace(1.phone; /[^0-9]/g; emptystring); 0; 1) = "0";
+   "+234" + substring(replace(1.phone; /[^0-9]/g; emptystring); 1; 20);
+   "+" + replace(1.phone; /[^0-9]/g; emptystring))</pre>
+      <p>Strip everything but digits; if it starts with 0, swap the 0 for +234; otherwise just add +. (It assumes numbers without a leading 0 already include 234.)</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>first_name and delivery_day</h4>
+<pre class="codebox"><span class="c">first_name</span>
+startcase(lower(get(split(trim(1.customer_name); " "); 1)))
+
+<span class="c">delivery_day: next day, or the day after if that's a Sunday</span>
+if(formatDate(addDays(1.created_at; 1); "d") = "0";
+   formatDate(addDays(1.created_at; 2); "dddd D MMM");
+   formatDate(addDays(1.created_at; 1); "dddd D MMM"))</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>receipt_text</h4>
+      <p>Mix plain text and formulas directly in the field:</p>
+<pre class="codebox">Hi {{first_name formula}}! Order {{1.order_id}} received.
+Total: ₦{{formatNumber(1.total; 0; "."; ",")}}
+Delivery: {{delivery_day formula}}, {{ifempty(1.delivery_window; "time to be confirmed")}}.
+Thank you for choosing Harvest Lane.</pre>
+      <p>Result for a Saturday order from "  mrs ADEBAYO ":</p>
+      <div class="bubble"><b>Receipt:</b> Hi Mrs! Order HL-0061 received. Total: ₦26,500. Delivery: Monday 12 Oct, afternoon. Thank you for choosing Harvest Lane.</div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Spot the bug?</b> "Hi Mrs!" is a real result of taking the first word. Titles break first-name logic. A good fix: add a separate first-name question to the form, or remove common titles with <code>replace(…; /^(mr|mrs|miss|dr|chief)\.?\s+/i; emptystring)</code> before splitting. Testing with realistic names catches this.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Run once and check the credits</h4>
+      <p>Add a Saturday test order and run once. The trigger and one Update module ran: 2 credits for that order, however many functions you used. In Zapier the same cleaning took five Formatter steps (free there too, but five more things to maintain).</p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Functions live where they're used, so one module does all the cleaning.</li><li>Numbers stay numbers in the data; ₦ and commas are for the message only.</li><li>The Sunday rule is written once and applies to every order.</li><li>Realistic test names reveal the "Hi Mrs!" edge case before customers do.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li><code>mm</code> (minutes) instead of <code>MM</code> (month).</li><li>parseDate without a format string.</li><li>Using position 0 with get(): Make starts at 1.</li><li>Commas instead of semicolons between arguments.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My five formulas "mostly" work. Find what each one gets wrong.</div></div>
+<pre class="codebox"><span class="c">A · delivery date shows 2026-14-06</span>
+formatDate(1.delivery; "YYYY-mm-DD")
+
+<span class="c">B · "06/10/2026" becomes 10 June</span>
+parseDate(1.date_text)
+
+<span class="c">C · always empty</span>
+get(1.items; 0.sku)
+
+<span class="c">D · totals column can't be summed in the sheet</span>
+Total → "₦" + formatNumber(1.total; 0; "."; ",")   (saved into the total column)
+
+<span class="c">E · Make says the formula is invalid</span>
+if(1.total &gt; 50000, "PRIORITY", "standard")</pre>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> <code>mm</code> is minutes. Use <code>YYYY-MM-DD</code>.</li>
+        <li><b>B:</b> no format given, so it's read the American way. Use <code>parseDate(1.date_text; "DD/MM/YYYY")</code>.</li>
+        <li><b>C:</b> Make arrays start at 1. Use <code>get(1.items; 1)</code>.</li>
+        <li><b>D:</b> the display version was stored. Save the plain number; format only in messages.</li>
+        <li><b>E:</b> Make separates arguments with semicolons: <code>if(1.total &gt; 50000; "PRIORITY"; "standard")</code>.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Five formulas, proven</h4>
+    <ul><li>In a test scenario, add a Google Sheets row with deliberately messy data (name, phone, date text, price text).</li><li>Write five formulas: tidy name, clean phone, parse the date text, parse the price text into a number, and format the price for display.</li><li>Write the results back to the row and check them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All five outputs are correct for three different messy rows.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>The readable receipt, with the title fix</h4>
+    <ul><li>Build the solved problem, and fix the "Hi Mrs!" bug.</li><li>Test with a Saturday order, a Friday order, a blank delivery window, and names with and without titles.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No receipt names a Sunday, no receipt greets a title, and blank windows say "time to be confirmed".</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A one-line order summary from a list</h4>
+    <ul><li>Paste the website order JSON from 1.4 into a <b>JSON · Parse JSON</b> module (use Run once with that sample).</li><li>In one field, build a summary like <code>2× TOM-CRATE, 1× PEP-TATASHE-L · ₦35,500</code> using map, join and formatNumber. (Hint: you'll need to combine qty and sku per item; try it, then see what 2.4's iterators make easier.)</li><li>Write down which parts needed a function and which would be easier with an iterator.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The summary is correct for a 1-item, a 2-item and a 3-item order, and you've written two sentences on functions vs. iterators.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Why write cleaning as functions inside a field in Make?</p><div class="opts">
+      <button type="button" data-opt="a">Functions run faster than modules</button><button type="button" data-opt="b">They need no extra modules, so no extra credits or bubbles</button><button type="button" data-opt="c">Make doesn't allow text modules</button><button type="button" data-opt="d">They work offline</button></div>
+      <p class="fb" hidden data-why="A module per fix costs a credit per bundle. Functions inside a field cost nothing extra."></p></div>
+    <div class="q" data-ans="c"><p>2. Which format string gives "2026-10-06"?</p><div class="opts">
+      <button type="button" data-opt="a">YYYY-mm-DD</button><button type="button" data-opt="b">DD-MM-YYYY</button><button type="button" data-opt="c">YYYY-MM-DD</button><button type="button" data-opt="d">yyyy-mm-dd</button></div>
+      <p class="fb" hidden data-why="MM is month and mm is minutes. Case matters."></p></div>
+    <div class="q" data-ans="a"><p>3. How do you get the first item of an array in Make?</p><div class="opts">
+      <button type="button" data-opt="a">get(array; 1)</button><button type="button" data-opt="b">get(array; 0)</button><button type="button" data-opt="c">array[0]</button><button type="button" data-opt="d">first(array)</button></div>
+      <p class="fb" hidden data-why="Make counts array positions from 1."></p></div>
+    <div class="q" data-ans="d"><p>4. The area field is sometimes blank. What returns "Area not given" in that case, and the area otherwise?</p><div class="opts">
+      <button type="button" data-opt="a">trim(1.area)</button><button type="button" data-opt="b">upper(1.area)</button><button type="button" data-opt="c">replace(1.area; ""; "Area not given")</button><button type="button" data-opt="d">ifempty(1.area; "Area not given")</button></div>
+      <p class="fb" hidden data-why="ifempty returns the fallback only when the value is empty."></p></div>
+    <div class="q" data-ans="b"><p>5. You need to read "06/10/2026" as 6 October. Which formula?</p><div class="opts">
+      <button type="button" data-opt="a">parseDate(1.date)</button><button type="button" data-opt="b">parseDate(1.date; "DD/MM/YYYY")</button><button type="button" data-opt="c">formatDate(1.date; "DD/MM/YYYY")</button><button type="button" data-opt="d">addDays(1.date; 0)</button></div>
+      <p class="fb" hidden data-why="parseDate reads text; always give the format it's written in."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-2">AUTOMANCY LOG · Lesson 2.2 · Mapping & Functions
+Date:
+Formulas I wrote (field → formula):
+  1.
+  2.
+  3.
+Edge cases I tested (Saturday, blank, titles…):
+Bug I found and fixed:
+Credits per order for the cleaning:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>In Make, cleaning goes inside fields as functions, with no extra credits.</li>
+      <li>Semicolons between arguments; <code>emptystring</code> for "".</li>
+      <li>Parse text into dates and numbers (with a format); format them only for people.</li>
+      <li><code>MM</code> is month, <code>mm</code> is minutes, <code>d</code> is weekday (0 = Sunday).</li>
+      <li><code>if</code>, <code>ifempty</code> and <code>switch</code> make decisions inside a field.</li>
+      <li><code>get()</code> and <code>map()</code> reach into lists; positions start at 1.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy: Basics path (functions, data types, arrays)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: built-in functions, get() and map()</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/" target="_blank" rel="noopener">Make Help Center: search "date and time functions" and "text functions"</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+mapping+functions+tutorial" target="_blank" rel="noopener">YouTube: Make mapping and functions tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand out a sheet of 20 messy values and run a "one field, one formula" challenge: fastest correct formula wins each round. Save "Hi Mrs!" as a surprise at the end of the solved problem; letting the room discover it is more memorable than warning them.</p>
+  </div>
+</section>
+
+</article>
+</template>

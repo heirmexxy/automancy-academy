@@ -1,0 +1,137 @@
+{
+  "id": "3.3",
+  "items": [
+    {
+      "file": "3-3-payment-reminders.json",
+      "name": "HL · Monday payment reminders",
+      "what": "Every Monday at 09:00, removes paid customers from the unpaid invoices with Merge, sets aside rows with no phone, writes reminders to a Sent log in batches of 20 with a 60-second wait, and emails Tolu one summary.",
+      "setup": [
+        "Create one Google Sheet with tabs Invoices (invoice_id, customer_id, name, phone, amount, pay_link, status), Payments (reference, customer_id, amount, paid_at), Fix list (same columns as Invoices) and Sent log (customer_id, phone, message, sent_at). Test data only.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" and select it in Invoices, Payments, Fix list and Send (log).",
+        "Create a Gmail OAuth2 credential called \"Gmail\" and select it in Summary email.",
+        "Replace YOUR_SHEET_ID in all four Google Sheets nodes with your sheet's ID.",
+        "Replace YOUR_EMAIL in Summary email with the address that should receive the summary (your own while testing).",
+        "Invoices and Payments have pinned sample data for building; unpin them to read your real sheets.",
+        "For testing, set Loop Over Items batch size to 2 and Wait 60 s to 5 seconds; set them back to 20 and 60 before you save and publish."
+      ],
+      "test": "With the pinned data and batch size 2, wait 5 s, click Execute workflow: Chef Tunde (who paid) is skipped, Mr Okafor (no phone) lands on the Fix list, the other three get rows in the Sent log with sent_at times in clusters of two about 5 seconds apart, and exactly one summary email arrives saying Reminders sent: 3.",
+      "walk": {
+        "title": "Build it: polite reminders, paced, payers skipped",
+        "sample": "Five unpaid invoices · Chef Tunde has paid since · Mr Okafor has no phone · batch size 2, wait 5 seconds for testing",
+        "steps": [
+          {
+            "at": "Mon 09:00",
+            "say": "Every Monday at nine, one trigger starts two sources side by side.",
+            "show": [
+              "Schedule: weekly · Monday · 09:00"
+            ]
+          },
+          {
+            "at": "Invoices",
+            "say": "The first source is every unpaid invoice. Pin its output while you build.",
+            "show": [
+              "Google Sheets › Get Row(s) · Sheet: Invoices",
+              "Filter: status = Unpaid"
+            ],
+            "data": "5 items"
+          },
+          {
+            "at": "Payments",
+            "say": "The second is the payments log, so we can see who has paid since the invoice went out.",
+            "show": [
+              "Google Sheets › Get Row(s) · Sheet: Payments"
+            ],
+            "data": "1 item · Chef Tunde"
+          },
+          {
+            "at": "Merge",
+            "say": "Merge crosses off the payers. Match on customer ID, never on names, because there can be two Mrs Adebayos.",
+            "show": [
+              "Mode: Combine · by matching fields",
+              "Fields: customer_id = customer_id"
+            ]
+          },
+          {
+            "at": "Merge",
+            "say": "Keep only the non-matches, with data from Input one: invoices with no payment. Payers are removed before a single message is built.",
+            "show": [
+              "Output: keep non-matches",
+              "Output data from: Input 1"
+            ],
+            "data": "4 items · Chef Tunde removed"
+          },
+          {
+            "at": "IF phone",
+            "say": "An IF checks there's a phone number to reach.",
+            "show": [
+              "{{ $json.phone }} · String · is not empty"
+            ],
+            "data": "true 3 · false 1"
+          },
+          {
+            "at": "Fix list",
+            "say": "Anyone without a number goes on the Fix list for Tolu, so nobody is silently dropped.",
+            "show": [
+              "Append Row · Sheet: Fix list"
+            ],
+            "data": "Mr Okafor"
+          },
+          {
+            "at": "Loop Over Items",
+            "say": "Now pace the sending. Loop Over Items hands out batches of twenty, from the provider's limit, not a guess. For testing, use two.",
+            "show": [
+              "Batch size: 20 (test: 2)"
+            ],
+            "data": "batch 1 · 2 items"
+          },
+          {
+            "at": "Build message",
+            "say": "From the loop output, build a gentle reminder with the name, invoice number, amount and the pay link.",
+            "show": [
+              "Good morning {{ $json.name }}, … invoice {{ $json.invoice_id }}",
+              "₦{{ Number($json.amount).toLocaleString('en-NG') }}",
+              "Pay here: {{ $json.pay_link }}"
+            ]
+          },
+          {
+            "at": "Send (log)",
+            "say": "For practice, Send only writes to a Sent log with a timestamp. No message reaches a customer until we swap in a real messaging node.",
+            "show": [
+              "Append Row · Sheet: Sent log",
+              "sent_at: {{ $now.toFormat('HH:mm:ss') }}"
+            ],
+            "data": "2 rows · 09:00:01"
+          },
+          {
+            "at": "Wait 60 s",
+            "say": "Wait sixty seconds, inside the loop. Then drag Wait's output back into Loop Over Items, or only the first batch ever goes.",
+            "show": [
+              "Wait: 60 seconds (test: 5)",
+              "Wait → back into Loop Over Items"
+            ],
+            "data": "next batch"
+          },
+          {
+            "at": "Summary email",
+            "say": "The done output fires once after the last batch, carrying every item. Turn on Execute Once, so Tolu gets one summary, not one per customer.",
+            "show": [
+              "Gmail › To: YOUR_EMAIL",
+              "Reminders sent: {{ $input.all().length }}",
+              "Settings: Execute Once ✓"
+            ],
+            "data": "1 email · Reminders sent: 3"
+          },
+          {
+            "at": "Loop Over Items",
+            "say": "When the test looks right, put the batch back to twenty and the wait to sixty seconds, then save and publish.",
+            "show": [
+              "Batch 20 · Wait 60 s",
+              "Save → Publish"
+            ]
+          }
+        ],
+        "end": "Run it with the pinned data, then check the Sent log times come in clusters of two and exactly one summary arrives."
+      }
+    }
+  ]
+}

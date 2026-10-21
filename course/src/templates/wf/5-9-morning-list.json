@@ -1,0 +1,164 @@
+{
+ "name": "CRM · Morning call list",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## CRM · Morning call list (Lesson 5.9)\nEvery day at 07:30, one Telegram message to Tolu:\n- Call first: ready contacts (harvest_score 65+, Sales qualified lead) with no call or contact logged yet.\n- Going cold: open deals with no activity for 7 days.\n\nCredentials: HubSpot App Token credential (the \"n8n Growth Desk\" private app token, with only contact, company and deal read/write scopes, plus tasks if you create tasks); Telegram.\nPlaceholders: YOUR_TELEGRAM_CHAT_ID.",
+    "height": 260,
+    "width": 500
+   },
+   "id": "ed6b0feb-dca4-4dcf-b28b-a2211f44b69e",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -280
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 7 * * *"
+      }
+     ]
+    }
+   },
+   "id": "996cf8ff-2626-4ec1-bf5d-d25ebcc7bcbe",
+   "name": "Daily 07:30",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/contacts/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'harvest_score', operator: 'GTE', value: '65' }, { propertyName: 'lifecyclestage', operator: 'EQ', value: 'salesqualifiedlead' }, { propertyName: 'notes_last_contacted', operator: 'NOT_HAS_PROPERTY' } ] } ], sorts: [ { propertyName: 'harvest_score', direction: 'DESCENDING' } ], properties: ['firstname', 'lastname', 'company', 'harvest_score'], limit: 10 }) }}",
+    "options": {}
+   },
+   "id": "f0f30439-b8ce-4760-b161-2d2ff3748391",
+   "name": "Call first",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' }, { propertyName: 'notes_last_updated', operator: 'LT', value: String(Date.now() - 7 * 864e5) } ] } ], properties: ['dealname', 'dealstage', 'notes_last_updated'], limit: 20 }) }}",
+    "options": {}
+   },
+   "id": "d08610c8-ff9c-4c25-aa81-b7c83c339488",
+   "name": "Going cold",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const call = $('Call first').first().json.results || [];\nconst cold = $('Going cold').first().json.results || [];\nconst days = (d) => d ? Math.floor((Date.now() - new Date(d)) / 864e5) : '?';\nconst text = ['Call first today:',\n  ...(call.length ? call.map((c, i) => `${i + 1}. ${c.properties.company || c.properties.firstname} · ${c.properties.harvest_score}`) : ['(nobody new)']),\n  '', 'Going cold (no activity 7+ days):',\n  ...(cold.length ? cold.map(d => `- ${d.properties.dealname} · ${days(d.properties.notes_last_updated)} days`) : ['(none)'])].join('\\n');\nreturn [{ json: { text } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "6297fe2e-8115-412b-b703-4eaa72232d82",
+   "name": "Compose",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $json.text }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "74a62c64-f709-47a9-ac2a-a8ac38a8cae8",
+   "name": "Send to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Daily 07:30": {
+   "main": [
+    [
+     {
+      "node": "Call first",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Call first": {
+   "main": [
+    [
+     {
+      "node": "Going cold",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Going cold": {
+   "main": [
+    [
+     {
+      "node": "Compose",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Compose": {
+   "main": [
+    [
+     {
+      "node": "Send to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

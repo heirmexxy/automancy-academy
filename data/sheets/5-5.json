@@ -1,0 +1,38 @@
+{
+ "id": "5.5",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: ten messages from Harvest Lane's pages, names removed.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Message</th><th>Intent</th><th>Allowed</th><th>Best action and reply</th></tr></thead><tbody><tr><td>1</td><td>IG comment, 2 h: \"How much for a basket?\"</td><td>question, lead</td><td>public, private</td><td>Private reply with price and order link; public \"Sent you the price\"</td></tr><tr><td>2</td><td>FB comment, 9 days: \"Weekly supply to Akobo?\"</td><td>lead</td><td>public only</td><td>Public: \"Yes, we deliver to Akobo. Message us for weekly prices.\"</td></tr><tr><td>3</td><td>IG DM, last message 30 h: refund</td><td>complaint</td><td>person only</td><td>Hand to Tolu with a summary</td></tr><tr><td>4</td><td>FB comment: spam link</td><td>spam</td><td>hide</td><td>Hide; no reply</td></tr><tr><td>5</td><td>X mention: rude rider</td><td>complaint</td><td>public</td><td>Tolu: short apology, then private</td></tr><tr><td>6</td><td>LinkedIn page comment: three hotels</td><td>lead</td><td>drafted, person posts</td><td>Tolu replies personally</td></tr><tr><td>7</td><td>TikTok comment: recipe please</td><td>question</td><td>person posts</td><td>Recipe link, posted in the app</td></tr><tr><td>8</td><td>IG DM, 1 h: 2 baskets tomorrow</td><td>lead</td><td>DM</td><td>Price, slot, payment link in thread</td></tr><tr><td>9</td><td>FB comment: \"Best peppers!\"</td><td>praise</td><td>public</td><td>\"Thank you, see you Saturday!\"</td></tr><tr><td>10</td><td>Messenger, 3 h: open on Sunday?</td><td>question</td><td>DM</td><td>\"Sundays 9 a.m. to 2 p.m.\"</td></tr></tbody></table></div><p>Check: no reply names a person with an address, order number or phone.</p>",
+   "mistakes": [
+    "Offering a private reply on a comment older than 7 days.",
+    "Planning an automatic DM reply after the 24-hour window has closed.",
+    "Putting names with order numbers or addresses in a public reply.",
+    "Replying to spam instead of hiding it."
+   ],
+   "pass": "Ten real messages with names removed, each with intent, the actions its platform allows at that age, the best action and the reply, and no reply that breaks a window rule or shows personal details in public.",
+   "redo": "Send it back if any reply is not allowed on its platform, a public reply has personal details, or the allowed actions are missing."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane's inbox for Facebook and Instagram.</p><ol><li><b>Webhook</b>: one n8n Webhook for Page comments, Messenger, Instagram comments and DMs. Answer Meta's verification request once; check every event's signature with the app secret.</li><li><b>Inbox row</b>: platform, kind, item_id, thread_id, author_handle, text, received_at, last_customer_msg_at, status; skip duplicate item_ids.</li><li><b>Classify</b>: the 5.3 labeller adds intent and urgent.</li><li><b>Allowed actions</b> (Code), from the lesson: public unless a DM; private only on a Meta comment within 7 days and not already sent; DM only within 24 hours of the customer's last message; auto only for question, praise or lead and not urgent.</li><li><b>Agent</b>: Sage Desk with get_price, check_delivery_zone, save_lead, handover_to_tolu; structured output <code>{ action, public_text, private_text, lead }</code>.</li><li><b>Gate</b> (Code): reject any action not in allowed. auto → send; otherwise Telegram approval.</li><li><b>Send</b>: Graph API reply, private reply (then mark private_sent), DM in thread, hide, or Telegram hand-over with summary and draft.</li><li><b>Watchdog</b> every 10 minutes: questions waiting over 5 minutes, complaints over 60, alert Tolu.</li></ol><p><b>Planted tests</b> (test page and test accounts)</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test</th><th>Expected</th><th>Result</th></tr></thead><tbody><tr><td>IG comment \"how much?\" (fresh)</td><td>Private reply, lead saved</td><td>1 min 40 s; lead with source link</td></tr><tr><td>FB comment from 9 days ago</td><td>Public reply only</td><td>Public; private blocked by code</td></tr><tr><td>IG DM, last message 30 h ago</td><td>To a person</td><td>Telegram hand-over</td></tr><tr><td>Spam comment with link</td><td>Hidden, no reply</td><td>Hidden</td></tr><tr><td>Angry complaint</td><td>Acknowledge, hand over</td><td>Tolu answered in 22 min</td></tr><tr><td>Same webhook event twice</td><td>Processed once</td><td>Second skipped</td></tr></tbody></table></div><p>Public replies never contained names, addresses, order numbers or phones.</p>",
+   "mistakes": [
+    "Letting the agent decide what is allowed instead of computing it in code.",
+    "Skipping the webhook signature check.",
+    "Posting 'DM sent' publicly before the private reply actually succeeded.",
+    "No duplicate check, so retried webhook events get two replies."
+   ],
+   "pass": "Executions show a price question answered in under 5 minutes, the expired-window DM handed to a person, the spam comment hidden, and the code gate blocking an action outside the allowed list.",
+   "redo": "Send it back if any test reply breaks a platform rule, the expired-window DM was answered by the bot, spam got a reply, or there is no hand-over path."
+  },
+  "g": {
+   "answer": "<p>Worked example: Bloom Bakes, a fictional cake shop in Abeokuta, two weeks on Facebook, Instagram and WhatsApp, with X mentions polled every 15 minutes on a small budget.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Measure</th><th>Two weeks before</th><th>Two weeks with the agent</th></tr></thead><tbody><tr><td>Messages and comments</td><td>312</td><td>341</td></tr><tr><td>Median first response, questions</td><td>2 h 40 min</td><td>1 min 50 s</td></tr><tr><td>Median first response, complaints</td><td>6 h</td><td>41 min (person)</td></tr><tr><td>Unanswered after 24 h</td><td>58</td><td>3</td></tr><tr><td>Spam hidden</td><td>not tracked</td><td>27</td></tr></tbody></table></div><p><b>Leads captured with source and consent</b>: Instagram 31 · Facebook 12 · WhatsApp 9 · X 1. Of these, 22 agreed to a follow-up and 14 ordered.</p><p><b>Hand-overs</b>: 19 (11 complaints, 5 big orders such as wedding cakes, 3 asked for a person). Two waited past the 60-minute target on a Sunday; the watchdog fired both times.</p><p><b>Complaints about the bot</b>: none. One customer asked \"Is this a robot?\" and the reply said it was the shop's assistant and offered the owner.</p><p><b>Rule checks</b>: 0 replies outside the 24-hour window, 0 second private replies, 0 personal details in public replies (checked by a code scan of all public texts).</p><p>Submit: this table, the before figures and where they came from (page inbox export), the leads table with sources, the hand-over log and the owner's comment.</p>",
+   "mistakes": [
+    "No measured 'before' response time to compare against.",
+    "Counting the same customer as several leads across platforms.",
+    "Saving leads with no source link or consent flag.",
+    "Letting the bot argue with angry customers instead of handing over."
+   ],
+   "pass": "Two weeks of data with median response time against the previous two weeks, leads by platform with source and consent, a hand-over count, and no complaints about the bot.",
+   "redo": "Send it back if response time did not improve, there is no baseline, leads lack source or consent, or customers complained about the bot."
+  }
+ }
+}

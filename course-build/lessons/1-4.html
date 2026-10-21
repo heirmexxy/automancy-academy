@@ -1,0 +1,413 @@
+<template data-mod="1.4" id="tpl-1-4">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.4</span>
+    <h1>Webhooks &amp; Code Steps</h1>
+    <div class="kicker"><span class="pill">≈ 110 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Bolt and Nodo</span><span class="pill">Needs: paid plan or trial (Webhooks)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">What if the app you need isn't in Zapier's list? Tolu's new website isn't. Today you give Zapier its own doorbell (a webhook), let any system ring it, and write a small piece of JavaScript that checks the order before anything is saved.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Receive data from any system with Catch Hook and Catch Raw Hook.</span></div>
+  <div><b>02</b><span>Send data to any system with a webhook POST action.</span></div>
+  <div><b>03</b><span>Write a Code by Zapier step: read inputs, calculate, validate, return output.</span></div>
+  <div><b>04</b><span>Protect a webhook: never trust totals from outside, and check a token.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The website that couldn't talk</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu proudly showing a new website with an Order button.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="156" height="150" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="150" y="20" width="156" height="22" rx="10" fill="var(--volt)"/>
+        <text x="228" y="36" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" fill="#13233A">harvestlane.ng</text>
+        <rect x="164" y="56" width="128" height="50" rx="6" fill="var(--paper2)"/>
+        <rect x="190" y="126" width="76" height="28" rx="14" fill="var(--spark)"/><text x="228" y="145" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="12" fill="#fff">Order now</text>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Launch day</b>Tolu's cousin built a website with its own order form. It looks great.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A search in the Zapier app list returning no results.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="40" width="240" height="110" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="56" y="56" width="208" height="26" rx="13" fill="var(--paper2)"/><text x="70" y="74" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">search apps: harvestlane.ng</text>
+        <text x="160" y="118" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--glitch)">No apps found</text>
+      </svg>
+      <div class="cap"><b>The problem</b>A custom-built site has no ready-made Zapier app. Orders pile up in the cousin's inbox.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch editing a price in a browser to one naira.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="40" width="140" height="100" rx="8" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--paper)"><text x="170" y="64">"unit_price":</text><text x="170" y="84" fill="var(--sun)" text-decoration="line-through">12500</text><text x="216" y="84" fill="var(--glitch)">1</text><text x="170" y="108">"total": 1</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The danger</b>Anything a browser sends can be edited. Glitch tries ordering 10 crates for ₦1.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo at a laptop with a small code window, Bolt beside her.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="30" width="156" height="104" rx="8" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10"><text x="160" y="54" fill="var(--sun)">const</text><text x="196" y="54" fill="var(--paper)">total = qty * price</text><text x="160" y="74" fill="var(--sun)">if</text><text x="178" y="74" fill="var(--paper)">(total !== sent)</text><text x="172" y="94" fill="var(--glitch)">reject()</text><text x="160" y="114" fill="var(--paper)">output = {...}</text></g>
+        <use href="#nodo" x="6" y="50" width="130" height="130"/>
+        <use href="#bolt" x="240" y="130" width="60" height="60"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"Give the website a doorbell to ring. Then I'll check every order that comes through it. Twenty lines of code."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Catch Hook: give your Zap a doorbell</h3>
+    <p><b>Webhooks by Zapier</b> gives a Zap its own unique URL. When any system sends an HTTP request to it (Module 0.2), the Zap runs instantly. It's how you connect anything that can send a webhook, even with no Zapier app.</p>
+    <div class="vocab">
+      <div><b>Catch Hook</b>Zapier reads the incoming data (JSON, form data or XML) and turns it into fields. Nested JSON is flattened with double underscores: <code>customer.phone</code> becomes <code>customer__phone</code>.</div>
+      <div><b>Catch Raw Hook</b>Gives you the request exactly as sent, as one block of text, plus its headers. Useful when you want to parse and check the JSON yourself in code.</div>
+      <div><b>Retrieve Poll</b>Checks a URL on a timer instead: polling, for systems that can't send webhooks.</div>
+    </div>
+    <div class="analogy"><b>Two gotchas from Zapier's docs:</b> the URL always replies "success" to the sender, even if your Zap is off or fails later, and a completely empty request is ignored. So the sender can't tell whether your Zap worked; you must alert on problems yourself.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Webhook actions: ring someone else's doorbell</h3>
+    <p>The same app has actions (<b>POST</b>, <b>GET</b>, <b>PUT</b>, <b>Custom Request</b>) that send requests out. It's the HTTP step you practised in Hoppscotch, now inside a Zap: send a new order to a courier's system, a delivery app, or any API with no Zapier integration.</p>
+    <figure class="fig"><svg viewBox="0 0 640 150" role="img" aria-label="Website sends a POST to the Zap's Catch Hook URL; the Zap runs a code step; then a POST action sends the order on to the courier's system.">
+      <defs><marker id="g1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="45" width="130" height="60" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="75" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">Website</text>
+      <path d="M140 75 H200" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#g1)"/><text x="170" y="66" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">POST</text>
+      <rect x="204" y="20" width="240" height="110" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="324" y="40" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">YOUR ZAP</text>
+      <rect x="218" y="52" width="66" height="60" rx="8" fill="var(--sun)"/><text x="251" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Catch</text><text x="251" y="96" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Hook</text>
+      <rect x="292" y="52" width="66" height="60" rx="8" fill="var(--ink)"/><text x="325" y="88" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--paper)">Code</text>
+      <rect x="366" y="52" width="66" height="60" rx="8" fill="var(--sun)"/><text x="399" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">POST</text><text x="399" y="96" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">action</text>
+      <path d="M444 75 H500" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#g1)"/>
+      <rect x="504" y="45" width="126" height="60" rx="12" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="567" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">Courier API</text>
+    </svg><figcaption>In, check, out: Zapier can sit between any two systems that speak HTTP.</figcaption></figure>
+    <p style="font-size:.9rem;color:var(--muted)">Webhooks by Zapier is available on paid plans (Professional and up), not on Free.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Code by Zapier: a tiny program in one step</h3>
+    <p>When Formatter can't do it, a <b>Code by Zapier</b> step can. It runs JavaScript (Node.js) or Python. You pass values in through <b>Input Data</b> (named fields you map from earlier steps), and your code sets an <code>output</code> object whose keys become pills for later steps.</p>
+<pre class="codebox"><span class="c">// Input Data (set in the step): qty ← pill, price ← pill</span>
+<span class="k">const</span> qty = Number(inputData.qty);      <span class="c">// inputs usually arrive as text</span>
+<span class="k">const</span> price = Number(inputData.price);
+<span class="k">const</span> lineTotal = qty * price;
+
+output = { line_total: lineTotal, is_big: lineTotal &gt; 50000 };</pre>
+    <div class="vocab">
+      <div><b>inputData</b>Your named inputs: <code>inputData.qty</code>. Names are case-sensitive.</div>
+      <div><b>Number()</b>Turns "12500" into 12500. Without it, <code>"25000" + "1500"</code> becomes <code>"250001500"</code>.</div>
+      <div><b>output</b>An object (or list of objects). Each key becomes a field. Returning a list makes later steps run once per item, unless you wrap it in a <code>line_items</code> key.</div>
+      <div><b>Limits</b>Code steps have run-time limits that vary by plan and can make only a couple of HTTP requests. Keep them small: calculate and check; let app steps do the talking.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Just enough JavaScript</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>You write</th><th>It means</th></tr></thead>
+      <tbody>
+        <tr><td><code>const total = 0;</code></td><td>A named value that won't be replaced. Use <code>let</code> if it will change.</td></tr>
+        <tr><td><code>JSON.parse(text)</code></td><td>Turn JSON text into an object you can read with paths (0.3).</td></tr>
+        <tr><td><code>order.items.map(it =&gt; …)</code></td><td>Do something to every item in a list and collect the results.</td></tr>
+        <tr><td><code>if (qty &lt;= 0) errors.push("bad qty")</code></td><td>Check a condition and remember a problem.</td></tr>
+        <tr><td><code>errors.join("; ")</code></td><td>Turn a list into one readable line of text.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> You can ask me to write a Code step, and I'm good at it. Then test it with messy data, read every line, and never paste real keys or customer data into the chat. You're the one responsible for what runs.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Never trust the doorbell</h3>
+    <p>Anyone who learns your webhook URL can send it anything, and anything a browser sends can be edited. Two habits protect you:</p>
+    <div class="never">
+      <div><b>Recalculate everything</b>Totals, fees, discounts: work them out again from quantities and your own prices. Treat a total sent from outside as a claim to check.</div>
+      <div><b>Check a shared token</b>The website includes a secret token; the Code step rejects requests without it. Real payment providers go further and sign each webhook (Module 2.5).</div>
+      <div><b>Alert on failure</b>Since the sender always sees "success", send invalid requests to Tolu instead of dropping them silently.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/8496083355661-How-to-get-started-with-Webhooks-by-Zapier" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: getting started with Webhooks by Zapier</b><small>Read: how incoming data is parsed, and the "always returns success" note.</small></span></a>
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/8496310939021-Use-JavaScript-code-in-Zaps" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: use JavaScript code in Zaps</b><small>Read: Input Data, the output variable, and line_items.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Zapier+webhooks+catch+hook+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A recent "Zapier webhooks / Catch Hook" walkthrough</b><small>Look for: copying the hook URL and sending a test request to it.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 35 MIN</span><h2>Solved problem: website orders, checked and saved</h2></div>
+  <div class="prose"><p><b>The goal.</b> The website sends each order as JSON to a Zap. The Zap checks the token, recalculates every total, and then either saves the order with its line items or alerts Tolu with the exact problems. You'll play the website using Hoppscotch, as in 0.2.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Create the doorbell</h4>
+      <p>New Zap. Trigger: <b>Webhooks by Zapier · Catch Raw Hook</b>. Copy the URL Zapier gives you. Treat it like a key: share it only with the website's developer (0.6).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Ring it from Hoppscotch</h4>
+      <p>Send a <b>POST</b> to the hook URL with <code>Content-Type: application/json</code> and this body, then click <b>Test trigger</b> in Zapier. The raw body and headers appear as fields.</p>
+<pre class="codebox" id="hook-good-1-4">{
+  "token": "hl-web-7Q2x",
+  "order_id": "HL-0051",
+  "customer": { "name": "Mrs Adebayo", "phone": "+2348031234567" },
+  "items": [
+    { "sku": "TOM-CRATE", "qty": 2, "unit_price": 12500 },
+    { "sku": "PEP-TATASHE-L", "qty": 1, "unit_price": 9000 }
+  ],
+  "delivery_fee": 1500,
+  "total": 35500
+}</pre>
+      <p style="font-size:.9rem;color:var(--muted)">In a real build, the website's server would send this, using prices from the same Products list, and the token would be a long random string kept out of the page's public code.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the Code step</h4>
+      <p>Add <b>Code by Zapier · Run JavaScript</b>. In Input Data, add <code>raw</code> → the raw body pill, and <code>secret</code> → type <code>hl-web-7Q2x</code>. Then the code:</p>
+<pre class="codebox"><span class="k">const</span> errors = [];
+<span class="k">let</span> order;
+<span class="k">try</span> { order = JSON.parse(inputData.raw); }
+<span class="k">catch</span> (e) { order = {}; errors.push(<span class="k">"body is not valid JSON"</span>); }
+
+<span class="k">if</span> (order.token !== inputData.secret) errors.push(<span class="k">"wrong or missing token"</span>);
+<span class="k">if</span> (!order.customer || !order.customer.phone) errors.push(<span class="k">"missing phone"</span>);
+<span class="k">if</span> (!Array.isArray(order.items) || order.items.length === 0) errors.push(<span class="k">"no items"</span>);
+
+<span class="k">let</span> items_total = 0;
+<span class="k">const</span> line_items = (order.items || []).map((it, i) =&gt; {
+  <span class="k">const</span> qty = Number(it.qty), unit_price = Number(it.unit_price);
+  <span class="k">if</span> (!(qty &gt; 0)) errors.push(`item ${i + 1}: bad qty`);
+  <span class="k">if</span> (!(unit_price &gt; 0)) errors.push(`item ${i + 1}: bad price`);
+  <span class="k">const</span> line_total = qty * unit_price;
+  items_total += line_total;
+  <span class="k">return</span> { order_id: order.order_id, sku: it.sku, qty, unit_price, line_total };
+});
+
+<span class="k">const</span> delivery_fee = Number(order.delivery_fee) || 0;
+<span class="k">const</span> total = items_total + delivery_fee;
+<span class="k">if</span> (order.total !== undefined &amp;&amp; Number(order.total) !== total)
+  errors.push(`total mismatch: sent ${order.total}, calculated ${total}`);
+
+output = {
+  order_id: order.order_id || <span class="k">""</span>,
+  phone: (order.customer || {}).phone || <span class="k">""</span>,
+  valid: errors.length === 0,
+  errors: errors.join(<span class="k">"; "</span>),
+  items_total, delivery_fee, total,
+  item_count: line_items.length,
+  line_items    <span class="c">// wrapped in a key, so later steps run once, not once per item</span>
+};</pre>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Where should prices come from?</b> Here the code checks that the maths adds up and nothing is zero or negative. For full protection, compare each <code>unit_price</code> with the Products sheet (a Lookup step per product, or the courier-style POST in the Gold mission). A mismatch means someone edited the price.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Try the code right here</h4>
+      <p>This tester runs the same logic as the Code step on this page. Load a sample, or edit the JSON: change a price to 1, delete the token, make qty "two".</p>
+      <div class="jsonlab" data-hooktest data-secret="hl-web-7Q2x">
+        <div class="pathchips">
+          <button type="button" data-sample="hook-good-1-4">Good order</button>
+          <button type="button" data-sample="hook-bad1-1-4">Edited total</button>
+          <button type="button" data-sample="hook-bad2-1-4">No token, bad qty</button>
+          <button type="button" data-sample="hook-bad3-1-4">Broken JSON</button>
+        </div>
+        <label class="crit" for="hook-1-4-body">Request body</label>
+        <textarea id="hook-1-4-body" spellcheck="false">{
+  "token": "hl-web-7Q2x",
+  "order_id": "HL-0051",
+  "customer": { "name": "Mrs Adebayo", "phone": "+2348031234567" },
+  "items": [
+    { "sku": "TOM-CRATE", "qty": 2, "unit_price": 12500 },
+    { "sku": "PEP-TATASHE-L", "qty": 1, "unit_price": 9000 }
+  ],
+  "delivery_fee": 1500,
+  "total": 35500
+}</textarea>
+        <span class="jl-status"></span>
+        <div class="jl-out"></div>
+      </div>
+<pre hidden id="hook-bad1-1-4">{
+  "token": "hl-web-7Q2x",
+  "order_id": "HL-0052",
+  "customer": { "name": "G. Litch", "phone": "+2348000000000" },
+  "items": [ { "sku": "TOM-CRATE", "qty": 10, "unit_price": 12500 } ],
+  "delivery_fee": 1500,
+  "total": 11
+}</pre>
+<pre hidden id="hook-bad2-1-4">{
+  "order_id": "HL-0053",
+  "customer": { "name": "Tunde" },
+  "items": [ { "sku": "ONI-BAG", "qty": "two", "unit_price": 4000 } ],
+  "delivery_fee": 1500
+}</pre>
+<pre hidden id="hook-bad3-1-4">{ "order_id": "HL-0054", "items": [ { "sku": "TOM-CRATE", "qty": 2, } ] </pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Split valid from invalid</h4>
+      <p>Add <b>Paths</b> (1.3). Branch A: <code>valid</code> · (Boolean) Is true → <b>Google Sheets · Create Spreadsheet Row</b> in Orders (order_id, phone, items_total, delivery_fee, total) → <b>Create Multiple Spreadsheet Rows</b> in Order_Items from <code>line_items</code>. Fallback branch: <b>Gmail · Send Email</b> to Tolu: "Rejected website order [order_id]: [errors]".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with bad requests, then publish</h4>
+      <p>Send all four samples from Hoppscotch. The good one lands in both tabs; each bad one produces an alert naming its exact problems. Publish, and give the developer the URL and token.</p>
+      <div class="stats">
+        <div class="stat"><b>Instant</b><span>no 15-minute polling wait</span></div>
+        <div class="stat"><b>₦1</b><span>orders rejected automatically</span></div>
+        <div class="stat"><b>2 tabs</b><span>filled from one request (Orders and Order_Items)</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>A webhook connects a system with no Zapier app, instantly.</li><li>Parsing the raw body yourself lets you catch broken JSON.</li><li>Recalculating defeats edited prices and totals.</li><li>Every rejection reaches a person, with a reason.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Adding text values with <code>+</code> (they join instead of adding).</li><li>Forgetting to set <code>output</code>.</li><li>Returning a bare list, so later steps run once per item.</li><li>Publishing the hook URL in a public web page with no token check.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I wrote four Code steps of my own. Each one "works" in a way you'll hate.</div></div>
+<pre class="codebox"><span class="c">// A · total comes out as 250001500</span>
+output = { total: inputData.subtotal + inputData.fee };
+
+<span class="c">// B · the next step has no pills to map</span>
+<span class="k">const</span> total = Number(inputData.qty) * Number(inputData.price);
+
+<span class="c">// C · Sheets gets 3 separate Orders rows for one order with 3 items</span>
+output = order.items.map(it =&gt; ({ sku: it.sku, qty: it.qty }));
+
+<span class="c">// D · accepts an order for 10 crates at a total of ₦11</span>
+output = { total: Number(order.total), valid: <span class="k">true</span> };</pre>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> inputs arrive as text, and <code>+</code> joins text. Use <code>Number(inputData.subtotal) + Number(inputData.fee)</code>.</li>
+        <li><b>B:</b> the result is calculated but never put in <code>output</code>, so no fields come out.</li>
+        <li><b>C:</b> returning a bare list makes every later step run once per item. Wrap it: <code>output = { line_items: [...] }</code>.</li>
+        <li><b>D:</b> it trusts the total sent from outside and never recalculates. Always compute totals yourself.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Your first doorbell</h4>
+    <ul><li>Build a Zap with <b>Catch Hook</b> (not raw) and send it the good order from Hoppscotch.</li><li>Look at how Zapier flattened the fields (<code>customer__phone</code>) and handled the items list.</li><li>Map three fields into an email to yourself.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The email arrives, and you can explain in one sentence what the double underscore means.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build the checked website order line</h4>
+    <ul><li>Build the solved problem end to end: Catch Raw Hook, Code, Paths, Sheets, alert.</li><li>Send the four samples plus two bad requests you invent yourself.</li><li>Check Orders, Order_Items and your inbox against what you expected.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Only valid orders reach the sheet, every invalid one produces an alert with the right reasons, and a 3-item order creates one Orders row and three Order_Items rows.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Pass it on: notify the courier</h4>
+    <ul><li>Add a <b>Webhooks by Zapier · POST</b> action to the valid branch that sends a delivery request to a webhook.site URL (playing a courier's API): order_id, phone, address, number of items.</li><li>Add a Code step before it that builds a short, WhatsApp-ready message: "HL-0051 · 3 items · Ring Road · call +234…".</li><li>Add a custom header <code>X-Source: harvest-lane</code> and confirm it arrives.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>webhook.site shows each valid order's delivery request with your header, and nothing is sent for invalid ones.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Your custom website has no Zapier app. How can it start a Zap instantly?</p><div class="opts">
+      <button type="button" data-opt="a">It can't</button><button type="button" data-opt="b">Poll the website every 15 minutes</button><button type="button" data-opt="c">Send a request to a Catch Hook URL</button><button type="button" data-opt="d">Email Zapier support</button></div>
+      <p class="fb" hidden data-why="A webhook trigger gives the Zap a URL any system can call."></p></div>
+    <div class="q" data-ans="a"><p>2. In a Code step, <code>inputData.subtotal + inputData.fee</code> gives "250001500". Why?</p><div class="opts">
+      <button type="button" data-opt="a">The inputs are text, so + joins them</button><button type="button" data-opt="b">JavaScript can't add</button><button type="button" data-opt="c">The fee is negative</button><button type="button" data-opt="d">The Zap isn't published</button></div>
+      <p class="fb" hidden data-why="Convert with Number() before doing maths."></p></div>
+    <div class="q" data-ans="d"><p>3. You return a list of 3 items from a Code step, and the next step runs 3 times. How do you make it run once?</p><div class="opts">
+      <button type="button" data-opt="a">Add a Filter</button><button type="button" data-opt="b">Use Python instead</button><button type="button" data-opt="c">Sort the list</button><button type="button" data-opt="d">Put the list under a line_items key in the output object</button></div>
+      <p class="fb" hidden data-why="Zapier treats line_items as one field holding a list, instead of separate runs."></p></div>
+    <div class="q" data-ans="b"><p>4. A website sends <code>"total": 11</code> for 10 crates. What should your Zap do?</p><div class="opts">
+      <button type="button" data-opt="a">Save it; the website knows the price</button><button type="button" data-opt="b">Recalculate the total and reject the mismatch</button><button type="button" data-opt="c">Round it up</button><button type="button" data-opt="d">Ask the AI to decide</button></div>
+      <p class="fb" hidden data-why="Anything from outside is a claim to check. Compute totals yourself."></p></div>
+    <div class="q" data-ans="c"><p>5. Your Zap is switched off, and the website sends an order to its hook. What does the website see?</p><div class="opts">
+      <button type="button" data-opt="a">An error</button><button type="button" data-opt="b">Nothing</button><button type="button" data-opt="c">A success reply, even though nothing will happen</button><button type="button" data-opt="d">A redirect</button></div>
+      <p class="fb" hidden data-why="Zapier always replies success. That's why you monitor the Zap and alert on problems yourself."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-4">AUTOMANCY LOG · Lesson 1.4 · Webhooks & Code Steps
+Date:
+Hook type used (Catch Hook / Raw):
+Checks in my Code step:
+Requests tested (good / bad) and results:
+Output fields my later steps used:
+Where the hook URL and token are stored:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold
+(Never paste the real hook URL or token here.)</pre>
+    <div><button type="button" class="btn" data-copy="log-1-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Catch Hook gives any system an instant way to start your Zap.</li>
+      <li>Webhook actions (POST, GET, PUT) let your Zap talk to any API.</li>
+      <li>Code steps: inputData in, <code>output</code> out; convert text to numbers first.</li>
+      <li>Wrap lists in <code>line_items</code> unless you want one run per item.</li>
+      <li>Recalculate everything from outside; check a token; alert on failures.</li>
+      <li>The hook URL and token are secrets (0.6).</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8496083355661-How-to-get-started-with-Webhooks-by-Zapier" target="_blank" rel="noopener">Zapier Help: Webhooks by Zapier</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8496310939021-Use-JavaScript-code-in-Zaps" target="_blank" rel="noopener">Zapier Help: JavaScript code in Zaps</a></li>
+    <li><span class="kind">Text</span><a href="https://zapier.com/blog/what-are-webhooks/" target="_blank" rel="noopener">Zapier blog: what are webhooks?</a></li>
+    <li><span class="kind">Course</span><a href="https://www.freecodecamp.org/learn" target="_blank" rel="noopener">freeCodeCamp: JavaScript curriculum (first sections are enough)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Code+by+Zapier+JavaScript+tutorial" target="_blank" rel="noopener">YouTube: Code by Zapier tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Put one shared Catch Hook URL on the screen (a practice one you'll delete afterwards) and let learners send it orders from Hoppscotch. Then reveal the ₦1 order someone "sneakily" sent, and build the Code step together to catch it. Learners new to code should type the code line by line rather than paste it; reading each line aloud helps.</p>
+  </div>
+</section>
+
+</article>
+</template>

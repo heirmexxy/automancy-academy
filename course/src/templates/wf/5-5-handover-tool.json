@@ -1,0 +1,112 @@
+{
+ "name": "TOOL · handover_to_tolu",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## TOOL · handover_to_tolu (Lesson 5.5)\nCalled by the Sage Desk agent. Records why a person is needed. The Telegram summary to Tolu (who, platform, what they want, what was said, suggested reply, link) is sent by SUB · Social inbox: handle when the action is handover.\n\nCredentials: Postgres (Supabase).",
+    "height": 240,
+    "width": 480
+   },
+   "id": "7488aaf8-5d24-414d-aafb-8775ee41b182",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -260
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "4e3fcae3-0a5d-446a-b130-71b90ad90da0",
+   "name": "When called by the agent",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "update inbox set handover_reason = $1 where item_id = $2;",
+    "options": {
+     "queryReplacement": "={{ [ $json.reason, $json.item_id ] }}"
+    }
+   },
+   "id": "51f63d87-0aed-46cf-990c-54a46b0039f7",
+   "name": "Record hand-over",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "147d06bc-4f28-4ec7-9bc2-67b2646a18b2",
+       "name": "result",
+       "value": "Recorded. Return action handover with a short suggested reply for Tolu; do not answer the customer yourself.",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "0dbaedfb-bdce-4c73-825e-e908553053ca",
+   "name": "Tool result",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    440,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When called by the agent": {
+   "main": [
+    [
+     {
+      "node": "Record hand-over",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Record hand-over": {
+   "main": [
+    [
+     {
+      "node": "Tool result",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by the agent": [
+   {
+    "json": {
+     "item_id": "test_fb_c9",
+     "reason": "customer asks for a refund"
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

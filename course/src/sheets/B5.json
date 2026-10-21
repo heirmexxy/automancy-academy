@@ -1,0 +1,73 @@
+{
+ "id": "B5",
+ "boss": true,
+ "intro": "<p>Use this guide after you have built Growth Desk and logged the 18 tests, or when reviewing someone else's. Score each rubric area against the evidence, not the description: a rule only counts if a test, log or screenshot shows it working. A win needs 80 points or more and every must-have in the go-live check passing; one missing must-have fails the build whatever the score.</p>",
+ "rows": [
+  {
+   "area": "Find",
+   "full": "Places API plus websites only, place IDs stored rather than Places data; facts verified in code with a general line when none is found (test 1); every draft approved on Telegram; at most 20 sends a day from the outreach subdomain; suppression checked before every send and STOP never followed up (test 2); replies sorted by type.",
+   "partial": "The pipeline works but one safeguard is weak: the cap is not enforced in code, facts are not checked against the page, or replies are not sorted.",
+   "low": "Scraped or bought leads, sends without approval, the main domain used, or a STOP reply followed up."
+  },
+  {
+   "area": "Listen",
+   "full": "Two or more sources plus web mentions, deduplicated by item ID; four labels with agreement measured against a people-labelled set; food safety alerts on a hard rule within 15 minutes even at low confidence (test 7); a Monday report with code-counted numbers and three quoted fixes.",
+   "partial": "Labels and alerts work but agreement was never measured, or only one source is connected, or the report is AI-counted.",
+   "low": "Alerts on every negative label, the food-safety test missed, or commenter profiles stored."
+  },
+  {
+   "area": "Publish",
+   "full": "Calendar from real products and photos; versions for three or more platforms that pass each platform's checks (Instagram blocked without media, test 11); Telegram approval; prices re-read at publish time and a changed price held (test 10); pause switch; post IDs saved.",
+   "partial": "Two platforms only, or one check missing (price re-check or media check), or no pause switch.",
+   "low": "One caption for every platform, posts without approval, or prices taken from the draft."
+  },
+  {
+   "area": "Answer and unify",
+   "full": "Meta webhooks plus at least one more channel in one queue; allowed actions computed in code (tests 3 to 6 pass); identities normalised, merged only on verified proof and never on names (tests 8 and 9); one answer on the latest channel; leads saved with source and consent; complaints handed to a named person with timers that alert.",
+   "partial": "Most tests pass but one rule is left to the agent's judgement, or leads lack a consent flag, or timers exist without alerts.",
+   "low": "Replies outside a messaging window, merges on a name, personal details in public replies, or several answers to one customer."
+  },
+  {
+   "area": "Nurture",
+   "full": "Gmail Show original shows SPF, DKIM and DMARC as PASS; consent captured at checkout and recorded; welcome, weekly newsletter and 60-day win-back running; unapproved discounts blocked (test 12); unsubscribes stop marketing on every channel the same day (test 13); sends pause above 0.1% complaints (test 14).",
+   "partial": "Domain passes and sequences run, but unsubscribes only stop email, or one sequence is missing, or the complaint pause is manual.",
+   "low": "Free Gmail From address, a list without recorded consent, or failing authentication."
+  },
+  {
+   "area": "Track and measure",
+   "full": "GD·08 upserts every business lead by email and domain with associations and CRM IDs stored (test 16); a stage change creates one task and runs once (test 17); score calibrated on past leads; Ops Agent proposes only and nothing changes until Tolu approves (test 18); events trace a lead to first order (test 15); the Monday report shows cost per lead and per new customer, including Tolu's time, with a data-backed recommendation.",
+   "partial": "The CRM fills itself but cost per customer leaves out unbilled costs, or the score is not calibrated, or one sync test fails once.",
+   "low": "Leads typed by hand, duplicates or loops, an agent that writes to the CRM, or no source-to-customer tracing."
+  },
+  {
+   "area": "Rules and control",
+   "full": "A channel-rules sheet with a checked date per platform; a consent policy; monthly budgets for Places and X with alerts at 80%; pause switches for posting, outreach and campaigns; every go-live must-have ticked with evidence.",
+   "partial": "Rules sheet present but undated, or budgets set without alerts, or one pause switch missing.",
+   "low": "No rules sheet or budgets, or any must-have missing."
+  },
+  {
+   "area": "Curveballs",
+   "full": "All three answered with the system's real switches and numbers: pause and one approved statement for the viral video; an assisted Instagram mode plus a resubmission plan; cost per customer for outreach and Instagram from events, including Tolu's time.",
+   "partial": "Two handled well, or all three answered in general terms without the system's own numbers.",
+   "low": "One or none handled."
+  }
+ ],
+ "evidence": [
+  "D1 growth plan: ICP, brand voice, consent policy, response targets, and the dated channel-rules sheet with API budgets and 80% alerts.",
+  "D2 data model: Supabase schema export (customers, identities, conversations, leads, posts, mentions, decisions, suppression, events).",
+  "Exported workflows for every engine (GD·01 to GD·08) with credentials removed, plus the error workflow and watchdog.",
+  "The 18-test log: expected, actual, execution ID and screenshot for each, using test accounts and your own inboxes only.",
+  "Gmail Show original screenshot with SPF, DKIM and DMARC PASS, and the CRM pipeline and dashboard screenshots.",
+  "The D7 growth report from a Monday run: leads and customers by source, weighted forecast, response times, cost per lead and per customer, complaints and unsubscribes, one recommendation.",
+  "The completed go-live check and compliance checklist, and written answers to the three curveballs.",
+  "A 4-minute demo video: prospect approved, comment to lead, one answer across two channels, a newsletter, a lead arriving in the CRM by itself, and the growth report."
+ ],
+ "mistakes": [
+  "A must-have fails (for example, the suppression list is not checked before follow-ups, or a reply goes out after a window closed), so the build cannot win whatever the points.",
+  "Tests run against real customers or real businesses instead of test accounts and your own inboxes.",
+  "Cost per customer counts only invoices and leaves out AI tokens and Tolu's approval time, or the numbers come from the AI instead of the events table.",
+  "Engines that do not write lead_id or order_id events, so source to customer cannot be traced.",
+  "The CRM sync creates duplicates or loops, or the Ops Agent or a workflow changes deal stages.",
+  "Evidence is a description of what should happen, with no execution logs or screenshots."
+ ]
+}

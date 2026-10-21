@@ -1,0 +1,116 @@
+{
+  "id": "6.1",
+  "items": [],
+  "note": "Lesson 6.1 (discovery and scoping) has no n8n build: its solved problem is a written, signed scope, not a workflow.",
+  "walk": {
+    "title": "Solve it: from call notes to a signed scope",
+    "sample": "Okonkwo Pharmacy, Bodija · 30-minute call notes · seven ideas on the wish list",
+    "steps": [
+      {
+        "at": null,
+        "say": "Mrs Okonkwo gave us seven ideas in five minutes. Before any bot, we turn her call into one project she can sign: mapped, priced and bounded.",
+        "show": [
+          "Discovery notes: last Monday, hour by hour",
+          "Wish list: 7 ideas, no budget"
+        ]
+      },
+      {
+        "at": "1",
+        "say": "Score each idea from one to five on pain, feasibility and risk. Pain is time and money lost; feasibility is whether the data and rules exist.",
+        "show": [
+          "Pain · Feasibility · Risk (1–5 each)"
+        ],
+        "data": "7 ideas scored"
+      },
+      {
+        "at": "1",
+        "say": "The AI doctor is declined outright: medical advice stays with the pharmacist. Refill reminders and low-stock alerts score highest, and the WhatsApp bot can be phase 2.",
+        "show": [
+          "AI doctor → decline",
+          "Refill reminders + low-stock alerts → do now",
+          "WhatsApp bot → phase 2"
+        ],
+        "data": "7 → 1 project"
+      },
+      {
+        "at": "2",
+        "say": "Now confirm the numbers, using her own figures, not ours. About 12 hours a week across two staff, and about six stock-outs or expiries a month.",
+        "show": [
+          "~12 h/week on calls and stock checks",
+          "~6 costly errors/month at ~₦20,000 each"
+        ]
+      },
+      {
+        "at": "2",
+        "say": "Be conservative and count only the share the automation really takes over. That gives about 238,000 naira a month, and a 450,000 naira build pays back in a little over two months.",
+        "show": [
+          "Value ≈ ₦238,000/month",
+          "Net ≈ ₦208,000/month after running costs",
+          "Payback: a little over 2 months"
+        ],
+        "data": "every number's source written down"
+      },
+      {
+        "at": "3",
+        "say": "The scope's goal is measurable: no missed refills or stock-outs on the top 40 items, and staff time under two hours a week.",
+        "show": [
+          "Goal: no missed refills or stock-outs (top 40)",
+          "Staff time on both < 2 h/week"
+        ]
+      },
+      {
+        "at": "3",
+        "say": "In scope, one line each. Reminders use an approved WhatsApp utility template, only to customers who consented, and never name the medicine, because health information is sensitive.",
+        "show": [
+          "Daily refill check → utility template",
+          "\"Your refill … is due on {{date}}. Reply YES…\"",
+          "Replies logged · daily low-stock alert"
+        ]
+      },
+      {
+        "at": "3",
+        "say": "The section beginners skip is out of scope. Medical advice, a chatbot, supplier ordering, the staff rota, marketing and any app are all listed, so nothing creeps in for free.",
+        "show": [
+          "Out: medical/dosage advice · chatbot (phase 2)",
+          "supplier ordering · staff rota · marketing · any app"
+        ],
+        "data": "6 things out of scope"
+      },
+      {
+        "at": "3",
+        "say": "List what the client provides, like the verified WhatsApp number, so verification starts in week one. Acceptance tests are specific, so no one can say it doesn't work well enough.",
+        "show": [
+          "Client provides: verified number, consented list",
+          "Acceptance: 20 test reminders, 10 stock alerts",
+          "Consent recorded for every customer messaged"
+        ]
+      },
+      {
+        "at": "3",
+        "say": "Price and changes are written down too: half to start, half at go-live, a monthly fee for running it, and new requests quoted separately.",
+        "show": [
+          "Setup ₦450,000 (50% / 50%)",
+          "₦30,000/month: hosting, messages, fixes",
+          "Changes quoted separately"
+        ]
+      },
+      {
+        "at": "4",
+        "say": "Book 20 minutes. Show the before-and-after map first, then the numbers, then the out-of-scope list, so you're both clear what this isn't.",
+        "show": [
+          "Order: map → numbers → out of scope"
+        ]
+      },
+      {
+        "at": "4",
+        "say": "Ask her to name one more thing she expected. If it's missing, decide together: add it with a price, or put it in phase 2. Only then send the scope to sign, and the first invoice.",
+        "show": [
+          "Missing item → add with price, or phase 2",
+          "Then: signature + first invoice (6.2)"
+        ],
+        "data": "scope signed"
+      }
+    ],
+    "end": "That's the scope: one strong project, the client's own numbers, six things out of scope, and tests you can actually run at handover."
+  }
+}

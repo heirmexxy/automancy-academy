@@ -1,0 +1,407 @@
+<template data-mod="4.8" id="tpl-4-8">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.8</span>
+    <h1>Code-First Agents</h1>
+    <div class="kicker"><span class="pill">≈ 2–3 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: Python 3, the Anthropic Python SDK, a terminal, an AI coding assistant</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">n8n is a great home for agents, but some clients need the agent inside their own app: a website, a mobile backend, an internal tool. Then you write the agent in code. Good news: an agent is just the loop you've been watching all track. About 60 lines of Python reproduce it exactly, and once you've written that loop yourself, every framework makes sense.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Set up a small Python project safely: virtual environment, packages and an API key in the environment.</span></div>
+  <div><b>02</b><span>Write the tool-use loop yourself with the Anthropic SDK: definitions, calls, results, a turn limit.</span></div>
+  <div><b>03</b><span>Handle tool errors so the agent recovers instead of crashing.</span></div>
+  <div><b>04</b><span>Know when to reach for the Claude Agent SDK, OpenAI Agents SDK, LangGraph or CrewAI, and use AI coding assistants responsibly.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Can it live inside our app?"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A developer from a partner company showing a mobile app on a phone.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="20" width="90" height="155" rx="14" fill="var(--ink)"/><rect x="188" y="34" width="74" height="122" rx="4" fill="var(--paper)"/>
+        <text x="225" y="56" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10" fill="var(--volt)">Bodija Eats</text>
+        <rect x="196" y="66" width="58" height="16" rx="4" fill="var(--line)"/><rect x="196" y="88" width="58" height="16" rx="4" fill="var(--line)"/>
+        <rect x="196" y="120" width="58" height="22" rx="6" fill="var(--grape)"/><text x="225" y="135" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="8" fill="#fff">Ask Harvest Lane</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The deal</b>A restaurant-ordering app wants Harvest Lane's price-and-order agent inside its own app, not in n8n.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A terminal window with Python code.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="25" width="240" height="140" rx="10" fill="var(--ink)"/>
+        <g fill="#FF5A63"><circle cx="56" cy="40" r="4"/></g><g fill="#FFC53D"><circle cx="70" cy="40" r="4"/></g><g fill="#35C680"><circle cx="84" cy="40" r="4"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--paper)"><text x="54" y="68">$ python agent.py</text><text x="54" y="88">You: price of tatashe?</text><text x="54" y="108" fill="#9FD3F7">→ get_price("tatashe")</text><text x="54" y="128">Agent: ₦9,000 per big bag</text></g>
+      </svg>
+      <div class="cap"><b>Sage</b>"Same brain, same tools, same loop. Just written as code instead of nodes."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A loop diagram: ask model, model asks for tool, run tool, send result, repeat.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="160" cy="95" r="58" fill="none" stroke="var(--grape)" stroke-width="8" stroke-dasharray="300 70"/>
+        <path d="M205 50 L222 52 L214 66" fill="var(--grape)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)" text-anchor="middle"><text x="160" y="90">while tool_use:</text><text x="160" y="106">run · reply</text></g>
+      </svg>
+      <div class="cap"><b>The loop</b>Ask the model. If it asks for a tool, run it and send back the result. Repeat until it answers, or a limit says stop.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pulling a plug on a database server while a terminal shows a traceback.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="50" width="140" height="90" rx="8" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#FF5A63"><text x="170" y="74">Traceback (most…</text><text x="170" y="90">ConnectionError:</text><text x="170" y="106">price sheet</text><text x="170" y="122">unavailable</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I unplugged the price sheet for one second. Your whole program died. In front of the client."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Just enough Python</h3>
+    <div class="vocab">
+      <div><b>A project folder and a virtual environment</b>Keeps this project's packages separate: <code>python3 -m venv .venv</code>, then <code>source .venv/bin/activate</code> (Windows: <code>.venv\Scripts\activate</code>).</div>
+      <div><b>Packages</b><code>pip install anthropic</code> installs the official SDK.</div>
+      <div><b>Secrets in the environment</b>The SDK reads <code>ANTHROPIC_API_KEY</code> from the environment. Set it in your terminal or a <code>.env</code> file that is in <code>.gitignore</code>. Never type a key into the code.</div>
+      <div><b>The Python you need</b>Functions (<code>def</code>), dictionaries (<code>{"price": 12500}</code>), lists, <code>for</code> loops, <code>json.dumps</code>, and <code>try / except</code> for errors. Python for Everybody covers all of it, free.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Watch the messages list grow</h3>
+    <p>The whole agent is one list of messages that you keep adding to and sending back. Step through one question:</p>
+    <div class="msgstep" data-msgs="ms-4-8">
+      <div class="btns"><button type="button" class="btn" data-mnext>▶ Start</button><button type="button" class="btn ghost" data-mreset>Reset</button><span class="crit">Messages in the list: <b data-o="mcount">0</b></span></div>
+      <p class="mnote" aria-live="polite"></p>
+      <ol class="mlist"></ol>
+    </div>
+    <script type="application/json" id="ms-4-8">[
+{"role":"user","inList":true,"label":"1 · Your code adds the question","json":{"role":"user","content":"How much for 3 crates of tomatoes?"},"note":"The list starts with the customer's question. Your code sends it, together with the system prompt and the two tool definitions."},
+{"role":"assistant","inList":true,"label":"2 · The model replies: a tool request","json":{"stop_reason":"tool_use","role":"assistant","content":[{"type":"text","text":"Let me check today's price."},{"type":"tool_use","id":"toolu_01AbC…","name":"get_price","input":{"product":"tomatoes"}}]},"note":"stop_reason is \"tool_use\": the model wants get_price. It hasn't answered yet. Your code must append this whole reply to the list, unchanged."},
+{"role":"code","inList":false,"label":"3 · Your code runs the tool","json":{"get_price(product=\"tomatoes\")":{"found":true,"name":"Tomatoes","unit":"crate","price":12500,"stock":14}},"note":"Your code, not the model, runs the function. Nothing is added to the list yet: the result still has to be sent back."},
+{"role":"user","inList":true,"label":"4 · Your code sends the result back","json":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01AbC…","content":"{\"found\": true, \"name\": \"Tomatoes\", \"unit\": \"crate\", \"price\": 12500, \"stock\": 14}"}]},"note":"The result goes back as a user message containing a tool_result block, with the same tool_use_id, so the model knows which request it answers."},
+{"role":"assistant","inList":true,"label":"5 · The model answers","json":{"stop_reason":"end_turn","role":"assistant","content":[{"type":"text","text":"Tomatoes are ₦12,500 per crate today, so 3 crates come to ₦37,500. Delivery is free on orders of ₦30,000 or more."}]},"note":"stop_reason is no longer tool_use, so the loop ends and you show the text. For money, give the model a quote or calculator tool (4.2) rather than trusting its arithmetic."}
+]</script>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Errors are messages, not crashes</h3>
+    <p>When a tool fails (timeout, bad input, unknown product), don't let the program die. Catch the error and send it back as a tool result marked <code>is_error</code>. The model can then apologise, try different input, or tell the customer to wait. Also cap the number of turns, exactly like Max Iterations in n8n.</p>
+<pre class="codebox"><span class="k">try:</span>
+    out = RUN[block.name](**block.input)
+    results.append({"type": "tool_result", "tool_use_id": block.id, "content": json.dumps(out)})
+<span class="k">except Exception as e:</span>
+    results.append({"type": "tool_result", "tool_use_id": block.id,
+                    "content": f"Tool error: {e}", "is_error": True})</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Frameworks at a glance</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Option</th><th>What it gives you</th><th>Reach for it when…</th></tr></thead>
+      <tbody>
+        <tr><td><b>Your own loop</b> (this module)</td><td>Full control, no extra layers</td><td>Small agents, learning, or when you want to see everything</td></tr>
+        <tr><td><b>Anthropic SDK Tool Runner</b></td><td>Runs the tool loop for you (<code>client.beta.messages.tool_runner</code>)</td><td>You want the same thing with less code</td></tr>
+        <tr><td><b>Claude Agent SDK</b></td><td>The agent harness behind Claude Code: built-in tools, permissions, sessions, custom tools as in-process MCP servers. Python and TypeScript.</td><td>Agents that work with files, commands and long tasks</td></tr>
+        <tr><td><b>OpenAI Agents SDK</b></td><td>Agents, tools, hand-offs between agents, guardrails, tracing</td><td>Teams using OpenAI models, or multi-agent hand-offs</td></tr>
+        <tr><td><b>LangGraph</b></td><td>Agents as graphs with explicit state, branches, loops and human checkpoints</td><td>Complex flows where you need control over every step</td></tr>
+        <tr><td><b>CrewAI</b></td><td>Role-based agent "crews" with tasks</td><td>Quick multi-agent prototypes (4.7)</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.88rem;color:var(--muted)">Install names and imports change between versions: always copy them from each project's current quick-start.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Using AI coding assistants safely</h3>
+    <p>Claude Code, Cursor and similar tools can write most of this module for you. Use them like a fast junior developer you supervise:</p>
+    <div class="vocab">
+      <div><b>Commit first</b>Put the project in Git and commit before asking for changes, so you can see and undo every edit.</div>
+      <div><b>Read every diff</b>Ask it to explain anything you don't understand before accepting.</div>
+      <div><b>Keep secrets out</b>Never paste keys or real customer data into prompts. Keep <code>.env</code> out of the repository.</div>
+      <div><b>Make it prove it</b>Ask for small tests (unknown product, tool error, turn limit) and run them yourself.</div>
+      <div><b>Approve commands</b>Read terminal commands before letting a coding agent run them, especially anything that installs, deletes or deploys.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/implement-tool-use" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Claude Docs: implement tool use</b><small>Read: tool definitions, tool_result blocks, and the Tool Runner.</small></span></a>
+    <a class="wcard" href="https://code.claude.com/docs/en/agent-sdk/python" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Claude Agent SDK: Python reference</b><small>Skim: query(), custom tools with @tool, and allowed_tools.</small></span></a>
+    <a class="wcard" href="https://www.py4e.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Python for Everybody (free videos and book)</b><small>New to Python? Chapters 1–9 cover everything this module uses.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 60 MIN</span><h2>Solved problem: a terminal agent with two tools</h2></div>
+  <div class="prose"><p><b>The goal.</b> A Python agent, run from the terminal, that answers price and order-status questions using two tools, recovers from tool errors, and never loops more than six turns. Sample data lives in the file for now; Mission Silver connects it to the real sheet or your n8n workflows.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Set up the project</h4>
+<pre class="codebox">mkdir harvest-agent &amp;&amp; cd harvest-agent
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install anthropic
+export ANTHROPIC_API_KEY="sk-ant-…"      <span class="c"># Windows PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-…"</span></pre>
+      <p>Create an API key in the Claude Console, set a monthly spend limit there first, and keep the key out of the code.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write agent.py</h4>
+<pre class="codebox" id="agent-py-4-8">import json
+import anthropic
+
+client = anthropic.Anthropic()        # reads ANTHROPIC_API_KEY from the environment
+MODEL = "claude-sonnet-5-5"           # check the models page; Haiku is cheaper for simple agents
+
+# --- Sample data (replace with your sheet or n8n webhooks later) ---
+PRICES = {
+    "tomato":  ("Tomatoes", "crate", 12500, 14),
+    "tatashe": ("Tatashe pepper", "big bag", 9000, 6),
+    "onion":   ("Onions", "bag", 4000, 20),
+}
+ORDERS = {"HL-0042": {"status": "Out for delivery", "rider": "Musa", "eta": "before 2 p.m."}}
+
+# --- Tools: plain Python functions that return small dictionaries ---
+def get_price(product: str) -&gt; dict:
+    p = product.lower().strip()
+    for key, (name, unit, price, stock) in PRICES.items():
+        if key in p:
+            return {"found": True, "name": name, "unit": unit, "price": price, "stock": stock}
+    return {"found": False, "suggestions": [v[0] for v in PRICES.values()]}
+
+def get_order_status(order_id: str) -&gt; dict:
+    oid = order_id.upper().strip()
+    if oid not in ORDERS:
+        return {"found": False}
+    return {"found": True, "order_id": oid, **ORDERS[oid]}
+
+TOOLS = [
+    {"name": "get_price",
+     "description": "Returns today's Harvest Lane price and stock for ONE product. "
+                    "Use before giving any price. If found is false, ask which product they mean.",
+     "input_schema": {"type": "object",
+                      "properties": {"product": {"type": "string",
+                                     "description": "One product as the customer wrote it, e.g. tatashe"}},
+                      "required": ["product"]}},
+    {"name": "get_order_status",
+     "description": "Returns status, rider and ETA for one order. Use when asked about a specific order.",
+     "input_schema": {"type": "object",
+                      "properties": {"order_id": {"type": "string",
+                                     "description": "Order number, format HL-0000, e.g. HL-0042"}},
+                      "required": ["order_id"]}},
+]
+RUN = {"get_price": get_price, "get_order_status": get_order_status}
+
+SYSTEM = ("You are Harvest Lane's assistant, a fresh-produce delivery business in Ibadan. "
+          "Be brief and warm. Only state prices and order details that come from your tools. "
+          "If a tool returns an error, apologise and say Tolu will follow up. Never invent data.")
+
+def ask(question: str, max_turns: int = 6) -&gt; str:
+    messages = [{"role": "user", "content": question}]
+    for _ in range(max_turns):
+        resp = client.messages.create(model=MODEL, max_tokens=800, system=SYSTEM,
+                                      tools=TOOLS, messages=messages)
+        messages.append({"role": "assistant", "content": resp.content})
+        if resp.stop_reason != "tool_use":
+            return "".join(b.text for b in resp.content if b.type == "text")
+        results = []
+        for block in resp.content:
+            if block.type == "tool_use":
+                print(f"  → {block.name}({block.input})")
+                try:
+                    out = RUN[block.name](**block.input)
+                    results.append({"type": "tool_result", "tool_use_id": block.id,
+                                    "content": json.dumps(out)})
+                except Exception as e:
+                    results.append({"type": "tool_result", "tool_use_id": block.id,
+                                    "content": f"Tool error: {e}", "is_error": True})
+        messages.append({"role": "user", "content": results})
+    return "Sorry, I couldn't finish that. Tolu will follow up shortly."
+
+if __name__ == "__main__":
+    while True:
+        q = input("You: ").strip()
+        if not q:
+            break
+        print("Agent:", ask(q))</pre>
+      <div><button type="button" class="btn ghost" data-copy="agent-py-4-8">Copy agent.py</button></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Run it, and read the trace</h4>
+<pre class="codebox">python agent.py
+You: How much is tatashe today?
+  → get_price({'product': 'tatashe'})
+Agent: Tatashe pepper is ₦9,000 per big bag today, and we have 6 in stock.
+You: Where is HL-0042?
+  → get_order_status({'order_id': 'HL-0042'})
+Agent: HL-0042 is out for delivery with Musa, arriving before 2 p.m.</pre>
+      <p>(Your wording will differ; the tool calls and facts should match.)</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Prove the safety nets</h4>
+      <ul>
+        <li><b>Tool error:</b> temporarily add <code>raise ConnectionError("price sheet unavailable")</code> at the top of <code>get_price</code>. Ask for a price: the agent apologises; the program keeps running.</li>
+        <li><b>Unknown product:</b> "Do you have yam?" The tool returns <code>found: false</code> with suggestions, and the agent asks rather than inventing.</li>
+        <li><b>Turn limit:</b> set <code>max_turns=1</code> and ask a two-part question. You get the polite fallback, not an endless loop.</li>
+      </ul>
+      <div class="stats">
+        <div class="stat"><b>~60</b><span>lines for a complete agent loop</span></div>
+        <div class="stat"><b>2</b><span>tools, same design rules as n8n</span></div>
+        <div class="stat"><b>0</b><span>crashes when a tool fails</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Nodo's bridge:</b> your tools don't have to be Python. A tool function can call an n8n webhook with <code>requests.post(…)</code> and return its JSON. Then the client's app gets the agent, and your tested n8n workflows still do the real work.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Writing the loop yourself shows exactly what every framework hides.</li><li>Tools are small functions with clear descriptions and schemas.</li><li>Errors go back to the model as messages, so the agent recovers.</li><li>A turn limit guarantees the loop ends.</li><li>The key lives in the environment, never in the code.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Not appending the assistant's tool request before sending results (the API rejects the mismatch).</li><li>Returning results without the matching <code>tool_use_id</code>.</li><li>No try/except around tools.</li><li>No turn limit.</li><li>Hard-coding the API key and pushing it to GitHub.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Code gives me new hiding places. Five bugs.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>When the price sheet is briefly down, the script crashes with a traceback and the app shows an error page.</td></tr>
+        <tr><td>B</td><td>The API returns an error saying the tool_result doesn't match a tool_use in the previous message.</td></tr>
+        <tr><td>C</td><td>The code ran fine on Tolu's laptop. On the server: "authentication error".</td></tr>
+        <tr><td>D</td><td>An API key appears in the project's public GitHub history.</td></tr>
+        <tr><td>E</td><td>A confusing question made the script call tools 40 times and run up a bill.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no try/except around the tool call. Catch the error and return it as a tool_result with <code>is_error: True</code>.</li>
+        <li><b>B:</b> the assistant message containing the tool_use wasn't appended to <code>messages</code> before the results (or the IDs don't match). Append <code>resp.content</code> unchanged, then reply with the same <code>tool_use_id</code>.</li>
+        <li><b>C:</b> <code>ANTHROPIC_API_KEY</code> isn't set on the server. Set it in the server's environment or secret manager, not in the code.</li>
+        <li><b>D:</b> the key was hard-coded or a <code>.env</code> file was committed. Revoke the key in the Console immediately, create a new one, remove it from the repo, and add <code>.env</code> to <code>.gitignore</code>.</li>
+        <li><b>E:</b> no turn limit. Cap the loop (<code>max_turns</code>) and set a spend limit in the Console.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 30 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Run an official quick-start</h4>
+    <ul><li>Follow the current quick-start of one framework: the Claude Agent SDK, or the OpenAI Agents SDK (with your own API key and a spend limit).</li><li>Run its example, then change one thing: the instructions, or a new simple tool.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>It runs, and you can point to where the framework hides the loop you wrote by hand in this module.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A third tool, connected to real data</h4>
+    <ul><li>Add <code>check_delivery_date(date, area)</code> to agent.py.</li><li>Replace one sample-data tool with a call to your n8n webhook or sheet (using <code>requests</code>), with a timeout and error handling.</li><li>Write three small tests: normal, unknown input, tool failure.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All three tests pass, and switching off n8n produces a polite reply instead of a crash.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Port your n8n agent to code, and compare</h4>
+    <ul><li>Take your best n8n agent from this track and rebuild it in code (your own loop or a framework), with the same tools and instructions.</li><li>Run the same 10-question test set through both. Compare accuracy, speed, cost, and how long each took to build and change.</li><li>Write a one-paragraph recommendation: when you'd use n8n and when you'd use code for a client.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both versions pass the same tests, and your recommendation is backed by your own numbers.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What does <code>stop_reason: "tool_use"</code> mean?</p><div class="opts">
+      <button type="button" data-opt="a">The model finished its answer</button><button type="button" data-opt="b">The model wants your code to run a tool and send back the result</button><button type="button" data-opt="c">The API key is wrong</button><button type="button" data-opt="d">The tool crashed</button></div>
+      <p class="fb" hidden data-why="Run the requested tool(s), append a tool_result, and call the model again."></p></div>
+    <div class="q" data-ans="c"><p>2. How should a tool error be handled?</p><div class="opts">
+      <button type="button" data-opt="a">Let the program crash so you notice</button><button type="button" data-opt="b">Ignore it and send nothing</button><button type="button" data-opt="c">Send it back as a tool_result with is_error, so the model can respond</button><button type="button" data-opt="d">Retry forever</button></div>
+      <p class="fb" hidden data-why="Errors become information the agent can work with."></p></div>
+    <div class="q" data-ans="a"><p>3. Where should the API key live?</p><div class="opts">
+      <button type="button" data-opt="a">In an environment variable or secret manager</button><button type="button" data-opt="b">In agent.py</button><button type="button" data-opt="c">In the system prompt</button><button type="button" data-opt="d">In the README</button></div>
+      <p class="fb" hidden data-why="Never in code or repositories. And set a spend limit."></p></div>
+    <div class="q" data-ans="d"><p>4. What does a turn limit (max_turns) protect against?</p><div class="opts">
+      <button type="button" data-opt="a">Slow internet</button><button type="button" data-opt="b">Wrong prices</button><button type="button" data-opt="c">Typos</button><button type="button" data-opt="d">Endless tool loops and runaway costs</button></div>
+      <p class="fb" hidden data-why="The same idea as Max Iterations in n8n."></p></div>
+    <div class="q" data-ans="b"><p>5. An AI coding assistant offers a big change to agent.py. Best practice?</p><div class="opts">
+      <button type="button" data-opt="a">Accept it all; it's probably right</button><button type="button" data-opt="b">Commit first, read the diff, ask about anything unclear, then test</button><button type="button" data-opt="c">Paste your API key so it can test</button><button type="button" data-opt="d">Reject all AI help</button></div>
+      <p class="fb" hidden data-why="Supervise it like a fast junior developer: reviewable, reversible, tested."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-8">AUTOMANCY LOG · Lesson 4.8 · Code-First Agents
+Date:
+Language, SDK/framework and model:
+Tools implemented:
+Safety nets tested (tool error / unknown input / turn limit):
+Where the API key lives, and the spend limit set:
+n8n vs. code comparison (if done):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-8">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>An agent in code is a loop over a growing messages list.</li>
+      <li>Tool request → run → tool_result with the same ID → call again.</li>
+      <li>Errors go back to the model as results, never as crashes.</li>
+      <li>Cap the turns; set a spend limit.</li>
+      <li>Keys in the environment, never in code or Git.</li>
+      <li>Frameworks hide the loop; choose them for what they add.</li>
+      <li>AI coding assistants: commit, read, test, and keep secrets out.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://www.py4e.com/" target="_blank" rel="noopener">Python for Everybody (free videos and book)</a></li>
+    <li><span class="kind">Text</span><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/implement-tool-use" target="_blank" rel="noopener">Claude Docs: implement tool use</a></li>
+    <li><span class="kind">Text</span><a href="https://code.claude.com/docs/en/agent-sdk/overview" target="_blank" rel="noopener">Claude Agent SDK docs</a></li>
+    <li><span class="kind">Text</span><a href="https://openai.github.io/openai-agents-python/" target="_blank" rel="noopener">OpenAI Agents SDK docs</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.langchain.com/" target="_blank" rel="noopener">LangChain Academy: Introduction to LangGraph (free)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/" target="_blank" rel="noopener">DeepLearning.AI: AI Agents in LangGraph</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Before anyone opens an editor, act out Card 2 on the whiteboard: one learner is "the API", one is "your code", and the messages list is a stack of index cards. Every card must be added in order and the tool_use_id must match. Then the code feels like writing down something they've already done.</p>
+  </div>
+</section>
+
+</article>
+</template>

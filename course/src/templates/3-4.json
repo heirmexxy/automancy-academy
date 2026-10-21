@@ -1,0 +1,111 @@
+{
+  "id": "3.4",
+  "items": [
+    {
+      "file": "3-4-supplier-prices.json",
+      "name": "HL · Supplier prices → Sheet",
+      "what": "Every morning at 07:00, pages through DummyJSON's product list 50 at a time (500 ms apart, with retries), splits it into one item per product and updates a Supplier prices sheet by sku.",
+      "setup": [
+        "Create a Google Sheet with a tab called Supplier prices and the headers sku, name, price, stock, category, fetched_at in row 1.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" and select it in the Supplier prices node.",
+        "Replace YOUR_SHEET_ID in the Supplier prices node with your sheet's ID.",
+        "No credential is needed for DummyJSON. If you point this at a real supplier API, add a Header Auth credential (for example Name Authorization, Value Bearer followed by your test key) under Authentication, and remove any pasted Authorization header.",
+        "Save and publish when the test passes."
+      ],
+      "test": "Click Execute workflow: HTTP Request outputs about four items (one per page, the last with fewer than 50 products), Split Out about 200 items, and the sheet gets about 200 rows, one per sku. Run it again: the row count stays the same and fetched_at changes.",
+      "walk": {
+        "title": "Build it: the whole price list, every morning",
+        "sample": "DummyJSON products · about 200 items · 50 per page · offset pagination with limit and skip",
+        "steps": [
+          {
+            "at": null,
+            "say": "Test by hand first. In Hoppscotch, fetch the first page, then change skip to fifty. Now you know the paging style, where the list lives, and how to tell you've finished.",
+            "show": [
+              "GET dummyjson.com/products?limit=50&skip=0",
+              "→ products[50], total, skip, limit"
+            ]
+          },
+          {
+            "at": "Schedule Trigger",
+            "say": "The workflow runs every morning at seven, before Tolu checks prices.",
+            "show": [
+              "Trigger interval: Days · 1 · 07:00"
+            ]
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Import the request from cURL, then delete the skip parameter, because pagination will manage it. DummyJSON needs no key; a real supplier's key goes in a Header Auth credential.",
+            "show": [
+              "Import cURL",
+              "Query: limit=50 · select=title,price,stock,category",
+              "skip: removed"
+            ],
+            "data": "1 item · 50 products"
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Turn on pagination. Each request moves skip along by fifty, using the page count, which starts at zero.",
+            "show": [
+              "Pagination: Update a Parameter in Each Request",
+              "Query · skip = {{ $pageCount * 50 }}"
+            ]
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Never hard-code the number of pages. We stop when a page comes back with fewer than fifty products, so it adapts when the list grows.",
+            "show": [
+              "Complete when: Other",
+              "{{ $response.body.products.length < 50 }}"
+            ],
+            "data": "≈ 4 pages"
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Now the brakes: a page limit so a bug can't loop forever, half a second between requests, and a few retries for temporary failures.",
+            "show": [
+              "Limit Pages Fetched: 20",
+              "Interval Between Requests: 500 ms",
+              "Settings: Retry On Fail · 3 tries · 2,000 ms"
+            ]
+          },
+          {
+            "at": "Split Out",
+            "say": "The node gives one item per page, each holding a list. Split Out turns the lists into one item per product.",
+            "show": [
+              "Field to split out: products"
+            ],
+            "data": "≈ 200 items"
+          },
+          {
+            "at": "Edit Fields",
+            "say": "Keep and rename only the fields the sheet needs, and stamp when we fetched them.",
+            "show": [
+              "sku: {{ $json.id }} · name: {{ $json.title }}",
+              "price, stock, category",
+              "fetched_at: {{ $now.toISO() }}"
+            ],
+            "data": "1 product per item"
+          },
+          {
+            "at": "Supplier prices",
+            "say": "Use Append or Update, matching on sku. Then running it again updates prices instead of adding the same products twice.",
+            "show": [
+              "Google Sheets › Append or Update Row",
+              "Sheet: Supplier prices",
+              "Column to match on: sku"
+            ],
+            "data": "≈ 200 rows"
+          },
+          {
+            "at": "Supplier prices",
+            "say": "Run it twice. The row count stays the same and only the fetched time changes. That's a workflow that's safe to rerun.",
+            "show": [
+              "Run 2: same row count, new fetched_at"
+            ]
+          }
+        ],
+        "end": "Execute the workflow twice and check the sheet has one row per product both times, with fresh fetched_at times."
+      }
+    }
+  ]
+}

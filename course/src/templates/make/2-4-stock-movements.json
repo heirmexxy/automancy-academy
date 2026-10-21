@@ -1,0 +1,118 @@
+{
+ "name": "HL · Order items → stock movements + confirmation",
+ "flow": [
+  {
+   "id": 1,
+   "module": "gateway:CustomWebHook",
+   "version": 1,
+   "parameters": {
+    "hook": null,
+    "maxResults": 1
+   },
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "builtin:BasicFeeder",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "array": "{{1.items}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 3,
+   "module": "google-sheets:addRow",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Stock_Movements",
+    "includesHeaders": true,
+    "insertDataOption": "INSERT_ROWS",
+    "valueInputOption": "USER_ENTERED",
+    "values": {
+     "0": "{{formatDate(now; \"YYYY-MM-DD\")}}",
+     "1": "{{1.order_id}}",
+     "2": "{{2.sku}}",
+     "3": "{{-1 * 2.qty}}"
+    }
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 4,
+   "module": "util:TextAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 2,
+    "rowSeparator": "\n"
+   },
+   "mapper": {
+    "value": "{{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; 0; \".\"; \",\")}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 900,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 5,
+   "module": "google-email:ActionSendEmail",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "to": [
+     "{{ifempty(1.customer.email; \"orders@harvestlane.example\")}}"
+    ],
+    "subject": "Harvest Lane · order {{1.order_id}} confirmed",
+    "bodyType": "rawHtml",
+    "content": "Hi {{1.customer.name}}, thank you! Your order {{1.order_id}}:<br>{{replace(4.text; newline; \"<br>\")}}<br>Delivery fee: ₦{{formatNumber(1.delivery_fee; 0; \".\"; \",\")}}<br>Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}<br>Harvest Lane"
+   },
+   "metadata": {
+    "designer": {
+     "x": 1200,
+     "y": 0
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "instant": true,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

@@ -1,0 +1,266 @@
+{
+ "name": "HL · 8 p.m. tomorrow run",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "filter": [
+     [
+      {
+       "a": "E",
+       "b": "{{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}",
+       "o": "text:equal"
+      }
+     ]
+    ],
+    "sortOrder": "asc",
+    "limit": 100
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "builtin:BasicRouter",
+   "version": 1,
+   "parameters": {},
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0
+    }
+   },
+   "filter": {
+    "name": "Not cancelled",
+    "conditions": [
+     [
+      {
+       "a": "{{1.status}}",
+       "b": "Cancelled",
+       "o": "text:notequal:ci"
+      }
+     ]
+    ]
+   },
+   "routes": [
+    {
+     "flow": [
+      {
+       "id": 3,
+       "module": "google-sheets:addRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "mode": "select",
+        "spreadsheetId": "YOUR_SHEET_ID",
+        "sheetId": "Deliveries",
+        "includesHeaders": true,
+        "insertDataOption": "INSERT_ROWS",
+        "valueInputOption": "USER_ENTERED",
+        "values": {
+         "0": "{{1.delivery_date}}",
+         "1": "{{1.order_id}}",
+         "2": "{{1.customer_name}}",
+         "3": "{{1.phone}}",
+         "4": "{{1.delivery_window}}",
+         "5": "{{1.total}}",
+         "6": "{{1.status}}",
+         "7": "{{1.channel}}"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": -300
+        }
+       },
+       "filter": {
+        "name": "Rider list · Paid or standing",
+        "conditions": [
+         [
+          {
+           "a": "{{1.status}}",
+           "b": "Paid",
+           "o": "text:equal:ci"
+          }
+         ],
+         [
+          {
+           "a": "{{1.channel}}",
+           "b": "standing",
+           "o": "text:equal:ci"
+          }
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 4,
+       "module": "google-email:ActionSendEmail",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "to": [
+         "{{1.customer_email}}"
+        ],
+        "subject": "Harvest Lane · please pay for order {{1.order_id}}",
+        "bodyType": "rawHtml",
+        "content": "Hi {{1.customer_name}}, your Harvest Lane order {{1.order_id}} is due for delivery tomorrow. Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}. Please pay here so we can put it on the rider list: {{1.payment_link}}. Thank you!"
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": -100
+        }
+       },
+       "filter": {
+        "name": "Reminder · New and not standing",
+        "conditions": [
+         [
+          {
+           "a": "{{1.status}}",
+           "b": "New",
+           "o": "text:equal:ci"
+          },
+          {
+           "a": "{{1.channel}}",
+           "b": "standing",
+           "o": "text:notequal:ci"
+          }
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 5,
+       "module": "telegram:SendReplyMessage",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Big order tomorrow: {{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}} · status {{1.status}} · channel {{1.channel}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": 100
+        }
+       },
+       "filter": {
+        "name": "Big order · total > 50000",
+        "conditions": [
+         [
+          {
+           "a": "{{1.total}}",
+           "b": "50000",
+           "o": "number:greater"
+          }
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 6,
+       "module": "google-sheets:addRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "mode": "select",
+        "spreadsheetId": "YOUR_SHEET_ID",
+        "sheetId": "Needs checking",
+        "includesHeaders": true,
+        "insertDataOption": "INSERT_ROWS",
+        "valueInputOption": "USER_ENTERED",
+        "values": {
+         "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+         "1": "{{1.order_id}}",
+         "2": "{{1.customer_name}}",
+         "3": "{{1.status}}",
+         "4": "{{1.channel}}",
+         "5": "{{1.total}}",
+         "6": "Matched no route"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": 300
+        }
+       },
+       "filter": {
+        "name": "Fallback · Needs checking",
+        "conditions": [
+         [
+          {
+           "a": "{{1.status}}",
+           "b": "Paid",
+           "o": "text:notequal:ci"
+          },
+          {
+           "a": "{{1.channel}}",
+           "b": "standing",
+           "o": "text:notequal:ci"
+          },
+          {
+           "a": "{{1.status}}",
+           "b": "New",
+           "o": "text:notequal:ci"
+          },
+          {
+           "a": "{{1.total}}",
+           "b": "50000",
+           "o": "number:lessorequal"
+          }
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

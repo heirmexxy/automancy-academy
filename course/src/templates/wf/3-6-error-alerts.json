@@ -1,0 +1,263 @@
+{
+  "name": "HL · Error alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Error alerts (Lesson 3.6)\nThe one alarm for every Harvest Lane workflow. When an **automatic** run of a connected workflow fails, n8n starts this workflow; it formats the error data and sends Tolu a Telegram message with the workflow, node, error, time and a link to the run.\n\n**Credential:** Telegram API (the token from @BotFather), selected in Telegram alert (and in nothing else: never paste the token into a field).\n**Placeholder:** YOUR_TELEGRAM_CHAT_ID (from https://api.telegram.org/bot<TOKEN>/getUpdates after you've messaged your bot; group IDs start with a minus sign). Don't save that address anywhere: it contains your token.\n\n**Then:** in every other workflow, Settings → Error workflow → HL · Error alerts. Manual runs never trigger it: test with HL · Alarm test.",
+        "height": 440,
+        "width": 440
+      },
+      "id": "bb8c39b6-fddf-4700-9a5a-30398c1b7308",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -234
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "121a3660-446a-4745-8dd4-2b8c3e995ced",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "71b94e5a-2948-4f04-8b51-ca1c424e3258",
+              "name": "workflow",
+              "value": "={{ $json.workflow?.name ?? 'Unknown workflow' }}",
+              "type": "string"
+            },
+            {
+              "id": "57b695f7-264a-4b98-9f12-bae8111db9e2",
+              "name": "node",
+              "value": "={{ $json.execution?.lastNodeExecuted ?? 'trigger' }}",
+              "type": "string"
+            },
+            {
+              "id": "53aed19a-f7f0-4afe-b85a-28caea8a5401",
+              "name": "message",
+              "value": "={{ $json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No message' }}",
+              "type": "string"
+            },
+            {
+              "id": "904845ff-e426-48fe-908a-738d35e68333",
+              "name": "url",
+              "value": "={{ $json.execution?.url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "8fe6e3a1-c5ba-4b77-9fdb-4d1c53f3ade7",
+              "name": "time",
+              "value": "={{ $now.toFormat('ccc d LLL, HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "907ca5db-4976-468f-bdcf-9f8dc0e319a1",
+      "name": "Format",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚨 {{ $json.workflow }} failed\nNode: {{ $json.node }}\nError: {{ $json.message }}\nWhen: {{ $json.time }}\nOpen: {{ $json.url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "62bdcb73-fda8-4b41-9908-91dea083b8a7",
+      "name": "Telegram alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        -72
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Incidents",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json.time }}",
+            "workflow": "={{ $json.workflow }}",
+            "node": "={{ $json.node }}",
+            "message": "={{ $json.message }}",
+            "url": "={{ $json.url }}",
+            "cause": "",
+            "fix": "",
+            "minutes_to_resolve": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cause",
+              "displayName": "cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fix",
+              "displayName": "fix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "minutes_to_resolve",
+              "displayName": "minutes_to_resolve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d6d57bff-b13d-4398-afdf-90efbf735800",
+      "name": "Incidents sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        108
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Incidents sheet (switched off)\nLogs each failure for the Gold mission. To use it: make a tab **Incidents** with time · workflow · node · message · url · cause · fix · minutes_to_resolve, select a Google Sheets credential, replace YOUR_SHEET_ID, then re-enable the node (select it, press D).\n\nThe ?. and ?? in Format keep the alert useful even when the failure happens in a trigger and the data shape differs.",
+        "height": 260,
+        "width": 400
+      },
+      "id": "e3220774-f5be-421e-9b76-91aa59cc0630",
+      "name": "Incident log (optional)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        704,
+        36
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Incidents sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

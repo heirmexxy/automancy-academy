@@ -1,0 +1,38 @@
+{
+ "id": "5.8",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Crestline Uniforms, a fictional school-uniform maker in Abeokuta selling to private schools.</p><p><b>Objects</b>: contacts (bursars, proprietors), companies (schools), deals (a term's uniform order), activities.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Stage</th><th>Exit rule (move on when…)</th><th>Win chance</th></tr></thead><tbody><tr><td>New enquiry</td><td>A school has asked for prices or samples</td><td>10%</td></tr><tr><td>Samples delivered</td><td>Samples are at the school and signed for</td><td>25%</td></tr><tr><td>Quote sent</td><td>A written price and delivery date has been sent</td><td>50%</td></tr><tr><td>Deposit paid</td><td>The school has paid the deposit</td><td>75%</td></tr><tr><td>Won / Lost</td><td>Order delivered and paid, or the school said no (with a reason)</td><td>100% / 0%</td></tr></tbody></table></div><p><b>Custom properties (7 of 10)</b>: lead_source (dropdown), marketing_consent, consent_date, school_type (nursery/primary/secondary), pupils_estimate, term_value_ngn, lost_reason (dropdown).</p><p><b>Owners</b>: Mrs Odu (schools over 300 pupils), Tayo (all others).</p><p><b>Four dashboard numbers</b>: open deal value by stage; deals in the same stage over 14 days; won and lost this month with reasons; new deals by lead_source.</p><p>The owner agreed each stage is something the school does, not something we hope.</p>",
+   "mistakes": [
+    "Stages named after feelings ('Very interested', 'Will call back').",
+    "More than 10 custom properties, or free-text fields for source and lost reason.",
+    "Mixing lifecycle stages with deal stages in one list.",
+    "Owners named as 'sales' instead of people."
+   ],
+   "pass": "A one-page design with objects, five or so stages each with an exit rule the customer meets and a win chance, up to 10 custom properties, named owners, the four dashboard numbers, and the owner's agreement.",
+   "redo": "Send it back if any stage lacks an exit rule or describes a hope, properties exceed 10, or the owner has not agreed."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane in HubSpot's free CRM. (Zoho: same steps under Setup → Customization.)</p><ol><li>Sign up with Harvest Lane's domain email. Settings → Objects → Deals → Pipelines: rename stages to New enquiry, Tasting booked, Proposal sent, Trial order, Won / Lost with 10, 25, 50, 75, 100/0%.</li><li>8 custom properties: lead_source, marketing_consent, consent_date (contact); business_type, delivery_zone (company); weekly_value_ngn, lost_reason, next_step_date (deal). That is 8, leaving 2 spare (one goes to harvest_score in 5.9).</li><li>Clean the Growth Desk export with the Card 4 checklist, then import companies, then contacts (matched by domain), then deals. 10 rows first, check associations, then the rest.</li><li>Every open deal gets Tolu or Bisi as owner and a next_step_date. Saved view: \"My deals needing a next step\".</li></ol><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Import</th><th>Rows</th><th>Duplicates found in cleaning</th></tr></thead><tbody><tr><td>Companies</td><td>14</td><td>3 (www. and no-domain versions of Bodija Suites, one Grill Yard)</td></tr><tr><td>Contacts</td><td>17</td><td>2 (same email in different case)</td></tr><tr><td>Deals</td><td>9</td><td>0</td></tr></tbody></table></div><p>40 records, all associated: every deal shows its company and contact.</p><p><b>Monday dashboard, first week</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Report</th><th>Value</th></tr></thead><tbody><tr><td>Open value by stage (weekly)</td><td>New enquiry ₦410,000 · Tasting ₦300,000 · Proposal ₦520,000 · Trial ₦180,000</td></tr><tr><td>Stuck over 14 days</td><td>2 (Mama Put Express, Kakanfo Inn)</td></tr><tr><td>Won / lost this month</td><td>1 won · 1 lost (current supplier)</td></tr><tr><td>New deals by source</td><td>Instagram 3 · outreach 2 · referral 1</td></tr></tbody></table></div>",
+   "mistakes": [
+    "Importing everything at once without a 10-row test.",
+    "Importing contacts before companies, so contacts are not matched by domain.",
+    "Leaving 'www.' on some domains, creating duplicate companies.",
+    "Deals with no owner or next step date."
+   ],
+   "pass": "Screenshots show at least 30 imported records with every deal associated to a company and contact, no duplicates, every open deal with an owner and next step, and a dashboard showing all four numbers.",
+   "redo": "Send it back if duplicates remain, any deal is unassociated or ownerless, fewer than 30 records were imported, or a dashboard number is missing."
+  },
+  "g": {
+   "answer": "<p>Worked example: Crestline Uniforms (fictional), four Monday reviews in HubSpot's free CRM with the owner and two staff.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Review</th><th>Open deals</th><th>Stuck 14+ days</th><th>What happened to the stuck deals</th><th>Updated by team?</th></tr></thead><tbody><tr><td>Week 1</td><td>23</td><td>7</td><td>3 got a call booked; 2 closed Lost (chose another supplier); 2 had no owner, now assigned</td><td>Partly: owner did most</td></tr><tr><td>Week 2</td><td>25</td><td>4</td><td>Greenfield College moved to Deposit paid after a call; 1 Lost (budget)</td><td>Yes, both staff</td></tr><tr><td>Week 3</td><td>24</td><td>3</td><td>2 re-quoted with a new delivery date</td><td>Yes</td></tr><tr><td>Week 4</td><td>26</td><td>2</td><td>Both have next steps this week</td><td>Yes</td></tr></tbody></table></div><p><b>Rescued</b>: Greenfield College (₦1.4m term order) had sat at Quote sent for 19 days; the call showed they were waiting for a sample blazer. It was delivered, and they paid the deposit.</p><p><b>Honestly closed</b>: 4 deals moved to Lost with reasons, so the open pipeline fell from ₦9.1m to ₦6.3m, a more believable forecast.</p><p><b>Training</b>: one 40-minute session and the mobile app installed on both phones. Activity logged by staff rose from 6 to 31 entries a week.</p><p><b>Next</b>: the owner keeps the 20-minute Monday review; 5.9 will automate the stuck-deal reminders.</p><p>Submit: the four dashboard screenshots, this table, the activity counts per person, and the rescued deal's timeline.</p>",
+   "mistakes": [
+    "Running reviews where only the learner updates the CRM.",
+    "Reporting stuck deals without saying what happened to them.",
+    "Keeping dead deals open to make the pipeline look bigger.",
+    "Skipping training and the mobile app."
+   ],
+   "pass": "Four Monday reviews with stuck-deal counts and outcomes, evidence the team logged activity themselves each week, and at least one stuck deal rescued or honestly closed.",
+   "redo": "Send it back if fewer than four reviews ran, the learner did all the updating, or no stuck deal was resolved."
+  }
+ }
+}

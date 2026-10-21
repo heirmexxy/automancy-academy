@@ -1,0 +1,328 @@
+<template data-mod="5.1" id="tpl-5-1">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.1</span>
+    <h1>Channels: WhatsApp, Telegram &amp; Voice</h1>
+    <div class="kicker"><span class="pill">≈ 2–3 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Tolu</span><span class="pill">Tools: Meta developer account, WhatsApp Cloud API test number, n8n WhatsApp nodes, Telegram, a voice-agent platform (optional)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#tolu"/></svg>
+</header>
+<p class="lede">Welcome to the Signal Tower. Before any growth agent can help, you need to reach customers where they already are. In Nigeria, customers are on WhatsApp. WhatsApp's official business platform has rules that Telegram doesn't: a 24-hour reply window, approved templates and per-message pricing. Learn them once, and you can serve almost any local client.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Set up the WhatsApp Cloud API test number and receive and reply to messages in n8n.</span></div>
+  <div><b>02</b><span>Apply the 24-hour customer service window, templates and opt-in rules correctly.</span></div>
+  <div><b>03</b><span>Put one agent "brain" behind several channels with small channel adapters.</span></div>
+  <div><b>04</b><span>Understand voice agents, and choose the right channel for each client.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Abeg, I no dey use Telegram"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A market woman holding a phone showing only WhatsApp.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="25" width="90" height="150" rx="14" fill="var(--ink)"/><rect x="188" y="40" width="74" height="118" rx="4" fill="var(--paper)"/>
+        <circle cx="225" cy="80" r="20" fill="var(--volt)"/><path d="M216 80 Q225 92 234 80" stroke="#fff" stroke-width="3" fill="none"/>
+        <text x="225" y="125" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--ink)">only app she</text><text x="225" y="137" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--ink)">checks daily</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The feedback</b>Restaurants love the Telegram bot. But Iya Basira and most market customers only use WhatsApp, and won't install anything else.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An error message saying re-engagement message, outside the 24 hour window.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="55" width="240" height="70" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <text x="160" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">Message failed to send:</text>
+        <text x="160" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">outside 24-hour window</text>
+      </svg>
+      <div class="cap"><b>First try</b>The order-ready message fails for every customer who last wrote yesterday morning.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An older customer on a phone call saying she prefers to talk.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="45" width="150" height="56" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="225" y="70" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"My eyes are not good.</text>
+        <text x="225" y="88" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Can I just call?"</text>
+        <g stroke="var(--ink)" stroke-width="3" fill="none"><path d="M60 120 q15 -40 40 -20"/><path d="M50 128 q25 -60 60 -30"/></g>
+      </svg>
+      <div class="cap"><b>Another customer</b>Some customers will never type. They want to call.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch blasting a megaphone at a crowd of phones.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M170 80 L230 55 L230 125 L170 100 Z" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g fill="var(--ink)"><rect x="250" y="50" width="16" height="28" rx="3"/><rect x="270" y="80" width="16" height="28" rx="3"/><rect x="250" y="110" width="16" height="28" rx="3"/></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"WhatsApp! Let's message all 400 customers a promo every day. What could go wrong?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>WhatsApp Business Platform: the moving parts</h3>
+    <div class="vocab">
+      <div><b>Cloud API</b>Meta's hosted API for sending and receiving WhatsApp messages from your own systems. You start in a Meta developer app with a free <b>test number</b> that can message a few verified recipient numbers.</div>
+      <div><b>Webhook</b>Incoming messages are posted to one HTTPS address per app (your n8n WhatsApp Trigger). n8n's docs warn that switching between test and production URLs overwrites it.</div>
+      <div><b>Phone number ID and business account ID</b>The IDs your send node uses: which number to send from, and which account it belongs to.</div>
+      <div><b>Access token</b>The dashboard gives a temporary token for testing. For production, create a permanent one (a system user token in Meta's business settings) and store it in an n8n credential.</div>
+      <div><b>Templates</b>Pre-approved message formats with placeholders, in three categories: <b>marketing</b>, <b>utility</b> (order and account updates) and <b>authentication</b> (one-time codes).</div>
+      <div><b>Going live</b>A real business number, business verification and a display name review. Plan days, not hours, and start early for client projects.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The 24-hour window, templates and price</h3>
+    <p>Per Meta's pricing page: when a customer messages you, a <b>24-hour customer service window</b> opens. Inside it you can send normal (free-form) messages. Since 1 October 2026, each business phone number gets 1,000 free service (free-form) messages a month, after which they're charged; utility templates sent inside the window are charged again too. Once 24 hours have passed since the customer's last message, only approved <b>templates</b> can be sent, charged per delivered message by category (pricing has been per message since July 2025). Business-initiated messages also need the customer's <b>opt-in</b>.</p>
+    <div class="dock" data-warule>
+      <div class="row">
+        <label>Hours since the customer's last message<input data-wa="hrs" type="text" value="30" inputmode="decimal"></label>
+        <label>What you want to send<select data-wa="purpose"><option value="reply">Answer the customer's question</option><option value="confirm" selected>Order confirmation / delivery update</option><option value="remind">Payment reminder</option><option value="promo">Promotion or newsletter</option><option value="otp">One-time login code</option></select></label>
+      </div>
+      <div class="checks"><label><input type="checkbox" data-wa="optin" checked> Customer opted in to WhatsApp messages from us</label></div>
+      <div class="stats">
+        <div class="stat"><b data-o="win">–</b><span>customer service window</span></div>
+        <div class="stat"><b data-o="cat">–</b><span>what to send</span></div>
+      </div>
+      <ul data-o="notes" aria-live="polite"></ul>
+      <p style="font-size:.84rem;color:var(--muted)">A simplified guide to Meta's published rules. Rates vary by country and change: check Meta's pricing page for current Nigerian rates before quoting a client.</p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>One brain, many channels</h3>
+    <figure class="fig"><svg viewBox="0 0 640 210" role="img" aria-label="Three channel adapters, WhatsApp, Telegram and web chat, each turn messages into a standard shape and call one shared Sage Desk brain sub-workflow, then turn its reply back into the channel's format.">
+      <defs><marker id="ch1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11.5" text-anchor="middle">
+        <rect x="10" y="20" width="150" height="46" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="40" fill="#13233A">WhatsApp adapter</text><text x="85" y="56" fill="#13233A" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">user_id = wa-{phone}</text>
+        <rect x="10" y="82" width="150" height="46" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="102" fill="#fff">Telegram adapter</text><text x="85" y="118" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">user_id = tg-{chat_id}</text>
+        <rect x="10" y="144" width="150" height="46" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="164" fill="var(--ink)">Web chat adapter</text><text x="85" y="180" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">user_id = web-{session}</text>
+        <rect x="250" y="70" width="170" height="70" rx="14" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/><text x="335" y="98" fill="#fff">SUB · Sage Desk brain</text><text x="335" y="118" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">in: channel, user_id, text</text><text x="335" y="131" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">out: reply, handover</text>
+        <rect x="490" y="70" width="140" height="70" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="560" y="98" fill="var(--ink)">Tools, memory,</text><text x="560" y="116" fill="var(--ink)">guardrails (Track 4)</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M162 43 C210 43 210 95 246 95" marker-end="url(#ch1)"/><path d="M162 105 H246" marker-end="url(#ch1)"/><path d="M162 167 C210 167 210 115 246 115" marker-end="url(#ch1)"/><path d="M422 105 H486" marker-end="url(#ch1)"/></g>
+    </svg><figcaption>Each adapter is small: receive, normalise, call the brain, send the reply in the channel's format. Fix the brain once; every channel improves.</figcaption></figure>
+    <p>The <code>user_id</code> carries the channel prefix, so memory and identity (4.3) never mix a WhatsApp number with a Telegram chat. Channel-specific rules (the 24-hour window, templates, button formats) live in the adapters, not the brain.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Voice agents at a glance</h3>
+    <p>A voice agent is the same brain with ears and a mouth: <b>speech-to-text</b> turns the caller's words into text, the <b>model</b> decides (with tools), and <b>text-to-speech</b> answers aloud. Platforms such as Vapi and ElevenLabs package this, and telephony providers like Twilio connect phone numbers. Their tools can call your n8n webhooks.</p>
+    <div class="vocab">
+      <div><b>Speed matters</b>Callers notice pauses of a second or two. Keep tools fast and answers short.</div>
+      <div><b>Interruptions and accents</b>Test with real voices: Nigerian English, Pidgin, noisy markets.</div>
+      <div><b>Cost per minute</b>Usually much higher than text. Start with narrow jobs: opening hours, order status, "call me back".</div>
+      <div><b>Consent and honesty</b>Say it's an AI assistant, ask before recording, and always offer a person.</div>
+      <div><b>Numbers</b>Local phone number availability varies by country and provider; check before promising a client a Nigerian number.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Choosing a channel per client</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Channel</th><th>Strengths</th><th>Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td><b>WhatsApp</b></td><td>Where most Nigerian customers already are; rich messages and buttons</td><td>24-hour window, templates, verification, per-message pricing, quality rating</td></tr>
+        <tr><td><b>Telegram</b></td><td>Free, fast to build, great buttons; good for staff tools and tech-savvy customers</td><td>Fewer everyday customers use it</td></tr>
+        <tr><td><b>Web chat</b></td><td>You own it; no platform rules</td><td>Customers must visit your site</td></tr>
+        <tr><td><b>SMS</b></td><td>Works on any phone</td><td>Cost per message, short text, delivery rules</td></tr>
+        <tr><td><b>Email</b></td><td>Formal, good for B2B, invoices and reports</td><td>Slow; easily ignored</td></tr>
+        <tr><td><b>Voice</b></td><td>Accessible for people who can't or won't type</td><td>Highest cost per interaction; harder to test</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://developers.facebook.com/docs/whatsapp/cloud-api" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Meta: WhatsApp Cloud API docs</b><small>Read the get-started page: test number, recipients, tokens and webhooks.</small></span></a>
+    <a class="wcard" href="https://developers.facebook.com/docs/whatsapp/pricing" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Meta: WhatsApp pricing</b><small>Read: per-message pricing, categories, and the customer service window.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.whatsapptrigger" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: WhatsApp Trigger</b><small>Read the note on one webhook per app, and test vs. production URLs.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 60 MIN</span><h2>Solved problem: Sage Desk on WhatsApp</h2></div>
+  <div class="prose"><p><b>The goal.</b> Customers message the WhatsApp test number; n8n receives each message, passes it to the shared Sage Desk brain, and replies. Order-ready notifications use an approved utility template, so they work even outside the 24-hour window.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Create the Meta app and test number</h4>
+      <p>At Meta for Developers, create an app with the WhatsApp product. In its API setup page you get a <b>test phone number</b>, its <b>phone number ID</b>, the <b>WhatsApp Business Account ID</b> and a <b>temporary access token</b>. Add your own phone as a verified recipient. Send the sample "hello_world" template from the dashboard to confirm it reaches you.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Credentials and the trigger</h4>
+      <p>In n8n, create the WhatsApp credentials following n8n's WhatsApp credential page: the sending credential uses an access token and the business account ID; the trigger's credential uses your Meta app's ID and secret. Add a <b>WhatsApp Trigger</b> listening for <b>messages</b> in a new workflow, <b>HL · WhatsApp adapter</b>, on your HTTPS server (3.8). Publish it so Meta registers the production webhook.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Normalise, think, reply</h4>
+      <ol>
+        <li><b>IF</b> the update contains a text message (ignore delivery and read receipts, which arrive on the same webhook). Non-text (voice note, image) → a polite "please type your message" reply, and forward to Tolu.</li>
+        <li><b>Edit Fields</b>: <code>channel = whatsapp</code>, <code>user_id = wa-{{ sender phone }}</code>, <code>text = {{ message body }}</code> (copy the exact paths from your trigger's output).</li>
+        <li><b>Execute Sub-workflow</b>: <b>SUB · Sage Desk brain</b> (Boss 4's agent, moved into a sub-workflow with these three inputs).</li>
+        <li><b>WhatsApp Business Cloud · Send</b>: from your phone number ID, to the sender, text = the brain's reply.</li>
+      </ol>
+      <p>Point the Telegram workflow at the same brain, with <code>user_id = tg-…</code>. Now both channels share tools, memory rules and guardrails.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>A utility template for order updates</h4>
+      <p>In WhatsApp Manager, create a <b>utility</b> template, e.g. <code>order_ready</code>: <i>"Hello {{1}}, your Harvest Lane order {{2}} is on its way and should arrive {{3}}. Reply here if you have any questions."</i> Submit it for approval. In your order workflow, when an order is dispatched, check the customer's last message time: inside 24 hours → a free-form message; outside → <b>Send Template</b> <code>order_ready</code> with the three values. Only send to customers who opted in.</p>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>brain shared by WhatsApp and Telegram</span></div>
+        <div class="stat"><b>2</b><span>channel adapters, each a handful of nodes</span></div>
+        <div class="stat"><b>0</b><span>failed updates outside the 24-hour window</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's reminder:</b> run Boss 4's evaluation set through the WhatsApp adapter too (with Check If Evaluating). Channels can break things the brain never sees: long replies cut off, formatting characters, emojis in prices.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>A shared brain means one place to fix, test and improve.</li><li>Channel prefixes keep identity and memory separate.</li><li>The adapter applies WhatsApp's rules: window, templates, opt-in.</li><li>Receipts and non-text messages are filtered before the agent wastes a call.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Sending free-form messages outside the 24-hour window.</li><li>Using the temporary token in production.</li><li>Testing on the live webhook during business hours.</li><li>Marketing blasts to people who never opted in.</li><li>Copying the whole agent into each channel's workflow.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> New channel, new traps. Five.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Order-ready messages fail for customers who last wrote more than a day ago.</td></tr>
+        <tr><td>B</td><td>Everything worked on Monday. On Tuesday morning, every send fails with an authentication error.</td></tr>
+        <tr><td>C</td><td>While Tolu tested a change, real customers' WhatsApp messages stopped arriving.</td></tr>
+        <tr><td>D</td><td>The agent replies twice to every message, and sometimes answers "delivered" receipts.</td></tr>
+        <tr><td>E</td><td>After daily promos to all 400 customers, the number's quality rating dropped and messaging was limited.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> free-form messages outside the 24-hour window. Use an approved utility template (and only for customers who opted in).</li>
+        <li><b>B:</b> the temporary dashboard token expired. Create a permanent system user token and update the credential.</li>
+        <li><b>C:</b> one webhook per app: listening for a test event replaced the production URL. Test with a separate Meta app and number, or unpublish during a quiet hour and re-publish after.</li>
+        <li><b>D:</b> status updates (sent, delivered, read) arrive on the same webhook. Filter to incoming text messages before calling the brain.</li>
+        <li><b>E:</b> unwanted marketing gets blocked and reported. Send only to opted-in customers, rarely, and with something worth reading.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Two channels, one brain</h4>
+    <ul><li>Move your Boss 4 agent into a sub-workflow with inputs <code>channel</code>, <code>user_id</code>, <code>text</code>.</li><li>Connect your Telegram bot to it through a small adapter.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Telegram answers exactly as before, and the brain's executions show the <code>tg-</code> user IDs.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>WhatsApp, with a template</h4>
+    <ul><li>Build the solved problem on the test number: receive, reply through the shared brain.</li><li>Create a utility template and get it approved. Send it to your verified number from n8n.</li><li>Prove the window logic: one update sent inside 24 hours as free-form, one outside as the template.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both arrive, the executions show which path each took, and your log records the template's name and category.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A voice prototype</h4>
+    <ul><li>On a voice-agent platform's free trial, build a voice assistant that answers opening hours and delivery areas, with one tool calling your n8n webhook (e.g. order status).</li><li>Test it with five people, including at least one older caller and one call from a noisy place.</li><li>Record: success rate, average call length, cost per call, and the three biggest problems.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The prototype works on at least 4 of 5 calls, discloses that it's an AI, offers a person, and your notes include a go or no-go recommendation for Harvest Lane.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. A customer last wrote 30 hours ago. You want to tell them their order is on the way. What do you send?</p><div class="opts">
+      <button type="button" data-opt="a">A normal text message</button><button type="button" data-opt="b">Nothing; it's not allowed</button><button type="button" data-opt="c">An approved utility template (they opted in)</button><button type="button" data-opt="d">A marketing template</button></div>
+      <p class="fb" hidden data-why="Outside the 24-hour window, only templates; an order update is a utility message."></p></div>
+    <div class="q" data-ans="a"><p>2. Per Meta's pricing page, which is free?</p><div class="opts">
+      <button type="button" data-opt="a">Non-template replies inside an open customer service window, up to the monthly free tier</button><button type="button" data-opt="b">All marketing templates</button><button type="button" data-opt="c">Any message, any time</button><button type="button" data-opt="d">Templates outside the window</button></div>
+      <p class="fb" hidden data-why="Since 1 October 2026, each business number gets 1,000 free service (free-form) replies a month inside the window; after that they're charged. Utility templates in the window are now charged too."></p></div>
+    <div class="q" data-ans="d"><p>3. Why put the agent in a shared sub-workflow?</p><div class="opts">
+      <button type="button" data-opt="a">WhatsApp requires it</button><button type="button" data-opt="b">It's faster</button><button type="button" data-opt="c">To use more executions</button><button type="button" data-opt="d">So every channel shares one brain to fix, test and improve</button></div>
+      <p class="fb" hidden data-why="Adapters handle channel rules; the brain stays single."></p></div>
+    <div class="q" data-ans="b"><p>4. Testing the WhatsApp Trigger stops production messages. Why?</p><div class="opts">
+      <button type="button" data-opt="a">Meta blocks testing</button><button type="button" data-opt="b">One webhook URL per app: the test URL replaced the production one</button><button type="button" data-opt="c">n8n crashed</button><button type="button" data-opt="d">The template expired</button></div>
+      <p class="fb" hidden data-why="Use a separate test app or test at quiet times, then re-publish."></p></div>
+    <div class="q" data-ans="c"><p>5. Best first job for a voice agent?</p><div class="opts">
+      <button type="button" data-opt="a">Negotiating bulk prices</button><button type="button" data-opt="b">Approving refunds</button><button type="button" data-opt="c">Answering opening hours and order status, with a person on offer</button><button type="button" data-opt="d">Cold-calling every customer</button></div>
+      <p class="fb" hidden data-why="Narrow, frequent, low-risk questions. Voice costs more and is harder to test."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-1">AUTOMANCY LOG · Lesson 5.1 · Channels
+Date:
+Channels connected and their user_id prefixes:
+WhatsApp: test number set up? permanent token? webhook URL:
+Template name, category and approval status:
+Window test: inside → free-form ✓/✗ · outside → template ✓/✗:
+Voice prototype (if built): platform, success rate, cost per call:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Go where customers are; in Nigeria, that's usually WhatsApp.</li>
+      <li>24-hour window: free-form inside; approved templates outside.</li>
+      <li>Templates: marketing, utility, authentication; pricing is per message and changes (free-form replies are free only up to 1,000 a month per number since October 2026), so check Meta's page.</li>
+      <li>Opt-in first; market rarely.</li>
+      <li>One brain, small channel adapters, prefixed user IDs.</li>
+      <li>One webhook per WhatsApp app: test with a separate app.</li>
+      <li>Voice: narrow jobs, honest disclosure, a person on offer.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/docs/whatsapp/cloud-api" target="_blank" rel="noopener">Meta: WhatsApp Cloud API docs</a></li>
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/docs/whatsapp/pricing" target="_blank" rel="noopener">Meta: WhatsApp pricing</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.whatsapptrigger" target="_blank" rel="noopener">n8n Docs: WhatsApp Trigger</a></li>
+    <li><span class="kind">Text</span><a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener">Telegram: build your first bot</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.vapi.ai" target="_blank" rel="noopener">Vapi docs: voice AI agents</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+whatsapp+cloud+api+tutorial" target="_blank" rel="noopener">YouTube: n8n WhatsApp Cloud API tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Meta setup takes time. Ask learners to create their developer app and verify their phone before the session. In class, set up one shared test app projected on screen, then let everyone message it at once. Watching the executions fill up live, and seeing receipts arrive alongside messages, makes the filtering step obvious.</p>
+  </div>
+</section>
+
+</article>
+</template>

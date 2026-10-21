@@ -1,0 +1,117 @@
+{
+  "id": "3.1",
+  "items": [
+    {
+      "file": "3-1-morning-weather.json",
+      "name": "HL · Morning weather → Sheet",
+      "what": "Every morning at 06:30 Lagos time, fetches Ibadan's forecast from Open-Meteo, shapes it into one row with rider advice, and appends it to the HL Weather sheet.",
+      "setup": [
+        "Start n8n in Docker with a volume and your timezone: run docker volume create n8n_data, then docker run -it --name n8n -p 5678:5678 -e GENERIC_TIMEZONE=\"Africa/Lagos\" -e TZ=\"Africa/Lagos\" -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true -e N8N_RUNNERS_ENABLED=true -v n8n_data:/home/node/.n8n n8nio/n8n (or open an n8n Cloud trial instead).",
+        "Open http://localhost:5678 and create the owner account with a strong password.",
+        "Create a Google Sheet called HL Weather whose first tab (Sheet1) has the headers date, max_temp_c, rain_chance, rain_mm, advice in row 1.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" (Cloud: sign in with Google; self-hosted: create an OAuth client in Google Cloud Console and paste n8n's OAuth Redirect URL exactly). Select it in the Google Sheets node.",
+        "Replace YOUR_SHEET_ID in the Google Sheets node with your HL Weather sheet's ID (the long string in its URL). If your tab isn't called Sheet1, pick it from the list.",
+        "Save, then Publish the workflow so the 06:30 schedule runs on its own."
+      ],
+      "test": "Click Execute workflow: the HTTP Request output shows daily lists such as temperature_2m_max: [30.4], Edit Fields shows one item with five fields (numbers without brackets), and one row lands in HL Weather. After publishing, Executions should show a run you didn't start at 06:30 the next morning.",
+      "walk": {
+        "title": "Build it: the morning weather log",
+        "sample": "Ibadan forecast for 2026-10-05 · max 30.4 °C · rain chance 78% · 5.3 mm",
+        "steps": [
+          {
+            "at": null,
+            "say": "Start n8n in Docker with a volume and the Lagos timezone. The volume keeps your workflows and credentials when the container restarts, and the timezone makes six thirty mean six thirty in Ibadan.",
+            "show": [
+              "-v n8n_data:/home/node/.n8n",
+              "-e GENERIC_TIMEZONE=\"Africa/Lagos\" -e TZ=\"Africa/Lagos\""
+            ]
+          },
+          {
+            "at": "Schedule Trigger",
+            "say": "Our trigger is a schedule: every day at six thirty in the morning, before the riders head out.",
+            "show": [
+              "Trigger interval: Days · every 1 day",
+              "Hour: 6am · Minute: 30"
+            ],
+            "data": "1 empty item at 06:30"
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Next, an HTTP Request to Open-Meteo for Ibadan's forecast. It needs no key, so there's no credential here.",
+            "show": [
+              "Method: GET",
+              "api.open-meteo.com/v1/forecast?latitude=7.38&longitude=3.94",
+              "daily=temperature_2m_max,precipitation_sum,…",
+              "timezone=Africa%2FLagos&forecast_days=1"
+            ]
+          },
+          {
+            "at": "HTTP Request",
+            "say": "Click Execute step and read the JSON. Notice each daily value is a list, even with one day of forecast.",
+            "show": [
+              "daily.temperature_2m_max: [30.4]",
+              "daily.precipitation_probability_max: [78]"
+            ],
+            "data": "1 item · daily lists"
+          },
+          {
+            "at": "Edit Fields",
+            "say": "Edit Fields shapes one tidy item. We use square bracket zero to take the number out of each list, and every value is set to Expression, not Fixed.",
+            "show": [
+              "date: {{ $json.daily.time[0] }}",
+              "max_temp_c: {{ $json.daily.temperature_2m_max[0] }}",
+              "rain_chance: …precipitation_probability_max[0]",
+              "rain_mm: {{ $json.daily.precipitation_sum[0] }}"
+            ],
+            "data": "30.4, not [30.4]"
+          },
+          {
+            "at": "Edit Fields",
+            "say": "The advice field turns the numbers into something a rider can act on. Sixty percent or more means pack tarpaulins and start early.",
+            "show": [
+              "advice: rain_chance >= 60",
+              "? \"Rain likely: pack tarpaulins, start deliveries early\"",
+              ": \"Dry day: normal routes\""
+            ],
+            "data": "Rain likely: pack tarpaulins…"
+          },
+          {
+            "at": "Edit Fields",
+            "say": "Set the number fields' type to Number, so the sheet can chart and sum them later.",
+            "show": [
+              "max_temp_c, rain_chance, rain_mm: type Number"
+            ],
+            "data": "1 item · 5 fields"
+          },
+          {
+            "at": "Google Sheets",
+            "say": "Finally, append the row to the HL Weather sheet. The Google login lives in a credential, never typed into a field.",
+            "show": [
+              "Operation: Append Row",
+              "Document: YOUR_SHEET_ID · Sheet: Sheet1",
+              "Credential: Google Sheets (OAuth2)"
+            ]
+          },
+          {
+            "at": "Google Sheets",
+            "say": "Mapping is set to Map Automatically. Because our field names match the headers exactly, every column fills itself.",
+            "show": [
+              "Mapping: Map Automatically",
+              "Headers: date · max_temp_c · rain_chance · rain_mm · advice"
+            ],
+            "data": "1 row appended"
+          },
+          {
+            "at": "Google Sheets",
+            "say": "Execute the workflow once, then Save and Publish. Saving alone never runs on a schedule. One run a day is about thirty executions a month, however many nodes it has.",
+            "show": [
+              "Save → Publish",
+              "≈ 30 executions a month"
+            ]
+          }
+        ],
+        "end": "Execute the workflow, check the new row, then publish it and look in Executions tomorrow for a run you didn't start."
+      }
+    }
+  ]
+}

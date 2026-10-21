@@ -1,0 +1,297 @@
+{
+ "name": "HL · Email · Monday report",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Email: Monday report (Lesson 5.6)\nMondays 08:00: the last campaign's delivered, clicks, unsubscribes and complaints from Brevo, plus orders traced to email (utm_source=email). Opens are left out on purpose: automatic image loading makes them unreliable.\nIf complaints pass 0.1% of delivered, email_paused is switched on, so the next newsletter waits until Tolu looks at frequency and relevance.\n\nCredentials: Header Auth \"Brevo API key\" (Name api-key, Value your Brevo API key); Postgres (Supabase, your orders table); Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID. Adjust the orders query to your table (it expects utm_source and total columns).",
+    "height": 340,
+    "width": 520
+   },
+   "id": "6a7b3e6a-d931-4512-96c6-34aa656e0b9a",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -580,
+    -340
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "38a075e8-3463-41c9-9072-b8402c1ccccb",
+   "name": "Mondays 08:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "https://api.brevo.com/v3/emailCampaigns",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "type",
+       "value": "classic"
+      },
+      {
+       "name": "status",
+       "value": "sent"
+      },
+      {
+       "name": "statistics",
+       "value": "globalStats"
+      },
+      {
+       "name": "limit",
+       "value": "1"
+      },
+      {
+       "name": "sort",
+       "value": "desc"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "eea9a04a-8391-49e4-baea-d10bf1435785",
+   "name": "Brevo · last campaign stats",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select count(*)::int as orders, coalesce(sum(total), 0)::numeric as revenue from orders where utm_source = 'email' and created_at > now() - interval '7 days';",
+    "options": {}
+   },
+   "id": "ccbf95ec-ff65-4c54-a55d-d222cd2cb0eb",
+   "name": "Orders from email (7 days)",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const c = ($('Brevo · last campaign stats').first().json.campaigns || [])[0] || {};\nconst g = c.statistics?.globalStats || {};\nconst delivered = g.delivered || 0;\nconst complaints = g.complaints || 0;\nconst rate = delivered ? complaints / delivered : 0;\nconst o = $json;\nconst text = [\n  `Email · ${c.name || 'no campaign'} · subject: ${c.subject || '-'}`,\n  `Delivered ${delivered} · clicks ${g.uniqueClicks || 0} · orders from email (7 days) ${o.orders} (₦${o.revenue})`,\n  `Unsubscribes ${g.unsubscriptions || 0} · hard bounces ${g.hardBounces || 0} · complaints ${complaints} (${(rate * 100).toFixed(2)}%)`,\n].join('\\n');\nreturn [{ json: { text, complaint_rate: rate, pause: rate > 0.001 } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "d42c14e2-e064-4ca0-9aa5-f6ed2f017d15",
+   "name": "Numbers",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "eca418df-da4c-4536-b003-cc41634a40cb",
+       "leftValue": "={{ $json.pause }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "48805462-3d7a-4d95-84c8-3920ce7ad7dd",
+   "name": "Complaints above 0.1%?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Settings",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "setting": "email_paused",
+      "value": "true"
+     },
+     "matchingColumns": [
+      "setting"
+     ],
+     "schema": [
+      {
+       "id": "setting",
+       "displayName": "setting",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "value",
+       "displayName": "value",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "9157379f-393e-47f8-9d05-21e5a67a88f9",
+   "name": "Pause next send",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $('Numbers').first().json.text }}{{ $('Numbers').first().json.pause ? '\\n\\nComplaints passed 0.1%: the next newsletter is PAUSED. Check the list, frequency and relevance before switching email_paused off.' : '' }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "1a941750-c7e0-46fd-84aa-e0a1959f4d96",
+   "name": "Report to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1320,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Mondays 08:00": {
+   "main": [
+    [
+     {
+      "node": "Brevo · last campaign stats",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Brevo · last campaign stats": {
+   "main": [
+    [
+     {
+      "node": "Orders from email (7 days)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Orders from email (7 days)": {
+   "main": [
+    [
+     {
+      "node": "Numbers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Numbers": {
+   "main": [
+    [
+     {
+      "node": "Complaints above 0.1%?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Complaints above 0.1%?": {
+   "main": [
+    [
+     {
+      "node": "Pause next send",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Report to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Pause next send": {
+   "main": [
+    [
+     {
+      "node": "Report to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,410 @@
+<template data-mod="0.4" id="tpl-0-4">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.4</span>
+    <h1>Spreadsheets as Databases</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt, with Weave</span><span class="pill">Tools: Google Sheets, Airtable</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Most small-business automations read from and write to a spreadsheet. A sheet built for human eyes breaks automations; a sheet built like a database makes them almost easy. This module teaches the difference.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Apply the seven rules that make a sheet automation-friendly.</span></div>
+  <div><b>02</b><span>Design unique IDs and link tables with them.</span></div>
+  <div><b>03</b><span>Use XLOOKUP and SUMIFS to pull and total data across tables.</span></div>
+  <div><b>04</b><span>Lock down inputs with validation, and choose between Sheets and Airtable.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Two Mrs Ades, one address</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three spreadsheets with different column names for the same thing.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">
+          <rect x="150" y="18" width="150" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="36">Sheet1</text><text x="160" y="52" fill="var(--glitch)">"Customer"</text>
+          <rect x="160" y="72" width="150" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="170" y="90">Orders_final</text><text x="170" y="106" fill="var(--glitch)">"Name"</text>
+          <rect x="150" y="126" width="150" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="144">Orders_final_2</text><text x="160" y="160" fill="var(--glitch)">"Client"</text>
+        </g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The files</b>Three sheets. The same customer is called "Customer", "Name" and "Client". No automation can follow that.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two customers both called Mrs Ade, living in different areas.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="24" y="40" width="120" height="110" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="176" y="40" width="120" height="110" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)"><text x="84" y="80" text-anchor="middle">Mrs Ade</text><text x="236" y="80" text-anchor="middle">Mrs Ade</text></g>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--muted)"><text x="84" y="104" text-anchor="middle">Bodija</text><text x="236" y="104" text-anchor="middle">Mokola</text></g>
+        <text x="160" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="22" fill="var(--glitch)">≠</text>
+      </svg>
+      <div class="cap"><b>The mix-up</b>Two different regulars share the same name. The sheet treats them as one person.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A rider at the wrong house holding a crate while Glitch laughs.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M40 150 V90 L90 56 L140 90 V150 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="76" y="110" width="28" height="40" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="90" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--glitch)">Bodija ✗</text>
+        <rect x="160" y="112" width="44" height="32" rx="4" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2.5"/>
+        <use href="#glitch" x="212" y="70" width="100" height="100"/>
+      </svg>
+      <div class="cap"><b>The result</b>Mokola's order arrives in Bodija. Another refund, another apology.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave the octopus holding four linked tables, speaking to Bolt.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="126" y="14" width="184" height="80" rx="16" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M160 92 L148 110 L182 92" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="140" y="40" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">Names are for people.</text>
+        <text x="140" y="60" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">Machines need IDs. Let me</text>
+        <text x="140" y="80" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">wire your tables together.</text>
+        <use href="#weave" x="6" y="44" width="140" height="140"/>
+        <use href="#bolt" x="230" y="112" width="76" height="76"/>
+      </svg>
+      <div class="cap"><b>The fix</b>Weave, the octopus who'll guide Track 2, drops by to help Bolt redesign the sheets.</div>
+    </div>
+  </div>
+  <div class="prose"><p>A spreadsheet can be a perfectly good database for a small business, as long as it follows database rules. Tolu's sheets were built to be read by Tolu. Today we rebuild them to be read by machines, which, it turns out, also makes them much easier for Tolu.</p></div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The seven rules of an automation-friendly sheet</h3>
+    <div class="vocab">
+      <div><b>1 · One header row</b>Row 1 holds field names. Nothing above it: no title, no logo, no merged cells.</div>
+      <div><b>2 · One row = one record</b>One order, one customer, one product. Never two in a row, never one across two rows.</div>
+      <div><b>3 · One column = one field, one type</b>A "price" column holds only numbers. No "12,500 (discounted)".</div>
+      <div><b>4 · No gaps, no totals inside</b>No blank rows, no subtotal rows. Put summaries on a separate tab.</div>
+      <div><b>5 · One table per tab</b>Customers on one tab, orders on another. Not side by side.</div>
+      <div><b>6 · Colour is never data</b>If yellow means VIP, add a <code>is_vip</code> column. Automations can't see colour.</div>
+      <div><b>7 · Every record has an ID</b>A unique, never-changing code in column A.</div>
+    </div>
+    <div class="analogy"><b>A good test:</b> could you export the tab as a CSV file and have it still make sense? If yes, an automation can use it.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>IDs: the name tag that never changes</h3>
+    <p>A <b>primary key</b> is a column whose value is unique for every row and never changes: <code>CUST-0015</code>, <code>HL-0043</code>, <code>TOM-CRATE</code>. When another table stores that ID to point back, it's called a <b>foreign key</b>.</p>
+    <div class="why">
+      <div class="box"><h5>Bad IDs</h5><ul><li><b>Names:</b> not unique (two Mrs Ades).</li><li><b>Phone numbers:</b> people change them and share them.</li><li><b>Row numbers:</b> change when you sort or delete.</li></ul></div>
+      <div class="box"><h5>Good IDs</h5><ul><li>A short prefix that says what it is (<code>CUST-</code>, <code>HL-</code>).</li><li>A padded counter so they sort correctly (<code>0015</code>, not <code>15</code>).</li><li>Created once, by one process, never edited.</li></ul></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> In Tracks 1–3 your automation will create IDs for you when a new order arrives. Until then, add them by hand and never reuse one, even for a deleted order.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Relationships: one-to-many</h3>
+    <p>One customer places many orders. One order has many items. Each "many" side stores the ID of its "one" side. That's all a relational database is, and your sheet can do it.</p>
+    <figure class="fig"><svg viewBox="0 0 660 200" role="img" aria-label="Diagram of four linked tables: Customers links to Orders by customer_id; Orders links to Order_Items by order_id; Products links to Order_Items by sku. Each link is one-to-many.">
+      <g font-family="JetBrains Mono,monospace" font-size="11">
+        <rect x="10" y="30" width="140" height="120" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="10" y="30" width="140" height="28" rx="10" fill="var(--sky)"/><text x="80" y="49" text-anchor="middle" font-weight="600" fill="#fff">Customers</text>
+        <text x="22" y="78" fill="var(--spark)" font-weight="600">customer_id</text><text x="22" y="98" fill="var(--ink)">name</text><text x="22" y="118" fill="var(--ink)">phone</text><text x="22" y="138" fill="var(--ink)">area</text>
+        <rect x="190" y="30" width="150" height="120" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="190" y="30" width="150" height="28" rx="10" fill="var(--sun)"/><text x="265" y="49" text-anchor="middle" font-weight="600" fill="#13233A">Orders</text>
+        <text x="202" y="78" fill="var(--spark)" font-weight="600">order_id</text><text x="202" y="98" fill="var(--sky)">customer_id</text><text x="202" y="118" fill="var(--ink)">status</text><text x="202" y="138" fill="var(--ink)">delivery_date</text>
+        <rect x="380" y="30" width="140" height="120" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="380" y="30" width="140" height="28" rx="10" fill="var(--volt)"/><text x="450" y="49" text-anchor="middle" font-weight="600" fill="#13233A">Order_Items</text>
+        <text x="392" y="78" fill="var(--sky)">order_id</text><text x="392" y="98" fill="var(--sky)">sku</text><text x="392" y="118" fill="var(--ink)">qty</text><text x="392" y="138" fill="var(--ink)">unit_price</text>
+        <rect x="560" y="30" width="90" height="120" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="560" y="30" width="90" height="28" rx="10" fill="var(--grape)"/><text x="605" y="49" text-anchor="middle" font-weight="600" fill="#fff">Products</text>
+        <text x="570" y="78" fill="var(--spark)" font-weight="600">sku</text><text x="570" y="98" fill="var(--ink)">name</text><text x="570" y="118" fill="var(--ink)">price</text><text x="570" y="138" fill="var(--ink)">stock</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none">
+        <path d="M150 74 H170 V94 H190"/><path d="M340 74 H360 V74 H380"/><path d="M560 74 H540 V94 H520"/>
+      </g>
+      <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">
+        <text x="155" y="170">1 ──< many</text><text x="342" y="170">1 ──< many</text><text x="520" y="170">many >── 1</text>
+      </g>
+    </svg><figcaption>Orange fields are primary keys; blue fields point to another table. The "&lt;" marks the "many" side.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>XLOOKUP and SUMIFS: reaching across tables</h3>
+    <p><b>XLOOKUP</b> finds a value in one column and returns the matching value from another. It works in Google Sheets and current Excel.</p>
+<pre class="codebox">=XLOOKUP( <span class="k">what to find</span>, <span class="k">where to look</span>, <span class="k">what to return</span>, <span class="k">if nothing found</span> )
+
+=XLOOKUP(C2, Customers!A:A, Customers!B:B, "Unknown customer")
+<span class="c">  find this order's customer_id in the Customers ID column, return the name</span></pre>
+    <p><b>SUMIFS</b> adds up a column only for rows that match conditions. It's how a one-row order gets the total of its many items.</p>
+<pre class="codebox">=SUMIFS( <span class="k">column to add</span>, <span class="k">column to check</span>, <span class="k">value to match</span>, … )
+
+=SUMIFS(Order_Items!F:F, Order_Items!A:A, A2)
+<span class="c">  add every line_total whose order_id equals this order's ID</span></pre>
+    <div class="analogy"><b>Why not VLOOKUP?</b> VLOOKUP only looks to the right and breaks when someone inserts a column. You'll still see it in older sheets, so recognise it, but write XLOOKUP.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Validation: stop bad data at the door</h3>
+    <p>Automations match text exactly. "Paid", "paid ", "PAID" and "yes" are four different values to a machine. <b>Data validation</b> restricts what can be typed.</p>
+    <div class="vocab">
+      <div><b>Dropdown for status</b>New · Paid · Out for delivery · Delivered · Cancelled. Nothing else is allowed.</div>
+      <div><b>Checkbox for yes/no</b>Stores TRUE/FALSE, a real boolean.</div>
+      <div><b>Date rule</b>"Is a valid date" stops "Tuesday" and "06/10".</div>
+      <div><b>Plain text for phones</b>Format the column as plain text so the leading zero survives.</div>
+    </div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>Google Sheets</th><th>Airtable</th></tr></thead>
+      <tbody>
+        <tr><td><b>Feels like</b></td><td>A familiar spreadsheet</td><td>A spreadsheet that behaves like a database</td></tr>
+        <tr><td><b>Linking tables</b></td><td>By ID, with XLOOKUP and SUMIFS</td><td>Built-in "linked record" fields, plus lookups and rollups</td></tr>
+        <tr><td><b>Field types</b></td><td>Enforced with validation rules</td><td>Each field has a fixed type from the start</td></tr>
+        <tr><td><b>Views</b></td><td>Filters and filter views</td><td>Saved grid, kanban, calendar and form views</td></tr>
+        <tr><td><b>Best for</b></td><td>Starting out, sharing with anyone, formulas</td><td>Growing operations, several linked tables, team workflows</td></tr>
+        <tr><td><b>Watch out</b></td><td>People can type anywhere and break structure</td><td>The free plan has record and feature limits; check current terms</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Google+Sheets+XLOOKUP+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A short Google Sheets XLOOKUP tutorial</b><small>Look for: the fourth "if not found" argument, and looking up across tabs.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Airtable+tutorial+for+beginners+linked+records" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Airtable for beginners: linked records</b><small>Look for: how a linked record replaces the XLOOKUP you'd write in Sheets.</small></span></a>
+    <a class="wcard" href="https://support.google.com/docs/answer/186103" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Google Help: data validation in Sheets (read, 5 min)</b><small>Look for: dropdowns from a list, and "reject input" vs. "show a warning".</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: rebuild Harvest Lane's order sheet</h2></div>
+  <div class="prose"><p><b>The problem.</b> Here's a slice of Tolu's current "Orders_final_2" tab. Redesign it so that every automation in the rest of this course can read and write it safely, and so the two Mrs Ades can never be confused again.</p></div>
+
+  <div class="tablewrap"><table class="sheet">
+    <thead><tr><th class="rn"></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">1</td><td colspan="6" class="bad"><b>HARVEST LANE ORDERS — OCTOBER!!!</b></td></tr>
+      <tr><td class="rn">2</td><td>Client</td><td>Phone</td><td>Items</td><td>Amount</td><td>Paid?</td><td>Deliver</td></tr>
+      <tr><td class="rn">3</td><td>Mrs Adebayo</td><td class="bad">8031234567</td><td class="bad">2 tomato, 1 tatashe</td><td class="bad">₦35,500</td><td>Paid</td><td class="bad">Tue</td></tr>
+      <tr><td class="rn">4</td><td class="vip">Mrs Ade</td><td class="vip">8023456789</td><td class="vip">3 onions</td><td class="vip">13500</td><td class="bad vip">paid </td><td class="vip">06/10</td></tr>
+      <tr><td class="rn">5</td><td>Mrs Ade</td><td>8067654321</td><td>1 tomato</td><td>14000</td><td class="bad">YES</td><td>7/10</td></tr>
+      <tr><td class="rn">6</td><td colspan="3" class="bad"><b>TOTAL WEEK 1</b></td><td class="bad">63,000</td><td></td><td></td></tr>
+      <tr><td class="rn">7</td><td colspan="6"></td></tr>
+      <tr><td class="rn">8</td><td>Mr Okafor</td><td>8059876543</td><td>2 pepper</td><td>18000</td><td></td><td>8 Oct</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:.88rem;color:var(--muted)">Red cells break a rule. Yellow rows mean "VIP" to Tolu, but only to Tolu.</p>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>List what's wrong, rule by rule</h4>
+      <p>Title row above the headers (rule 1). Several products crammed into one "Items" cell (rule 2). "Amount" mixes text and numbers (rule 3). A total row and a blank row inside the data (rule 4). VIP shown by colour (rule 6). No IDs, so the two Mrs Ades are indistinguishable (rule 7). Plus: phones lost their zeros, "Paid?" has four spellings, and dates come in four formats.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Split it into four linked tables</h4>
+      <p>Each thing that has its own identity gets its own tab: customers, products, orders, and the items inside orders. This mirrors the JSON from Module 0.3, where <code>items</code> was an array inside the order.</p>
+      <div class="schema">
+        <div class="tbl" style="--tc:var(--sky)"><h4>Customers <small>1 row per customer</small></h4><ul>
+          <li class="pk"><code>customer_id</code><span>text · CUST-0007</span></li><li><code>name</code><span>text</span></li><li><code>phone</code><span>plain text · +234…</span></li><li><code>area</code><span>dropdown</span></li><li><code>is_vip</code><span>checkbox</span></li><li class="fx"><code>lifetime_spend</code><span>formula</span></li></ul></div>
+        <div class="tbl" style="--tc:var(--grape)"><h4>Products <small>1 row per product</small></h4><ul>
+          <li class="pk"><code>sku</code><span>text · TOM-CRATE</span></li><li><code>name</code><span>text</span></li><li><code>unit</code><span>dropdown</span></li><li><code>price_ngn</code><span>number</span></li><li><code>stock_qty</code><span>number</span></li><li><code>active</code><span>checkbox</span></li></ul></div>
+        <div class="tbl" style="--tc:var(--sun)"><h4>Orders <small>1 row per order</small></h4><ul>
+          <li class="pk"><code>order_id</code><span>text · HL-0043</span></li><li><code>created_at</code><span>date-time</span></li><li class="fk"><code>customer_id</code><span>→ Customers</span></li><li class="fx"><code>customer_name</code><span>formula</span></li><li><code>delivery_date</code><span>date</span></li><li><code>delivery_fee</code><span>number</span></li><li><code>status</code><span>dropdown</span></li><li class="fx"><code>items_total</code><span>formula</span></li><li class="fx"><code>total</code><span>formula</span></li></ul></div>
+        <div class="tbl" style="--tc:var(--volt)"><h4>Order_Items <small>1 row per product in an order</small></h4><ul>
+          <li class="fk"><code>order_id</code><span>→ Orders</span></li><li class="fk"><code>sku</code><span>→ Products</span></li><li class="fx"><code>product_name</code><span>formula</span></li><li><code>qty</code><span>number</span></li><li><code>unit_price</code><span>number</span></li><li class="fx"><code>line_total</code><span>formula</span></li></ul></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the formulas</h4>
+      <p>Put each formula in row 2 and fill it down. The letters match the column order listed above.</p>
+<pre class="codebox"><span class="c">Orders!D2   customer_name</span>
+=XLOOKUP(C2, Customers!A:A, Customers!B:B, "Unknown customer")
+<span class="c">Orders!H2   items_total</span>
+=SUMIFS(Order_Items!F:F, Order_Items!A:A, A2)
+<span class="c">Orders!I2   total</span>
+=H2 + F2
+<span class="c">Order_Items!C2   product_name</span>
+=XLOOKUP(B2, Products!A:A, Products!B:B, "Unknown SKU")
+<span class="c">Order_Items!F2   line_total</span>
+=D2 * E2
+<span class="c">Customers!F2   lifetime_spend (delivered orders only)</span>
+=SUMIFS(Orders!I:I, Orders!C:C, A2, Orders!G:G, "Delivered")</pre>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Why <code>unit_price</code> is typed into Order_Items, not looked up:</b> prices change. If tomatoes go from ₦12,500 to ₦14,000 next month, last month's orders must still show what the customer actually paid. Look the price up <i>once</i> when the order is created, then store it.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Load the data and check the result</h4>
+      <p>Order HL-0043 from Module 0.3 becomes one Orders row and two Order_Items rows:</p>
+      <div class="tablewrap"><table class="sheet">
+        <thead><tr><th>order_id</th><th>customer_id</th><th>customer_name <span class="fx">ƒ</span></th><th>delivery_date</th><th>fee</th><th>status</th><th>items_total <span class="fx">ƒ</span></th><th>total <span class="fx">ƒ</span></th></tr></thead>
+        <tbody><tr><td>HL-0043</td><td>CUST-0007</td><td>Mrs Adebayo</td><td>2026-10-06</td><td>1500</td><td>Paid</td><td>34000</td><td><b>35500</b></td></tr></tbody>
+      </table></div>
+      <p>The total matches the hand calculation from 0.3 exactly. That's your proof the formulas are right.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>See why IDs fix the Mrs Ade problem</h4>
+      <p>Order HL-0045 belongs to the Mrs Ade who lives in Mokola. Switch between looking up by name and by ID, and pick different orders.</p>
+      <div class="lookup" data-lookup='{"customers":[{"id":"CUST-0007","name":"Mrs Adebayo","area":"Ring Road"},{"id":"CUST-0012","name":"Mrs Ade","area":"Bodija"},{"id":"CUST-0015","name":"Mrs Ade","area":"Mokola"},{"id":"CUST-0019","name":"Mr Okafor","area":"Challenge"}],"orders":[{"id":"HL-0045","customer_id":"CUST-0015","customer_name":"Mrs Ade"},{"id":"HL-0044","customer_id":"CUST-0012","customer_name":"Mrs Ade"},{"id":"HL-0043","customer_id":"CUST-0007","customer_name":"Mrs Adebayo"},{"id":"HL-0046","customer_id":"CUST-0019","customer_name":"Mr Okafor"}]}'>
+        <label class="crit" for="lk-0-4">Order</label>
+        <select id="lk-0-4"><option>HL-0045 · Mrs Ade (CUST-0015)</option><option>HL-0044 · Mrs Ade (CUST-0012)</option><option>HL-0043 · Mrs Adebayo (CUST-0007)</option><option>HL-0046 · Mr Okafor (CUST-0019)</option></select>
+        <div class="modes">
+          <label><input type="radio" name="lkmode-0-4" id="lkmode-0-4-name" value="name" checked> Look up by name</label>
+          <label><input type="radio" name="lkmode-0-4" id="lkmode-0-4-id" value="id"> Look up by customer_id</label>
+        </div>
+        <div class="res-out"></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Lock the inputs</h4>
+      <p>In Google Sheets: select the <code>status</code> column → <b>Data → Data validation</b> → Dropdown with the five status values → "Reject the input". Format <code>phone</code> as <b>Format → Number → Plain text</b>. Add checkboxes to <code>is_vip</code> and <code>active</code> with <b>Insert → Checkbox</b>. Finally, protect the formula columns (<b>Data → Protect sheets and ranges</b>) so nobody types over them.</p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Each table has one job and one kind of row.</li><li>IDs make every link exact, whatever people are called.</li><li>Totals are calculated, never typed, so they can't drift.</li><li>Validation stops Glitch at the door instead of cleaning up later.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Looking up the <i>current</i> price for old orders.</li><li>Sorting one tab's columns separately and scrambling rows.</li><li>Leaving room for "notes" in the middle of the data.</li><li>Letting two processes both create IDs, causing duplicates.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I built the Products tab myself. Every automation that touches it breaks. Find six problems.</div></div>
+    <div class="tablewrap"><table class="sheet">
+      <thead><tr><th class="rn"></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead>
+      <tbody>
+        <tr><td class="rn">1</td><td>sku</td><td>name</td><td>price</td><td>stock</td><td>active</td></tr>
+        <tr><td class="rn">2</td><td>TOM-CRATE</td><td>Tomatoes</td><td>12500</td><td>40</td><td>yes</td></tr>
+        <tr><td class="rn">3</td><td>TOM-CRATE</td><td>Tomatoes (small)</td><td>7000</td><td>15</td><td>Yes</td></tr>
+        <tr><td class="rn">4</td><td></td><td>Tatashe pepper</td><td>9,000 / bag</td><td>22</td><td>y</td></tr>
+        <tr><td class="rn">5</td><td>ONI-BAG</td><td>Onions</td><td>4000</td><td>see Tolu</td><td>TRUE</td></tr>
+        <tr><td class="rn">6</td><td>PEP-TATASHE-L</td><td>Tatashe pepper</td><td>9000</td><td>22</td><td>TRUE</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>Duplicate ID:</b> rows 2 and 3 both use <code>TOM-CRATE</code>. Small crates need their own SKU, e.g. <code>TOM-CRATE-S</code>.</li>
+        <li><b>Missing ID:</b> row 4 has no SKU at all.</li>
+        <li><b>Duplicate record:</b> rows 4 and 6 are the same product twice. Keep one.</li>
+        <li><b>Text in a number column:</b> "9,000 / bag" in <code>price</code>. The unit belongs in its own column.</li>
+        <li><b>Text in a number column:</b> "see Tolu" in <code>stock</code>. Stock updates will crash on this row.</li>
+        <li><b>Inconsistent booleans:</b> yes, Yes, y, TRUE. Replace the column with checkboxes.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="logbox">
+    <p>Starter headers for the four tabs. Copy each line into row 1 of a new tab in Google Sheets, then use <b>Data → Split text to columns</b> (comma).</p>
+<pre id="hdr-0-4">Customers:    customer_id,name,phone,area,is_vip,lifetime_spend
+Products:     sku,name,unit,price_ngn,stock_qty,active
+Orders:       order_id,created_at,customer_id,customer_name,delivery_date,delivery_fee,status,items_total,total
+Order_Items:  order_id,sku,product_name,qty,unit_price,line_total</pre>
+    <div><button type="button" class="btn" data-copy="hdr-0-4">Copy template</button></div>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Build a clean Customers table</h4>
+    <ul><li>Create the Customers tab with 10 real or realistic customers, including two with the same name.</li><li>IDs in <code>CUST-0001</code> style; phones as plain text with +234; area as a dropdown; VIP as a checkbox.</li><li>Try to type "Bodja" in area and "08012" as text in a number column. Validation should reject both.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All seven rules pass, and the same-name customers have different IDs.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build all four tables and prove the totals</h4>
+    <ul><li>Add Products, Orders and Order_Items with the formulas from the solved problem.</li><li>Enter five orders, at least one with three items and one for each same-name customer.</li><li>Check one order by hand against the formula total. Then set one order to Delivered and watch that customer's <code>lifetime_spend</code> change.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>HL-0043 totals 35,500, no formula shows "Unknown", and lifetime spend counts delivered orders only.</li></ul>
+    <details class="reveal"><summary>Troubleshooting</summary><div><ul><li><b>"Unknown customer":</b> the ID has a trailing space or different case. Copy IDs; don't retype them.</li><li><b>Total is 0:</b> a price or qty is stored as text. Check for ₦ or commas.</li><li><b>#REF!:</b> a tab was renamed. Tab names in formulas must match exactly.</li></ul></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Build it again in Airtable and compare</h4>
+    <ul><li>Create a free Airtable base with the same four tables, using linked records instead of IDs-with-XLOOKUP.</li><li>Use a <b>rollup</b> for <code>items_total</code> and a formula for <code>total</code>.</li><li>Create a kanban view of Orders grouped by status, and a form view for new orders.</li><li>Write half a page: which would you give Tolu today, and when should Harvest Lane switch?</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both builds produce the same totals, and your recommendation names a specific trigger for switching (volume, number of staff, or number of linked tables).</li></ul>
+    <details class="reveal"><summary>See a model recommendation</summary><div><p>Start Tolu on Google Sheets: free, familiar, and every platform in this course connects to it. Switch to Airtable when more than two people edit orders daily, or when Tolu needs a kanban board for riders; linked records and locked field types will prevent the errors that start once more hands touch the data. At much higher volume, move to a real database like Supabase (Track 4).</p></div></details>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Which makes the best primary key for a customer?</p><div class="opts">
+      <button type="button" data-opt="a">Their full name</button><button type="button" data-opt="b">Their phone number</button><button type="button" data-opt="c">A code like CUST-0015</button><button type="button" data-opt="d">The row number</button></div>
+      <p class="fb" hidden data-why="Names repeat, phones change, row numbers move when you sort. A generated code is unique and permanent."></p></div>
+    <div class="q" data-ans="b"><p>2. An order contains three different products. Where does it live?</p><div class="opts">
+      <button type="button" data-opt="a">One row, with all products in an "Items" cell</button><button type="button" data-opt="b">One row in Orders and three rows in Order_Items</button><button type="button" data-opt="c">Three rows in Orders</button><button type="button" data-opt="d">Three columns: item1, item2, item3</button></div>
+      <p class="fb" hidden data-why="One row per thing: the order once, and each product line once, linked by order_id."></p></div>
+    <div class="q" data-ans="a"><p>3. Why store <code>unit_price</code> on each Order_Items row instead of always looking it up?</p><div class="opts">
+      <button type="button" data-opt="a">Prices change, and old orders must keep the price actually charged</button><button type="button" data-opt="b">XLOOKUP can't read numbers</button><button type="button" data-opt="c">It makes the sheet load faster</button><button type="button" data-opt="d">Google Sheets requires it</button></div>
+      <p class="fb" hidden data-why="History must not change when today's price does."></p></div>
+    <div class="q" data-ans="d"><p>4. In <code>=XLOOKUP(C2, Customers!A:A, Customers!B:B, "Unknown customer")</code>, what does the last part do?</p><div class="opts">
+      <button type="button" data-opt="a">Names the new column</button><button type="button" data-opt="b">Filters out unknown customers</button><button type="button" data-opt="c">Creates a new customer</button><button type="button" data-opt="d">Shows that text when no match is found</button></div>
+      <p class="fb" hidden data-why="It's the fallback. A visible 'Unknown customer' is much easier to spot than an error code."></p></div>
+    <div class="q" data-ans="b"><p>5. Which is automation-friendly?</p><div class="opts">
+      <button type="button" data-opt="a">Highlighting paid orders in green</button><button type="button" data-opt="b">A status dropdown with fixed values</button><button type="button" data-opt="c">A weekly total row under each week's orders</button><button type="button" data-opt="d">A merged title row above the headers</button></div>
+      <p class="fb" hidden data-why="Fixed values can be matched exactly. Colour, total rows and title rows all break automations."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-0-4">AUTOMANCY LOG · Lesson 0.4 · Spreadsheets as Databases
+Date:
+Tables I built and their primary keys:
+Links between tables (foreign keys):
+Formulas I used (XLOOKUP / SUMIFS / other):
+Validation rules added:
+Test: order ___ hand total = ___ formula total = ___
+Sheets or Airtable for my business, and why:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-0-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>One header row, one record per row, one type per column, one table per tab.</li>
+      <li>No totals, gaps or colour-as-meaning inside the data.</li>
+      <li>Every record gets a unique, permanent ID. Names are for people.</li>
+      <li>One-to-many: the "many" table stores the ID of the "one".</li>
+      <li>XLOOKUP reaches across tables; SUMIFS totals the many into the one.</li>
+      <li>Validate inputs; store prices at the time of sale.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://support.google.com/a/users/answer/9282959" target="_blank" rel="noopener">Google Sheets training and help</a></li>
+    <li><span class="kind">Text</span><a href="https://support.google.com/docs/answer/186103" target="_blank" rel="noopener">Google Help: create a dropdown / data validation</a></li>
+    <li><span class="kind">Text</span><a href="https://www.airtable.com/guides" target="_blank" rel="noopener">Airtable Guides (start with "Getting started")</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=relational+database+design+for+beginners" target="_blank" rel="noopener">YouTube: relational database design for beginners</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Google+Sheets+SUMIFS+XLOOKUP+tutorial" target="_blank" rel="noopener">YouTube: Google Sheets SUMIFS and XLOOKUP</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand out a printed copy of Tolu's messy sheet and red pens: learners circle problems before seeing Card 1. The lookup lab makes the ID point land in seconds; project it and let the room choose. Silver takes most people 40–60 minutes; offer it as homework and start the next session by comparing totals.</p>
+  </div>
+</section>
+
+</article>
+</template>

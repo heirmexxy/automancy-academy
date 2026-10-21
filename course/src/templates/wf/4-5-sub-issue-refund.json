@@ -1,0 +1,644 @@
+{
+  "name": "SUB · Issue refund",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Issue refund\nLesson 4.5. The ONLY route to Paystack. Inputs: order_id, amount, reason (from the agent) and chat_id (from the trigger, never the model).\n1. Hard limits in code: owner, paid, not refunded, ≤ order total, ≤ ₦50,000.\n2. Tolu approves or rejects on Telegram, with full context.\n3. Only then: Paystack refund (TEST key), mark the order refunded, log the decision.\n\n**Credentials:** Google Sheets OAuth2; Telegram API; Header Auth \"Paystack test\" (Name Authorization, Value Bearer + your TEST secret key).\n**Replace:** YOUR_SHEET_ID (3 Sheets nodes); YOUR_TOLU_CHAT_ID.\nOrders needs columns paystack_ref (the transaction reference) and refunded. Decisions columns: time, order_id, chat_id, amount, reason, decision, detail, paystack_ref.",
+        "height": 520,
+        "width": 440
+      },
+      "id": "e687c15d-636f-4cfe-bea1-cb2d1df3a397",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "370a8431-7cea-4248-a98c-433c97beb3a6",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "order_id",
+              "lookupValue": "={{ $('When Executed by Another Workflow').first().json.order_id }}"
+            }
+          ]
+        }
+      },
+      "id": "8d940699-9d2f-4e0c-b69f-5c32d84ffb76",
+      "name": "Find order",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Hard limits: code decides, not the model.\nconst t = $('When Executed by Another Workflow').first().json;\nconst chat_id = String(t.chat_id ?? '');\nconst order_id = String(t.order_id ?? '').toUpperCase().trim();\nconst amount = Number(t.amount);\nconst reason = String(t.reason ?? '');\nconst order = $input.all().map(i => i.json).find(r => String(r.order_id).toUpperCase() === order_id);\nlet stop = null;\nif (!order)                                     stop = \"Order not found\";\nelse if (!chat_id)                              stop = \"No customer identity\";\nelse if (String(order.chat_id) !== chat_id)     stop = \"Order doesn't belong to this customer\";\nelse if (order.status !== 'Paid')               stop = \"Order not paid\";\nelse if (order.refunded === 'yes')              stop = \"Already refunded\";\nelse if (!(amount > 0) || amount > Number(order.total)) stop = \"Amount outside the order total\";\nelse if (amount > 50000)                        stop = \"Over ₦50,000: Tolu handles by phone\";\nreturn [{ json: { ok: !stop, stop, order_id, chat_id, amount, reason,\n  total: order ? Number(order.total) : null, status: order ? order.status : null,\n  paystack_ref: order ? order.paystack_ref : null, is_eval: String(t.is_eval) === 'true' } }];"
+      },
+      "id": "fcb3f750-6577-4f38-b21e-137df27b4109",
+      "name": "Hard limits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "5d6e724c-c8ff-4302-9482-3b8687ac115c",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a5f954e7-4782-46c4-bb29-e183d7ee0cd4",
+      "name": "Limits passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TOLU_CHAT_ID",
+        "message": "=💸 Refund request · {{ $json.order_id }}\nAmount: ₦{{ $json.amount }} (order total ₦{{ $json.total }}, status {{ $json.status }})\nReason given by agent: {{ $json.reason }}\nCustomer chat: {{ $json.chat_id }}\nApprove to refund via Paystack (test mode). Reject to cancel.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {}
+      },
+      "id": "9521e202-1cde-4cea-88a3-ce1e7ff0993b",
+      "name": "Ask Tolu to approve",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "d1689e39-8cdf-4071-b4fe-63cbfa320204",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5ff8c99b-d210-43d5-bdaa-997062920592",
+      "name": "Tolu approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.paystack.co/refund",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ transaction: $('Hard limits').item.json.paystack_ref, amount: Math.round($('Hard limits').item.json.amount * 100), merchant_note: $('Hard limits').item.json.reason }) }}",
+        "options": {}
+      },
+      "id": "a7564f07-6dfd-47fe-be20-d1dda4cebc24",
+      "name": "Paystack refund (test)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_id": "={{ $('Hard limits').item.json.order_id }}",
+            "refunded": "yes"
+          },
+          "matchingColumns": [
+            "order_id"
+          ],
+          "schema": [
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "refunded",
+              "displayName": "refunded",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "62ef2761-2116-4e2c-b75e-d1c558afea40",
+      "name": "Mark order refunded",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1540,
+        -200
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "573d5faa-6f3a-476e-acfb-146cf090ef7a",
+              "name": "decision",
+              "value": "refunded",
+              "type": "string"
+            },
+            {
+              "id": "18fca1d7-740b-423a-a00b-020ff11b71d0",
+              "name": "detail",
+              "value": "={{ 'Test refund created: ' + ($('Paystack refund (test)').item.json.data?.id ?? 'see Paystack') }}",
+              "type": "string"
+            },
+            {
+              "id": "587822e7-f9f9-4102-a7c0-291e2fa8840a",
+              "name": "order_id",
+              "value": "={{ $('Hard limits').item.json.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "244c4708-d02f-4d8f-8742-1cbd0dc009c5",
+              "name": "amount",
+              "value": "={{ $('Hard limits').item.json.amount }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5b8c3b36-ebad-4026-b7ca-baebebf021df",
+      "name": "Result · refunded",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c032a6ec-6699-4667-afc0-02c1f0eea58d",
+              "name": "decision",
+              "value": "rejected",
+              "type": "string"
+            },
+            {
+              "id": "e0c48f98-8686-4942-bc84-4c7ff573ea8c",
+              "name": "detail",
+              "value": "Tolu rejected the refund. Apologise and say Tolu will contact the customer.",
+              "type": "string"
+            },
+            {
+              "id": "7eeb9c6d-1227-4b5d-86e1-3546e210af01",
+              "name": "order_id",
+              "value": "={{ $('Hard limits').item.json.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "4fce9a11-a3c2-45d8-b103-76543b0164a8",
+              "name": "amount",
+              "value": "={{ $('Hard limits').item.json.amount }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e4ebeed6-fc4f-4da3-ac2a-2336b28815a4",
+      "name": "Result · rejected",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f2f77a9-c253-4d77-b0fd-d32dcf518dd6",
+              "name": "decision",
+              "value": "blocked",
+              "type": "string"
+            },
+            {
+              "id": "c594b8e0-e2e6-454a-895f-02fdb02a7ce3",
+              "name": "detail",
+              "value": "={{ $json.stop }}",
+              "type": "string"
+            },
+            {
+              "id": "350efb3a-e5eb-4438-b1a9-e7c2cf27bc7b",
+              "name": "order_id",
+              "value": "={{ $json.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ee96c217-a118-4a00-8875-89d0ed478e22",
+              "name": "amount",
+              "value": "={{ $json.amount }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5d515ec8-8d89-4d00-a119-66e80507ec40",
+      "name": "Result · blocked",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Decisions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $now.toISO() }}",
+            "order_id": "={{ $json.order_id }}",
+            "chat_id": "={{ $('Hard limits').item.json.chat_id }}",
+            "amount": "={{ $json.amount }}",
+            "reason": "={{ $('Hard limits').item.json.reason }}",
+            "decision": "={{ $json.decision }}",
+            "detail": "={{ $json.detail }}",
+            "paystack_ref": "={{ $('Hard limits').item.json.paystack_ref }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "paystack_ref",
+              "displayName": "paystack_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e07e3e64-4e26-401a-8f25-e8cf2deacfa0",
+      "name": "Log decision",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2000,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "### The money path\nTrigger → limits → Tolu's tap → Paystack. There is no other way to reach the Paystack node. Never put a live key in the Paystack test credential.\n\nThe lesson adds human review on the agent's tools connector. This template puts the same Telegram approval inside the sub-workflow (Send and Wait for Response), so the approval is on the money path whichever agent calls it. If your n8n offers human review for tools, you can use it as well, with the lesson's message.",
+        "height": 300,
+        "width": 380
+      },
+      "id": "d2c83076-3361-44eb-8aa5-535fe74ab5cf",
+      "name": "Sticky Note 13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Find order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find order": {
+      "main": [
+        [
+          {
+            "node": "Hard limits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hard limits": {
+      "main": [
+        [
+          {
+            "node": "Limits passed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limits passed?": {
+      "main": [
+        [
+          {
+            "node": "Ask Tolu to approve",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Result · blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Tolu to approve": {
+      "main": [
+        [
+          {
+            "node": "Tolu approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paystack refund (test)": {
+      "main": [
+        [
+          {
+            "node": "Mark order refunded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark order refunded": {
+      "main": [
+        [
+          {
+            "node": "Result · refunded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tolu approved?": {
+      "main": [
+        [
+          {
+            "node": "Paystack refund (test)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Result · rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result · refunded": {
+      "main": [
+        [
+          {
+            "node": "Log decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result · rejected": {
+      "main": [
+        [
+          {
+            "node": "Log decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result · blocked": {
+      "main": [
+        [
+          {
+            "node": "Log decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,737 @@
+{
+ "name": "CRM · Deal stage changed → tasks",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## CRM · Deal stage changed -> tasks (Lesson 5.9)\nHubSpot Trigger on deal property change: dealstage. A Switch on the new stage creates the Card 4 tasks and notes. This workflow only creates tasks and notes and updates contacts; it NEVER changes the deal stage, so it can't trigger itself.\nOnly react to dealstage changes made by people: changes made by an integration are ignored.\n\nNo HubSpot Trigger on your setup (it needs a HubSpot developer app)? Use a 15-minute Schedule Trigger that searches deals modified in the last 15 minutes instead.\n\nCredentials: HubSpot Developer API (trigger); HubSpot App Token credential (the \"n8n Growth Desk\" private app token, with only contact, company and deal read/write scopes, plus tasks if you create tasks) (HTTP Requests); OpenAI; Telegram.\nPlaceholders: YOUR_STAGE_ID_TASTING_BOOKED, YOUR_STAGE_ID_PROPOSAL_SENT, YOUR_TOLU_OWNER_ID, YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID.\nRenamed default stages keep their internal IDs (for example qualifiedtobuy, presentationscheduled, closedwon, closedlost): check them in Settings -> Objects -> Deals -> Pipelines.",
+    "height": 440,
+    "width": 640
+   },
+   "id": "0d97ca62-b6d3-4060-8efa-de3f0056d485",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -700,
+    -460
+   ]
+  },
+  {
+   "parameters": {
+    "eventsUi": {
+     "eventValues": [
+      {
+       "name": "deal.propertyChange",
+       "property": "dealstage"
+      }
+     ]
+    },
+    "additionalFields": {}
+   },
+   "id": "7f445f79-a906-46b9-a638-e632466d5453",
+   "name": "HubSpot Trigger",
+   "type": "n8n-nodes-base.hubspotTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "96a8a6d8-0e3d-4b84-a945-9046367384ec"
+  },
+  {
+   "parameters": {
+    "jsCode": "// Loop guard: react only to the field we need, and ignore changes made by integrations (including ours).\nreturn $input.all().filter(i => i.json.propertyName === 'dealstage'\n  && !['INTEGRATION', 'API'].includes(String(i.json.changeSource || '').toUpperCase()));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "97398ea9-4da1-4c1a-90bc-960a0309cddc",
+   "name": "Only people's dealstage changes",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://api.hubapi.com/crm/v3/objects/deals/{{ $json.objectId }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "properties",
+       "value": "dealname,dealstage,hubspot_owner_id,lost_reason,next_step_date,weekly_value_ngn"
+      },
+      {
+       "name": "associations",
+       "value": "contacts,companies"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "18698d4b-5498-4bd6-8073-a77eb139ac17",
+   "name": "Get deal",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "6eb95bb3-2f29-4604-ab6a-19aee58c4f04",
+          "leftValue": "={{ $json.properties.dealstage }}",
+          "rightValue": "YOUR_STAGE_ID_TASTING_BOOKED",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "tasting booked"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "ddddbb6a-4db9-4b18-a25b-bc0138183f4b",
+          "leftValue": "={{ $json.properties.dealstage }}",
+          "rightValue": "YOUR_STAGE_ID_PROPOSAL_SENT",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "proposal sent"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "b58c2a4f-6410-47e9-aef3-ed4a21389095",
+          "leftValue": "={{ $json.properties.dealstage }}",
+          "rightValue": "closedwon",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "won"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "6db4c3df-e446-4231-8177-379f81a9efec",
+          "leftValue": "={{ $json.properties.dealstage }}",
+          "rightValue": "closedlost",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "lost"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "64f8f0e3-035b-46c6-93ad-bb96b597c31c",
+   "name": "New stage",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date(new Date($json.properties.next_step_date || Date.now()).getTime() - 864e5).toISOString(), hs_task_subject: 'Tasting tomorrow: ' + $json.properties.dealname, hs_task_status: 'NOT_STARTED', hubspot_owner_id: $('Get deal').item.json.properties.hubspot_owner_id || 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Get deal').item.json.id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "83ebc852-d16a-47b9-b31d-e7c5c4bfe618",
+   "name": "Task: tasting tomorrow",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    -270
+   ]
+  },
+  {
+   "parameters": {
+    "amount": 3,
+    "unit": "days"
+   },
+   "id": "5bdcc4ab-44d7-4683-a1fe-5e20d534e362",
+   "name": "Wait 3 days",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    880,
+    -90
+   ],
+   "webhookId": "7b5c8a6b-ce53-4043-a29b-3ae77a7766b1"
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://api.hubapi.com/crm/v3/objects/deals/{{ $('Get deal').item.json.id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "properties",
+       "value": "dealname,dealstage,hubspot_owner_id,notes_last_contacted,hs_lastmodifieddate"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "28c10437-6ddb-4254-adf9-a56f7be9542b",
+   "name": "Get deal again",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "06d3cf1e-43d0-4f8d-b8ee-a254572791df",
+       "leftValue": "={{ $json.properties.dealstage === 'YOUR_STAGE_ID_PROPOSAL_SENT' && (!$json.properties.notes_last_contacted || new Date($json.properties.notes_last_contacted) < new Date($('Get deal').item.json.updatedAt)) }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "a4b27d0e-d8c4-44f7-b413-f92757823f50",
+   "name": "Still no reply?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date().toISOString(), hs_task_subject: 'Follow up on proposal: ' + $('Get deal').item.json.properties.dealname, hs_task_status: 'NOT_STARTED', hubspot_owner_id: $('Get deal').item.json.properties.hubspot_owner_id || 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Get deal').item.json.id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "a3e6e23b-ae64-49c0-867a-8fdebc4a6544",
+   "name": "Task: follow up",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1540,
+    -144
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Deal: {{ $('Get deal').item.json.properties.dealname }}\nWe sent a written price and delivery schedule 3 days ago and have had no reply.",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "Write a short, friendly follow-up email (under 70 words) from Tolu at Harvest Lane asking whether they had a chance to look at the proposal and offering a tasting. No discounts, no pressure, no invented details."
+      }
+     ]
+    }
+   },
+   "id": "f919bb93-04f6-4bff-842a-ca5fdd321dbd",
+   "name": "Draft follow-up",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    1760,
+    -144
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "e28fa120-b746-4605-92a8-a85d8708249e",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    1760,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Proposal sent 3 days ago, no reply: {{ $('Get deal').item.json.properties.dealname }}. Task created. Suggested follow-up (edit and send it yourself if you approve):\n\n{{ $json.text }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "080f72be-d182-41c8-b7fb-0378f496e0f7",
+   "name": "Draft to Tolu for approval",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1980,
+    -144
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const d = $json;\nreturn (d.associations?.contacts?.results || []).map(c => ({ json: { contact_id: c.id, deal_id: d.id, dealname: d.properties.dealname } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "1d9028f0-9eab-4517-885a-d7ed96b157ab",
+   "name": "Contacts on the deal",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PATCH",
+    "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $json.contact_id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { lifecyclestage: 'customer' } }) }}",
+    "options": {}
+   },
+   "id": "10e05cad-d95c-4a59-806e-333b6d9a9af0",
+   "name": "Lifecycle: Customer",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    90
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "700d2ec4-abfa-4efe-8512-0d4ac475e721",
+   "name": "Onboarding (6.2) and welcome series (5.6)",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1320,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "bc9b08cb-d155-4ea9-b46d-83644894736b",
+       "leftValue": "={{ $json.properties.lost_reason }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "3e03c5da-0293-41b0-b1ff-70f386abacc0",
+   "name": "Lost reason recorded?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    270
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date().toISOString(), hs_task_subject: 'Add the lost reason: ' + $json.properties.dealname, hs_task_status: 'NOT_STARTED', hubspot_owner_id: $('Get deal').item.json.properties.hubspot_owner_id || 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Get deal').item.json.id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "7dad294c-c05f-4042-9056-0734a7c977a3",
+   "name": "Task: add lost reason",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    396
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "15f44278-0798-49d1-ba8d-0a2462bad165",
+       "leftValue": "={{ $json.properties.lost_reason }}",
+       "rightValue": "current supplier",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "7756c6d1-0398-49fd-bf95-a7249c892279",
+   "name": "Current supplier?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date(Date.now() + 182 * 864e5).toISOString(), hs_task_subject: 'Check in again (lost to current supplier): ' + $json.properties.dealname, hs_task_status: 'NOT_STARTED', hubspot_owner_id: $('Get deal').item.json.properties.hubspot_owner_id || 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Get deal').item.json.id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "2c79502e-7185-4130-ae35-a85cf1067bb3",
+   "name": "Task: check in in 6 months",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1320,
+    180
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "cfd926c1-dfc1-40c4-8b9c-bc4442bbf18a",
+   "name": "Nurture only if consented",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1320,
+    324
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Card 4, the rest\n- Tasting booked: also a WhatsApp reminder to the customer the day before, as an approved template and only with consent (5.1).\n- Won: start onboarding (6.2) and the welcome series (5.6) from here.\n- Lost: add them to the nurture list only if marketing_consent is yes (5.6).\nLog conversations as short notes with a link to Supabase; never paste whole chats or payment details.",
+    "height": 240,
+    "width": 420
+   },
+   "id": "7662728d-8b56-4a48-abc4-dfaf9a36d404",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    900,
+    -720
+   ]
+  }
+ ],
+ "connections": {
+  "HubSpot Trigger": {
+   "main": [
+    [
+     {
+      "node": "Only people's dealstage changes",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Only people's dealstage changes": {
+   "main": [
+    [
+     {
+      "node": "Get deal",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get deal": {
+   "main": [
+    [
+     {
+      "node": "New stage",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "New stage": {
+   "main": [
+    [
+     {
+      "node": "Task: tasting tomorrow",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Wait 3 days",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Contacts on the deal",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Lost reason recorded?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Wait 3 days": {
+   "main": [
+    [
+     {
+      "node": "Get deal again",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get deal again": {
+   "main": [
+    [
+     {
+      "node": "Still no reply?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Still no reply?": {
+   "main": [
+    [
+     {
+      "node": "Task: follow up",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Task: follow up": {
+   "main": [
+    [
+     {
+      "node": "Draft follow-up",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Draft follow-up": {
+   "main": [
+    [
+     {
+      "node": "Draft to Tolu for approval",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Draft follow-up",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Contacts on the deal": {
+   "main": [
+    [
+     {
+      "node": "Lifecycle: Customer",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Lifecycle: Customer": {
+   "main": [
+    [
+     {
+      "node": "Onboarding (6.2) and welcome series (5.6)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Lost reason recorded?": {
+   "main": [
+    [
+     {
+      "node": "Current supplier?",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Task: add lost reason",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Current supplier?": {
+   "main": [
+    [
+     {
+      "node": "Task: check in in 6 months",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Nurture only if consented",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

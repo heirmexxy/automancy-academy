@@ -1,0 +1,547 @@
+{
+  "name": "HL·03 Payments",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·03 Payments (lesson 6.4, 2.5 + 6.2)\nVerify signature → verify the transaction → check the amount → mark paid AND decrement stock in ONE database call → paid event → HL·04.\nThe secret lives in ONE place: env var PAYSTACK_SECRET_KEY, used by both the signature check and the verify call (Glitch's fault 1).\nDuplicates: the UPDATE only touches orders still \"quoted\", and paystack_ref is unique.\n\n**Credentials:** Postgres (Supabase), Telegram.\n**Environment:** PAYSTACK_SECRET_KEY (TEST), NODE_FUNCTION_ALLOW_BUILTIN=crypto, N8N_BLOCK_ENV_ACCESS_IN_NODE=false.\n**Replace:** YOUR_HL04_WORKFLOW_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 380,
+        "width": 400
+      },
+      "id": "6e7b8182-55bd-4b3c-b3bc-bed84e6184e4",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hl03-payments",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "2024dfba-6bc4-40d8-99b4-5c78521a260e",
+      "name": "Paystack webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "8261a1d5-95c2-4225-bf63-5ae60670affb"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst secret = $env.PAYSTACK_SECRET_KEY;\nconst item = $input.first();\nconst sig = String((item.json.headers || {})['x-paystack-signature'] || '');\nlet raw = '';\nif (item.binary && item.binary.data) raw = (await this.helpers.getBinaryDataBuffer(0, 'data')).toString('utf8');\nlet valid = false;\nif (secret && raw && sig) {\n  const hash = crypto.createHmac('sha512', secret).update(raw).digest('hex');\n  valid = hash.length === sig.length && crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(sig));\n}\nlet body = item.json.body;\nif ((!body || typeof body !== 'object') && raw) { try { body = JSON.parse(raw); } catch (e) { body = {}; } }\nbody = body || {};\nreturn [{ json: { signature_valid: valid, event: body.event || '', reference: body.data?.reference || '', order_id: body.data?.metadata?.order_id || null } }];"
+      },
+      "id": "8b7720ec-5d48-4c08-9e50-9d52cf721cac",
+      "name": "Verify signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "46e67672-2664-4edf-8054-af12381d72b4",
+      "name": "Reply 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a8f68aa0-2851-4670-a3b2-1c84930fcad4",
+              "leftValue": "={{ $json.signature_valid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "005d9f92-68fc-422b-9d44-3a0f7ea8a9db",
+      "name": "Signature valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·03', $1, 'signature_rejected', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ $json.order_id, JSON.stringify({ reference: $json.reference }) ] }}"
+        }
+      },
+      "id": "8853ef0f-b9b0-479c-bdb9-ab97b0db61bf",
+      "name": "Log signature_rejected",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6a788133-205f-4df8-970b-ce9af2aeaa56",
+              "leftValue": "={{ $json.event }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "charge.success"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "03080612-a2e2-458d-abb7-871ef7bd1fc1",
+      "name": "charge.success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3487a5f5-0ac9-4818-85e9-88c4dba8d32f",
+      "name": "Other event: ignore",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.paystack.co/transaction/verify/{{ encodeURIComponent($json.reference) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.PAYSTACK_SECRET_KEY }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1fca331b-70be-4e60-9506-2184998ae0f7",
+      "name": "Verify transaction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT order_id, total_ngn, status FROM orders WHERE order_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.data?.metadata?.order_id ?? '' ] }}"
+        }
+      },
+      "id": "2a34b4c8-72f9-4a83-bf9a-3467a4b9ecc1",
+      "name": "Get order",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        -180
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const v = $('Verify transaction').first().json.data || {};\nconst o = $input.first().json;\nconst ok = v.status === 'success' && !!o.order_id && v.currency === 'NGN' && v.amount === Number(o.total_ngn) * 100;\nreturn [{ json: {\n  ok, order_id: o.order_id || v.metadata?.order_id || null, reference: v.reference || $('Verify signature').first().json.reference,\n  amount_ngn: (v.amount || 0) / 100, expected_ngn: Number(o.total_ngn || 0),\n  why: v.status !== 'success' ? 'Paystack says ' + (v.status || 'no such transaction') : !o.order_id ? 'order not found' : ok ? 'ok' : 'wrong amount'\n} }];"
+      },
+      "id": "282655af-8573-4361-8801-116daacf3b8a",
+      "name": "Check amount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "d927e57f-fe0b-4ca7-ba12-fa6a266f293b",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "7dfe5f8d-9acf-4ccc-a8ef-3febf1ff5f99",
+      "name": "Verified and right amount?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH paid AS (\n  UPDATE orders SET status = 'paid', paid_at = now(), paystack_ref = $2\n  WHERE order_id = $1 AND status = 'quoted'\n  RETURNING order_id, items\n), stock_down AS (\n  UPDATE stock s SET qty = s.qty - (i->>'quantity')::int\n  FROM paid, jsonb_array_elements(paid.items) AS i\n  WHERE s.sku = i->>'sku'\n  RETURNING s.sku\n), ev AS (\n  INSERT INTO events (workflow, order_id, event, detail)\n  SELECT 'HL·03', order_id, 'paid', jsonb_build_object('amount', $3::int, 'reference', $2) FROM paid\n)\nSELECT order_id, (SELECT count(*) FROM stock_down) AS stock_lines FROM paid;",
+        "options": {
+          "queryReplacement": "={{ [ $json.order_id, $json.reference, $json.amount_ngn ] }}"
+        }
+      },
+      "id": "2ad257d6-8175-4c67-8c76-d0e26eb189dd",
+      "name": "Mark paid, decrement stock",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        -360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "40ebd43b-903b-48cf-b2eb-dfcc89cd7bcc",
+              "leftValue": "={{ $json.order_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ef243e17-9834-47a3-bc52-08906c20a42a",
+      "name": "Newly paid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "YOUR_HL04_WORKFLOW_ID",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "90462618-3b10-495c-8678-4fb4308c5aa1",
+      "name": "Dispatch (HL·04)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2420,
+        -450
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·03', $1, 'duplicate_skipped', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ $('Check amount').item.json.order_id, JSON.stringify({ reference: $('Check amount').item.json.reference }) ] }}"
+        }
+      },
+      "id": "29bcc75c-2032-4ca0-a673-5ccd5b07d5fb",
+      "name": "Log duplicate",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2420,
+        -270
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ Payment NOT marked paid (test)\nOrder: {{ $json.order_id || 'unknown' }} · ref {{ $json.reference }}\nWhy: {{ $json.why }} (paid ₦{{ $json.amount_ngn }}, order ₦{{ $json.expected_ngn }})",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c8cad154-aaef-4afc-9996-ea3e768ed0aa",
+      "name": "Alert Tolu: not verified",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        -54
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·03', $1, 'verify_failed', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ $('Check amount').item.json.order_id, JSON.stringify({ reference: $('Check amount').item.json.reference, why: $('Check amount').item.json.why }) ] }}"
+        }
+      },
+      "id": "8b2e5a65-55f0-4613-aa23-0c0591d15997",
+      "name": "Log verify_failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        -54
+      ]
+    }
+  ],
+  "connections": {
+    "Paystack webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify signature": {
+      "main": [
+        [
+          {
+            "node": "Reply 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply 200": {
+      "main": [
+        [
+          {
+            "node": "Signature valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signature valid?": {
+      "main": [
+        [
+          {
+            "node": "charge.success?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log signature_rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "charge.success?": {
+      "main": [
+        [
+          {
+            "node": "Verify transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Other event: ignore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify transaction": {
+      "main": [
+        [
+          {
+            "node": "Get order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get order": {
+      "main": [
+        [
+          {
+            "node": "Check amount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check amount": {
+      "main": [
+        [
+          {
+            "node": "Verified and right amount?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified and right amount?": {
+      "main": [
+        [
+          {
+            "node": "Mark paid, decrement stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Tolu: not verified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu: not verified": {
+      "main": [
+        [
+          {
+            "node": "Log verify_failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark paid, decrement stock": {
+      "main": [
+        [
+          {
+            "node": "Newly paid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Newly paid?": {
+      "main": [
+        [
+          {
+            "node": "Dispatch (HL·04)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

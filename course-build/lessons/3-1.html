@@ -1,0 +1,443 @@
+<template data-mod="3.1" id="tpl-3-1">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.1</span>
+    <h1>Setup &amp; First Workflow</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n (Docker or Cloud trial), Docker Desktop, Google Sheets, Open-Meteo</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Welcome to the Forge. n8n is the most flexible of the three platforms: you can run it on your own machine, see the raw data at every step, and pay per workflow run instead of per step. Today you install it, find your way around the editor and put a real workflow live.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Choose between n8n Cloud and self-hosting, with reasons and numbers.</span></div>
+  <div><b>02</b><span>Run n8n in Docker so your workflows survive a restart.</span></div>
+  <div><b>03</b><span>Find your way around the editor: nodes, the input/output panels and executions.</span></div>
+  <div><b>04</b><span>Store credentials safely and publish a scheduled workflow that really runs.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Why rent the workshop?</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu holding two bills, one from Zapier and one from Make, looking worried.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g transform="rotate(-6 230 90)"><rect x="180" y="40" width="90" height="110" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="225" y="64" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">INVOICE</text>
+        <rect x="192" y="76" width="66" height="6" rx="3" fill="var(--line)"/><rect x="192" y="90" width="50" height="6" rx="3" fill="var(--line)"/>
+        <text x="225" y="132" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="var(--glitch)">$$$</text></g>
+        <use href="#tolu" x="20" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday</b>Tolu has run Harvest Lane on Zapier and Make for weeks. December volume is coming, and so are bigger bills.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo standing beside a small server rack with blinking lights.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="200" y="40" width="80" height="130" rx="8" fill="var(--ink)"/>
+        <g fill="var(--paper)" opacity=".18"><rect x="210" y="52" width="60" height="22" rx="4"/><rect x="210" y="82" width="60" height="22" rx="4"/><rect x="210" y="112" width="60" height="22" rx="4"/></g>
+        <g><circle cx="262" cy="63" r="4" fill="var(--volt)"/><circle cx="262" cy="93" r="4" fill="var(--sun)"/><circle cx="262" cy="123" r="4" fill="var(--volt)"/></g>
+        <use href="#nodo" x="20" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"Why rent the workshop when you can own it? On my machine, a workflow with 30 steps costs the same as one with 3."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A workflow on screen with a green tick, next to a calendar showing a missed morning.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="20" y="40" width="160" height="100" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="34" y="76" width="36" height="28" rx="6" fill="var(--spark)"/><rect x="82" y="76" width="36" height="28" rx="6" fill="var(--sky)"/><rect x="130" y="76" width="36" height="28" rx="6" fill="var(--volt)"/></g>
+        <text x="100" y="128" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--volt)">test: success ✓</text>
+        <rect x="210" y="50" width="90" height="90" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="210" y="50" width="90" height="22" rx="8" fill="var(--glitch)"/>
+        <text x="255" y="66" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">TUESDAY</text>
+        <text x="255" y="105" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">06:30</text>
+        <text x="255" y="124" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">nothing ran</text>
+      </svg>
+      <div class="cap"><b>Tuesday</b>Tolu's first n8n workflow passed every test on Monday. At 06:30 on Tuesday, nothing happened.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch grinning beside a big unpressed Publish button.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="70" width="110" height="46" rx="23" fill="var(--spark)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="235" y="99" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="#fff">Publish</text>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"You saved it. You tested it. You never pressed the button that tells it to run on its own."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 25 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>n8n Cloud or self-hosted?</h3>
+    <p>n8n comes two ways. <b>n8n Cloud</b>: n8n runs it for you and you pay a monthly plan. <b>Self-hosted Community Edition</b>: free, open software that you run on your own computer or a rented server. Either way n8n counts <b>executions</b>: <b>one execution is one complete run of a workflow, however many steps it has</b>.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>n8n Cloud</th><th>Self-hosted (Community)</th></tr></thead>
+      <tbody>
+        <tr><td>Who runs it</td><td>n8n</td><td>You</td></tr>
+        <tr><td>Cost</td><td>Monthly plan with an execution allowance (as of Oct 2026, Starter is about €20 a month billed annually, a little more monthly, for 2,500 executions; the 14-day free trial gives Pro features capped at 1,000 executions)</td><td>Software free; you pay for the machine (a small server is a few dollars a month) and your time</td></tr>
+        <tr><td>Executions</td><td>Limited by plan</td><td>Unlimited: only your server's power limits you</td></tr>
+        <tr><td>Updates and backups</td><td>Done for you</td><td>Your job (Module 3.8)</td></tr>
+        <tr><td>Connecting Google and similar apps</td><td>Usually simpler sign-in</td><td>You often create your own OAuth app first</td></tr>
+        <tr><td>Best for</td><td>Getting started fast; teams without a tech person</td><td>High volume, data that must stay with you, learning how it really works</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> In this track, learn on your own laptop with Docker: it's free and teaches you the most. A laptop sleeps, though, so anything Harvest Lane relies on will move to Cloud or a server in 3.8. Check n8n's pricing page for current plans before you quote a client.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Docker in five words</h3>
+    <p>Docker runs software in a sealed box so it works the same on every computer. You only need five words:</p>
+    <figure class="fig"><svg viewBox="0 0 640 230" role="img" aria-label="The n8n image becomes a running container on your laptop. Port 5678 connects the browser to the container, and a volume stores n8n's data outside the container.">
+      <defs><marker id="dk1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="10" width="620" height="210" rx="14" fill="var(--paper2)" stroke="var(--line)" stroke-width="2"/>
+      <text x="26" y="34" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">YOUR LAPTOP (the host)</text>
+      <rect x="30" y="70" width="110" height="70" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="85" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">Image</text>
+      <text x="85" y="118" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">n8nio/n8n</text>
+      <path d="M142 105 H200" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#dk1)"/>
+      <text x="171" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)">run</text>
+      <rect x="205" y="55" width="190" height="100" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="300" y="88" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#fff">Container</text>
+      <text x="300" y="108" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">n8n running inside</text>
+      <text x="300" y="138" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">/home/node/.n8n</text>
+      <path d="M300 157 V180" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#dk1)"/>
+      <rect x="235" y="182" width="130" height="30" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="300" y="202" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">Volume: n8n_data</text>
+      <path d="M397 105 H470" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#dk1)"/>
+      <text x="433" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)">port 5678</text>
+      <rect x="475" y="70" width="140" height="70" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="545" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">Browser</text>
+      <text x="545" y="118" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)">localhost:5678</text>
+    </svg><figcaption>The image is the recipe; the container is the dish being cooked. The volume is the fridge: it keeps your workflows and credentials when the container is thrown away.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Image</b>A packaged, read-only copy of the software: <code>n8nio/n8n</code>.</div>
+      <div><b>Container</b>A running copy of an image. You can stop, delete and recreate it.</div>
+      <div><b>Volume</b>Storage that lives outside the container. n8n keeps its database, settings and encryption key in <code>/home/node/.n8n</code>, so that folder must be on a volume.</div>
+      <div><b>Port</b>The door between your laptop and the container. <code>-p 5678:5678</code> means "laptop port 5678 leads to n8n's port 5678".</div>
+      <div><b>Environment variable</b>A setting passed in with <code>-e</code>, such as the timezone.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Build your start command</h3>
+    <p>This is the command from n8n's Docker guide. Change the settings and watch what the command, and the risks, become.</p>
+    <div class="dock" data-dock>
+      <div class="row">
+        <label>Timezone (for schedules)<select data-d="tz">
+          <option value="Africa/Lagos" selected>Africa/Lagos</option>
+          <option value="">(not set)</option>
+          <option value="Africa/Accra">Africa/Accra</option>
+          <option value="Africa/Nairobi">Africa/Nairobi</option>
+          <option value="Africa/Johannesburg">Africa/Johannesburg</option>
+          <option value="Europe/London">Europe/London</option>
+        </select></label>
+        <label>Laptop port<input data-d="port" type="text" value="5678" inputmode="numeric"></label>
+      </div>
+      <div class="checks">
+        <label><input data-d="vol" type="checkbox" checked> Keep data in a volume</label>
+        <label><input data-d="rm" type="checkbox" checked> --rm (delete the container when it stops)</label>
+        <label><input data-d="one" type="checkbox"> One line (Windows PowerShell)</label>
+      </div>
+      <pre id="dock-3-1" data-o="cmd" aria-live="polite"></pre>
+      <div><button type="button" class="btn" data-copy="dock-3-1">Copy command</button></div>
+      <ul data-o="notes" aria-live="polite"></ul>
+    </div>
+    <p style="font-size:.84rem;color:var(--muted)">Based on n8n's "Install with Docker" guide. Commands evolve, so check the guide if anything fails.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>A tour of the editor</h3>
+    <div class="vocab">
+      <div><b>Canvas and nodes</b>Each step is a <b>node</b>, joined by connections. A workflow starts with a <b>trigger node</b> (Schedule, Webhook, Form, an app event), followed by action and logic nodes.</div>
+      <div><b>The node panel</b>Open a node and you see three columns: <b>Input</b> (what arrived) · <b>Parameters</b> (settings) · <b>Output</b> (what it produced). Switch the data view between Schema, Table and JSON.</div>
+      <div><b>Execute step / Execute workflow</b>Run one node, or the whole workflow, right now, with test data. Nothing goes live.</div>
+      <div><b>Executions</b>The history of every run: when, success or error, and the data at each node. Your n8n version of Zap history.</div>
+      <div><b>Fixed vs. Expression</b>Every field can be fixed text or an <b>expression</b> in <code>{{ }}</code> that pulls in data, such as <code>{{ $json.total }}</code>. Drag a field from the Input panel and n8n writes the expression for you. You'll master this in 3.2.</div>
+      <div><b>Save vs. Publish</b>In n8n 2.x, <b>Save</b> stores your draft. <b>Publish</b> makes it the live version that runs on its own; <b>Unpublish</b> is in the ⋮ menu. (Older 1.x versions used an Active toggle instead.)</div>
+    </div>
+    <figure class="fig"><svg viewBox="0 0 620 130" role="img" aria-label="Save stores a draft that only runs when you click Execute. Publish makes it the live version that triggers run on their own.">
+      <defs><marker id="dk2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="25" width="170" height="80" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="95" y="58" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)">Draft</text>
+      <text x="95" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">runs only when you click</text>
+      <path d="M182 65 H420" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#dk2)"/>
+      <rect x="250" y="47" width="100" height="36" rx="18" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="300" y="70" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">Publish</text>
+      <rect x="425" y="25" width="185" height="80" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="517" y="58" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">Live version</text>
+      <text x="517" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">triggers fire on their own</text>
+    </svg><figcaption>Edits you save after publishing stay in the draft until you publish again, so you can work safely on a live workflow.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Credentials, and the phrasebook</h3>
+    <p>A <b>credential</b> is a saved login or API key that nodes use. n8n stores credentials <b>encrypted</b> in its database, using an encryption key kept in the <code>.n8n</code> folder. Lose the volume and you lose both. Two rules: never type a key directly into a node field, and never share a workflow export that contains one (exports leave credentials out, but pasted keys go along).</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Zapier</th><th>Make</th><th>n8n</th></tr></thead>
+      <tbody>
+        <tr><td>Zap</td><td>Scenario</td><td>Workflow</td></tr>
+        <tr><td>Step</td><td>Module</td><td>Node</td></tr>
+        <tr><td>One run's data</td><td>Bundles</td><td>Items (3.2)</td></tr>
+        <tr><td>Task per action</td><td>Credit per module, per bundle</td><td>Execution per whole run (Cloud); unlimited self-hosted</td></tr>
+        <tr><td>Zap history</td><td>Scenario history</td><td>Executions</td></tr>
+        <tr><td>Connected account</td><td>Connection, keychain</td><td>Credential</td></tr>
+        <tr><td>Turn on / publish</td><td>Scheduling ON</td><td>Publish (2.x) · Active toggle (1.x)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/@n8n-io" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n's official YouTube channel: the beginner course playlist</b><small>Watch the first two or three videos: the editor, nodes and your first workflow.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/deploy/host-n8n/install-options/install-with-docker" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Install with Docker</b><small>Read: the volume and timezone settings. Compare with Card 3.</small></span></a>
+    <a class="wcard" href="https://support.n8n.io/article/understanding-workflow-publishing-in-n-8-n-2-0" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Support: understanding workflow publishing in n8n 2.0</b><small>Read: Save vs. Publish, and how to unpublish.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: the morning weather log</h2></div>
+  <div class="prose"><p><b>The goal.</b> Rain changes Harvest Lane's day: riders need tarpaulins, deliveries run late and leafy vegetables sell differently. Every morning at 06:30, Ibadan's weather forecast should land in a Google Sheet, with a plain-language note for the riders. Four nodes: <b>Schedule → HTTP Request → Edit Fields → Google Sheets</b>. The weather comes from <b>Open-Meteo</b>, a forecast API that needs no key and is free for non-commercial use, which covers learning. Before a business relies on it, check Open-Meteo's terms; it offers a paid plan for commercial use.</p></div>
+
+  <figure class="fig"><svg viewBox="0 0 640 140" role="img" aria-label="Four n8n nodes in a row: Schedule at 06:30, HTTP Request to Open-Meteo, Edit Fields to shape the data, Google Sheets append row.">
+    <defs><marker id="dk3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+    <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" text-anchor="middle">
+      <rect x="10" y="30" width="125" height="70" rx="14" fill="var(--spark)" stroke="var(--ink)" stroke-width="2.5"/><text x="72" y="62" fill="#fff">Schedule</text>
+      <rect x="170" y="30" width="125" height="70" rx="14" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.5"/><text x="232" y="62" fill="#fff">HTTP Request</text>
+      <rect x="330" y="30" width="125" height="70" rx="14" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/><text x="392" y="62" fill="#fff">Edit Fields</text>
+      <rect x="490" y="30" width="140" height="70" rx="14" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/><text x="560" y="62" fill="#13233A">Google Sheets</text>
+    </g>
+    <g font-family="JetBrains Mono,monospace" font-size="10" text-anchor="middle">
+      <text x="72" y="82" fill="#fff">daily 06:30</text><text x="232" y="82" fill="#fff">Open-Meteo</text><text x="392" y="82" fill="#fff">shape + advice</text><text x="560" y="82" fill="#13233A">append row</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2.5"><path d="M136 65 H166" marker-end="url(#dk3)"/><path d="M296 65 H326" marker-end="url(#dk3)"/><path d="M456 65 H486" marker-end="url(#dk3)"/></g>
+    <text x="320" y="128" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">1 execution a day · ≈30 a month, whether it has 4 nodes or 40</text>
+  </svg></figure>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Start n8n and create the owner account</h4>
+      <p>Install Docker Desktop and open it. In a terminal, run the two commands from Card 3 with Africa/Lagos selected and the volume ticked. When the log says the editor is accessible, open <code>http://localhost:5678</code> and create the owner account. This is a local login; use a strong password anyway. <i>No Docker?</i> Start an n8n Cloud trial instead and skip to the next step.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the Schedule Trigger</h4>
+      <p>Create a workflow and name it <b>HL · Morning weather → Sheet</b>. Add <b>Schedule Trigger</b>: trigger interval <b>Days</b>, days between triggers 1, hour <b>6am</b>, minute <b>30</b>. Because you set <code>GENERIC_TIMEZONE</code>, that means 06:30 in Lagos. You can also set a timezone per workflow in its settings.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Call the weather API</h4>
+      <p>Add <b>HTTP Request</b>. Method GET. URL:</p>
+<pre class="codebox">https://api.open-meteo.com/v1/forecast?latitude=7.38&amp;longitude=3.94
+  &amp;daily=temperature_2m_max,precipitation_sum,precipitation_probability_max
+  &amp;timezone=Africa%2FLagos&amp;forecast_days=1</pre>
+      <p>Paste it as one line. (You can also use the <b>Send Query Parameters</b> option to enter each one separately; it's tidier.) Click <b>Execute step</b> and switch the Output view to <b>JSON</b>. Something like this comes back:</p>
+      <div class="jsonlab" data-jsonlab>
+        <label class="crit" for="jl-3-1-a">Open-Meteo response (sample)</label>
+        <textarea id="jl-3-1-a" spellcheck="false">{
+  "latitude": 7.375,
+  "longitude": 3.9375,
+  "timezone": "Africa/Lagos",
+  "daily_units": {
+    "time": "iso8601",
+    "temperature_2m_max": "°C",
+    "precipitation_sum": "mm",
+    "precipitation_probability_max": "%"
+  },
+  "daily": {
+    "time": ["2026-10-05"],
+    "temperature_2m_max": [30.4],
+    "precipitation_sum": [5.3],
+    "precipitation_probability_max": [78]
+  }
+}</textarea>
+        <span class="jl-status"></span>
+        <div class="pathchips"><button type="button" data-p="daily.time[0]">daily.time[0]</button><button type="button" data-p="daily.temperature_2m_max[0]">daily.temperature_2m_max[0]</button><button type="button" data-p="daily.precipitation_probability_max[0]">daily.precipitation_probability_max[0]</button><button type="button" data-p="daily.temperature_2m_max">daily.temperature_2m_max</button><button type="button" data-p="daily.temperature_2m_max[1]">daily.temperature_2m_max[1]</button></div>
+        <label class="crit" for="jl-3-1-a-path">Path (in n8n, write it as <code>{{ $json.<i>path</i> }}</code>)</label>
+        <input id="jl-3-1-a-path" type="text" value="daily.temperature_2m_max[0]" spellcheck="false">
+        <div class="jl-out"></div>
+      </div>
+      <p>Notice that each daily value is a <b>list</b>, even with one day of forecast. You need <code>[0]</code> to get the number itself. (0.3's JSON skills, paying off.)</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Shape the data with Edit Fields</h4>
+      <p>Add <b>Edit Fields (Set)</b>. Mode: manual mapping. Add five fields. Switch each value to <b>Expression</b>:</p>
+<pre class="codebox"><span class="k">date</span>         {{ $json.daily.time[0] }}
+<span class="k">max_temp_c</span>   {{ $json.daily.temperature_2m_max[0] }}
+<span class="k">rain_chance</span>  {{ $json.daily.precipitation_probability_max[0] }}
+<span class="k">rain_mm</span>      {{ $json.daily.precipitation_sum[0] }}
+<span class="k">advice</span>       {{ $json.daily.precipitation_probability_max[0] &gt;= 60
+               ? "Rain likely: pack tarpaulins, start deliveries early"
+               : "Dry day: normal routes" }}</pre>
+      <p>Set the type of the number fields to Number. Execute the step: the Output shows one tidy item with five fields, which is exactly the row you want.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Connect Google and append the row</h4>
+      <p>Create a sheet <b>HL Weather</b> with headers <code>date · max_temp_c · rain_chance · rain_mm · advice</code>. Add <b>Google Sheets · Append Row</b>. Create a credential:</p>
+      <ul>
+        <li><b>On n8n Cloud:</b> sign in with Google in the credential window.</li>
+        <li><b>Self-hosted:</b> follow n8n's Google credential guide. You create an OAuth client in Google Cloud Console and paste in the <b>OAuth Redirect URL</b> that the n8n credential window shows (on your laptop it starts with <code>http://localhost:5678</code>). It takes about 15 minutes the first time, once per n8n install.</li>
+      </ul>
+      <p>Choose the spreadsheet and sheet, and set mapping to <b>Map Automatically</b>: because your field names match the headers exactly, n8n fills each column for you.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test the whole thing, then publish</h4>
+      <p>Click <b>Execute workflow</b>. A row appears in the sheet. Open <b>Executions</b> to see that test run listed. Now <b>Save</b>, then <b>Publish</b>. Tomorrow at 06:30, check Executions for a run that you didn't start, and a new row.</p>
+      <div class="stats">
+        <div class="stat"><b>30</b><span>n8n executions a month (1 a day)</span></div>
+        <div class="stat"><b>≈90</b><span>Zapier tasks for the same job (3 actions × 30)</span></div>
+        <div class="stat"><b>≈120</b><span>Make credits (4 modules × 30)</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>The laptop catch:</b> on your own machine, the schedule only fires if Docker is running and the laptop is awake at 06:30. That's fine for learning. Harvest Lane's real workflows move to an always-on server or Cloud in 3.8.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The volume and timezone are set before the first workflow, not fixed afterwards.</li><li>Execute step shows the real JSON, so the paths are read, not guessed.</li><li>Edit Fields shapes one clean item, so the Sheets node maps itself.</li><li>Publishing is a deliberate, final step, and Executions proves it ran.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Running Docker without a volume, then losing everything on restart.</li><li>Leaving the timezone at its default.</li><li>Typing <code>{{ }}</code> into a field left in Fixed mode.</li><li>Testing successfully and never publishing.</li><li>Relying on a sleeping laptop for a business-critical schedule.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Six sabotaged mornings in the Forge. Name the cause of each.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Every test passed on Monday. On Tuesday morning, Executions shows no runs at all.</td></tr>
+        <tr><td>B</td><td>The weather row arrives every day at 11:30 instead of 06:30.</td></tr>
+        <tr><td>C</td><td>After a laptop restart, n8n asks Tolu to create an owner account again. Every workflow is gone.</td></tr>
+        <tr><td>D</td><td>The sheet's advice column literally says <code>{{ $json.daily.precipitation_probability_max[0] &gt;= 60 ? … }}</code>.</td></tr>
+        <tr><td>E</td><td>Connecting Google fails with <code>redirect_uri_mismatch</code>.</td></tr>
+        <tr><td>F</td><td>Max temperature shows <code>[30.4]</code>, in brackets, and Sheets treats it as text.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the workflow was saved but never published. Only the published version runs on its own.</li>
+        <li><b>B:</b> no timezone was set, so n8n used its default, America/New_York. Set <code>GENERIC_TIMEZONE</code> (and <code>TZ</code>), or set the workflow's timezone in its settings.</li>
+        <li><b>C:</b> the container ran with <code>--rm</code> and no volume, so n8n's data was deleted with the container. Always mount <code>n8n_data</code> to <code>/home/node/.n8n</code>.</li>
+        <li><b>D:</b> the field is in Fixed mode, so n8n wrote the text exactly as typed. Switch it to Expression.</li>
+        <li><b>E:</b> the redirect URL saved in Google Cloud Console doesn't exactly match the OAuth Redirect URL shown in n8n's credential window. Copy it again, character for character.</li>
+        <li><b>F:</b> the expression points at the list, <code>temperature_2m_max</code>, not the first value, <code>temperature_2m_max[0]</code>.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Your own Forge, with a live workflow</h4>
+    <ul><li>Install n8n with Docker using a volume and your timezone (or open a Cloud trial).</li><li>Build the solved workflow and publish it.</li><li>Stop and restart the container, then confirm the workflow and credential are still there.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Executions shows at least one run that you didn't start, and the sheet has that morning's row.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Rebuild Boss 1's intake in n8n</h4>
+    <ul><li>Use n8n's <b>Form Trigger</b> to recreate the lead form from Boss 1 (name, phone, business type, message).</li><li>Add Edit Fields to clean the phone number into +234 format and stamp a <code>received_at</code> time.</li><li>Append each submission to a copy of the Leads sheet. Test with five leads, including one with a messy phone number.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All five leads land correctly in the sheet, and you've written down how many Zapier tasks the same five would have used versus n8n executions.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Read someone else's workflow</h4>
+    <ul><li>From n8n's workflow template library, import a template with at least six nodes that doesn't need paid services.</li><li>Run it with test data. For every node, write one sentence: what goes in, what it does and what comes out.</li><li>Find one thing you'd change for Harvest Lane, such as a missing error path, a hard-coded value or a timezone, and change it.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Someone who has never seen n8n can follow the workflow from your node-by-node notes, and your change is tested.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. On n8n Cloud, a workflow with 12 nodes runs once. How many executions is that?</p><div class="opts">
+      <button type="button" data-opt="a">12</button><button type="button" data-opt="b">1</button><button type="button" data-opt="c">11</button><button type="button" data-opt="d">It depends on the plan</button></div>
+      <p class="fb" hidden data-why="One execution is one complete workflow run, however many nodes it has."></p></div>
+    <div class="q" data-ans="d"><p>2. What does the volume in the Docker command protect?</p><div class="opts">
+      <button type="button" data-opt="a">The internet connection</button><button type="button" data-opt="b">The n8n image</button><button type="button" data-opt="c">The browser's cookies</button><button type="button" data-opt="d">n8n's database, settings and encryption key</button></div>
+      <p class="fb" hidden data-why="/home/node/.n8n holds the data. On a volume, it survives when the container is removed."></p></div>
+    <div class="q" data-ans="a"><p>3. A workflow tests perfectly but never runs on its schedule. What's the first thing to check?</p><div class="opts">
+      <button type="button" data-opt="a">Whether it has been published (or set Active in 1.x)</button><button type="button" data-opt="b">Whether the API needs a key</button><button type="button" data-opt="c">The Google Sheet's headers</button><button type="button" data-opt="d">The browser zoom level</button></div>
+      <p class="fb" hidden data-why="Saved drafts only run when you click. Triggers fire on their own only for the published version."></p></div>
+    <div class="q" data-ans="c"><p>4. The API returns <code>"temperature_2m_max": [30.4]</code>. Which expression gives you 30.4?</p><div class="opts">
+      <button type="button" data-opt="a">{{ $json.temperature_2m_max }}</button><button type="button" data-opt="b">{{ $json.daily.temperature_2m_max }}</button><button type="button" data-opt="c">{{ $json.daily.temperature_2m_max[0] }}</button><button type="button" data-opt="d">{{ daily.temperature_2m_max.0 }}</button></div>
+      <p class="fb" hidden data-why="The value sits inside the daily object, in a list, so you need the full path and [0]."></p></div>
+    <div class="q" data-ans="b"><p>5. Where should an API key live in n8n?</p><div class="opts">
+      <button type="button" data-opt="a">Typed into the URL field</button><button type="button" data-opt="b">In a credential</button><button type="button" data-opt="c">In a sticky note on the canvas</button><button type="button" data-opt="d">In the workflow's name</button></div>
+      <p class="fb" hidden data-why="Credentials are stored encrypted and are left out of workflow exports. Keys typed into fields are not."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-1">AUTOMANCY LOG · Lesson 3.1 · Setup & First Workflow
+Date:
+How I run n8n (Docker / Cloud), version, timezone:
+Volume name, and did data survive a restart? (yes/no):
+Workflow name and nodes:
+First automatic run (date and time from Executions):
+Executions per month vs. Zapier tasks vs. Make credits:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Workflow = nodes; n8n Cloud counts one execution per complete run.</li>
+      <li>Self-hosted is free software, but you own uptime, updates and backups.</li>
+      <li>Docker: always use a volume for <code>/home/node/.n8n</code>, and set the timezone.</li>
+      <li>Execute step, read the JSON, then write the path, using <code>[0]</code> for lists.</li>
+      <li>Keys go in credentials, never in fields.</li>
+      <li>Save is a draft; Publish makes it live; Executions proves it ran.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: QS101 Quickstart and n8n101 Essentials (free, certificate and badge)</a></li>
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: Foundations program with certificates</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/@n8n-io" target="_blank" rel="noopener">n8n official YouTube channel (beginner course playlist)</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/install-options/install-with-docker" target="_blank" rel="noopener">n8n Docs: Install with Docker</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.docker.com/get-started/" target="_blank" rel="noopener">Docker: Get started (images, containers and volumes)</a></li>
+    <li><span class="kind">Text</span><a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Open-Meteo API docs: build your own forecast URL</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Installation is where cohorts lose people. Run a 20-minute "install clinic" before the session, and keep a shared n8n Cloud trial workspace ready for anyone whose laptop can't run Docker. Then do the restart test live: stop the container in front of the group and show the workflows still there. That moment makes the volume unforgettable.</p>
+  </div>
+</section>
+
+</article>
+</template>

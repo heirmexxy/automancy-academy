@@ -1,0 +1,131 @@
+{
+  "id": "1.5",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Customer email → HL Inbox (AI triage)",
+      "what": "Every email in the Customers label is read by AI by Zapier on the Standard model, which returns a category, a 20-word summary, an urgency of 1 to 3 and a phone number only if stated; the result is stored in the HL Inbox table that the restricted HL Staff Desk page shows to Kemi, most urgent first.",
+      "steps": [
+        "1 · Trigger · Gmail › New Labeled Email: Label = Customers (a Gmail filter applies it, as in 1.1). Test with an email from your 0.5 Silver list.",
+        "2 · Action · AI by Zapier › Analyze and Return Data (rename \"Triage email\"): Model = Standard; Prompt (insert the subject and plain body with /):\nYou triage customer emails for Harvest Lane, a fresh-produce\ndelivery business in Ibadan, Nigeria. Customers write in English,\nNigerian Pidgin or Yoruba.\nRead the email below and fill in the output fields.\n- category: order (new or change), complaint, question, or other.\n  If an email contains an order and a question, choose order.\n- summary: at most 20 words, plain English, no greeting.\n- urgency: 3 = complaint, or delivery needed today/tomorrow;\n           2 = new order or order change;\n           1 = everything else.\n- phone: only if written in the email, in +234 format. Otherwise leave empty.\nNever invent details that are not in the email.\nSubject: [1. Subject]\nEmail: [1. Body Plain]",
+        "2 (Settings › Output Fields): category · Text · \"One of: order, complaint, question, other\" · required; summary · Text · \"20 words max\" · required; urgency · Number · \"1, 2 or 3 as defined\" · required; phone · Text · \"+234 format, empty if not stated\" · not required.",
+        "3 · Action · Zapier Tables › Create Record: Table = HL Inbox; received_at = [1. Date]; from_email = [1. From Email]; category = [2. category]; summary = [2. summary]; urgency = [2. urgency]; phone = [2. phone]; status = New; handled_by left empty."
+      ],
+      "setup": [
+        "AI by Zapier needs a paid plan or trial. Leave the model on Standard; the default may be Premium (5× tasks).",
+        "In Gmail, create the label Customers and a filter that applies it to customer mail.",
+        "In Zapier Tables create HL Inbox with fields: received_at (Date/time), from_email (Email), category (Dropdown: order, complaint, question, other), summary (Text), urgency (Number, 1 low to 3 high), phone (Text), status (Dropdown: New, In progress, Done), handled_by (Text).",
+        "Build the three steps; map only the latest message's plain body, never the whole thread. Test, name the Zap and publish.",
+        "In Zapier Interfaces create a page HL Staff Desk: a Table component (source HL Inbox, filter status is not Done, sort urgency highest first, editing allowed for status and handled_by) and a Form component \"Log a phone order\" (name, phone, items, delivery date) that creates an HL Inbox record with category order and urgency 2.",
+        "Set the page's access to restricted, with named staff (Tolu, Kemi) signing in. Never share a public link.",
+        "Share the Zap from its menu → Share; the Table and Interface are rebuilt from the field lists above."
+      ],
+      "test": "Send the 20 sample messages from 0.5 Silver as emails and compare each record's category with the expected label (aim for 18/20 or better on Standard). Check urgency is always 1, 2 or 3, phone is empty when not stated, and summaries have no signatures or old replies. Rerun your five hardest on Premium and keep Standard unless it is clearly worse. Open the Staff Desk as Kemi: newest urgent items on top, Done items disappear, and the phone-order form creates a record.",
+      "tasks": "About two tasks per email on Standard (the AI step at 1× plus the Create Record step), about six if the AI step is left on Premium (5×); check Zap history for the exact count.",
+      "walk": {
+        "title": "Build it: the HL Staff Desk",
+        "sample": "Customer email: \"The tomatoes came wet this morning, please call me 0803 123 4567\" · label Customers",
+        "steps": [
+          {
+            "at": null,
+            "say": "Data first, as always. In Zapier Tables we create HL Inbox, with a category dropdown, an urgency number from one to three, and a status Kemi can change.",
+            "show": [
+              "Table: HL Inbox",
+              "category: order · complaint · question · other",
+              "urgency: Number 1–3 · status: New · In progress · Done"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "The trigger is a new email with the Customers label. A Gmail filter applies the label, just like the invoices in 1.1.",
+            "show": [
+              "Gmail › New Labeled Email",
+              "Label: Customers"
+            ],
+            "data": "1 email · subject + plain body"
+          },
+          {
+            "at": "2",
+            "say": "Now Sage's step: AI by Zapier, Analyze and Return Data. Set the model to Standard. The default may be Premium, which costs five times the tasks.",
+            "show": [
+              "AI by Zapier › Analyze and Return Data",
+              "Model: Standard (1× tasks)"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "The prompt sets the scene: Harvest Lane, Ibadan, customers writing in English, Pidgin or Yoruba. We send only the subject and the latest plain body, not the whole thread.",
+            "show": [
+              "Subject: [1. Subject]",
+              "Email: [1. Body Plain]"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Every value is defined. Urgency three means a complaint or delivery needed today or tomorrow, two is an order, one is everything else.",
+            "show": [
+              "urgency: 3 complaint or today/tomorrow",
+              "2 new order or change · 1 everything else",
+              "summary: at most 20 words"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "And the honesty rule: phone only if it's written in the email, otherwise empty. Never invent details.",
+            "show": [
+              "phone: only if written, +234 format",
+              "Never invent details not in the email"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Under Settings, define typed output fields. Each one becomes a pill, and urgency as a number means the page can sort by it.",
+            "show": [
+              "category · Text · required",
+              "summary · Text · required",
+              "urgency · Number · required · phone · Text · optional"
+            ],
+            "data": "complaint · 3 · +2348031234567"
+          },
+          {
+            "at": "4",
+            "say": "Save it to the table: the AI's fields, the date and sender, and status New. Handled by stays empty until Kemi takes it.",
+            "show": [
+              "Zapier Tables › Create Record",
+              "Table: HL Inbox · status: New"
+            ],
+            "data": "1 record · urgency 3"
+          },
+          {
+            "at": "4",
+            "say": "Then the staff page in Interfaces: a table of HL Inbox, hiding Done items, sorted most urgent first, where Kemi can change the status.",
+            "show": [
+              "Page: HL Staff Desk",
+              "Filter: status is not Done",
+              "Sort: urgency, highest first"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Add a form for phone orders so they enter the same pipeline, and restrict the page to named staff. A public link to customer data breaks our rules.",
+            "show": [
+              "Form: \"Log a phone order\" → order, urgency 2",
+              "Access: restricted · Tolu, Kemi"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Test with the twenty messages from 0.5 and count the right categories. Rerun the hardest five on Premium, and only move up if Standard clearly fails.",
+            "show": [
+              "20 test emails",
+              "Standard 18/20 vs Premium 19/20 (example)"
+            ],
+            "data": "keep Standard"
+          }
+        ],
+        "end": "Sage sorts, Bolt files, Kemi decides. Build it, then run your own twenty test emails before trusting it."
+      }
+    }
+  ]
+}

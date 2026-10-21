@@ -1,0 +1,264 @@
+{
+  "name": "SUB · Order status",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Order status\nLesson 4.6. Read-only tool for the MCP server. Input order_id, validated against HL-0000. Returns customer first name, items, total, status, delivery date and rider. No phone numbers or addresses.\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID (2 nodes).\nOrders needs a rider column; Customers: chat_id, name, phone, area, created_at.",
+        "height": 340,
+        "width": 380
+      },
+      "id": "4a57050b-c662-4c30-b3ef-dece20f5b84b",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "0676cf87-f9c8-42bf-9e44-02a0ff51826f",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input inside the workflow: the MCP client is not ours.\nconst t = $json;\nconst id = String(t.order_id ?? t.query ?? '').toUpperCase().trim();\nreturn [{ json: { order_id: id, valid: /^HL-\\d{4}$/.test(id) } }];"
+      },
+      "id": "1283b1a9-5d1b-4ee8-ac92-545ef8193590",
+      "name": "Validate order_id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "db02c0df-4a1e-4af3-b3ff-876c283cb659",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "732df0ee-08d0-47bf-85ac-20c25593aea3",
+      "name": "Valid format?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "order_id",
+              "lookupValue": "={{ $json.order_id }}"
+            }
+          ]
+        }
+      },
+      "id": "6e952b5d-0609-4e24-af2a-320089e94291",
+      "name": "Find order",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Customers",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "chat_id",
+              "lookupValue": "={{ $json.chat_id }}"
+            }
+          ]
+        }
+      },
+      "id": "183035d7-6891-4f3a-93dd-60a6e1824a80",
+      "name": "Find customer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Small, human-readable result. No phone numbers or addresses.\nconst id = $('Validate order_id').first().json.order_id;\nconst o = $('Find order').all().map(i => i.json).find(r => String(r.order_id).toUpperCase() === id);\nif (!o) return [{ json: { found: false, message: `No order ${id}.` } }];\nconst c = $input.all().map(i => i.json).find(r => String(r.chat_id) === String(o.chat_id)) ?? {};\nlet items;\ntry { items = JSON.parse(o.items_json).map(l => `${l.qty} × ${l.name}`).join(', '); } catch (e) { items = o.items_json; }\nreturn [{ json: { found: true, order_id: o.order_id, customer_first_name: String(c.name ?? '').split(' ')[0] || 'unknown',\n  items, total_naira: Number(o.total), status: o.status, delivery_date: o.delivery_date, rider: o.rider || 'not assigned' } }];"
+      },
+      "id": "c24f1118-2239-4bf1-a0a3-20ff9b94759e",
+      "name": "Tidy result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a9b0e66-ac9d-422e-b2ef-e64661416ef3",
+              "name": "found",
+              "value": "false",
+              "type": "boolean"
+            },
+            {
+              "id": "c6ec178a-af2d-4fda-8463-49231b727ad9",
+              "name": "message",
+              "value": "={{ \"Order numbers look like HL-0042. Got: \" + $json.order_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2c42fde-2e53-4739-bf6f-ce16664d8f2b",
+      "name": "Invalid order_id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate order_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate order_id": {
+      "main": [
+        [
+          {
+            "node": "Valid format?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid format?": {
+      "main": [
+        [
+          {
+            "node": "Find order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid order_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find order": {
+      "main": [
+        [
+          {
+            "node": "Find customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find customer": {
+      "main": [
+        [
+          {
+            "node": "Tidy result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

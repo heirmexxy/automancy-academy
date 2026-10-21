@@ -1,0 +1,174 @@
+{
+  "id": "1.6",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Invoices → Drive (Copilot, audited)",
+      "what": "The 1.1 invoice Zap rebuilt from one sentence with Zapier Copilot, then audited card by card against the hand-built version: the result must match it exactly before it is published.",
+      "steps": [
+        "0 · Copilot prompt: \"When an email with an attachment arrives in Gmail with the label Invoices, upload the attachment to the Google Drive folder Supplier invoices, naming the file with the sender name, subject and attachment name.\"",
+        "1 · Trigger · Gmail › New Attachment (fix it if Copilot chose New Email): account = the Harvest Lane business Gmail; Label/Mailbox = Invoices; Search String = -in:sent (Copilot usually leaves this out).",
+        "2 · Action · Google Drive › Upload File: account = the same business Google account; Drive = My Google Drive; Folder = Harvest Lane → Supplier invoices (check Copilot picked the right folder); File = the attachment file pill from step 1 (fix it if Copilot mapped the attachment name or link); File name = [1. From Name] - [1. Subject] - [1. Attachment Name]."
+      ],
+      "setup": [
+        "Open Zapier Copilot (the AI build panel in the Zap editor) and paste the prompt from step 0.",
+        "Audit every card with the four questions from 1.1: app, event, account, fields. Write down each difference from your hand-built 1.1 Zap (typical: wrong trigger event, text pill in the File field, no -in:sent, wrong folder or personal account).",
+        "Fix each difference until the draft matches the steps listed here.",
+        "Turn off (or delete) your 1.1 Zap first, or the same invoice will be filed twice.",
+        "Test with a real emailed PDF, read Zap history, rename the Zap HL · Invoices → Drive and only then publish. Share it from the Zap's menu → Share."
+      ],
+      "test": "Email a small PDF so it lands in Invoices, test both steps: the PDF (not a tiny text file) appears in Supplier invoices named like Farmgate Supplies - Invoice 0192 - inv_0192.pdf. Send a quote from the business account with an attachment: it is not filed. Your audit list has at least three differences found and fixed.",
+      "tasks": "One task per attachment saved, the same as the hand-built 1.1 Zap; building with Copilot costs no tasks."
+    },
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL Customer Helper (Zapier Agent)",
+      "what": "A Zapier Agent that wakes on new question records in HL Inbox, reads prices only from the Products table and fees and areas only from the Delivery Areas table, writes a short draft reply (or HANDOVER for refunds, complaints and anything else) back to the record with status Draft ready, and can never send, delete or touch payments.",
+      "steps": [
+        "1 · Create agent: Zapier Agents › New agent; name = HL Customer Helper.",
+        "2 · Instructions: paste exactly:\n# INSTRUCTIONS\nYou answer customer questions for Harvest Lane, a produce delivery\nbusiness in Ibadan. Answer only about prices, delivery areas, fees and\ndelivery days.\n- Get prices ONLY from the Products table. Never guess a price.\n- Get delivery fees and areas ONLY from the Delivery Areas table.\n- If a question is about a refund, complaint or anything else,\n  write \"HANDOVER\" and a one-line summary for staff.\n- Write a short, friendly draft reply. Do not send anything.\n- Save the draft to HL Inbox with status \"Draft ready\" (add this option to the status dropdown from 1.5).",
+        "3 · Trigger: Zapier Tables › New Record in HL Inbox, only where category = question (if the trigger has no condition option, add to the instructions: \"If the record's category is not question, stop and do nothing.\").",
+        "4 · Tool (allowed): Zapier Tables › Find Record in Products (search by name; returns sku and price_ngn).",
+        "5 · Tool (allowed): Zapier Tables › Find Record in Delivery Areas (search by area; returns fee_ngn and delivery_days).",
+        "6 · Tool (allowed): Zapier Tables › Update Record in HL Inbox, limited to the fields draft_reply and status (set status to Draft ready).",
+        "7 · NOT given (do not add): Gmail send, Sheets delete, anything payment-related (Paystack, refunds), web search or browse.",
+        "8 · Approval: Kemi reads each draft on the HL Staff Desk and sends it with the Approve & send button from 1.5 Gold; the agent never sends."
+      ],
+      "setup": [
+        "Zapier Agents counts activities, not tasks; the free Agents plan lists about 400 activities a month, including testing. Check current limits before a client build.",
+        "In Zapier Tables create Products (name, sku, price_ngn as a number) with Tolu's real prices, and Delivery Areas (area, fee_ngn, delivery_days), e.g. Bodija 1500, Mokola 1500, Ring Road 1500, Challenge 2000, Apete 2500, each with its delivery days.",
+        "In HL Inbox (from 1.5) add the status option Draft ready, and add a draft_reply (Text) field if you didn't in 1.5 Gold.",
+        "Create the agent with the instructions, trigger and only the three tools listed. Connect Zapier Tables with the Harvest Lane business account.",
+        "Show draft_reply on the Staff Desk page next to the Approve & send button."
+      ],
+      "test": "Add 10 question records from your 0.5 Silver list plus a refund request (Silver mission: 12 questions, including 2 complaints, 1 refund and 1 in Pidgin). Every price and fee in the drafts matches the tables, \"Do una deliver to Apete?\" gets ₦2,500 and the right days, the refund and complaints become HANDOVER with a one-line summary, every record ends at Draft ready, and Gmail's Sent folder shows nothing new.",
+      "tasks": "Agents use activities, not tasks: about 3–4 per question (1 trigger + 1–2 lookups + 1 update), so 10 questions a day is about 1,000 a month, beyond the free Agents allowance.",
+      "walk": {
+        "title": "Build it: an agent that drafts, never sends",
+        "sample": "New HL Inbox record · category question · \"Do una deliver to Apete?\"",
+        "steps": [
+          {
+            "at": "1",
+            "say": "A Zap follows fixed steps. An agent gets a job, rules and tools, and decides for itself which tools to use. We'll call this one HL Customer Helper.",
+            "show": [
+              "Zapier Agents › New agent",
+              "Name: HL Customer Helper"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "The instructions name the job and the allowed topics: prices, delivery areas, fees and days. Vague instructions are how an agent ends up promising discounts.",
+            "show": [
+              "Answer only about prices, delivery areas,",
+              "fees and delivery days"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Facts come only from our tables. Prices from Products, fees and areas from Delivery Areas. Never guess a price.",
+            "show": [
+              "Prices ONLY from the Products table",
+              "Fees and areas ONLY from Delivery Areas"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Refunds, complaints and anything else become a handover with a one-line summary. And the agent writes a draft; it never sends.",
+            "show": [
+              "Refund/complaint → \"HANDOVER\" + summary",
+              "Do not send anything",
+              "Status: Draft ready"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "It wakes up on new HL Inbox records, but only questions. If the trigger can't filter, the instructions tell it to stop and do nothing.",
+            "show": [
+              "Zapier Tables › New Record in HL Inbox",
+              "Only where category = question"
+            ],
+            "data": "\"Do una deliver to Apete?\""
+          },
+          {
+            "at": "4",
+            "say": "Now the fewest tools that do the job. First, read a product's price from the Products table.",
+            "show": [
+              "Tables › Find Record in Products",
+              "Returns sku, price_ngn"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "Second, look up an area's fee and delivery days.",
+            "show": [
+              "Tables › Find Record in Delivery Areas",
+              "Returns fee_ngn, delivery_days"
+            ],
+            "data": "Apete · ₦2,500 · next day"
+          },
+          {
+            "at": "6",
+            "say": "Third, write the draft back to the record, and only two fields: the draft reply and the status.",
+            "show": [
+              "Tables › Update Record in HL Inbox",
+              "Fields: draft_reply, status = Draft ready"
+            ],
+            "data": "draft saved · Draft ready"
+          },
+          {
+            "at": "7",
+            "say": "Just as important is what we don't give it. No sending email, no deleting rows, nothing that touches payments. A polite message must never trigger a refund.",
+            "show": [
+              "NOT given: Gmail send · Sheets delete",
+              "NOT given: Paystack, refunds, web search"
+            ]
+          },
+          {
+            "at": "8",
+            "say": "A person stays in the loop. Kemi reads each draft on the Staff Desk and sends it with the Approve and send button.",
+            "show": [
+              "Kemi approves on HL Staff Desk",
+              "Approve & send button (1.5 Gold)"
+            ]
+          },
+          {
+            "at": "8",
+            "say": "Test with ten questions and a refund request. Every price matches the tables, the refund becomes a handover, and Gmail's Sent folder shows nothing new.",
+            "show": [
+              "10 questions + 1 refund",
+              "≈ 3–4 activities per question"
+            ],
+            "data": "Sent folder: nothing new"
+          }
+        ],
+        "end": "The agent reads, drafts and hands over; Kemi decides. Build yours with the same three tools and nothing more."
+      }
+    },
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL MCP helper (Zapier MCP server)",
+      "what": "A Zapier MCP server with a fixed set of exactly two tools, look up an order row and create a Gmail draft, connected to your AI assistant, so Tolu can ask for an order's status and get a draft update email to check and send herself.",
+      "steps": [
+        "1 · Create server: Zapier MCP › New MCP server; name = HL MCP helper; client = your AI assistant (Claude, ChatGPT, Cursor or VS Code).",
+        "2 · Tool set: choose a fixed set of tools; turn off any option that lets tools be added automatically.",
+        "3 · Tool (allowed): Google Sheets › Lookup Spreadsheet Row: Spreadsheet = your 0.4 workbook (fixed); Worksheet = Orders (fixed); Lookup Column = order_id (fixed); Lookup Value = let the AI fill it in.",
+        "4 · Tool (allowed): Gmail › Create Draft: account = the Harvest Lane business Gmail; To, Subject and Body = let the AI fill them in.",
+        "5 · NOT given: Gmail Send Email, any Sheets update or delete action, anything that moves money.",
+        "6 · Connect: follow the connection steps Zapier shows for your client (server URL or config); keep that URL private like a password.",
+        "7 · Ask: \"What's the status of order HL-0043? Draft a short update email to the customer, but don't send it.\" The assistant calls the lookup tool, reads the row, and creates a Gmail draft."
+      ],
+      "setup": [
+        "Zapier MCP runs on your existing plan, including Free; each successful tool call uses two tasks and failed calls use none.",
+        "Use the Harvest Lane business account with access to the Orders sheet only, not the owner's main personal account.",
+        "Make sure Orders has an order_id column and a test row such as HL-0043 with a customer email and status.",
+        "Fix the spreadsheet, worksheet and lookup column in the tool settings so the assistant can only search Orders by order_id.",
+        "Remove the server or regenerate its URL if it is ever shared by mistake."
+      ],
+      "test": "Ask the HL-0043 question: the assistant reports the status from the Orders row and a draft appears in Gmail Drafts, not in Sent. Ask it to \"delete old rows\" or \"just send it\": it says it has no tool for that. Zap history (or the MCP usage page) shows two successful calls.",
+      "tasks": "Two tasks per successful tool call, so the HL-0043 request (one lookup plus one draft) uses four tasks."
+    }
+  ]
+}

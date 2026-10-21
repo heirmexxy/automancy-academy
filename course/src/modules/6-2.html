@@ -1,0 +1,353 @@
+<template data-mod="6.2" id="tpl-6-2">
+<article style="--c:var(--sky)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 6 · Launchpad · Lesson 6.2</span>
+    <h1>Pricing, Packaging &amp; Getting Paid</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Tolu</span><span class="pill">Tools: Paystack (test mode), n8n, Gmail, Google Sheets, a booking link (Calendly or similar)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#tolu"/></svg>
+</header>
+<p class="lede">Most new automation builders charge for their hours and wonder why they're always busy and never well paid. Clients don't buy hours; they buy outcomes. This module shows how to price from the value you create, package it into offers clients can choose between, and get paid automatically, with an onboarding experience that runs itself.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Set prices between your cost floor and the client's value, and explain them.</span></div>
+  <div><b>02</b><span>Package work as a setup fee plus a monthly retainer, in three tiers.</span></div>
+  <div><b>03</b><span>Take payments with Paystack, including monthly subscriptions, and handle currency and usage costs.</span></div>
+  <div><b>04</b><span>Automate onboarding the moment a verified payment lands.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>₦30,000 for ₦400,000 a month</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu holding a small invoice for 30,000 naira.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="45" width="110" height="100" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="235" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">INVOICE</text>
+        <text x="235" y="104" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="18" fill="var(--ink)">₦30,000</text>
+        <text x="235" y="128" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--muted)">"for the bot"</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Last month</b>Tolu built a stock-and-reminder system for a supermarket friend. She charged ₦30,000, about three evenings' "pay".</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A chart showing the client saving 400,000 naira a month.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--volt)"><rect x="60" y="120" width="30" height="40"/><rect x="110" y="95" width="30" height="65"/><rect x="160" y="70" width="30" height="90"/><rect x="210" y="40" width="30" height="120"/></g>
+        <text x="160" y="30" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)">Saved: ₦400,000/month</text>
+        <line x1="50" y1="160" x2="260" y2="160" stroke="var(--ink)" stroke-width="2"/>
+      </svg>
+      <div class="cap"><b>Three months later</b>The supermarket says it saves about ₦400,000 a month in staff time and expired stock.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu fixing the system late at night for free.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="280" cy="35" r="14" fill="#FFF3C4"/>
+        <rect x="170" y="70" width="120" height="70" rx="6" fill="#22344F" stroke="#5A6B85" stroke-width="2"/>
+        <text x="230" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#FF5A63">token expired</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>And every month</b>Tolu fixes things for free: an expired token, a renamed column, a new product. There's no monthly fee, so it's all unpaid.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a sign saying cheapest in Ibadan.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="60" width="140" height="56" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="235" y="86" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#13233A">CHEAPEST IN</text><text x="235" y="104" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#13233A">IBADAN!</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Charge less than everyone! What could possibly go wrong with working for free forever?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Floor, value, and the space between</h3>
+    <figure class="fig"><svg viewBox="0 0 640 170" role="img" aria-label="A price line from left to right: the cost floor (your hours times your rate plus running costs), then the fair price zone, then the client's value ceiling (what the automation is worth to them over a year). Price in the zone, closer to value than to cost.">
+      <rect x="20" y="70" width="600" height="18" rx="9" fill="var(--paper2)" stroke="var(--line)" stroke-width="2"/>
+      <rect x="170" y="70" width="300" height="18" fill="color-mix(in srgb,var(--volt) 55%,transparent)"/>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <path d="M170 60 V98" stroke="var(--ink)" stroke-width="3"/><text x="170" y="50" fill="var(--ink)">Your cost floor</text>
+        <path d="M470 60 V98" stroke="var(--ink)" stroke-width="3"/><text x="470" y="50" fill="var(--ink)">Client's value</text>
+        <text x="320" y="62" fill="var(--volt)">Fair price zone</text>
+      </g>
+      <g font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" text-anchor="middle" fill="var(--muted)">
+        <text x="170" y="118">hours × your rate + costs</text><text x="470" y="118">what it saves or earns them</text>
+        <text x="95" y="150">↙ Glitch's price: you lose</text><text x="320" y="150">price here, nearer value than cost</text><text x="560" y="150">too high: no payback ↘</text>
+      </g>
+    </svg><figcaption>Hourly pricing caps your income at your hours. Value pricing ties it to the client's result, which is also easier for them to justify.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Cost floor</b>Hours to build (estimate, then add 30%) × the rate you need, plus the tools you pay for. Never go below it.</div>
+      <div><b>Value</b>From discovery (6.1): monthly time, errors and revenue, in the client's numbers.</div>
+      <div><b>A common rule of thumb</b>Many consultants aim for a setup fee the client recovers within 2–6 months, and a retainer worth roughly a tenth of the monthly value. Treat these as starting points, not laws.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Setup fee plus monthly retainer</h3>
+    <p>Automations need looking after: tokens expire, apps change, the business grows. A <b>retainer</b> pays you for that, and gives you steady income. Spell out what it includes and where it stops:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>The monthly fee covers</th><th>It doesn't cover (quoted separately)</th></tr></thead>
+      <tbody>
+        <tr><td>Hosting and monitoring; fixing anything that breaks</td><td>New automations or channels</td></tr>
+        <tr><td>AI and messaging usage up to an agreed cap (e.g. 3,000 messages)</td><td>Usage above the cap (billed at cost plus a margin)</td></tr>
+        <tr><td>Up to 2 hours of small changes</td><td>Rebuilds after the client changes core tools</td></tr>
+        <tr><td>A short monthly report: runs, savings, issues</td><td>On-site training days</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#tolu"/></svg><div class="bubble"><b>Tolu:</b> Many of your tools bill in dollars; your client pays in naira. Add a clause: "Monthly fee reviewed if the exchange rate moves more than 15% from the date of this agreement." It protects both of you and avoids awkward surprises.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Three tiers</h3>
+    <p>Offer three packages. Clients compare options instead of asking "yes or no?", and most choose the middle. Build the middle one as the one you want them to choose.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>Starter</th><th>Growth (most chosen)</th><th>Partner</th></tr></thead>
+      <tbody>
+        <tr><td>What</td><td>Refill reminders and stock alerts</td><td>Starter + a WhatsApp assistant for prices and hours</td><td>Growth + monthly improvements and a quarterly review</td></tr>
+        <tr><td>Setup</td><td>₦450,000</td><td>₦850,000</td><td>₦1,200,000</td></tr>
+        <tr><td>Monthly</td><td>₦30,000</td><td>₦60,000</td><td>₦120,000</td></tr>
+        <tr><td>Included use</td><td>1,000 messages</td><td>3,000 messages, AI included up to a cap</td><td>8,000 messages, 6 h of changes</td></tr>
+        <tr><td>Support</td><td>Fixes within 2 working days</td><td>Fixes within 1 working day</td><td>Same-day fixes; priority</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.84rem;color:var(--muted)">Illustrative prices for a small Ibadan pharmacy, based on the 6.1 numbers. Your market, costs and client's value decide your real prices.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Price check</h3>
+    <div class="tokcalc" data-pricing>
+      <div class="row">
+        <label>Value to the client a month (₦, from 6.1)<input data-pr="val" type="number" value="238000" min="0" step="1000"></label>
+        <label>Your hours to build (with buffer)<input data-pr="hrs" type="number" value="30" min="0"></label>
+        <label>Rate you need per hour (₦)<input data-pr="rate" type="number" value="10000" min="0" step="500"></label>
+        <label>Setup fee you'll quote (₦)<input data-pr="setup" type="number" value="450000" min="0" step="10000"></label>
+        <label>Monthly fee you'll quote (₦)<input data-pr="mon" type="number" value="30000" min="0" step="1000"></label>
+        <label>Your monthly costs for this client (₦)<input data-pr="cost" type="number" value="9000" min="0" step="500"></label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b data-o="floor">–</b><span>your setup cost floor</span></div>
+        <div class="stat"><b data-o="vrange">–</b><span>setup range, 1–3 months of value</span></div>
+        <div class="stat"><b data-o="mrange">–</b><span>retainer range, 8–15% of monthly value</span></div>
+        <div class="stat"><b data-o="pb">–</b><span>client's payback on your setup</span></div>
+        <div class="stat"><b data-o="eff">–</b><span>your effective hourly on the setup</span></div>
+        <div class="stat"><b data-o="margin">–</b><span>your monthly margin</span></div>
+      </div>
+      <p style="font-size:.88rem;margin:0"><b>Paystack fees (local, as of Oct 2026: 1.5% + ₦100, ₦100 waived under ₦2,500, capped at ₦2,000; international cards 3.9% + ₦100, and the ₦2,000 cap is listed for local fees only):</b> <span data-o="fees"></span></p>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Agreements and getting paid</h3>
+    <div class="vocab">
+      <div><b>Payment terms</b>50% of setup to start, 50% at go-live (acceptance tests passed). Monthly fees start at go-live, paid in advance.</div>
+      <div><b>Paystack options</b>A payment page or invoice for setup fees; a <b>plan</b> with <b>subscriptions</b> for monthly fees (Paystack sends events such as <code>subscription.create</code>, <code>charge.success</code> and <code>invoice.payment_failed</code>). Sources differ on whether Paystack retries a failed subscription charge, so check Paystack's subscriptions docs and plan your own follow-up either way.</div>
+      <div><b>Who owns what</b>State it: the client owns their data and accounts; you may reuse your general know-how and templates. Workflows run in the client's accounts where possible, so they're never held hostage.</div>
+      <div><b>If they stop paying</b>Say what happens: a reminder, a grace period, then monitoring and changes stop, with a handover pack. Never switch off a client's business without warning.</div>
+      <div><b>Not legal advice</b>For larger contracts, have a lawyer review your template once. It's worth it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://paystack.com/docs/payments/subscriptions/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Paystack Docs: subscriptions</b><small>Read: plans, intervals, and the subscription webhook events.</small></span></a>
+    <a class="wcard" href="https://paystack.com/pricing" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Paystack: pricing</b><small>Check current local and international fees before you quote.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=how+to+price+AI+automation+services" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: pricing AI automation services</b><small>Watch two, and notice how many use setup plus retainer.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: pay → verified → onboarded</h2></div>
+  <div class="prose"><p><b>The goal.</b> When a client pays the 50% deposit (or starts a monthly subscription), n8n verifies the payment with Paystack, then automatically sends a welcome pack, creates the client record, books the kick-off, and alerts Tolu. A failed monthly charge triggers a polite reminder, not a shutdown. Everything in <b>test mode</b> first.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Set up Paystack products</h4>
+      <p>In the Paystack dashboard (test mode): a payment page for each tier's deposit (e.g. "Growth: 50% setup, ₦425,000"), and a plan for each monthly fee (interval: monthly). Add a custom field "Business name" on the payment pages, and put the tier in the page's metadata or name.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Receive and verify</h4>
+      <p>Workflow <b>FF · Payments in</b>: a <b>Webhook</b> node (POST, raw body available) at a production HTTPS URL; paste it into Paystack's webhook settings. Then, as in 2.5:</p>
+<pre class="codebox"><span class="c">1.</span> Verify the signature: HMAC-SHA512 of the raw body with your secret key
+   must equal the x-paystack-signature header (Code node with crypto). Else: stop.
+<span class="c">2.</span> Verify the transaction: GET https://api.paystack.co/transaction/verify/{reference}
+   (Header Auth credential). status must be "success" and the amount must match the tier.
+<span class="c">3.</span> Check the reference isn't already in the Payments sheet (no double onboarding).</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Route by event</h4>
+      <p>A <b>Switch</b> on <code>{{ $json.body.event }}</code>:</p>
+      <ul>
+        <li><b>charge.success</b> for a deposit → onboarding (next step).</li>
+        <li><b>subscription.create</b> → mark the client "retainer active", record the next payment date.</li>
+        <li><b>invoice.payment_failed</b> → friendly email with a payment link, a Telegram note to Tolu, and a check-in 3 days later. No automatic cut-off.</li>
+        <li>Fallback → log it for review.</li>
+      </ul>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Onboard automatically</h4>
+      <ol>
+        <li><b>Google Sheets · Append</b> to Clients: business, contact, tier, amount, reference, date, status "Onboarding".</li>
+        <li><b>Gmail · Send</b> the welcome pack: thank-you, the signed scope, what happens next (week by week), the kick-off booking link, and the intake form (accounts to share, data, contacts).</li>
+        <li><b>Telegram</b> to Tolu: "💰 New client: Okonkwo Pharmacy · Growth · deposit ₦425,000 received (test)."</li>
+        <li>A follow-up after 2 days if the intake form isn't submitted.</li>
+      </ol>
+      <p>Connect the workflow to your error workflow (3.6). A payment that arrives but fails onboarding must alert you immediately.</p>
+      <div class="stats">
+        <div class="stat"><b>&lt; 1 min</b><span>from payment to welcome email</span></div>
+        <div class="stat"><b>2</b><span>verifications before anything happens</span></div>
+        <div class="stat"><b>0</b><span>clients who pay and hear nothing</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><p><b>Weave's reminder:</b> this is the 2.5 payment pattern, now running your own business. If you built it in Make then, you can reuse it; the rules are the same.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Prices sit between your floor and the client's value, and you can explain both.</li><li>A retainer pays for the care automations need.</li><li>Payments are verified twice and de-duplicated before onboarding.</li><li>The first experience after paying is fast, warm and organised.</li><li>Failed payments start a conversation, not a shutdown.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Hourly pricing for high-value work.</li><li>No retainer, and endless free fixes.</li><li>Unlimited AI or message usage included.</li><li>Trusting webhook data without verifying it.</li><li>Live keys while testing.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Money attracts me like nothing else. Five problems.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Two clients paid deposits last week. Neither got a welcome email; Tolu found out from an angry call.</td></tr>
+        <tr><td>B</td><td>A fake POST to the webhook "onboarded" a client who never paid.</td></tr>
+        <tr><td>C</td><td>One client received three welcome packs.</td></tr>
+        <tr><td>D</td><td>A client's monthly AI bill exceeded their entire retainer.</td></tr>
+        <tr><td>E</td><td>The naira fell sharply; tool costs in dollars rose, and Tolu was losing money on every client.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the webhook URL in Paystack still pointed at the test URL (or the workflow wasn't published). Use the production URL, publish, and connect the error workflow.</li>
+        <li><b>B:</b> no verification. Check the signature and verify the transaction with Paystack before acting.</li>
+        <li><b>C:</b> Paystack can send an event more than once. Record each reference and skip duplicates.</li>
+        <li><b>D:</b> unlimited usage was included. Set caps in the scope, monitor usage, and bill overages.</li>
+        <li><b>E:</b> no currency clause. Add an exchange-rate review clause, and review prices at least yearly.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Price three modules as services</h4>
+    <ul><li>Choose three things you've built in this course (e.g. 3.7 inbox triage, Boss 3 bot, 4.4 policy assistant).</li><li>For each, write the client value for a realistic business, your cost floor, a setup fee and a monthly fee, using the price check.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every price clears your floor, gives the client payback within six months, and has a one-line justification.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Payment link to onboarding, in test mode</h4>
+    <ul><li>Build the solved workflow with a Paystack test payment page and one test plan.</li><li>Test: a real test payment, a fake POST, a duplicate event and a failed subscription charge.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The real payment onboards once, the fake is rejected, the duplicate is skipped, and the failed charge produces a reminder, not a shutdown.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Your offer page</h4>
+    <ul><li>Write a one-page offer: who it's for, the problem in their words, three tiers, what each includes and excludes, a real example with numbers, payment terms, and how to book a call.</li><li>Publish it (a simple page or a shareable doc) with your Paystack deposit links.</li><li>Show it to two business owners and note their questions.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both owners can tell you, unprompted, which tier fits them and why, and you've updated the page for their questions.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Where should a price sit?</p><div class="opts">
+      <button type="button" data-opt="a">Below your costs, to win the job</button><button type="button" data-opt="b">At your hours × rate, always</button><button type="button" data-opt="c">Between your cost floor and the client's value</button><button type="button" data-opt="d">Above the client's yearly value</button></div>
+      <p class="fb" hidden data-why="Cover your costs; leave the client a clear payback."></p></div>
+    <div class="q" data-ans="b"><p>2. Why charge a monthly retainer?</p><div class="opts">
+      <button type="button" data-opt="a">Because clients like paying more</button><button type="button" data-opt="b">Automations need ongoing care, and it gives you steady income</button><button type="button" data-opt="c">Paystack requires it</button><button type="button" data-opt="d">To avoid writing a scope</button></div>
+      <p class="fb" hidden data-why="Tokens expire, apps change, businesses grow. Someone should be paid to look after it."></p></div>
+    <div class="q" data-ans="d"><p>3. A payment webhook arrives. What comes first?</p><div class="opts">
+      <button type="button" data-opt="a">Send the welcome pack</button><button type="button" data-opt="b">Thank the client on WhatsApp</button><button type="button" data-opt="c">Add them to the sheet</button><button type="button" data-opt="d">Verify the signature and the transaction with Paystack</button></div>
+      <p class="fb" hidden data-why="Never act on payment data you haven't verified."></p></div>
+    <div class="q" data-ans="a"><p>4. Your tools bill in dollars; clients pay in naira. Protect yourself with…</p><div class="opts">
+      <button type="button" data-opt="a">An exchange-rate review clause</button><button type="button" data-opt="b">Hope</button><button type="button" data-opt="c">Unlimited usage</button><button type="button" data-opt="d">Cheaper prices</button></div>
+      <p class="fb" hidden data-why="Agree in advance when the fee is reviewed."></p></div>
+    <div class="q" data-ans="c"><p>5. A client's monthly subscription charge fails. Best response?</p><div class="opts">
+      <button type="button" data-opt="a">Switch off their automations immediately</button><button type="button" data-opt="b">Ignore it</button><button type="button" data-opt="c">A friendly reminder with a payment link, a note to you, and a follow-up</button><button type="button" data-opt="d">Charge them twice next month</button></div>
+      <p class="fb" hidden data-why="Paystack's docs say failed subscription charges aren't retried, so you follow up, politely."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-6-2">AUTOMANCY LOG · Lesson 6.2 · Pricing, Packaging & Getting Paid
+Date:
+My cost floor (hours × rate + costs) for a typical project:
+My three tiers (setup · monthly · included use):
+Price check: client payback · my effective hourly · monthly margin:
+Payment flow tests: real ✓/✗ · fake ✓/✗ · duplicate ✓/✗ · failed charge ✓/✗:
+Clauses added (usage cap, currency, ownership, non-payment):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-6-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Price between your cost floor and the client's value, closer to value.</li>
+      <li>Setup fee plus retainer; spell out what the retainer covers and caps.</li>
+      <li>Three tiers; make the middle one the one you want chosen.</li>
+      <li>Protect against usage spikes and exchange-rate moves in writing.</li>
+      <li>Verify every payment, skip duplicates, then onboard automatically.</li>
+      <li>Failed payments start a conversation, not a shutdown.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://paystack.com/docs/" target="_blank" rel="noopener">Paystack developer docs</a></li>
+    <li><span class="kind">Text</span><a href="https://paystack.com/docs/payments/subscriptions/" target="_blank" rel="noopener">Paystack Docs: subscriptions</a></li>
+    <li><span class="kind">Text</span><a href="https://paystack.com/pricing" target="_blank" rel="noopener">Paystack pricing</a></li>
+    <li><span class="kind">Text</span><a href="https://developer.flutterwave.com/docs" target="_blank" rel="noopener">Flutterwave developer docs (an alternative)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=how+to+price+AI+automation+services" target="_blank" rel="noopener">YouTube: pricing AI automation services</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a pricing auction: show a real-looking client case with numbers, and have learners write sealed setup and monthly prices. Reveal them in order. The spread is always shocking. Then work through Card 4 together and re-bid. Most learners raise their price, and can now explain why.</p>
+  </div>
+</section>
+
+</article>
+</template>

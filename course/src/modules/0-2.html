@@ -1,0 +1,451 @@
+<template data-mod="0.2" id="tpl-0-2">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.2</span>
+    <h1>How Apps Talk: APIs &amp; Webhooks</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt, with Nodo</span><span class="pill">Tools: Hoppscotch, webhook.site</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Zapier, Make and n8n are, underneath, machines that send messages between apps. Learn to read and write those messages yourself and every platform in this course becomes easier to understand and to fix.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain what an API is, using the client, server and endpoint.</span></div>
+  <div><b>02</b><span>Build a request: method, URL, query parameters, headers and body.</span></div>
+  <div><b>03</b><span>Read a response and diagnose failures from the status code.</span></div>
+  <div><b>04</b><span>Choose between polling and webhooks, and receive a webhook yourself.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The day it rained</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu refreshing a bank app over and over, with a refresh arrow and a clock.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="34" width="80" height="130" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="220" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">BALANCE</text>
+        <text x="220" y="92" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)">no change</text>
+        <path d="M206 124 a14 14 0 1 1 4 12" stroke="var(--spark)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M204 132 L210 138 L214 130" stroke="var(--spark)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <text x="270" y="30" font-family="JetBrains Mono,monospace" font-size="12" fill="var(--glitch)">×14</text>
+        <use href="#tolu" x="30" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>9:10 a.m.</b>"Have you sent the money?" "Yes." Tolu refreshes the bank app for the fourteenth time.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer's phone lights up with an instant payment receipt from another shop.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="60" y="30" width="80" height="140" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="68" y="50" width="64" height="40" rx="8" fill="var(--volt)"/>
+        <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A">PAYMENT</text>
+        <text x="100" y="82" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A">RECEIVED ✓</text>
+        <path d="M150 60 l14 -8 M150 74 h16 M150 88 l14 8" stroke="var(--sun)" stroke-width="4" stroke-linecap="round"/>
+        <rect x="180" y="40" width="124" height="60" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="192" y="64" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">The pharmacy knew</text>
+        <text x="192" y="82" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">I paid in 2 seconds!</text>
+      </svg>
+      <div class="cap"><b>9:12 a.m.</b>The same customer paid a pharmacy with a payment link. The receipt arrived instantly. How did the pharmacy's system know?</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Rain falling on soaked crates of tomatoes on a delivery bike; Glitch holds an umbrella.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--sky)" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M30 10 l-8 18"/><path d="M80 20 l-8 18"/><path d="M130 6 l-8 18"/><path d="M180 24 l-8 18"/><path d="M60 60 l-8 18"/><path d="M150 56 l-8 18"/><path d="M110 40 l-8 18"/></g>
+        <circle cx="70" cy="160" r="20" fill="none" stroke="var(--ink)" stroke-width="4"/><circle cx="170" cy="160" r="20" fill="none" stroke="var(--ink)" stroke-width="4"/>
+        <path d="M70 160 L110 120 L170 160" stroke="var(--ink)" stroke-width="4" fill="none"/>
+        <rect x="84" y="86" width="56" height="34" rx="4" fill="var(--glitch)" stroke="var(--ink)" stroke-width="3"/>
+        <circle cx="98" cy="100" r="5" fill="#fff" opacity=".6"/><circle cx="114" cy="104" r="5" fill="#fff" opacity=".6"/><circle cx="128" cy="98" r="5" fill="#fff" opacity=".6"/>
+        <path d="M232 70 Q262 40 292 70 Z" fill="var(--grape)" stroke="var(--ink)" stroke-width="3"/><path d="M262 70 V96" stroke="var(--ink)" stroke-width="3"/>
+        <use href="#glitch" x="220" y="90" width="84" height="84"/>
+      </svg>
+      <div class="cap"><b>Yesterday</b>Rain soaked six crates of tomatoes on the way to customers. Nobody checked the forecast.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt and Nodo explain that apps talk all day.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="118" y="16" width="190" height="80" rx="16" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M150 94 L136 114 L172 94" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="132" y="42" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">Apps talk to each other</text>
+        <text x="132" y="62" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">all day long. Today you</text>
+        <text x="132" y="82" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">learn their language.</text>
+        <use href="#bolt" x="6" y="44" width="130" height="130"/>
+        <use href="#nodo" x="210" y="104" width="86" height="86"/>
+      </svg>
+      <div class="cap"><b>Evening</b>Bolt brings a friend. "Nodo reads raw data for fun," Bolt says. "She'll show you what the apps actually say."</div>
+    </div>
+  </div>
+  <div class="prose"><p>Two problems, one skill. The pharmacy got an instant receipt because the payment company's system sent a message straight to the pharmacy's system. And Tolu could have checked tomorrow's rain by asking a weather service's system, in one line. Both are apps talking through <b>APIs</b>.</p></div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 15 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>An API is a waiter between two systems</h3>
+    <p>An <b>API</b> (application programming interface) is a set of doors one app opens so other apps can ask it for things or tell it to do things. The app asking is the <b>client</b>. The app answering is the <b>server</b>. Each door is an <b>endpoint</b>: a specific web address for one job.</p>
+    <figure class="fig"><svg viewBox="0 0 640 180" role="img" aria-label="Restaurant analogy: the customer (client) gives an order to the waiter (API), who takes it to the kitchen (server); the dish comes back as the response.">
+      <defs><marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="40" width="160" height="100" rx="14" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="90" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">CLIENT</text>
+      <text x="90" y="96" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="#13233A">You / Zapier</text>
+      <text x="90" y="118" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">the customer</text>
+      <rect x="240" y="40" width="160" height="100" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="320" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">API</text>
+      <text x="320" y="96" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="var(--ink)">Endpoints</text>
+      <text x="320" y="118" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">the waiter + the menu</text>
+      <rect x="470" y="40" width="160" height="100" rx="14" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="550" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">SERVER</text>
+      <text x="550" y="96" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="#13233A">Weather service</text>
+      <text x="550" y="118" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">the kitchen</text>
+      <path d="M172 70 H236" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#b1)"/><text x="204" y="60" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">request</text>
+      <path d="M402 70 H466" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#b1)"/>
+      <path d="M466 116 H402" stroke="var(--spark)" stroke-width="2.5" marker-end="url(#b1)"/>
+      <path d="M236 116 H172" stroke="var(--spark)" stroke-width="2.5" marker-end="url(#b1)"/><text x="204" y="136" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">response</text>
+    </svg><figcaption>You never walk into the kitchen. You order from the menu (the API documentation), and the waiter brings back exactly what you asked for.</figcaption></figure>
+    <div class="analogy"><b>Why this matters:</b> every "app" or "module" in Zapier, Make and n8n is a friendly wrapper around an API. When an app has no ready-made module, you call its API directly with an HTTP step. That skill is what separates beginners from builders.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The anatomy of a request</h3>
+    <p>Every request has up to four parts: a <b>method</b> (what you want to do), a <b>URL</b> (where), <b>headers</b> (extra instructions, like your key), and a <b>body</b> (the data you're sending). Here's the URL from today's solved problem, taken apart:</p>
+    <div class="urlparts" aria-label="URL broken into parts">
+      <span style="--pc:#FFD37A"><i>Scheme</i>https://</span><span style="--pc:#9FD3F7"><i>Host</i>api.open-meteo.com</span><span style="--pc:#8FE0B5"><i>Path / endpoint</i>/v1/forecast</span><span style="--pc:#FFC59E"><i>Query starts</i>?</span><span style="--pc:#C9BBFF"><i>Param</i>latitude=7.38</span><span style="--pc:#FFC59E"><i>and</i>&amp;</span><span style="--pc:#C9BBFF"><i>Param</i>longitude=3.94</span><span style="--pc:#FFC59E"><i>and</i>&amp;</span><span style="--pc:#C9BBFF"><i>Param</i>daily=precipitation_probability_max</span><span style="--pc:#FFC59E"><i>and</i>&amp;</span><span style="--pc:#C9BBFF"><i>Param</i>timezone=Africa/Lagos</span>
+    </div>
+    <p>The method says what kind of job it is. Five cover almost everything you'll do:</p>
+    <div class="methods">
+      <div><b>GET</b><p>Read something. Changes nothing. "Show me tomorrow's forecast."</p></div>
+      <div><b>POST</b><p>Create something or send an event. "Here's a new order."</p></div>
+      <div><b>PUT</b><p>Replace a whole record. "This is the full updated customer."</p></div>
+      <div><b>PATCH</b><p>Change part of a record. "Set status to Paid."</p></div>
+      <div><b>DELETE</b><p>Remove a record. Use with care.</p></div>
+    </div>
+    <div class="vocab">
+      <div><b>Query parameters</b>Options after the <code>?</code>, joined by <code>&amp;</code>. Mostly used with GET.</div>
+      <div><b>Headers</b>Labels on the envelope: <code>Content-Type</code>, <code>Authorization</code>.</div>
+      <div><b>Body</b>The letter inside, usually JSON. Used with POST, PUT, PATCH.</div>
+      <div><b>Base URL</b>The part every endpoint shares, like <code>https://api.open-meteo.com/v1</code>.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Status codes tell you who to blame</h3>
+    <p>Every response starts with a three-digit number. The first digit tells you almost everything.</p>
+    <div class="codes">
+      <div class="codefam" style="--fc:var(--volt)"><h4>2xx · Success</h4><p>It worked.</p><ul><li><b>200</b> OK, here's your data</li><li><b>201</b> Created</li><li><b>204</b> Done, nothing to return</li></ul></div>
+      <div class="codefam" style="--fc:var(--sky)"><h4>3xx · Moved</h4><p>Look somewhere else.</p><ul><li><b>301</b> Moved for good</li><li><b>304</b> Not modified, use your copy</li></ul></div>
+      <div class="codefam" style="--fc:var(--sun)"><h4>4xx · Your side</h4><p>Fix your request.</p><ul><li><b>400</b> Bad request (missing or wrong data)</li><li><b>401</b> Not signed in (bad or missing key)</li><li><b>403</b> Signed in, but not allowed</li><li><b>404</b> Wrong address</li><li><b>429</b> Too many requests, slow down</li></ul></div>
+      <div class="codefam" style="--fc:var(--glitch)"><h4>5xx · Their side</h4><p>Wait and retry.</p><ul><li><b>500</b> Server error</li><li><b>502 / 503</b> Server down or overloaded</li><li><b>504</b> Server took too long</li></ul></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> A 4xx means stop and change something; retrying won't help. A 5xx means it's not your fault; wait and try again. You'll build exactly this rule into n8n in Module 3.6.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Proving who you are</h3>
+    <p>Most APIs need to know who's calling, both to protect data and to bill you. You'll meet three patterns:</p>
+    <div class="vocab">
+      <div><b>No key</b>Open, public data. Open-Meteo works this way for non-commercial use, which is why we start there.</div>
+      <div><b>API key</b>A secret string sent in a header or parameter, e.g. <code>Authorization: Bearer sk_test_…</code>.</div>
+      <div><b>OAuth</b>The "Sign in with Google" screen. You approve access; the app gets a token. Covered in Module 0.6.</div>
+    </div>
+    <div class="analogy"><b>Treat keys like cash.</b> Anyone holding your key can spend as you. Never paste one into a chat, a shared sheet or a screenshot.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Polling vs. webhooks: mailbox or doorbell</h3>
+    <p><b>Polling</b> means your system asks "anything new?" on a timer. <b>A webhook</b> means the other system calls <i>your</i> URL the moment something happens. Tolu refreshing the bank app is polling. The pharmacy's instant receipt was a webhook.</p>
+    <figure class="fig"><svg viewBox="0 0 640 200" role="img" aria-label="Two timelines. Polling: six checks, five return nothing, one finds the payment late. Webhook: the payment happens and a single message arrives immediately.">
+      <text x="10" y="30" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)">Polling · every 5 min</text>
+      <line x1="10" y1="62" x2="630" y2="62" stroke="var(--line)" stroke-width="3"/>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)" text-anchor="middle">
+        <circle cx="60" cy="62" r="9" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="60" y="88">none</text>
+        <circle cx="160" cy="62" r="9" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="88">none</text>
+        <circle cx="260" cy="62" r="9" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="260" y="88">none</text>
+        <circle cx="360" cy="62" r="9" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="360" y="88">none</text>
+        <circle cx="460" cy="62" r="9" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="460" y="88">found it</text>
+        <circle cx="560" cy="62" r="9" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="560" y="88">none</text>
+      </g>
+      <path d="M392 46 V78" stroke="var(--spark)" stroke-width="2" stroke-dasharray="3 3"/><text x="392" y="40" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--spark)">paid</text>
+      <text x="10" y="130" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)">Webhook · the doorbell</text>
+      <line x1="10" y1="162" x2="630" y2="162" stroke="var(--line)" stroke-width="3"/>
+      <path d="M392 146 V178" stroke="var(--spark)" stroke-width="2" stroke-dasharray="3 3"/><text x="392" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--spark)">paid</text>
+      <circle cx="404" cy="162" r="9" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="404" y="190" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">instant</text>
+    </svg><figcaption>Polling makes six requests and still finds the payment late. The webhook makes one, instantly. Most "instant" triggers in Zapier and Make are webhooks under the hood.</figcaption></figure>
+    <div class="why">
+      <div class="box"><h5>Polling is fine when</h5><ul><li>The app offers no webhooks.</li><li>A few minutes' delay doesn't matter.</li><li>You're checking on a schedule anyway (the daily weather check).</li></ul></div>
+      <div class="box"><h5>Webhooks win when</h5><ul><li>Speed matters (payments, new orders).</li><li>Events are rare; polling would waste requests and credits.</li><li>You need to react to every single event.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=APIs+for+beginners+freeCodeCamp" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>freeCodeCamp: APIs for beginners (watch the first 15 minutes)</b><small>Look for: the difference between the API and the documentation, and a live GET request.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=webhooks+explained+simply" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Any short "webhooks explained" video</b><small>Look for: who calls whom. In a webhook, the other app is the client.</small></span></a>
+    <a class="wcard" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>MDN: An overview of HTTP (read, 10 min)</b><small>Look for: the example request and response. Match each line to Card 2.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 25 MIN</span><h2>Solved problem: will it rain on tomorrow's deliveries?</h2></div>
+  <div class="prose"><p><b>The problem.</b> Tolu wants a daily answer by 6 p.m.: "Is there a real chance of rain tomorrow?" If yes, riders pack waterproof covers. Then Tolu wants to see how an instant payment notice would reach Harvest Lane. We'll do both by hand, with no automation platform, so you see exactly what the platforms do for you later.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Find the API and read the menu</h4>
+      <p>Open-Meteo is a free weather API that needs no key for non-commercial use. Its documentation page has a builder: choose a location and the variables you want, and it writes the URL for you. We need one daily value, <code>precipitation_probability_max</code> (the highest chance of rain during the day, in %), for Ibadan (latitude 7.38, longitude 3.94).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Build the request in Hoppscotch</h4>
+      <p>Open <a href="https://hoppscotch.io" target="_blank" rel="noopener">hoppscotch.io</a> in your browser (free, no sign-up). Set the method to <b>GET</b> and paste:</p>
+<pre class="codebox">GET https://api.open-meteo.com/v1/forecast
+    ?latitude=7.38
+    &amp;longitude=3.94
+    &amp;daily=precipitation_probability_max,precipitation_sum
+    &amp;timezone=Africa/Lagos
+    &amp;forecast_days=3</pre>
+      <p>Hoppscotch splits the query into a parameter table automatically. That table is exactly what you'll fill in on an HTTP step in Zapier, Make or n8n.</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Parameter</th><th>Why it's there</th></tr></thead><tbody>
+        <tr><td><code>latitude</code>, <code>longitude</code></td><td>Where. Change these for your own town.</td></tr>
+        <tr><td><code>daily</code></td><td>Which daily values to return, comma-separated.</td></tr>
+        <tr><td><code>timezone</code></td><td>So "tomorrow" means tomorrow in Nigeria, not in London.</td></tr>
+        <tr><td><code>forecast_days</code></td><td>Keep the answer short: today plus two days.</td></tr>
+      </tbody></table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Send it and read the response</h4>
+      <p>Press <b>Send</b>. You should see status <b>200 OK</b>, a <code>content-type</code> header of <code>application/json</code>, and a body shaped like this (your numbers will differ):</p>
+<pre class="codebox">{
+  "latitude": 7.375,
+  "longitude": 3.9375,
+  "timezone": "Africa/Lagos",
+  "daily_units": { "precipitation_probability_max": "%", "precipitation_sum": "mm" },
+  "daily": {
+    "time":                          ["2026-10-01", "2026-10-02", "2026-10-03"],
+    <span class="k">"precipitation_probability_max": [35, 70, 20],</span>
+    "precipitation_sum":             [0.4, 6.1, 0.0]
+  }
+}</pre>
+      <p>Notice the shape: <code>daily</code> holds lists that line up by position. Position 0 is today, position 1 is tomorrow. So tomorrow's chance of rain is <code>daily.precipitation_probability_max[1]</code>, which is 70. (Module 0.3 is all about reading shapes like this.)</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Turn the answer into a decision</h4>
+      <p>Tolu and Bolt agree a simple rule: <b>if tomorrow's chance is 50% or more, pack covers.</b> 70 ≥ 50, so tonight's message to riders is "Pack covers." That rule, plus a 6 p.m. schedule and a message step, is a complete automation. You'll build it for real in Track 1.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>No AI needed.</b> A number compared to a threshold is a rules job. This is Card 2 from Module 0.1 in action: use the simplest level that works.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Break it on purpose</h4>
+      <p>Delete the <code>latitude</code> parameter and send again. You'll get a <b>400 Bad Request</b>, and the body explains which parameter is missing. Now change <code>/v1/forecast</code> to <code>/v1/forcast</code>: that's a <b>404</b>, because the door doesn't exist. Learning to cause errors on purpose makes them far less scary when they happen by accident.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Receive a webhook yourself</h4>
+      <p>Now flip roles. Open <a href="https://webhook.site" target="_blank" rel="noopener">webhook.site</a>: it gives you a unique URL that records anything sent to it. That URL plays the part of "Harvest Lane's system". In Hoppscotch, send a <b>POST</b> to it, pretending to be a payment company:</p>
+<pre class="codebox">POST https://webhook.site/&lt;your-unique-id&gt;
+Content-Type: application/json
+
+{
+  "event": "payment.success",
+  "order_id": "HL-0042",
+  "amount_kobo": 1250000,
+  "customer_phone": "+2348030000000",
+  "paid_at": "2026-10-01T09:12:04+01:00"
+}</pre>
+      <p>Switch to the webhook.site tab: the request appears instantly, with its method, headers and JSON body. That's exactly what the pharmacy's system received. In a real setup, the payment company sends this when a customer pays, and your automation marks order HL-0042 as Paid.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Why "amount_kobo"?</b> Many Nigerian payment APIs count in kobo, not naira, to avoid decimals. 1,250,000 kobo is ₦12,500. Always check the unit in the docs before doing maths with an amount.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Doing it by hand first shows what every platform's HTTP step hides.</li><li>Reading the docs builder avoids guessing parameter names.</li><li>Breaking the request teaches the two most common errors in two minutes.</li><li>Playing both client and server makes webhooks click.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Forgetting the time zone, so "tomorrow" is off by a day at night.</li><li>Reading position 0 (today) instead of 1 (tomorrow).</li><li>Sending JSON without <code>Content-Type: application/json</code>.</li><li>Treating kobo as naira.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I "helped" Tolu send four requests. None of them work. Can you tell why from the code alone?</div></div>
+<pre class="codebox"><span class="c"># A  → returns 404</span>
+GET https://api.open-meteo.com/v1/forcast?latitude=7.38&amp;longitude=3.94&amp;daily=precipitation_sum
+
+<span class="c"># B  → returns 401</span>
+GET https://api.example-pay.com/v1/transactions
+Authorization: sk_test_4f9a2c…
+
+<span class="c"># C  → the receiver says the body is empty / unreadable</span>
+POST https://webhook.site/&lt;id&gt;
+Content-Type: text/plain
+{"order_id":"HL-0042","status":"paid"}
+
+<span class="c"># D  → starts fine, then returns 429 after a few seconds</span>
+Loop: GET the forecast 300 times, once per customer, as fast as possible</pre>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> typo in the endpoint, <code>forcast</code>. 404 means the address doesn't exist. Copy paths from the docs; don't retype them.</li>
+        <li><b>B:</b> the key is missing the <code>Bearer </code> prefix. Most APIs expect <code>Authorization: Bearer &lt;key&gt;</code>. 401 means "I don't know who you are".</li>
+        <li><b>C:</b> the header says plain text, so the receiver doesn't parse the JSON. Use <code>Content-Type: application/json</code>.</li>
+        <li><b>D:</b> 429 means too many requests. Everyone is in the same city, so call once and reuse the answer. When you must make many calls, batch them and wait between batches (Module 3.3).</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 17 MIN+</span><h2>Missions</h2></div>
+
+  <div class="dissect" data-dissect>
+    <h4>Tool: URL dissector</h4>
+    <p style="font-size:.93rem;color:var(--muted)">Paste any API URL to see its parts. Use it for the Bronze mission.</p>
+    <label for="dissect-0-2" class="crit">API URL</label>
+    <input id="dissect-0-2" type="url" value="https://date.nager.at/api/v3/PublicHolidays/2026/NG">
+    <div data-out></div>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Call three public APIs</h4>
+    <ul>
+      <li>Weather for your own town: Open-Meteo, with your latitude and longitude.</li>
+      <li>Public holidays: <code>https://date.nager.at/api/v3/PublicHolidays/2026/NG</code> (change the year or country code).</li>
+      <li>Exchange rates: <code>https://open.er-api.com/v6/latest/USD</code>.</li>
+      <li>For each, write down the method, full URL, status code, and one value you pulled out of the response.</li>
+    </ul>
+    <span class="crit">Done when</span>
+    <ul><li>All three return 200, and you can point to exactly where your chosen value sits in the JSON.</li></ul>
+    <details class="reveal"><summary>See a model answer</summary><div>
+      <p><b>Holidays:</b> GET, 200. The body is a list; each item has <code>date</code>, <code>localName</code> and <code>name</code>. First item's <code>name</code> is New Year's Day.</p>
+      <p><b>Exchange rates:</b> GET, 200. The naira rate sits at <code>rates.NGN</code>. The response also shows when rates were last updated, which matters before you quote a price.</p>
+    </div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Be the receiver: webhook.site drills</h4>
+    <ul>
+      <li>Send three POSTs to your webhook.site URL: a normal order, one missing <code>customer_phone</code>, and one with <code>amount_kobo</code> as text ("12500") instead of a number.</li>
+      <li>Add a custom header, e.g. <code>X-Source: harvest-lane-test</code>, and find it on the receiving side.</li>
+      <li>Write a short checklist: what should Harvest Lane's system check before trusting an incoming payment webhook?</li>
+    </ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your checklist has at least four checks, and each one is linked to a test you sent.</li></ul>
+    <details class="reveal"><summary>See a model checklist</summary><div>
+      <ul><li>Required fields exist (order_id, amount, event).</li><li>Types are right: amount is a number, not text.</li><li>The amount matches the order's total in our sheet.</li><li>The event is one we expect (<code>payment.success</code>), not a refund or test.</li><li>We haven't already processed this order_id (no double counting).</li><li>The request really came from the payment company: real providers sign each webhook with a secret, and we verify the signature (Module 2.5).</li></ul>
+    </div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Read real docs and make a real call</h4>
+    <ul>
+      <li>Create a Telegram bot with @BotFather (free) and get its token. Message your bot once, so it's allowed to reply to you.</li>
+      <li>From the Telegram Bot API docs, work out the method, URL and body for <code>getUpdates</code> (to find your chat_id) and <code>sendMessage</code>.</li>
+      <li>Use Hoppscotch to make your bot send you tomorrow's rain decision from the solved problem.</li>
+      <li>Then, using the Paystack docs, write out (don't send) the request to create a ₦12,500 payment for a customer. Mind the unit.</li>
+    </ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your phone shows the bot's message, and your written Paystack request has the right method, URL, headers and amount in kobo.</li></ul>
+    <details class="reveal"><summary>See the model answer</summary><div>
+<pre class="codebox">POST https://api.telegram.org/bot&lt;YOUR_TOKEN&gt;/sendMessage
+Content-Type: application/json
+
+{ "chat_id": 123456789, "text": "Rain chance tomorrow: 70%. Pack covers." }
+
+<span class="c"># Paystack: initialise a transaction (write it, don't send with a live key)</span>
+POST https://api.paystack.co/transaction/initialize
+Authorization: Bearer &lt;SECRET_KEY&gt;
+Content-Type: application/json
+
+{ "email": "customer@example.com", "amount": 1250000 }</pre>
+      <p>The amount is 1,250,000 because Paystack counts in kobo. Keep secret keys out of screenshots; use test keys while learning.</p>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="a"><p>1. You want to read tomorrow's forecast without changing anything. Which method?</p><div class="opts">
+      <button type="button" data-opt="a">GET</button><button type="button" data-opt="b">POST</button><button type="button" data-opt="c">PATCH</button><button type="button" data-opt="d">DELETE</button></div>
+      <p class="fb" hidden data-why="GET reads data and changes nothing on the server."></p></div>
+    <div class="q" data-ans="c"><p>2. A request returns 401. What's the most likely cause?</p><div class="opts">
+      <button type="button" data-opt="a">The server crashed</button><button type="button" data-opt="b">The endpoint path has a typo</button><button type="button" data-opt="c">The key is missing, wrong, or badly formatted</button><button type="button" data-opt="d">You sent too many requests</button></div>
+      <p class="fb" hidden data-why="401 means the server doesn't know who you are. A typo is 404, overload is 5xx, too many requests is 429."></p></div>
+    <div class="q" data-ans="b"><p>3. Which best describes a webhook?</p><div class="opts">
+      <button type="button" data-opt="a">Your system checks another app every five minutes</button><button type="button" data-opt="b">Another app calls your URL the moment an event happens</button><button type="button" data-opt="c">A secret key for signing in</button><button type="button" data-opt="d">A type of spreadsheet formula</button></div>
+      <p class="fb" hidden data-why="A webhook is the doorbell: the other system calls you. Checking on a timer is polling."></p></div>
+    <div class="q" data-ans="d"><p>4. In <code>…/v1/forecast?latitude=7.38&amp;timezone=Africa/Lagos</code>, what is <code>timezone=Africa/Lagos</code>?</p><div class="opts">
+      <button type="button" data-opt="a">A header</button><button type="button" data-opt="b">The endpoint</button><button type="button" data-opt="c">The request body</button><button type="button" data-opt="d">A query parameter</button></div>
+      <p class="fb" hidden data-why="Everything after the ? is query parameters, joined by &."></p></div>
+    <div class="q" data-ans="a"><p>5. You get 503 from a courier's API at 2 a.m. What should your automation do?</p><div class="opts">
+      <button type="button" data-opt="a">Wait and retry a few times, then alert a person</button><button type="button" data-opt="b">Change the API key</button><button type="button" data-opt="c">Delete the order</button><button type="button" data-opt="d">Rewrite the request body</button></div>
+      <p class="fb" hidden data-why="5xx is the server's problem. Retrying after a pause usually works; if not, a human should know."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+    <p>Screenshot one successful request and one error you caused on purpose. Add them to your log.</p>
+<pre id="log-0-2">AUTOMANCY LOG · Lesson 0.2 · How Apps Talk
+Date:
+APIs I called (method + endpoint):
+  1.
+  2.
+  3.
+A value I extracted and its JSON path:
+An error I caused on purpose (code + cause):
+Webhook test: what I sent / what the receiver saw:
+One check a real webhook receiver must do:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-0-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>An API is a menu of endpoints one app offers to others. The caller is the client; the answerer is the server.</li>
+      <li>A request is method + URL (with query parameters) + headers + body.</li>
+      <li>GET reads, POST creates or sends events, PUT replaces, PATCH updates, DELETE removes.</li>
+      <li>2xx worked, 4xx fix your request, 5xx wait and retry.</li>
+      <li>Polling asks on a timer; a webhook rings your doorbell the moment something happens.</li>
+      <li>Check units (kobo vs. naira) and time zones before trusting any number.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview" target="_blank" rel="noopener">MDN: An overview of HTTP</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=APIs+for+beginners+freeCodeCamp" target="_blank" rel="noopener">freeCodeCamp: APIs for beginners (full course)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: HTTP modules and webhooks</a></li>
+    <li><span class="kind">Text</span><a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener">Telegram: build your first bot</a></li>
+    <li><span class="kind">Text</span><a href="https://paystack.com/docs/" target="_blank" rel="noopener">Paystack developer docs (payments and webhooks)</a></li>
+    <li><span class="kind">Tool</span><a href="https://hoppscotch.io" target="_blank" rel="noopener">Hoppscotch</a> · <a href="https://webhook.site" target="_blank" rel="noopener">webhook.site</a> · <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Open-Meteo docs</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Do the restaurant analogy as a role-play: one learner is the client, one the waiter, one the kitchen, with a printed "menu" of three endpoints. For the webhook step, project webhook.site and let the room send POSTs to one shared URL; seeing dozens of requests arrive live is the moment webhooks click. Budget extra time for learners who have never used a browser developer tool.</p>
+  </div>
+</section>
+
+</article>
+</template>

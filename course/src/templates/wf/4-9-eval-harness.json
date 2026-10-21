@@ -1,0 +1,719 @@
+{
+  "name": "HL · Sage Desk evaluation (4.9)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Evaluation harness\nLesson 4.9. Runs every case in SageDesk_Tests through Sage Desk, scores it in code (must_include, must_not_include, expected_tool, forbidden_tool), uses an AI judge only for tone cases, writes answer · tools_called · pass back to the sheet, and appends one row per run to SageDesk_Runs.\n\n**Credentials:** Google Sheets OAuth2; OpenAI (judge).\n**Replace:** YOUR_SHEET_ID (4 nodes); YOUR_SAGE_DESK_WORKFLOW_ID (pick Sage Desk); YOUR_JUDGE_MODEL; in Run settings: YOUR_VERSION_LABEL and the previous run's accuracy.\n\nSageDesk_Tests columns: id, question, category, critical (yes/no), must_include, must_not_include, expected_tool, forbidden_tool, chat_id (optional test account), answer, tools_called, pass, notes.\nSageDesk_Runs columns: run_at, version, cases, passed, accuracy_pct, critical_failed, release_ok, tokens.",
+        "height": 560,
+        "width": 460
+      },
+      "id": "df6f4b3a-ef08-4252-917f-028acdb00fb3",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e6722d17-6529-43a4-9aa2-dcecba573e80",
+      "name": "Run evaluation",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa0cb64b-cfe4-473c-a6c5-4fc87f4365af",
+              "name": "version",
+              "value": "YOUR_VERSION_LABEL",
+              "type": "string"
+            },
+            {
+              "id": "defe981e-8864-4971-946f-54d25fad0542",
+              "name": "previous_accuracy_pct",
+              "value": "0",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72554295-6e32-4dc2-97dc-71390cfbdac2",
+      "name": "Run settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SageDesk_Tests",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "a119f9f0-4974-4423-abdc-8d740d34a07f",
+      "name": "Read SageDesk_Tests",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "93d53c78-a440-42b0-8952-d0ce727fe455",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a004d5d-dcf9-45c6-9e07-b1b6d709d7ae",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            },
+            {
+              "id": "fbedae1e-e642-4c72-8fcb-ef55a3403f4e",
+              "name": "chat_id",
+              "value": "={{ $json.chat_id || 'eval' }}",
+              "type": "string"
+            },
+            {
+              "id": "376139c5-a6b7-4c74-8e9e-ef382995f2ce",
+              "name": "is_eval",
+              "value": "true",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9a4e0d76-1bdf-4088-b665-72682b67caec",
+      "name": "Case input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SAGE_DESK_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "ca208a9f-7cb2-4626-b375-01622bddb61d",
+      "name": "Run Sage Desk",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        140
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Score one case: code checks first, then tool checks.\nconst t = $('Loop Over Items').first().json, a = String($json.output ?? '').toLowerCase();\nconst tools = Array.isArray($json.intermediateSteps)\n  ? $json.intermediateSteps.map(s => s.action?.tool)\n  : String($json.tools_called ?? '').split(',').map(s => s.trim()).filter(Boolean);\nconst has = s => !s || s.split('|').some(x => a.includes(x.trim().toLowerCase()));\nconst hasNot = s => !s || !s.split('|').some(x => a.includes(x.trim().toLowerCase()));\nconst pass = has(t.must_include) && hasNot(t.must_not_include)\n  && (!t.expected_tool || tools.includes(t.expected_tool))\n  && (!t.forbidden_tool || !tools.includes(t.forbidden_tool));\nreturn { json: { id: t.id, category: t.category, critical: t.critical, question: t.question,\n  pass, tools_called: tools.join(', '), answer: $json.output } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "afe2ad6a-eb13-4629-86ee-e1ae558d1795",
+      "name": "Score case",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "a3c63434-6c3b-42e1-8944-a60ecd069bd8",
+              "leftValue": "={{ $json.category === 'tone' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "67f3412c-6940-4ee9-a89f-fa53857e29e2",
+      "name": "Tone case?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "hasOutputParser": true,
+        "text": "={{ 'Customer message:\\n' + $json.question + '\\n\\nReply:\\n' + $json.answer }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You check the tone of a support reply against this rubric. Answer each with yes or no.\n1. Is it warm and polite, in plain Nigerian English?\n2. Is it under 80 words?\n3. Does it avoid blaming the customer?\ntone_ok is true only if all three are yes. Give a one-sentence reason."
+            }
+          ]
+        }
+      },
+      "id": "964dfee9-7854-4408-883a-39670a3aa9e3",
+      "name": "AI judge (tone)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1760,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_JUDGE_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "13ed8e57-5edf-4bcd-b3d8-bb4168716aa1",
+      "name": "Judge model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"tone_ok\": {\n      \"type\": \"boolean\"\n    },\n    \"reason\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"tone_ok\",\n    \"reason\"\n  ]\n}"
+      },
+      "id": "7f67de5f-14c7-4054-8a3a-2b83acfa8a58",
+      "name": "Judge verdict",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1860,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tone cases: the code checks AND the judge's yes/no must both pass.\nconst s = $('Score case').item.json;\nconst v = $json.output ?? $json;\nreturn { json: { ...s, pass: s.pass && v.tone_ok === true, notes: 'judge: ' + (v.reason ?? '') } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "7f392a33-6c78-44c4-a43e-53a2f3e341e8",
+      "name": "Apply judge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SageDesk_Tests",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "answer": "={{ $json.answer }}",
+            "tools_called": "={{ $json.tools_called }}",
+            "pass": "={{ $json.pass ? 'yes' : 'no' }}",
+            "notes": "={{ $json.notes ?? '' }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tools_called",
+              "displayName": "tools_called",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pass",
+              "displayName": "pass",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fa9ecd86-3654-41cc-b6af-648d7543c209",
+      "name": "Write outputs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2200,
+        140
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SageDesk_Tests",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "70e6d800-947a-484b-9514-eea36fefbab1",
+      "name": "Read results",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        -160
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Release rule: every critical case passes, and accuracy doesn't drop.\nconst cfg = $('Run settings').first().json;\nconst rows = $input.all().map(i => i.json).filter(r => r.id !== undefined && r.id !== '');\nconst yes = v => String(v).toLowerCase() === 'yes' || v === true || String(v).toLowerCase() === 'true';\nconst passed = rows.filter(r => yes(r.pass));\nconst critFails = rows.filter(r => yes(r.critical) && !yes(r.pass)).map(r => r.id);\nconst accuracy = rows.length ? Math.round(passed.length / rows.length * 1000) / 10 : 0;\nreturn [{ json: { run_at: $now.toISO(), version: cfg.version, cases: rows.length, passed: passed.length,\n  accuracy_pct: accuracy, critical_failed: critFails.join(', ') || 'none',\n  release_ok: critFails.length === 0 && accuracy >= Number(cfg.previous_accuracy_pct || 0) ? 'yes' : 'no',\n  tokens: 'see agent executions' } }];"
+      },
+      "id": "e6584470-4cdf-44df-9057-27a9f60bfb65",
+      "name": "Run metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SageDesk_Runs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "run_at": "={{ $json.run_at }}",
+            "version": "={{ $json.version }}",
+            "cases": "={{ $json.cases }}",
+            "passed": "={{ $json.passed }}",
+            "accuracy_pct": "={{ $json.accuracy_pct }}",
+            "critical_failed": "={{ $json.critical_failed }}",
+            "release_ok": "={{ $json.release_ok }}",
+            "tokens": "={{ $json.tokens }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "run_at",
+              "displayName": "run_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "version",
+              "displayName": "version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cases",
+              "displayName": "cases",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "passed",
+              "displayName": "passed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "accuracy_pct",
+              "displayName": "accuracy_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "critical_failed",
+              "displayName": "critical_failed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "release_ok",
+              "displayName": "release_ok",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tokens",
+              "displayName": "tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "39d8c985-3d22-413e-a4e5-df1cc1a415a8",
+      "name": "Log run",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1320,
+        -160
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "### Why not the Evaluation nodes?\nThe lesson uses n8n Evaluations (Evaluation Trigger, Check If Evaluating, Set Outputs, Set Metrics). This template builds the same harness from standard nodes so it imports on any version: Loop Over Items = Evaluation Trigger; the is_eval flag = Check If Evaluating; Write outputs = Set Outputs; Log run = Set Metrics.\n\nTokens: read them from the agent's executions (or LangSmith) and add them to the run row.\n\nRelease rule: release_ok = yes only if every critical case passes and accuracy is not below the previous run.",
+        "height": 320,
+        "width": 440
+      },
+      "id": "d508a973-a78a-48f6-acba-603950d7d00f",
+      "name": "Sticky Note 17",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        -520
+      ]
+    }
+  ],
+  "connections": {
+    "Run evaluation": {
+      "main": [
+        [
+          {
+            "node": "Run settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run settings": {
+      "main": [
+        [
+          {
+            "node": "Read SageDesk_Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read SageDesk_Tests": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Case input": {
+      "main": [
+        [
+          {
+            "node": "Run Sage Desk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Sage Desk": {
+      "main": [
+        [
+          {
+            "node": "Score case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score case": {
+      "main": [
+        [
+          {
+            "node": "Tone case?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Read results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Case input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tone case?": {
+      "main": [
+        [
+          {
+            "node": "AI judge (tone)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Write outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI judge (tone)": {
+      "main": [
+        [
+          {
+            "node": "Apply judge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply judge": {
+      "main": [
+        [
+          {
+            "node": "Write outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Judge model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI judge (tone)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Judge verdict": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI judge (tone)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write outputs": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read results": {
+      "main": [
+        [
+          {
+            "node": "Run metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run metrics": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

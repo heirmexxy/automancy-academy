@@ -1,0 +1,59 @@
+{
+  "id": "4.3",
+  "items": [
+    {
+      "file": "4-3-sub-last-order.json",
+      "name": "SUB · Last order",
+      "what": "Sub-workflow behind get_last_order: returns the newest order for the chat_id it is given, or found: false.",
+      "setup": [
+        "Create (or reuse) a Google Sheets OAuth2 credential and select it in Orders for this chat.",
+        "Replace YOUR_SHEET_ID in Orders for this chat with your sheet's ID (Orders tab with order_id, chat_id, items_json, delivery_date, created_at and the other Boss 3 columns).",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Pin {\"chat_id\": \"512349876\"} (a chat_id that has orders in your sheet) on the trigger and execute: you should get found: true with that customer's newest order. A chat_id with no orders returns found: false."
+    },
+    {
+      "file": "4-3-telegram-agent.json",
+      "name": "HL · Telegram agent with memory (4.3)",
+      "what": "Telegram agent with Postgres Chat Memory keyed by tg-{chat_id} (window 8) and a get_last_order tool whose chat_id comes from the trigger.",
+      "setup": [
+        "Create a free Supabase project (or use Postgres on your 3.8 server) and add a Postgres credential in n8n with the host, database, user, password and port from Supabase's Connect panel. Select it in Postgres Chat Memory.",
+        "Create a Telegram API credential with your bot token and select it in Telegram Trigger, Send reply and Send error reply.",
+        "Create an OpenAI credential and select it in Chat model. Replace YOUR_MODEL with the model you use.",
+        "In get_last_order, replace YOUR_LAST_ORDER_WORKFLOW_ID by choosing SUB · Last order from the list.",
+        "Publish (activate) the workflow; the Telegram Trigger needs your HTTPS n8n from 3.8."
+      ],
+      "test": "From two Telegram accounts, send an address, then some items, then \"where are you delivering?\": each account gets only its own address. From an account with past orders, send \"same as last time\": the log shows a get_last_order call and the bot reads the items back and asks you to confirm.",
+      "walk": {
+        "title": "Build it: an agent that knows its regulars",
+        "sample": "Telegram chat 512349876 · \"Same as last time, please\" · two test accounts",
+        "steps": [
+          {"at": null, "say": "First, a free Supabase project and a Postgres credential in n8n. The password lives in the credential only, never in a node.", "show": ["Postgres credential: host, database, user, password, port"]},
+          {"at": "Telegram Trigger", "say": "Messages arrive from Telegram. The chat ID on each message is who the customer really is, and we'll use it everywhere.", "show": ["Updates: message", "message.chat.id: 512349876"], "data": "1 message · \"Same as last time, please\""},
+          {"at": "Sage", "say": "The agent reads the message text. Its system message says memory covers this conversation only, and that past orders come from a tool.", "show": ["Text: {{ $json.message.text }}", "Memory: recent messages from this conversation only", "Max Iterations: 5"]},
+          {"at": "Sage", "say": "For same as last time, it must call get_last_order, read the items back and ask the customer to confirm before quoting. It never mentions other customers or repeats card numbers or PINs.", "show": ["call get_last_order … ask them to confirm before quoting", "Never mention other customers", "Never ask for or repeat card numbers, PINs or passwords"]},
+          {"at": "Chat model", "say": "The model is the brain, as before. It decides when a message refers to an old order.", "show": ["OpenAI Chat Model", "Model: YOUR_MODEL"]},
+          {"at": "Postgres Chat Memory", "say": "Short-term memory lives in Postgres, so it survives restarts. The session key is the chat ID, with a tg prefix so WhatsApp chats stay apart later.", "show": ["Session ID: Define below", "Key: tg-{{ $('Telegram Trigger').item.json.message.chat.id }}", "Table: hl_chat_memory"], "data": "key: tg-512349876"},
+          {"at": "Postgres Chat Memory", "say": "Eight past interactions is enough for one order conversation and small enough to stay cheap. Not a hundred, to be safe.", "show": ["Context Window Length: 8"], "data": "last 8 interactions loaded"},
+          {"at": "get_last_order", "say": "Long-term memory is a tool that reads the Orders sheet through SUB Last order. Your orders are more accurate than any old chat text.", "show": ["Call n8n Workflow tool", "Name: get_last_order", "Workflow: SUB · Last order"]},
+          {"at": "get_last_order", "say": "Here's the safety moment. The chat ID is mapped from the trigger, not filled by the model, so typing I'm Hotel Grace gets you nothing.", "show": ["chat_id: {{ $('Telegram Trigger').item.json.message.chat.id }}", "Takes no input from you; identified automatically"], "data": "found: true · newest order for 512349876"},
+          {"at": "Send reply", "say": "The reply goes back to the same chat ID that sent the message, never anywhere else.", "show": ["Chat ID: {{ $('Telegram Trigger').item.json.message.chat.id }}", "Text: {{ $json.output }}"], "data": "items read back · please confirm?"},
+          {"at": "Send error reply", "say": "If the agent fails, its error output still sends a polite reply, so the customer isn't left waiting.", "show": ["On Error: Continue (using error output)", "Sorry, something went wrong. Tolu will reply shortly."]},
+          {"at": "Sage", "say": "Test from two Telegram accounts: address, items, then where are you delivering. Each must see only their own details. Then add HL Forget old chats to delete rows older than thirty days.", "show": ["2 accounts · 2 session keys", "DELETE … WHERE created_at < now() - interval '30 days'"], "data": "each account sees only its own address"}
+        ],
+        "end": "Two phones, two separate memories, and same as last time read back from the Orders sheet: the agent knows its regulars and nobody else's."
+      }
+    },
+    {
+      "file": "4-3-forget-old-chats.json",
+      "name": "HL · Forget old chats",
+      "what": "Daily schedule that deletes chat memory rows older than 30 days from hl_chat_memory.",
+      "setup": [
+        "Select the same Postgres credential in Delete chats older than 30 days.",
+        "Open hl_chat_memory in Supabase's table editor; if there is no created_at timestamp column, add one with default now() before relying on this clean-up.",
+        "Publish (activate) the workflow."
+      ],
+      "test": "In Supabase, set one test row's created_at to 40 days ago, then click Execute workflow: that row is deleted and recent rows stay."
+    }
+  ]
+}

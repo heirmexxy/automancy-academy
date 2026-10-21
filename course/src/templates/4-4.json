@@ -1,0 +1,49 @@
+{
+  "id": "4.4",
+  "items": [
+    {
+      "file": "4-4-load-policies.json",
+      "name": "HL · Load policies",
+      "what": "Loading pipeline: downloads the policy PDF from Google Drive and inserts 500-character chunks (80 overlap) with source and version metadata into Supabase.",
+      "setup": [
+        "In Supabase's SQL editor, run the setup from Supabase's LangChain guide: enable the vector extension, create the documents table and the match_documents function, with vector size 1536 for text-embedding-3-small.",
+        "Create a Supabase credential (project URL and service role key; keep the key in the credential only) and select it in Supabase Vector Store.",
+        "Create an OpenAI credential and select it in Embeddings OpenAI.",
+        "Create a Google Drive OAuth2 credential and select it in Download policy PDF (Authentication: Predefined Credential Type, Google Drive OAuth2 API).",
+        "Upload the policy PDF to Drive and replace YOUR_POLICY_FILE_ID in Download policy PDF with its file ID.",
+        "If your file is not v3 of 2026-10-01, change source and version in Default Data Loader."
+      ],
+      "test": "Click Execute workflow once. In Supabase's table editor, documents should have rows with content, metadata (source, version) and an embedding; each refund rule should sit in its own chunk."
+    },
+    {
+      "file": "4-4-policy-assistant.json",
+      "name": "HL · Policy assistant (4.4)",
+      "what": "Support agent with a search_policies tool (Supabase, top 4) that answers only from policy passages, names the section, quotes money rules and says \"I'll ask Tolu\" when the policy is silent.",
+      "setup": [
+        "Run HL · Load policies first.",
+        "Select your OpenAI credential in Chat model and Embeddings OpenAI (same embeddings model as loading). Replace YOUR_MODEL with the model you use.",
+        "Select your Supabase credential in search_policies."
+      ],
+      "test": "Open the chat and run the 8 test questions. \"My delivery came 3 hours late. Can I get my money back for the tomatoes?\" should call search_policies and quote \"Lateness alone does not qualify for a refund of the goods.\" \"Do you deliver to Abuja?\" and \"Can I get a refund in cash?\" should end with \"I'll ask Tolu\".",
+      "walk": {
+        "title": "Build it: the policy assistant",
+        "sample": "Chat: My delivery came 3 hours late. Can I get my money back for the tomatoes?",
+        "steps": [
+          {"at": null, "say": "Run HL Load policies first. It chops policies v3 into five hundred character chunks with eighty overlap, and stores them in Supabase with their embeddings.", "show": ["documents table: content · metadata · embedding", "metadata: source policies-v3.pdf, version 2026-10-01"]},
+          {"at": "When chat message received", "say": "Now the answering side. A chat trigger lets you ask policy questions right in the editor.", "show": ["Chat Trigger", "Response Mode: When Last Node Finishes"], "data": "chatInput: My delivery came 3 hours late…"},
+          {"at": "Support agent", "say": "The support agent must call search_policies first for anything about refunds, cancellations, substitutions or business accounts, and answer only from what comes back.", "show": ["call search_policies first", "Answer ONLY from the passages returned", "Name the policy section you used"]},
+          {"at": "Support agent", "say": "For money, it quotes the exact sentence, because paraphrases drift. And if the passages don't answer it, it says so and offers to ask Tolu. Never guess.", "show": ["For money … quote the exact sentence", "\"I'm not sure the policy covers that. I'll ask Tolu…\""]},
+          {"at": "Support agent", "say": "Here's what it can't do: it explains policies, but it can't approve or promise a refund. Only a person does that.", "show": ["you cannot approve or promise a refund yourself", "Max Iterations: 5"]},
+          {"at": "Chat model", "say": "The chat model writes the answer from the passages it's given. It's the brain, not the source of facts.", "show": ["OpenAI Chat Model", "Model: YOUR_MODEL"]},
+          {"at": "search_policies", "say": "The agent's only tool is the Supabase vector store in retrieve mode. It can search the policies and nothing else, and it can't change them.", "show": ["Mode: Retrieve Documents (As Tool for AI Agent)", "Name: search_policies", "Table: documents · Query: match_documents"]},
+          {"at": "search_policies", "say": "The description tells the agent to use it before answering anything about what a customer is entitled to. Four passages is enough to find the rule without drowning the model.", "show": ["Use it before answering any question about", "what a customer is entitled to.", "Limit: 4"], "data": "4 passages · Refunds for late delivery first"},
+          {"at": "Embeddings OpenAI", "say": "This must be the same embeddings model you used for loading. A different model compares apples with oranges, and the search finds nonsense.", "show": ["Model: text-embedding-3-small", "Same model as HL · Load policies"]},
+          {"at": "Error reply", "say": "If the run fails, the error output still answers the customer kindly.", "show": ["On Error: Continue (using error output)", "Sorry, something went wrong. Tolu will reply shortly."]},
+          {"at": "Support agent", "say": "Ask the late delivery question. The answer should refund only the delivery fee and quote the sentence about lateness alone.", "show": ["\"Lateness alone does not qualify for a refund", "of the goods.\""], "data": "delivery fee refunded · goods not"},
+          {"at": "Support agent", "say": "Then ask the questions the policy doesn't answer, like Abuja and cash refunds. Both must end with I'll ask Tolu, not an invented rule.", "show": ["Q6 Do you deliver to Abuja? → I'll ask Tolu", "Q7 Can I get a refund in cash? → I'll ask Tolu"], "data": "target: 8 of 8"}
+        ],
+        "end": "Correct, cited, or honestly not sure, on all eight questions: that's a policy assistant you can put in front of customers."
+      }
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+<template data-mod="3.8" id="tpl-3-8">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.8</span>
+    <h1>Production Ready</h1>
+    <div class="kicker"><span class="pill">≈ 2–3 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: a small VPS (Hetzner, DigitalOcean or similar), a domain, Docker Compose, Caddy, GitHub, UptimeRobot</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Your laptop was a fine workshop. It's a terrible factory: it sleeps, travels and runs out of battery. Harvest Lane now depends on n8n, so it needs a home that's always on, reachable over HTTPS, backed up every night, watched from outside, and documented well enough that someone else could fix it.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Deploy n8n on a small server with Docker Compose, a domain and automatic HTTPS.</span></div>
+  <div><b>02</b><span>Set the environment variables that matter: public webhook URL, encryption key, timezone and a pinned version.</span></div>
+  <div><b>03</b><span>Back up the data, the key and the workflows (to Git), and prove you can restore.</span></div>
+  <div><b>04</b><span>Monitor from outside, update safely, and write a runbook for when things go wrong.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The laptop went to Lagos</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu on a bus with a closed laptop in her bag.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="70" width="160" height="70" rx="16" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g fill="var(--paper)" stroke="var(--ink)" stroke-width="2"><rect x="165" y="82" width="30" height="24" rx="4"/><rect x="205" y="82" width="30" height="24" rx="4"/><rect x="245" y="82" width="30" height="24" rx="4"/></g>
+        <g fill="var(--ink)"><circle cx="185" cy="145" r="10"/><circle cx="275" cy="145" r="10"/></g>
+        <text x="230" y="60" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">IBADAN → LAGOS</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Wednesday</b>Tolu travels to Lagos for a supplier meeting. The laptop, and every workflow on it, travels too, closed in her bag.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A list of missed automations with red crosses.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="25" width="240" height="140" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">
+          <text x="60" y="55">✗ 06:30 weather log</text><text x="60" y="80">✗ 07:00 supplier prices</text><text x="60" y="105">✗ 09:00 payment reminders</text><text x="60" y="130">✗ 23 support emails unsorted</text><text x="60" y="155" fill="var(--glitch)">✗ Telegram orders: no reply</text>
+        </g>
+      </svg>
+      <div class="cap"><b>The cost</b>Nothing runs for two days. The new Telegram order bot (Boss 3) can't even receive messages: Telegram needs a public HTTPS address.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo beside a server in a data centre with a padlock and a green status light.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="190" y="30" width="100" height="140" rx="8" fill="var(--ink)"/>
+        <g fill="var(--paper)" opacity=".2"><rect x="200" y="44" width="80" height="22" rx="4"/><rect x="200" y="74" width="80" height="22" rx="4"/><rect x="200" y="104" width="80" height="22" rx="4"/></g>
+        <circle cx="270" cy="55" r="5" fill="var(--volt)"/>
+        <g transform="translate(222 130)"><rect x="0" y="10" width="36" height="28" rx="5" fill="var(--sun)" stroke="var(--paper)" stroke-width="2"/><path d="M8 10 V4 a10 10 0 0 1 20 0 V10" stroke="var(--paper)" stroke-width="3" fill="none"/></g>
+        <use href="#nodo" x="10" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"For less than a plate of jollof a week, n8n gets a home that never sleeps. Then we make it safe, watched and recoverable."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pointing at a webhook URL that says localhost:5678.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="70" width="160" height="44" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <text x="230" y="97" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">http://localhost:5678/…</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Moved to a server, have you? Shame every webhook still says <i>localhost</i>."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 40 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Where should n8n live?</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Option</th><th>Effort</th><th>Good for</th><th>Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td><b>n8n Cloud</b></td><td>Lowest</td><td>No technical person; fastest to production</td><td>Execution limits per plan; monthly cost grows with volume</td></tr>
+        <tr><td><b>Small VPS</b> (e.g. Hetzner, DigitalOcean; 2 GB RAM is a sensible start)</td><td>Medium: this module</td><td>Full control, unlimited executions, low fixed cost</td><td>You own updates, security and backups</td></tr>
+        <tr><td><b>Platform hosts</b> (Railway, Render and similar, with n8n templates)</td><td>Low–medium</td><td>Quick deploys without managing a server</td><td>Free or sleeping tiers stop schedules and webhooks; check persistent storage and current pricing</td></tr>
+        <tr><td><b>A computer in the office</b></td><td>Medium</td><td>Data that must stay on site</td><td>Power cuts, changing internet IP addresses, no HTTPS without extra work</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Choose a server region near your users and providers (Europe is often fine for Nigeria), and pay with a card that works for dollar or euro billing. Always check current prices yourself before quoting a client.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The production shape</h3>
+    <figure class="fig"><svg viewBox="0 0 640 220" role="img" aria-label="The internet reaches the server only through ports 443 and 80 on Caddy, which handles HTTPS and forwards to n8n on its private port 5678. n8n stores data in a volume. Backups go off the server to GitHub and a backup store. An uptime monitor checks the healthz address from outside.">
+      <defs><marker id="pr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="150" y="15" width="330" height="190" rx="14" fill="var(--paper2)" stroke="var(--line)" stroke-width="2"/>
+      <text x="165" y="36" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">YOUR SERVER (VPS) · firewall: 22, 80, 443 only</text>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <rect x="10" y="80" width="110" height="50" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="65" y="102" fill="var(--ink)">Internet</text><text x="65" y="118" fill="var(--muted)" font-size="9" font-family="JetBrains Mono,monospace" font-weight="400">customers, apps</text>
+        <rect x="175" y="80" width="100" height="50" rx="12" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="225" y="102" fill="#13233A">Caddy</text><text x="225" y="118" fill="#13233A" font-size="9" font-family="JetBrains Mono,monospace" font-weight="400">HTTPS :443</text>
+        <rect x="320" y="80" width="130" height="50" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2.5"/><text x="385" y="102" fill="#fff">n8n</text><text x="385" y="118" fill="#fff" font-size="9" font-family="JetBrains Mono,monospace" font-weight="400">private :5678</text>
+        <rect x="320" y="155" width="130" height="36" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="385" y="178" fill="var(--ink)" font-size="11">Volume n8n_data</text>
+        <rect x="510" y="40" width="120" height="40" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="570" y="65" fill="#13233A">GitHub (workflows)</text>
+        <rect x="510" y="100" width="120" height="40" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="570" y="125" fill="#fff">Backup store</text>
+        <rect x="10" y="160" width="120" height="40" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="70" y="185" fill="#fff">Uptime monitor</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M122 105 H171" marker-end="url(#pr1)"/><path d="M277 105 H316" marker-end="url(#pr1)"/><path d="M385 132 V151" marker-end="url(#pr1)"/></g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="5 4"><path d="M452 95 C480 95 480 60 506 60" marker-end="url(#pr1)"/><path d="M452 115 C480 115 480 120 506 120" marker-end="url(#pr1)"/><path d="M132 180 C160 180 160 130 190 132" marker-end="url(#pr1)"/></g>
+      <text x="140" y="212" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)">checks https://…/healthz every 5 min</text>
+    </svg><figcaption>Only Caddy faces the internet. n8n's own port stays private. Copies of everything important live off the server.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Domain and DNS</b>A subdomain such as <code>n8n.yourbusiness.com</code>, with an "A" record pointing at the server's IP address.</div>
+      <div><b>Reverse proxy and HTTPS</b>Caddy receives web traffic, gets and renews a free certificate automatically, and passes requests to n8n.</div>
+      <div><b>Environment variables</b>Settings passed to n8n at start-up (3.1's <code>-e</code>), kept in a private <code>.env</code> file.</div>
+      <div><b>Database</b>n8n uses SQLite by default, which is fine for a small business. Large or busy setups move to PostgreSQL, and very high volume uses <i>queue mode</i> (Redis plus worker processes), which you won't need yet.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Generate your server files</h3>
+    <p>Three small files run the whole thing. Fill in your details; the files and warnings update as you type.</p>
+    <div class="dock" data-deploy>
+      <div class="row">
+        <label>Your n8n domain<input data-dp="domain" type="text" value="n8n.harvestlane.example" spellcheck="false"></label>
+        <label>n8n version (from the release notes)<input data-dp="ver" type="text" value="latest" spellcheck="false"></label>
+        <label>Timezone<select data-dp="tz"><option selected>Africa/Lagos</option><option>Africa/Accra</option><option>Africa/Nairobi</option><option>Europe/London</option></select></label>
+      </div>
+      <label class="crit" for="dp-key-3-8">Encryption key</label>
+      <div class="checks"><input id="dp-key-3-8" data-dp="key" type="text" value="" spellcheck="false" placeholder="click Generate" style="font-family:var(--mono);font-size:.8rem;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--paper);color:var(--ink);flex:1 1 220px;min-width:0"><button type="button" class="btn ghost" data-genkey>Generate key</button></div>
+      <div class="checks"><label><input type="checkbox" data-dp="legacy"> My n8n version is older than 2.35 (use the old WEBHOOK_URL name)</label></div>
+      <div class="files">
+        <div><pre id="dp-env-3-8" data-o="env"></pre><button type="button" class="btn ghost" data-copy="dp-env-3-8">Copy .env</button></div>
+        <div><pre id="dp-comp-3-8" data-o="compose"></pre><button type="button" class="btn ghost" data-copy="dp-comp-3-8">Copy docker-compose.yml</button></div>
+        <div><pre id="dp-cad-3-8" data-o="caddy"></pre><button type="button" class="btn ghost" data-copy="dp-cad-3-8">Copy Caddyfile</button></div>
+      </div>
+      <ul data-o="notes" aria-live="polite"></ul>
+    </div>
+    <p style="font-size:.84rem;color:var(--muted)">A minimal, teaching setup based on n8n's documented environment variables. n8n's own Docker Compose guide shows larger setups; read it before running anything business-critical.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Backups: three things, off the server</h3>
+    <div class="vocab">
+      <div><b>1 · The encryption key</b>In your password manager, not only on the server. Without it, n8n's docs warn, a restored database or credential export can't be decrypted.</div>
+      <div><b>2 · The data</b>The <code>n8n_data</code> volume (the <code>.n8n</code> folder, with the database and config). Turn on your provider's automatic server backups, and export nightly with n8n's CLI:<br><code>docker compose exec n8n n8n export:workflow --backup --output=/home/node/.n8n/backups/workflows/</code><br><code>docker compose exec n8n n8n export:credentials --backup --output=/home/node/.n8n/backups/credentials/</code><br>(<code>--backup</code> exports all, one readable file each. Credential exports stay encrypted unless you add <code>--decrypted</code>, which you shouldn't for routine backups.)</div>
+      <div><b>3 · The workflows, in Git</b>A private GitHub repository holding every workflow's JSON gives you history: what changed, when, and the ability to roll back. The solved problem builds this with n8n itself.</div>
+      <div><b>A backup you haven't restored is a hope</b>Once a quarter, restore onto a fresh test server and check a workflow runs.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Watch it, update it, document it</h3>
+    <div class="vocab">
+      <div><b>Monitor from outside</b>Your error workflow (3.6) can't send an alert if n8n itself is down. Point a free uptime monitor (such as UptimeRobot) at <code>https://your-domain/healthz</code>, which n8n's docs say is always enabled on the main server, and have it alert you by email or Telegram.</div>
+      <div><b>Update on purpose</b>Pin the version. Monthly: read the release notes (especially breaking changes), back up, change the number, <code>docker compose pull &amp;&amp; docker compose up -d</code>, and test your key workflows.</div>
+      <div><b>Lock the doors</b>Firewall open only on 22, 80 and 443; SSH keys instead of passwords; a strong owner password with two-factor login; separate n8n accounts for each person.</div>
+      <div><b>Runbook</b>One page: where n8n runs, how to log in to the server, how to restart, restore and roll back, who to call, and where the key is. Written for a tired person at 3 a.m.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/configuration-examples/configure-webhook-urls-with-reverse-proxy" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: webhook URLs behind a reverse proxy</b><small>Read: N8N_WEBHOOK_URL and N8N_PROXY_HOPS. This is Glitch's trick, explained.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/deploy/host-n8n/keep-n8n-running/backup-and-restore" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: backup and restore</b><small>Read: what to back up, the export commands, and the restore order.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=self+host+n8n+VPS+docker+compose+https" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: self-hosting n8n on a VPS with Docker and HTTPS</b><small>Pick a recent one (n8n 2.x) and watch it start to finish before your own deploy.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 60 MIN+</span><h2>Solved problem: Harvest Lane's n8n goes live</h2></div>
+  <div class="prose"><p><b>The goal.</b> n8n running on a small server at <code>https://n8n.harvestlane.example</code>, with automatic HTTPS, nightly backups, workflows versioned in GitHub, an outside uptime check, and every Track 3 workflow moved over and working.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Server, domain, firewall</h4>
+      <p>Create an Ubuntu LTS server (2 GB RAM) with your SSH key, and turn on the provider's automatic backups. In your domain's DNS, add an <b>A record</b> for <code>n8n</code> pointing to the server's IP. On the server: update packages, install Docker, and allow only SSH, HTTP and HTTPS:</p>
+<pre class="codebox">sudo apt update &amp;&amp; sudo apt upgrade -y
+curl -fsSL https://get.docker.com | sudo sh
+sudo ufw allow OpenSSH &amp;&amp; sudo ufw allow 80 &amp;&amp; sudo ufw allow 443 &amp;&amp; sudo ufw enable</pre>
+      <p><i>Read any script before you pipe it into a shell. Docker's convenience script is widely used, but the habit matters.</i></p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Start n8n</h4>
+      <p>Make a folder (<code>mkdir ~/n8n &amp;&amp; cd ~/n8n</code>), create the three files from Card 3 with a pinned version and a generated key, and save the key in your password manager. Then:</p>
+<pre class="codebox">docker compose up -d
+docker compose logs -f n8n      <span class="c"># wait for "Editor is now accessible", then Ctrl+C</span></pre>
+      <p>Open <code>https://n8n.harvestlane.example</code>: a padlock, and the owner set-up screen. Create the owner account with a strong password and turn on two-factor login.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Move the workflows</h4>
+      <p>On the laptop: export each workflow (⋮ → Download), or use the CLI export from Card 4. On the server: import them, then <b>recreate the credentials</b> (they're encrypted with the laptop's key, so they don't travel). Open each Webhook or Telegram node and confirm the URL now starts with <code>https://n8n.harvestlane.example/</code>. Publish the workflows and switch off the laptop copies, so nothing runs twice.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><p><b>Glitch's trap, defused:</b> if webhook URLs still show <code>http://localhost:5678</code>, n8n doesn't know its public address. Set <code>N8N_WEBHOOK_URL</code> (or <code>WEBHOOK_URL</code> on versions before 2.35) and <code>N8N_PROXY_HOPS=1</code>, run <code>docker compose up -d</code>, and re-publish workflows that use webhooks so they register the new URL.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Nightly workflow backup to GitHub</h4>
+      <p>Create a <b>private</b> GitHub repo <code>harvestlane-n8n</code> and a fine-grained token limited to that repo (contents: read and write). In n8n: <b>Settings → n8n API</b> → create an API key. Then build <b>HL · Backup workflows → GitHub</b>:</p>
+      <ol>
+        <li><b>Schedule Trigger</b>: daily, 02:00.</li>
+        <li><b>n8n node · Get many workflows</b> (n8n API credential): every workflow as an item.</li>
+        <li><b>Code</b> (each item): <code>return { json: { path: `workflows/${$json.name.replace(/[^\w-]+/g, '_')}.json`, content: JSON.stringify($json, null, 2) } };</code></li>
+        <li><b>GitHub · Edit a file</b> at that path, commit message <code>nightly backup {{ $now.toISODate() }}</code>. Settings → On Error: <b>Continue (using error output)</b>.</li>
+        <li>Error output → <b>GitHub · Create a file</b> with the same fields (for workflows that are new since last night).</li>
+      </ol>
+      <p>Workflow JSON contains credential <i>names and IDs</i>, not the secrets themselves. Keep the repo private anyway. Connect the workflow to HL · Error alerts.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Watch from outside, and write the runbook</h4>
+      <p>In UptimeRobot (free plan), add an HTTP monitor for <code>https://n8n.harvestlane.example/healthz</code> every 5 minutes, alerting by email (and Telegram, if you link it). Test it: <code>docker compose stop n8n</code>, wait for the alert, then <code>docker compose start n8n</code>. Finally, fill in the runbook template in Mission Gold.</p>
+      <div class="stats">
+        <div class="stat"><b>24/7</b><span>workflows run whether the laptop is open or not</span></div>
+        <div class="stat"><b>3</b><span>kinds of backup: server, data export, Git</span></div>
+        <div class="stat"><b>2</b><span>alarms: inside (error workflow) and outside (uptime)</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Only the proxy faces the internet; n8n's port stays private.</li><li>A pinned version means no surprise updates.</li><li>The key lives in two places, so backups can always be decrypted.</li><li>Git gives history and rollback for every workflow.</li><li>An outside monitor catches the one failure the error workflow can't: n8n being down.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Opening port 5678 to the internet.</li><li>Running the <code>latest</code> image and being surprised by a breaking change.</li><li>Keeping the only copy of the encryption key on the server.</li><li>Leaving workflows active on both laptop and server.</li><li>Committing the <code>.env</code> file to GitHub.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ CHECKLIST ============ -->
+<section class="part" style="--c:#BDEBD2">
+  <div class="part-h"><span class="tag">GO-LIVE CHECK</span><h2>Is it production ready?</h2></div>
+  <div class="ready" data-ready>
+    <h5>Reachable and secure</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> HTTPS works with a valid certificate on your domain <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="10" data-crit="1"> Webhook URLs in the editor show the public https address <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="8" data-crit="1"> Firewall allows only 22, 80 and 443; port 5678 isn't reachable from outside <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="6"> SSH keys only, password login turned off</label>
+    <label><input type="checkbox" data-w="6"> Owner account has a strong password and two-factor login</label>
+    <h5>Recoverable</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> Encryption key saved in a password manager, off the server <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="8" data-crit="1"> Automatic server or volume backups switched on <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="8"> Nightly workflow backup to a private Git repository runs</label>
+    <label><input type="checkbox" data-w="8"> A restore has been tested on a fresh server</label>
+    <h5>Watched and maintained</h5>
+    <label><input type="checkbox" data-w="8" data-crit="1"> Every workflow is connected to the error workflow <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="6"> Outside uptime monitor on /healthz, tested by stopping n8n</label>
+    <label><input type="checkbox" data-w="6"> Version pinned; monthly update routine written down</label>
+    <label><input type="checkbox" data-w="6"> Runbook written and shared with a second person</label>
+    <div class="stats"><div class="stat"><b data-o="score">–</b><span>readiness score</span></div></div>
+    <p class="mgoal" data-o="verdict"></p>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Production gives me so many new toys. Six incidents. Name the cause.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Webhooks worked on the laptop. On the server, Telegram and Paystack never reach n8n, and the Webhook node shows <code>http://localhost:5678/webhook/…</code>.</td></tr>
+        <tr><td>B</td><td>After restoring last night's backup to a new server, every credential fails to decrypt.</td></tr>
+        <tr><td>C</td><td>A Monday restart pulled a new major version, and two workflows broke.</td></tr>
+        <tr><td>D</td><td>Customers got every payment receipt twice for a week.</td></tr>
+        <tr><td>E</td><td>n8n was down for six hours on Sunday. The error workflow sent nothing.</td></tr>
+        <tr><td>F</td><td>A security scan finds the n8n login page open on <code>http://server-ip:5678</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> n8n doesn't know its public address. Set <code>N8N_WEBHOOK_URL=https://your-domain/</code> (older versions: <code>WEBHOOK_URL</code>) and <code>N8N_PROXY_HOPS=1</code>, restart, and re-publish webhook workflows.</li>
+        <li><b>B:</b> the new server generated its own encryption key. Set <code>N8N_ENCRYPTION_KEY</code> to the original key, from the password manager, before starting n8n.</li>
+        <li><b>C:</b> the image was <code>latest</code>. Pin a version and update deliberately after reading the release notes, with a backup ready.</li>
+        <li><b>D:</b> the workflows were still published on the laptop as well as the server, so both ran. Unpublish (or delete) the old copies after moving.</li>
+        <li><b>E:</b> an error workflow runs inside n8n, so it can't report n8n being down. Add an outside uptime monitor on <code>/healthz</code>.</li>
+        <li><b>F:</b> port 5678 was published to the internet (<code>-p 5678:5678</code> or a firewall gap). Remove the port mapping so only Caddy can reach n8n, and close it in the firewall.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 30 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Deploy it</h4>
+    <ul><li>Deploy n8n to a VPS (or a platform host whose plan doesn't sleep) with your own domain and HTTPS.</li><li>Move your 3.1 weather workflow and 3.6 error workflow over, recreate their credentials, and publish.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The padlock shows, the weather row arrives at 06:30 while your laptop is off, and the alarm test reaches your phone from the server.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Workflows in Git, nightly</h4>
+    <ul><li>Build the GitHub backup workflow from the solved problem.</li><li>Change one workflow, wait for the next run (or execute once), and find the change in GitHub's commit history.</li><li>Roll back: import yesterday's version of that file into n8n.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The repo holds every workflow, GitHub shows a daily commit, and you've restored an older version successfully.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>The 3 a.m. runbook</h4>
+    <ul><li>Write a one-page runbook: server and provider, domain and DNS, how to log in, where the <code>.env</code> and key are kept (not the key itself), how to restart, check logs, restore from backup and roll back a version, plus contacts.</li><li>Test it: give it to someone else and have them restart n8n and find the latest backup using only the runbook.</li><li>Complete the go-live checklist above at 100%.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your tester succeeds without asking you a question, and you've updated the runbook with anything they got stuck on.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Webhook URLs on the server still show localhost. What fixes it?</p><div class="opts">
+      <button type="button" data-opt="a">Reinstalling Docker</button><button type="button" data-opt="b">Setting N8N_WEBHOOK_URL to the public https address (WEBHOOK_URL on older versions)</button><button type="button" data-opt="c">Opening port 5678</button><button type="button" data-opt="d">Renaming the workflow</button></div>
+      <p class="fb" hidden data-why="Behind a proxy, n8n needs to be told its public address."></p></div>
+    <div class="q" data-ans="d"><p>2. Which item, if lost, makes your backups unreadable?</p><div class="opts">
+      <button type="button" data-opt="a">The Caddyfile</button><button type="button" data-opt="b">The server's IP address</button><button type="button" data-opt="c">The GitHub token</button><button type="button" data-opt="d">The encryption key</button></div>
+      <p class="fb" hidden data-why="Credentials are encrypted with it; keep a copy off the server."></p></div>
+    <div class="q" data-ans="a"><p>3. Why can't the error workflow tell you n8n is down?</p><div class="opts">
+      <button type="button" data-opt="a">It runs inside n8n</button><button type="button" data-opt="b">Telegram blocks it</button><button type="button" data-opt="c">It only runs on Cloud</button><button type="button" data-opt="d">It needs Git</button></div>
+      <p class="fb" hidden data-why="If n8n is down, nothing inside it runs. Monitor from outside."></p></div>
+    <div class="q" data-ans="c"><p>4. Which ports should the internet reach?</p><div class="opts">
+      <button type="button" data-opt="a">5678 only</button><button type="button" data-opt="b">All of them</button><button type="button" data-opt="c">22 (SSH), 80 and 443</button><button type="button" data-opt="d">None</button></div>
+      <p class="fb" hidden data-why="SSH for you, 80/443 for Caddy. n8n's 5678 stays private."></p></div>
+    <div class="q" data-ans="b"><p>5. What's the safe way to update n8n?</p><div class="opts">
+      <button type="button" data-opt="a">Use latest and restart often</button><button type="button" data-opt="b">Read the release notes, back up, change the pinned version, then test</button><button type="button" data-opt="c">Never update</button><button type="button" data-opt="d">Update during the morning order rush</button></div>
+      <p class="fb" hidden data-why="Deliberate, reversible and tested, at a quiet time."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-8">AUTOMANCY LOG · Lesson 3.8 · Production Ready
+Date:
+Host, region, server size, monthly cost:
+Domain and pinned n8n version:
+Where the encryption key is stored (not the key!):
+Backups: server / CLI export / Git: schedules:
+Uptime monitor: URL checked and alert channel; test result:
+Workflows moved, and laptop copies switched off (yes/no):
+Go-live checklist score:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-8">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Production means always on, HTTPS, backed up, watched and documented.</li>
+      <li>Only the reverse proxy faces the internet; n8n's port stays private.</li>
+      <li>Tell n8n its public address: <code>N8N_WEBHOOK_URL</code> (older: <code>WEBHOOK_URL</code>).</li>
+      <li>The encryption key lives off the server too, or backups are useless.</li>
+      <li>Workflows in Git give history and rollback.</li>
+      <li>Error workflow inside, uptime monitor outside.</li>
+      <li>Pin versions; update deliberately; keep a runbook.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/configuration-examples/configure-webhook-urls-with-reverse-proxy" target="_blank" rel="noopener">n8n Docs: webhook URLs behind a reverse proxy</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/keep-n8n-running/backup-and-restore" target="_blank" rel="noopener">n8n Docs: backup and restore</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/keep-n8n-running/monitor-n8n" target="_blank" rel="noopener">n8n Docs: monitoring (/healthz)</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/security" target="_blank" rel="noopener">n8n Docs: securing n8n</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/install-options/install-using-docker-compose" target="_blank" rel="noopener">n8n Docs: Docker Compose install</a></li>
+    <li><span class="kind">Text</span><a href="https://caddyserver.com/docs/quick-starts/reverse-proxy" target="_blank" rel="noopener">Caddy: reverse proxy quick-start (automatic HTTPS)</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.docker.com/get-started/" target="_blank" rel="noopener">Docker: Get started</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=self+host+n8n+VPS+docker+tutorial" target="_blank" rel="noopener">YouTube: self-host n8n on a VPS</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run this as a pairs lab: one person deploys while the other reads the runbook aloud and ticks the go-live checklist. Then swap roles for the restore test. For learners who can't buy a server, run one shared training VPS with a subdomain each, and have them practise everything except the payment.</p>
+  </div>
+</section>
+
+</article>
+</template>

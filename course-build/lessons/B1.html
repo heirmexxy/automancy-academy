@@ -1,0 +1,284 @@
+<template data-mod="B1" id="tpl-b1">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Boss Battle</span>
+    <h1>Boss 1: The Lead Machine</h1>
+    <div class="kicker"><span class="pill">2–3 sessions · 4–6 hours</span><span class="pill">300 XP</span><span class="pill">Badge: First Spark</span><span class="pill">Needs: paid plan or trial</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#glitch"/></svg>
+</header>
+<p class="lede">Everything from Spark Street in one working system: webhooks, Formatter, filters, paths, code, AI, delays and alerts. You'll build a machine that catches every new business enquiry, scores it, replies within minutes, alerts Tolu about the best ones and follows up so no lead is forgotten.</p>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">THE SITUATION</span><h2>The caterer who got away</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A website form titled Become a supply partner, with many submissions arriving.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="16" width="156" height="158" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="228" y="40" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" fill="var(--ink)">Become a supply partner</text>
+        <g fill="var(--paper2)"><rect x="164" y="52" width="128" height="14" rx="4"/><rect x="164" y="72" width="128" height="14" rx="4"/><rect x="164" y="92" width="128" height="30" rx="4"/></g>
+        <rect x="196" y="132" width="64" height="24" rx="12" fill="var(--spark)"/><text x="228" y="148" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">Send</text>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>After the hotel deal</b>Word spreads. Restaurants, caterers and schools fill in the "Become a supply partner" form: 15 a week.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A calendar with an unanswered enquiry marked eight days old.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="60" y="24" width="200" height="140" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="60" y="24" width="200" height="28" rx="10" fill="var(--glitch)"/>
+        <text x="160" y="44" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#fff">Joy Caterers · no reply</text>
+        <text x="160" y="112" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="40" fill="var(--ink)">8 days</text>
+      </svg>
+      <div class="cap"><b>The loss</b>A caterer worth ₦150,000 a week waits eight days for a reply, then signs with a competitor.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch flooding the form with spam messages.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)"><text x="170" y="40">CHEAP SEO!!!</text><text x="180" y="70">test test</text><text x="166" y="100">WIN A PHONE</text><text x="184" y="130">asdfgh</text></g>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>Meanwhile, spam and test entries bury the real enquiries.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt building a machine with a funnel on top and three coloured output chutes labelled hot, warm and cold.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M150 20 H300 L250 80 V110 H200 V80 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="160" y="120" width="40" height="50" rx="6" fill="var(--glitch)"/><rect x="206" y="120" width="40" height="50" rx="6" fill="var(--sun)"/><rect x="252" y="120" width="40" height="50" rx="6" fill="var(--sky)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#fff" text-anchor="middle"><text x="180" y="150">HOT</text><text x="226" y="150" fill="#13233A">WARM</text><text x="272" y="150">COLD</text></g>
+        <use href="#bolt" x="0" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Bolt</b>"Every lead in, sorted, answered, and chased. Tolu only talks to the hot ones."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BRIEF ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">THE CLIENT BRIEF</span><h2>What the Lead Machine must do</h2></div>
+  <div class="concept">
+    <div class="tablewrap"><table class="dt">
+      <tbody>
+        <tr><td><b>Input</b></td><td>The website's partner form sends each enquiry to a webhook: business name, business type, area, weekly budget (free text), start date, contact name, email, phone, message.</td></tr>
+        <tr><td><b>Volume</b></td><td>About 60 enquiries a month, plus spam and tests.</td></tr>
+        <tr><td><b>Speed</b></td><td>Every genuine lead gets a personalised acknowledgement within 15 minutes. Hot leads alert Tolu within 5 minutes.</td></tr>
+        <tr><td><b>Scoring</b></td><td>Budget, business type, location and start date decide the tier (rules below). The AI reads and extracts; the score is calculated by rules, not guessed by AI.</td></tr>
+        <tr><td><b>Follow-up</b></td><td>Warm leads who haven't replied after 3 days get one friendly follow-up. Nobody gets more than one.</td></tr>
+        <tr><td><b>Record</b></td><td>Every lead is logged in a Leads sheet with its score, tier, status and dates.</td></tr>
+        <tr><td><b>Must not</b></td><td>Quote prices or promise discounts in automatic emails. Email spam or test entries. Break the rules in 0.6.</td></tr>
+        <tr><td><b>Budget</b></td><td>Keep the whole machine under about 500 Zapier tasks a month.</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Scoring rules</h3>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Signal</th><th class="n">Points</th></tr></thead>
+      <tbody>
+        <tr><td>Weekly budget ₦200,000 or more / ₦100,000–199,999 / under ₦100,000 / not stated</td><td class="n">3 / 2 / 1 / 0</td></tr>
+        <tr><td>Business type is hotel, caterer or restaurant</td><td class="n">2</td></tr>
+        <tr><td>Area is inside the delivery zone (lookup table from 1.3)</td><td class="n">2</td></tr>
+        <tr><td>Wants to start within 30 days</td><td class="n">1</td></tr>
+        <tr><td><b>Tier:</b> 7–8 hot · 4–6 warm · 0–3 cold · spam flag → spam</td><td class="n">max 8</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">SUGGESTED ARCHITECTURE</span><h2>Three Zaps working together</h2></div>
+  <figure class="fig"><svg viewBox="0 0 660 330" role="img" aria-label="Zap 1 Intake: webhook, filter tests, AI extract, zone lookup, code score, save to Leads sheet, then paths for hot, warm, cold and spam. Zap 2 Reply catcher: Gmail new email, find lead, mark replied. The warm path waits 3 days, re-checks the lead, and sends a follow-up if still not replied.">
+    <defs><marker id="i1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+    <text x="10" y="20" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">ZAP 1 · INTAKE</text>
+    <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11">
+      <rect x="10" y="32" width="84" height="44" rx="8" fill="var(--glitch)" opacity=".9"/><text x="52" y="52" text-anchor="middle" fill="#fff">Catch</text><text x="52" y="66" text-anchor="middle" fill="#fff">Raw Hook</text>
+      <rect x="104" y="32" width="84" height="44" rx="8" fill="var(--sun)"/><text x="146" y="58" text-anchor="middle" fill="#13233A">Filter tests</text>
+      <rect x="198" y="32" width="84" height="44" rx="8" fill="var(--grape)"/><text x="240" y="52" text-anchor="middle" fill="#fff">AI extract</text><text x="240" y="66" text-anchor="middle" fill="#fff">(Standard)</text>
+      <rect x="292" y="32" width="84" height="44" rx="8" fill="var(--sun)"/><text x="334" y="52" text-anchor="middle" fill="#13233A">Zone</text><text x="334" y="66" text-anchor="middle" fill="#13233A">lookup</text>
+      <rect x="386" y="32" width="84" height="44" rx="8" fill="var(--ink)"/><text x="428" y="58" text-anchor="middle" fill="var(--paper)">Code: score</text>
+      <rect x="480" y="32" width="84" height="44" rx="8" fill="var(--volt)"/><text x="522" y="52" text-anchor="middle" fill="#13233A">Leads</text><text x="522" y="66" text-anchor="middle" fill="#13233A">sheet row</text>
+      <rect x="574" y="32" width="76" height="44" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="612" y="58" text-anchor="middle" fill="var(--ink)">Paths</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2"><path d="M94 54 H102" marker-end="url(#i1)"/><path d="M188 54 H196" marker-end="url(#i1)"/><path d="M282 54 H290" marker-end="url(#i1)"/><path d="M376 54 H384" marker-end="url(#i1)"/><path d="M470 54 H478" marker-end="url(#i1)"/><path d="M564 54 H572" marker-end="url(#i1)"/></g>
+    <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11">
+      <path d="M612 76 V100 H40 V112" stroke="var(--ink)" stroke-width="1.5" fill="none"/>
+      <path d="M200 100 V112 M360 100 V112 M520 100 V112" stroke="var(--ink)" stroke-width="1.5"/>
+      <rect x="10" y="114" width="150" height="62" rx="8" fill="var(--glitch)" opacity=".2" stroke="var(--glitch)" stroke-width="2"/><text x="20" y="134" font-weight="700" fill="var(--ink)">HOT</text><text x="20" y="150" fill="var(--ink)">Personal email</text><text x="20" y="166" fill="var(--ink)">Alert Tolu (Telegram/Slack)</text>
+      <rect x="170" y="114" width="150" height="62" rx="8" fill="var(--sun)" opacity=".35" stroke="var(--sun)" stroke-width="2"/><text x="180" y="134" font-weight="700" fill="var(--ink)">WARM</text><text x="180" y="150" fill="var(--ink)">Personal email</text><text x="180" y="166" fill="var(--ink)">Delay 3 days → check</text>
+      <rect x="330" y="114" width="150" height="62" rx="8" fill="var(--sky)" opacity=".2" stroke="var(--sky)" stroke-width="2"/><text x="340" y="134" font-weight="700" fill="var(--ink)">COLD</text><text x="340" y="150" fill="var(--ink)">Polite info email</text><text x="340" y="166" fill="var(--ink)">No follow-up</text>
+      <rect x="490" y="114" width="160" height="62" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="2"/><text x="500" y="134" font-weight="700" fill="var(--ink)">SPAM (fallback)</text><text x="500" y="150" fill="var(--ink)">Mark as spam</text><text x="500" y="166" fill="var(--ink)">Send nothing</text>
+    </g>
+    <text x="10" y="210" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">WARM PATH, CONTINUED</text>
+    <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11">
+      <rect x="10" y="222" width="120" height="40" rx="8" fill="var(--sun)"/><text x="70" y="246" text-anchor="middle" fill="#13233A">Delay 3 days</text>
+      <rect x="140" y="222" width="130" height="40" rx="8" fill="var(--volt)"/><text x="205" y="246" text-anchor="middle" fill="#13233A">Lookup lead row</text>
+      <rect x="280" y="222" width="150" height="40" rx="8" fill="var(--sun)"/><text x="355" y="246" text-anchor="middle" fill="#13233A">Filter: not replied</text>
+      <rect x="440" y="222" width="150" height="40" rx="8" fill="var(--volt)"/><text x="515" y="246" text-anchor="middle" fill="#13233A">Follow-up + update</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2"><path d="M130 242 H138" marker-end="url(#i1)"/><path d="M270 242 H278" marker-end="url(#i1)"/><path d="M430 242 H438" marker-end="url(#i1)"/></g>
+    <text x="10" y="292" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">ZAP 2 · REPLY CATCHER</text>
+    <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11">
+      <rect x="180" y="276" width="130" height="40" rx="8" fill="var(--glitch)" opacity=".9"/><text x="245" y="300" text-anchor="middle" fill="#fff">Gmail: new email</text>
+      <rect x="320" y="276" width="130" height="40" rx="8" fill="var(--volt)"/><text x="385" y="300" text-anchor="middle" fill="#13233A">Find lead by email</text>
+      <rect x="460" y="276" width="150" height="40" rx="8" fill="var(--volt)"/><text x="535" y="300" text-anchor="middle" fill="#13233A">Status → Replied</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2"><path d="M310 296 H318" marker-end="url(#i1)"/><path d="M450 296 H458" marker-end="url(#i1)"/></g>
+  </svg><figcaption>Scroll sideways on a phone. You may design it differently; the rubric scores results, not this exact shape.</figcaption></figure>
+</section>
+
+<!-- ============ DELIVERABLES ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">YOUR MISSION</span><h2>Eight deliverables, three phases</h2></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Phase 1 · D1 · Leads sheet <span class="soon">(0.4)</span></h4>
+      <p>Design the Leads tab: <code>lead_id</code>, received_at, business, type, area, zone, weekly_budget (number), start_date, contact, email, phone, message, score, tier, status (New · Contacted · Replied · Followed up · Spam · Won · Lost), contacted_at, followed_up_at. Dropdowns for tier and status.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 1 · D2 · AI extraction spec and test <span class="soon">(0.5, 1.5)</span></h4>
+      <p>An AI by Zapier step (Standard) with typed output fields: <code>type</code>, <code>weekly_budget</code> (number, empty if not stated; convert monthly to weekly), <code>start_date</code> (YYYY-MM-DD or empty), <code>is_spam</code> (boolean), <code>first_name</code>, <code>summary</code>. Test it on the 12 leads below before building anything else.</p>
+      <details class="reveal"><summary>Hint</summary><div><p>Give the model today's date for start dates, and tell it that ₦1.5m a month is about ₦346,000 a week (divide by 4.33). Spam = selling something to Harvest Lane, gibberish, or no genuine business need.</p></div></details>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 2 · D3 · Scoring code <span class="soon">(1.4)</span></h4>
+      <p>A Code by Zapier step that applies the scoring rules exactly and outputs <code>score</code> and <code>tier</code>. Same inputs must always give the same tier.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 2 · D4 · Zap 1 Intake <span class="soon">(1.2–1.4)</span></h4>
+      <p>Webhook in, test filter, AI extract, zone lookup, score, Leads row, then Paths: hot, warm, cold and a spam fallback. Emails use the lead's first name and a line from their message. No prices.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 2 · D5 · Zap 2 Reply catcher <span class="soon">(1.1, 1.2)</span></h4>
+      <p>When a lead emails back, find their row by email address and set status to Replied.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 3 · D6 · Follow-up <span class="soon">(1.2, 1.3)</span></h4>
+      <p>On the warm path: wait 3 days, look up the lead again, continue only if the status is still Contacted, send one follow-up, and set status to Followed up.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 3 · D7 · Test report and task budget</h4>
+      <p>Run all 12 test leads. Record tier expected vs. actual, emails sent, alerts, and tasks used per lead. Estimate monthly tasks at 60 leads.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Phase 3 · D8 · Two-minute demo</h4>
+      <p>Record a short screen video: submit a hot lead, show the email and alert arriving, show the Leads row. This becomes your first portfolio piece (Module 6.3).</p>
+    </div></div>
+  </div>
+
+  <div class="logbox">
+    <p>The 12 test leads. Copy them, send each to your webhook from Hoppscotch as JSON (or through a test form), and compare the tier you get with the expected one. Assume today is the day you run the test.</p>
+<pre id="leads-b1">#  | Business                 | Type       | Area        | Budget text           | Start        | Expected
+1  | Grand Oak Suites         | hotel      | Bodija      | ₦350,000 a week       | in 2 weeks   | hot (8)
+2  | Mama Put Express         | restaurant | Mokola      | about 120k weekly     | in 3 weeks   | hot (7)
+3  | Joy Caterers             | caterer    | Challenge   | 150k/week             | in 3 months  | warm (6)
+4  | Unity Secondary School   | school     | Ring Road   | ₦80,000 per week      | in 3 months  | cold (3)
+5  | Ogbomoso Grill           | restaurant | Ogbomoso    | 250k weekly           | in 10 days   | warm (6)
+6  | Ade (household)          | other      | Bodija      | 10k                   | now          | warm (4)
+7  | "CHEAP SEO SERVICES!!!"  | other      | —           | —                     | —            | spam
+8  | test test                | other      | Bodija      | 1                     | now          | filtered (never saved)
+9  | Blue Lagoon Hotel        | hotel      | Oyo town    | ₦1.5m monthly         | in 3 weeks   | warm (6)
+10 | Campus Café              | restaurant | Agbowo      | 50k a week            | now          | warm (4)
+11 | Royal Events Caterers    | caterer    | Mokola      | (not stated)          | ASAP         | warm (5)
+12 | Sunrise Hotel            | hotel      | Ring Road   | ₦200,000 weekly       | in 45 days   | hot (7)</pre>
+    <div><button type="button" class="btn" data-copy="leads-b1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ CURVEBALLS ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">GLITCH'S CURVEBALLS</span><h2>Open one at the start of each phase</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Machines that only work on nice data aren't machines. Try these.</div></div>
+    <details class="reveal"><summary>Curveball 1 · open at the start of Phase 1</summary><div><p>Lead 9 gives a <i>monthly</i> budget, and lead 11 gives none. Does your AI step convert the first and leave the second empty, and does your score treat "empty" as 0 rather than crashing?</p></div></details>
+    <details class="reveal"><summary>Curveball 2 · open at the start of Phase 2</summary><div><p>Tolu will be at a trade fair for a week. Hot-lead alerts must also go to Kemi, and the hot-lead email must say "our team will call you" rather than "Tolu will call you". How do you change it so it's easy to switch back?</p></div></details>
+    <details class="reveal"><summary>Curveball 3 · open at the start of Phase 3</summary><div><p>A competitor submits 40 fake leads in an hour, all from the same email address. Your AI flags some as spam, but not all. What stops the machine sending 40 emails and burning 200 tasks?</p></div></details>
+  </div>
+</section>
+
+<!-- ============ RUBRIC ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">SCORING</span><h2>The rubric: 80 points to win</h2></div>
+  <div class="tablewrap"><table class="dt">
+    <thead><tr><th>Area</th><th>Full marks when…</th><th class="n">Points</th></tr></thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>At least 11 of 12 test leads land in the expected tier; the test lead is filtered</td><td class="n">20</td></tr>
+      <tr><td>Speed</td><td>Acknowledgements within 15 minutes; hot alerts within 5 (instant trigger)</td><td class="n">10</td></tr>
+      <tr><td>Follow-up</td><td>Exactly one follow-up to un-replied warm leads; none to replied ones</td><td class="n">15</td></tr>
+      <tr><td>Data</td><td>Every lead logged with typed fields, score, tier and correct status changes</td><td class="n">15</td></tr>
+      <tr><td>Safety</td><td>No prices or promises in automatic emails; spam and tests get nothing; secrets stored properly</td><td class="n">15</td></tr>
+      <tr><td>Resilience</td><td>All three curveballs handled</td><td class="n">15</td></tr>
+      <tr><td>Report and demo</td><td>Test report, task estimate under ~500 a month, two-minute video</td><td class="n">10</td></tr>
+    </tbody>
+    <tfoot><tr><td>Total</td><td>Win at 80 or more</td><td class="n">100</td></tr></tfoot>
+  </table></div>
+</section>
+
+<!-- ============ REFERENCE ============ -->
+<section class="part" style="--c:var(--grape)">
+  <div class="part-h"><span class="tag">REFERENCE BUILD</span><h2>Compare only after you've finished</h2></div>
+  <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Use this to find gaps, not to copy. If your design differs but passes the rubric, it's a good design.</div></div>
+
+  <details class="reveal"><summary>D3 · Scoring code</summary><div>
+<pre class="codebox"><span class="c">// Input Data: budget, type, zone, start_date, is_spam</span>
+<span class="k">const</span> budget = Number(inputData.budget) || 0;
+<span class="k">let</span> score = 0;
+<span class="k">if</span> (budget &gt;= 200000) score += 3;
+<span class="k">else if</span> (budget &gt;= 100000) score += 2;
+<span class="k">else if</span> (budget &gt; 0) score += 1;
+
+<span class="k">if</span> ([<span class="k">"hotel"</span>, <span class="k">"caterer"</span>, <span class="k">"restaurant"</span>].includes((inputData.type || <span class="k">""</span>).toLowerCase())) score += 2;
+<span class="k">if</span> (inputData.zone === <span class="k">"inside"</span>) score += 2;
+
+<span class="k">const</span> start = inputData.start_date ? <span class="k">new</span> Date(inputData.start_date) : <span class="k">null</span>;
+<span class="k">const</span> days = start ? (start - <span class="k">new</span> Date()) / 86400000 : <span class="k">null</span>;
+<span class="k">if</span> (days !== <span class="k">null</span> &amp;&amp; days &lt;= 30) score += 1;   <span class="c">// includes "now" and ASAP</span>
+
+<span class="k">const</span> spam = String(inputData.is_spam).toLowerCase() === <span class="k">"true"</span>;
+<span class="k">const</span> tier = spam ? <span class="k">"spam"</span> : score &gt;= 7 ? <span class="k">"hot"</span> : score &gt;= 4 ? <span class="k">"warm"</span> : <span class="k">"cold"</span>;
+output = { score: spam ? 0 : score, tier };</pre>
+    <p>For "ASAP" or "now", the AI step returns today's date, so the start counts as within 30 days.</p>
+  </div></details>
+
+  <details class="reveal"><summary>Curveball answers</summary><div>
+    <ol>
+      <li><b>Monthly and missing budgets:</b> the AI prompt converts monthly to weekly (÷ 4.33) and leaves missing values empty; the code's <code>Number(...) || 0</code> treats empty as 0.</li>
+      <li><b>Tolu away:</b> keep a tiny <b>Settings</b> tab in the sheet with <code>alert_to</code> and <code>caller_name</code>. The hot path looks it up and uses those values, so switching back is one cell edit, not a Zap edit.</li>
+      <li><b>Flood of fakes:</b> before the AI step, look up the Leads sheet for the same email in the last 24 hours; if found, filter out. Add a hidden "honeypot" field to the website form that real people never fill; if it has a value, filter out. Both stop the run before AI and email tasks are used.</li>
+    </ol>
+  </div></details>
+
+  <details class="reveal"><summary>D7 · Rough task budget at 60 leads a month</summary><div>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Part</th><th>Estimate</th></tr></thead>
+      <tbody>
+        <tr><td>Intake per genuine lead: duplicate check, AI (Standard), code, sheet row, email, plus alert for hot</td><td>≈ 5–6 tasks × 60 ≈ 330</td></tr>
+        <tr><td>Warm follow-up: lookup and maybe email and update</td><td>≈ 2–3 tasks × 30 ≈ 80</td></tr>
+        <tr><td>Reply catcher: find and update, per lead email received</td><td>≈ 2 tasks × 40 ≈ 80</td></tr>
+        <tr><td><b>Total</b></td><td><b>≈ 490 tasks a month</b>, just inside budget. Filters, Formatter, Paths and Delay add nothing.</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.9rem;color:var(--muted)">Check exactly which steps count as tasks in your own Zap history; plan details change.</p>
+  </div></details>
+</section>
+
+<!-- ============ NEXT ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Spark Street complete</h3>
+    <ol>
+      <li>You can connect anything with webhooks, clean data with Formatter, and route it with Filters and Paths.</li>
+      <li>You can put AI inside a workflow safely: typed outputs, tested prompts, rules for scoring, humans for decisions.</li>
+      <li>You know what each run costs, and when to move a workflow elsewhere.</li>
+      <li>Next: Track 2, The Weave Workshop. Weave the octopus rebuilds Harvest Lane's busiest flows in Make, with loops, routers and serious error handling.</li>
+    </ol>
+  </div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run this as a two-week team sprint: pairs build, then swap and attack each other's machines with the curveballs and their own nasty test leads. Score with the rubric in a final demo session. The best demo videos (with permission) make excellent marketing for the next cohort.</p>
+  </div>
+</section>
+
+</article>
+</template>

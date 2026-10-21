@@ -1,0 +1,103 @@
+{
+  "name": "SUB · Price history",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Price history\nLesson 4.7. Researcher tool get_price_history: this week's vs last week's supplier price per product, each with a source.\n\n**Credential:** Google Sheets OAuth2. **Replace:** YOUR_SHEET_ID.\nReads the 3.4 tab Supplier prices (sku, name, price, stock, category, fetched_at). 3.4 overwrites prices daily, so add a column price_last_week and copy price into it once a week (or keep a weekly snapshot tab).",
+        "height": 320,
+        "width": 380
+      },
+      "id": "16c2e2cc-17bc-4016-a523-1d544e206ca9",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "882ad68f-871d-4449-84c6-9751c2c8da8a",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Supplier prices",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "1bb97f25-28b8-4725-ad1a-c82d0d342909",
+      "name": "Supplier prices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// This week vs last week, one small row per product, with its source.\nconst rows = $input.all().map(i => i.json).filter(r => r.name && r.price !== '' && r.price_last_week !== '');\nconst items = rows.map(r => ({\n  product: r.name,\n  price_now: Number(r.price),\n  price_last_week: Number(r.price_last_week),\n  source: `Agro Depot price list, ${String(r.fetched_at || '').slice(0, 10)}`,\n}));\nreturn [{ json: { found: items.length > 0, items } }];"
+      },
+      "id": "441c3495-d2bb-402f-9b1f-e0ef2eaf73a8",
+      "name": "This week vs last",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Supplier prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supplier prices": {
+      "main": [
+        [
+          {
+            "node": "This week vs last",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,105 @@
+{
+ "name": "HL · One inbox · Meta door",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · One inbox: Meta door (Lesson 5.7)\nMessenger and Instagram DMs from the 5.5 Meta webhook (which already checks Meta's signature). In HL · Social inbox · Meta webhook, add an IF after Flatten events: kind = dm -> Execute Workflow (this workflow); comments stay with the social inbox.\n\nPlaceholders: YOUR_RECEIVE_WORKFLOW_ID.",
+    "height": 280,
+    "width": 500
+   },
+   "id": "f1b57833-25b4-49c0-afa4-598a07a8e227",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -280
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "b2f4b604-a148-43e8-99f1-2a133fa6d52d",
+   "name": "When called by the Meta webhook",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Called from HL · Social inbox · Meta webhook (5.5) for kind = dm.\nreturn { channel: $json.platform, thread_id: $json.thread_id, from_value: $json.thread_id, from_type: $json.platform,\n  text: $json.text, received_at: $json.received_at, raw_id: $json.item_id };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "969f246b-db5a-47c5-a081-09e24103f29c",
+   "name": "One shape",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_RECEIVE_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "0275cdf6-b925-4f5c-b8cf-17910bfc6db7",
+   "name": "Inbox · Receive",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When called by the Meta webhook": {
+   "main": [
+    [
+     {
+      "node": "One shape",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One shape": {
+   "main": [
+    [
+     {
+      "node": "Inbox · Receive",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by the Meta webhook": [
+   {
+    "json": {
+     "platform": "instagram",
+     "kind": "dm",
+     "item_id": "test_ig_mid_1",
+     "thread_id": "test_igsid_1",
+     "author_handle": "test_igsid_1",
+     "text": "Hi, my order HL-0412 hasn't arrived. My number is 0800 000 0000",
+     "received_at": "2026-10-07T09:35:00.000Z"
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

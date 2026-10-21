@@ -1,0 +1,354 @@
+<template data-mod="5.3" id="tpl-5-3">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.3</span>
+    <h1>Social Listening &amp; Sentiment</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Echo</span><span class="pill">Tools: n8n or Make, Facebook and Instagram APIs, Talkwalker Alerts, Google Sheets, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Customers talk about a business every day: in comments, reviews and posts. Most small businesses only hear it when it's already a crisis. In this lesson you build a listening system: it gathers what people say from the places you're allowed to read, labels sentiment, topic and urgency with AI, alerts a person only when it matters, and sends a short weekly report on what to fix.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Know which conversations you can collect, and how, on each platform.</span></div>
+  <div><b>02</b><span>Label sentiment, topic, urgency and intent, including Pidgin, slang, emoji and sarcasm.</span></div>
+  <div><b>03</b><span>Measure how often the AI agrees with people, and improve it.</span></div>
+  <div><b>04</b><span>Write alert rules that catch every urgent problem without crying wolf.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Nine days of silence</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A one-star review on a phone, posted nine days ago, with no reply.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="25" width="120" height="145" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="230" y="55" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="var(--glitch)">★☆☆☆☆</text>
+        <text x="230" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9.5" fill="var(--ink)">"Rotten onions,</text>
+        <text x="230" y="94" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9.5" fill="var(--ink)">no reply to my calls."</text>
+        <text x="230" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)">9 days ago · 0 replies</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"Nine days. I never saw it. And two more customers have mentioned it under our Instagram posts."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Echo the parrot with a large ear-shaped dish collecting speech bubbles.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--ink)" stroke-width="2"><rect x="170" y="30" width="60" height="26" rx="10"/><rect x="236" y="50" width="70" height="26" rx="10"/><rect x="180" y="90" width="70" height="26" rx="10"/><rect x="232" y="122" width="62" height="26" rx="10"/></g>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--ink)" text-anchor="middle"><text x="200" y="47">"love it"</text><text x="271" y="67">"late again"</text><text x="215" y="107">"how much?"</text><text x="263" y="139">"so fresh"</text></g>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"People are already telling you what to fix. Let's build ears that never sleep, and only wake you when it matters."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch triggering an alarm at midnight over a compliment.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="270" cy="40" r="16" fill="#FFF3C4"/>
+        <rect x="165" y="70" width="140" height="56" rx="10" fill="var(--glitch)"/>
+        <text x="235" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">🚨 NEGATIVE: "This</text>
+        <text x="235" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">bread is sick 🔥"</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Midnight alarm! Someone says the bread is <i>sick</i>! Oh… they meant it's amazing? Too late, Tolu's awake."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A weekly report with three bars: positive, neutral and negative, and three fixes.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="25" width="145" height="145" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="175" y="50" width="90" height="12" fill="var(--volt)"/><rect x="175" y="70" width="50" height="12" fill="var(--line)"/><rect x="175" y="90" width="28" height="12" fill="var(--glitch)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--ink)"><text x="175" y="125">Fix 1: onion quality</text><text x="175" y="140">Fix 2: call-back time</text><text x="175" y="155">Fix 3: Sunday hours</text></g>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Every Monday</b>One page: how people feel, what they talk about, and the three things to fix this week.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>What you can listen to, platform by platform</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Source</th><th>How</th><th>What to know</th></tr></thead>
+      <tbody>
+        <tr><td>Your Facebook Page</td><td>Meta Graph API (n8n's Facebook Graph API node; Make's Facebook Pages app)</td><td>Comments on your own posts. Needs a Page access token with the right permissions.</td></tr>
+        <tr><td>Your Instagram account</td><td>Instagram API, with a Business or Creator account</td><td>Read and reply to comments on your own media. Personal accounts aren't supported.</td></tr>
+        <tr><td>Your LinkedIn Page</td><td>LinkedIn Community Management API</td><td>Requires LinkedIn's approval of your app. Until then, check page comments by hand.</td></tr>
+        <tr><td>X</td><td>X API, pay per use</td><td>Searching and reading posts costs money per post read. Set a monthly cap.</td></tr>
+        <tr><td>TikTok</td><td>Mostly manual for now</td><td>TikTok's APIs for organic comments are limited and need approval. Read comments in the app, or export them, and label them the same way.</td></tr>
+        <tr><td>Google reviews</td><td>Google Business Profile API (you request access), or review notification emails</td><td>Reviews of <i>your</i> business. Email notifications can feed the same workflow through a Gmail trigger.</td></tr>
+        <tr><td>Mentions across the web</td><td>Talkwalker Alerts or Google Alerts (free, RSS or email); Brand24 or Mention (paid, with APIs)</td><td>News, blogs and forums that mention the brand. Paid tools cover more social sources.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Listen to conversations <i>about the business</i>, not to collect files on people. Store the comment and its link, not a profile of the person, and delete old raw text on a schedule.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Four labels, not one</h3>
+    <p>"Sentiment" alone isn't enough to act on. Ask the AI for four things, in a fixed shape:</p>
+<pre class="codebox">{ "sentiment": "positive" | "neutral" | "negative" | "mixed",
+  "topic": "quality" | "late delivery" | "price" | "refund" | "food safety" | "hours" | "other",
+  "urgent": boolean,       <span class="c">← needs a person today</span>
+  "intent": "praise" | "complaint" | "question" | "lead" | "spam",
+  "confidence": 0–1 }</pre>
+    <div class="vocab">
+      <div><b>Local language</b>Give the model examples in Nigerian English and Pidgin: "Una tomatoes fresh well well" is praise; "Price don cost o" is about price, not anger.</div>
+      <div><b>Slang and emoji</b>"Sick 🔥", "mad", "deadly" can be compliments. 🙄 often means sarcasm.</div>
+      <div><b>Sarcasm</b>"Great, another 'fresh' delivery of soft tomatoes" is negative. Include examples like this in the prompt.</div>
+      <div><b>Confidence</b>Treat it as a rough signal, not a guarantee. Models are often confidently wrong; that's why you measure.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Sentiment lab: label, compare, tune the alarm</h3>
+    <p>Ten comments from Harvest Lane's pages (invented for practice). First, label each one yourself. Then compare with the AI, and set an alert rule that wakes Tolu for every urgent problem, and only those.</p>
+    <script type="application/json" id="sl-5-3">{"items":[
+      {"text":"This bread is sick 🔥🔥","src":"Instagram comment","topic":"quality","ai":"negative","conf":0.62,"ref":"positive","urgent":false},
+      {"text":"Ordered at 9, still waiting at 2pm. Nobody is picking my calls.","src":"Facebook comment","topic":"late delivery","ai":"negative","conf":0.94,"ref":"negative","urgent":true},
+      {"text":"Una tomatoes fresh well well, I go order again","src":"Instagram comment","topic":"quality","ai":"neutral","conf":0.55,"ref":"positive","urgent":false},
+      {"text":"My son was sick after eating the eggs from Tuesday's delivery","src":"Google review","topic":"food safety","ai":"negative","conf":0.71,"ref":"negative","urgent":true},
+      {"text":"What time do you open on Sundays?","src":"Facebook comment","topic":"hours","ai":"neutral","conf":0.97,"ref":"neutral","urgent":false},
+      {"text":"Great, another 'fresh' delivery of soft tomatoes 🙄","src":"Instagram comment","topic":"quality","ai":"positive","conf":0.58,"ref":"negative","urgent":false},
+      {"text":"Price don cost o 😩 but quality still dey","src":"Facebook comment","topic":"price","ai":"negative","conf":0.66,"ref":"neutral","urgent":false},
+      {"text":"Best peppers in Ibadan, no contest","src":"Google review","topic":"quality","ai":"positive","conf":0.96,"ref":"positive","urgent":false},
+      {"text":"I want a refund for yesterday's order, half the onions were rotten","src":"Facebook comment","topic":"refund","ai":"negative","conf":0.91,"ref":"negative","urgent":true},
+      {"text":"Do you deliver to Ogbomoso?","src":"Instagram comment","topic":"other","ai":"neutral","conf":0.93,"ref":"neutral","urgent":false}]}</script>
+    <div class="senti" data-senti="sl-5-3">
+      <div class="tablewrap"><table><thead><tr><th>#</th><th>Comment</th><th>Your label</th><th>AI label (confidence)</th></tr></thead><tbody></tbody></table></div>
+      <p class="agree" data-o="agree" aria-live="polite"></p>
+      <div class="ctl" role="group" aria-label="Alert rule">
+        <b>Alert Tolu when the AI says negative, with confidence ≥ <span data-o="thr">0.60</span></b>
+        <input type="range" data-sl="thr" min="0.5" max="0.95" step="0.01" value="0.60" aria-label="Confidence threshold">
+      </div>
+      <div class="ctl" role="group" aria-label="Topics that can alert">
+        <span>and the topic is:</span>
+        <label><input type="checkbox" data-sl="topic" value="food safety" checked> food safety</label>
+        <label><input type="checkbox" data-sl="topic" value="refund" checked> refund</label>
+        <label><input type="checkbox" data-sl="topic" value="late delivery" checked> late delivery</label>
+        <label><input type="checkbox" data-sl="topic" value="quality" checked> quality</label>
+        <label><input type="checkbox" data-sl="topic" value="price" checked> price</label>
+      </div>
+      <div class="ctl"><label><input type="checkbox" data-sl="safety"> Always alert on food safety, whatever the confidence</label></div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Measure the AI against people</h3>
+    <p>Before you trust the labels, check them, exactly like the evaluations in 4.9:</p>
+    <ol>
+      <li>Collect 50 real comments. Two people label them independently; settle disagreements together. That's your reference set.</li>
+      <li>Run the AI on the same 50. Count agreement, and look at <i>which</i> ones it gets wrong: usually slang, Pidgin, sarcasm and mixed feelings.</li>
+      <li>Add those cases as examples in the prompt. Re-run. Keep the version that agrees most, and never ship one that misses an urgent case.</li>
+      <li>Every month, add 10 new real comments to the set, because language changes.</li>
+    </ol>
+    <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's rule:</b> anything that can hurt someone, such as food safety, a threat or a medical claim, alerts a person on a hard rule, not on a confidence score.</p></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The Monday report</h3>
+    <p>Code counts; AI explains. The workflow totals the week's labels (by sentiment, topic and source, compared with last week), then asks the AI for three fixes, each backed by real quotes.</p>
+<pre class="codebox">📊 Harvest Lane · what customers said · week 41
+142 comments and reviews · 71% positive (last week 64%) · 9 negative
+Top topics: quality 48 · late delivery 21 · price 17 · hours 11
+⚠️ 3 urgent items, all answered within 2 h
+
+Three things to fix:
+1. Onion quality on Tuesday deliveries (6 mentions): "half the onions were rotten"
+2. Calls not returned after 5 p.m. (4): "nobody is picking my calls"
+3. Sunday hours unclear (5): "what time do you open on Sundays?"</pre>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://developers.facebook.com/docs/instagram-platform/comment-moderation" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Instagram Platform: comment moderation</b><small>What the API lets you read, reply to and hide on your own media.</small></span></a>
+    <a class="wcard" href="https://www.talkwalker.com/alerts" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Talkwalker Alerts (free)</b><small>Set up a brand alert delivered by RSS, ready for n8n's RSS node.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=sentiment+analysis+social+media+comments+n8n+AI" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: AI sentiment analysis of comments</b><small>Watch one build and note how (or whether) it measures accuracy.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's listening post</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every 15 minutes, collect new comments from Harvest Lane's Facebook Page and Instagram, plus web mentions from Talkwalker Alerts. Label each one, alert Tolu on Telegram when something urgent arrives, and send a report every Monday at 8 a.m.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>The Mentions sheet</h4>
+      <p>Columns: <code>source, item_id, link, posted_at, text, sentiment, topic, urgent, intent, confidence, alerted, handled_by</code>. <code>item_id</code> is the platform's comment ID, so the same comment is never processed twice. No phone numbers, no profiles of people.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Collect</h4>
+      <ul>
+        <li><b>Facebook:</b> Facebook Graph API node, GET your Page's recent posts with their comments (message, created time, comment ID).</li>
+        <li><b>Instagram:</b> HTTP Request to the Instagram API: your recent media, then each item's comments (ID, text, timestamp).</li>
+        <li><b>Web:</b> RSS Read node on your Talkwalker Alerts feed.</li>
+        <li><b>Google reviews:</b> Gmail Trigger on review notification emails, until you have API access.</li>
+      </ul>
+      <p>Merge them into one shape (<code>source, item_id, link, text, posted_at</code>), then <b>Remove Duplicates</b> against the sheet.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Label</h4>
+      <p>An <b>Information Extractor</b> with the Card 2 schema, and a system message containing 12 local examples: slang, Pidgin, sarcasm, mixed feelings. Use a small, cheap model; labelling is a simple task, and volume adds up (4.9).</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Alert rules, in code</h4>
+<pre class="codebox">const t = $json;
+const hard = t.topic === 'food safety' || /threat|police|lawyer|sick after/i.test(t.text);
+const soft = t.sentiment === 'negative' &amp;&amp; t.confidence &gt;= 0.8
+          &amp;&amp; ['refund','late delivery'].includes(t.topic);
+return { ...t, alert: hard || soft, level: hard ? 'now' : soft ? 'today' : 'report' };</pre>
+      <p><b>now</b> sends a Telegram alert immediately, with the text and link. <b>today</b> goes into a 6 p.m. summary. Everything else waits for Monday. Questions and leads (<code>intent</code>) go to the social inbox you'll build in 5.5.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>The Monday report</h4>
+      <p>A Schedule Trigger (Mondays 08:00) reads the last 7 days, a Code node computes the counts and the change from last week, and the AI writes three fixes from the negative comments, quoting them. Email to Tolu, with a Telegram summary.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Housekeeping</h4>
+      <p>Monthly: add 10 new comments to the reference set and re-measure agreement. Delete raw comment text older than 90 days, keeping only the labels and counts. Error workflow attached (3.6).</p>
+      <div class="stats">
+        <div class="stat"><b>15 min</b><span>from comment to label</span></div>
+        <div class="stat"><b>0</b><span>urgent items missed in the test set</span></div>
+        <div class="stat"><b>1 page</b><span>weekly report, three fixes</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Only sources you're allowed to read, through official routes.</li><li>Four labels make each comment actionable.</li><li>Agreement is measured against people, with local language in the examples.</li><li>Hard rules for anything dangerous; confidence for the rest.</li><li>Code computes the numbers; AI explains them.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Alerting on every negative label.</li><li>No duplicate check, so the same comment alerts again and again.</li><li>Trusting the AI's confidence as if it were a probability.</li><li>Building profiles of individual commenters.</li><li>Letting AI calculate the weekly numbers.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I tuned the listening post. Tolu has stopped reading the alerts. I can't think why.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>"This bread is sick 🔥" woke Tolu at midnight. So did "deadly jollof".</td></tr>
+        <tr><td>B</td><td>One angry comment produced 30 alerts over a day.</td></tr>
+        <tr><td>C</td><td>The report said "positive sentiment up 40%". Half the "positive" comments came from one spam account.</td></tr>
+        <tr><td>D</td><td>Every comment in Pidgin was labelled neutral.</td></tr>
+        <tr><td>E</td><td>The sheet now has every commenter's name, profile link, and a "customer temperament" column the AI fills in.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no slang examples, and alerts on any negative label. Add local slang examples; alert on topic plus high confidence; hard rules only for genuinely dangerous topics.</li>
+        <li><b>B:</b> no duplicate check. Store each <code>item_id</code> and skip ones already processed; mark alerted items.</li>
+        <li><b>C:</b> spam counted as customers. Label <code>intent: spam</code>, exclude it from the numbers, and report how many you excluded.</li>
+        <li><b>D:</b> no Pidgin in the examples or the reference set. Add Pidgin examples, have a fluent speaker check the labels, re-measure.</li>
+        <li><b>E:</b> profiling individuals. Delete those columns. Keep comments and labels, not dossiers, and delete raw text on a schedule.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Label 30 by hand, then compare</h4>
+    <ul><li>Collect 30 real public comments about a business you know.</li><li>Label them yourself with the Card 2 schema, then let an AI label them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You've measured agreement and written down the three kinds of comment the AI gets wrong most.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A working listening post</h4>
+    <ul><li>Build collect → dedupe → label → alert for one page and one other source.</li><li>Test with planted comments, including one urgent food-safety case.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The urgent case alerts within 15 minutes, no comment alerts twice, and praise in slang doesn't alert.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A month of listening for a real business</h4>
+    <ul><li>Run the listening post and Monday reports for four weeks.</li><li>Present the owner with the trend and the fixes they made.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The owner acted on at least one fix, and you can show whether negative mentions about it fell.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. "Una tomatoes fresh well well, I go order again." The AI says neutral. Why?</p><div class="opts">
+      <button type="button" data-opt="a">The comment really is neutral</button><button type="button" data-opt="b">The model is broken</button><button type="button" data-opt="c">No Pidgin examples in the prompt or reference set</button><button type="button" data-opt="d">Comments can't be labelled</button></div>
+      <p class="fb" hidden data-why="Local language needs local examples, and a fluent speaker checking the reference labels."></p></div>
+    <div class="q" data-ans="b"><p>2. A food-safety complaint arrives with confidence 0.55. What should happen?</p><div class="opts">
+      <button type="button" data-opt="a">Wait for the Monday report</button><button type="button" data-opt="b">Alert a person now: dangerous topics use hard rules</button><button type="button" data-opt="c">Ignore it: confidence is too low</button><button type="button" data-opt="d">Reply automatically with a refund</button></div>
+      <p class="fb" hidden data-why="Some things can't wait for a confident model. Hard rules first."></p></div>
+    <div class="q" data-ans="d"><p>3. How do you stop the same comment alerting 30 times?</p><div class="opts">
+      <button type="button" data-opt="a">Alert less often</button><button type="button" data-opt="b">Use a bigger model</button><button type="button" data-opt="c">Turn alerts off</button><button type="button" data-opt="d">Store each comment ID and skip ones already processed</button></div>
+      <p class="fb" hidden data-why="Deduplicate by the platform's own ID."></p></div>
+    <div class="q" data-ans="a"><p>4. Who should calculate "71% positive, up from 64%"?</p><div class="opts">
+      <button type="button" data-opt="a">Code, from the labelled rows</button><button type="button" data-opt="b">The AI, by reading the comments</button><button type="button" data-opt="c">Tolu, by hand</button><button type="button" data-opt="d">The platform</button></div>
+      <p class="fb" hidden data-why="Code calculates; AI explains."></p></div>
+    <div class="q" data-ans="c"><p>5. Which of these should a listening system store?</p><div class="opts">
+      <button type="button" data-opt="a">Each commenter's phone number and profile</button><button type="button" data-opt="b">A personality rating for each customer</button><button type="button" data-opt="c">The comment, its link, and the labels</button><button type="button" data-opt="d">Everything, forever</button></div>
+      <p class="fb" hidden data-why="Listen to conversations about the business, not build files on people. Delete raw text on a schedule."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-3">AUTOMANCY LOG · Lesson 5.3 · Social Listening & Sentiment
+Date:
+Sources connected:
+Reference set size · AI agreement before → after prompt fixes:
+Alert rule (hard rules + soft rule):
+Urgent test case caught? Time to alert:
+First weekly report: top topics and three fixes:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Collect only what you're allowed to read, through official routes.</li>
+      <li>Label sentiment, topic, urgency and intent, with local-language examples.</li>
+      <li>Measure agreement with people before trusting the labels.</li>
+      <li>Hard rules for danger; confidence and topic for the rest.</li>
+      <li>Code counts, AI explains, and you delete raw text on a schedule.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/docs/instagram-platform/overview/" target="_blank" rel="noopener">Instagram Platform overview</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.facebookgraphapi/" target="_blank" rel="noopener">n8n Docs: Facebook Graph API node</a></li>
+    <li><span class="kind">Text</span><a href="https://www.make.com/en/integrations/facebook-pages" target="_blank" rel="noopener">Make: Facebook Pages app</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.x.com/x-api/getting-started/pricing" target="_blank" rel="noopener">X API pricing (pay per use)</a></li>
+    <li><span class="kind">Course</span><a href="https://www.facebook.com/business/learn" target="_blank" rel="noopener">Meta Blueprint: free social media courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=sentiment+analysis+social+media+comments+n8n+AI" target="_blank" rel="noopener">YouTube: AI sentiment analysis of comments</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Print 20 real-style comments in English, Pidgin, Yorùbá and emoji. Pairs label them silently, then compare. Disagreement between people is usually 15–25%, which surprises everyone and sets a realistic target for the AI. Then run the lab's alarm game: who can catch all three urgent cases with the fewest false alarms?</p>
+  </div>
+</section>
+
+</article>
+</template>

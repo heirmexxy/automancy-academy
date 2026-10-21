@@ -1,0 +1,350 @@
+<template data-mod="5.8" id="tpl-5-8">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.8</span>
+    <h1>CRM Foundations: HubSpot and Zoho</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Tolu</span><span class="pill">Tools: HubSpot Free CRM (or Zoho CRM Free), Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Your growth agents now find leads, answer comments and capture enquiries. But where do those leads go? If the answer is "a sheet nobody opens" or "Tolu's WhatsApp", deals are lost quietly. A CRM (customer relationship management system) is where every customer, company and deal lives, with a clear stage, an owner and a next step. In this lesson you set up a real CRM the way a client would need it: the right records, a pipeline with honest stages, clean data, and a team that actually uses it. Automating it comes next, in 5.9.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain contacts, companies, deals and activities, and how they connect.</span></div>
+  <div><b>02</b><span>Design a pipeline whose stages each have a clear exit rule.</span></div>
+  <div><b>03</b><span>Set up properties and import data without creating duplicates.</span></div>
+  <div><b>04</b><span>Choose between HubSpot, Zoho and Salesforce for a client, within free-plan limits.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The hotel deal nobody followed up</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A hotel manager's email asking for a weekly vegetable supply price, sitting unread.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="35" width="145" height="90" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="9.5" fill="var(--ink)"><text x="170" y="56">From: Bodija Suites</text><text x="170" y="74">"Please send a price for</text><text x="170" y="88">weekly vegetables, about</text><text x="170" y="102">₦1.2m a month."</text></g>
+        <text x="232" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--glitch)">unread · 11 days</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Week 1</b>A hotel asks Harvest Lane for a ₦1.2 million-a-month supply quote. Tolu means to reply "tomorrow".</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Leads scattered across a sheet, WhatsApp, a notebook and an inbox.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">
+          <rect x="165" y="30" width="62" height="34" rx="8" fill="var(--volt)"/><text x="196" y="51" fill="#fff">WhatsApp</text>
+          <rect x="240" y="30" width="62" height="34" rx="8" fill="var(--sky)"/><text x="271" y="51" fill="#fff">sheet</text>
+          <rect x="165" y="80" width="62" height="34" rx="8" fill="var(--sun)"/><text x="196" y="101" fill="#13233A">notebook</text>
+          <rect x="240" y="80" width="62" height="34" rx="8" fill="var(--grape)"/><text x="271" y="101" fill="#fff">inbox</text>
+        </g>
+        <text x="234" y="145" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">"Which one has the hotel?"</text>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Your agents capture leads beautifully. Then they land in four places, and nobody owns the next step."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch proudly showing a CRM with dozens of fields and stages.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="160" y="25" width="145" height="140" rx="8" fill="var(--card)"/>
+        <g stroke="var(--line)" stroke-width="1.5"><path d="M168 42 H296"/><path d="M168 54 H296"/><path d="M168 66 H296"/><path d="M168 78 H296"/><path d="M168 90 H296"/><path d="M168 102 H296"/><path d="M168 114 H296"/><path d="M168 126 H296"/><path d="M168 138 H296"/><path d="M168 150 H296"/></g>
+        <text x="232" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--glitch)">60 fields · 14 stages · 3,000 dupes</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I made a CRM! Sixty fields, fourteen stages, and I imported every phone contact Tolu has. Twice."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A clean pipeline board with five columns and a few deal cards.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"><rect x="158" y="30" width="28" height="120" rx="4"/><rect x="188" y="30" width="28" height="120" rx="4"/><rect x="218" y="30" width="28" height="120" rx="4"/><rect x="248" y="30" width="28" height="120" rx="4"/><rect x="278" y="30" width="28" height="120" rx="4"/></g>
+        <g fill="var(--rose)"><rect x="161" y="40" width="22" height="14" rx="3"/><rect x="161" y="58" width="22" height="14" rx="3"/><rect x="191" y="40" width="22" height="14" rx="3"/><rect x="221" y="40" width="22" height="14" rx="3"/><rect x="281" y="40" width="22" height="14" rx="3" fill="var(--volt)"/></g>
+        <text x="232" y="170" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">Every deal: a stage, an owner, a next step</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"Five stages I understand, one owner per deal, and a reminder when something sits too long. That's all I need."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 40 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The four building blocks</h3>
+    <p>Almost every CRM, from HubSpot to Zoho to Salesforce, is built from the same blocks. Learn them once and you can work in any of them.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Block</th><th>What it is</th><th>Harvest Lane example</th></tr></thead>
+      <tbody>
+        <tr><td><b>Contact</b></td><td>A person</td><td>Mrs Bello, procurement manager</td></tr>
+        <tr><td><b>Company</b> (Zoho: Account)</td><td>The business they work for</td><td>Bodija Suites hotel</td></tr>
+        <tr><td><b>Deal</b> (Zoho: Deal or Potential)</td><td>A possible sale, with a value and a stage</td><td>Weekly vegetables, ₦1.2m a month</td></tr>
+        <tr><td><b>Activity</b></td><td>Emails, calls, meetings, notes and tasks logged on any of the above</td><td>"Tasting on Thursday, 10 a.m." (task for Tolu)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Associations</b>The links between records: Mrs Bello belongs to Bodija Suites, and the deal is linked to both. Without associations, you have three lists, not a CRM.</div>
+      <div><b>Leads in Zoho</b>Zoho also has a separate <i>Leads</i> module for people not yet qualified. When a lead qualifies, you <i>convert</i> it into a contact, an account and (optionally) a deal. HubSpot uses a <i>lifecycle stage</i> on the contact instead.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Two ladders: lifecycle stage and deal stage</h3>
+    <p>Beginners mix these up. They answer different questions.</p>
+    <div class="vocab">
+      <div><b>Lifecycle stage (on the contact)</b>"How well do we know this person?" HubSpot's defaults: Subscriber → Lead → Marketing qualified lead (MQL) → Sales qualified lead (SQL) → Opportunity → Customer → Evangelist. It should only move forward.</div>
+      <div><b>Deal stage (on the deal, inside a pipeline)</b>"Where is this sale right now?" One contact can have several deals over time, each moving through the pipeline to <i>won</i> or <i>lost</i>.</div>
+    </div>
+    <p>Each deal stage needs an <b>exit rule</b>: a fact that must be true before a deal moves on. Harvest Lane's pipeline:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Stage</th><th>Exit rule (move on when…)</th><th>Win chance</th></tr></thead>
+      <tbody>
+        <tr><td>New enquiry</td><td>A business has asked about supply or prices</td><td>10%</td></tr>
+        <tr><td>Tasting booked</td><td>A date and time are agreed for a tasting or sample</td><td>25%</td></tr>
+        <tr><td>Proposal sent</td><td>A written price and schedule has been sent</td><td>50%</td></tr>
+        <tr><td>Trial order</td><td>The first paid order has been delivered</td><td>75%</td></tr>
+        <tr><td>Won / Lost</td><td>A supply agreement is signed, or they said no (with a reason)</td><td>100% / 0%</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Stages are things the <i>customer</i> did, not things you hope. "Proposal sent" is a fact. "Very interested" is a feeling.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Pipeline lab: where does each deal sit?</h3>
+    <p>Tolu's notes from this week. Place each one using Harvest Lane's exit rules from Card 2.</p>
+    <script type="application/json" id="pk-5-8">{"opts":[["none","Not a deal yet (contact only)"],["new","New enquiry"],["tasting","Tasting booked"],["proposal","Proposal sent"],["trial","Trial order"],["won","Won"],["lost","Lost"]],
+     "items":[
+      {"t":"A home cook subscribed to the newsletter and clicked the recipe link.","best":"none","why":"Interest is not a deal. Keep her as a contact (lifecycle: Subscriber) and let the newsletter do its work."},
+      {"t":"The Grill Yard's manager asked on Instagram for a price list for weekly vegetables.","best":"new","why":"A business asked about supply: create the deal at New enquiry, linked to the contact and the company, with Tolu as owner."},
+      {"t":"Bodija Suites' procurement manager agreed a tasting on Thursday at 10 a.m.","best":"tasting","why":"A date and time are agreed. Add a task for Tolu on Thursday morning so it can't be forgotten."},
+      {"t":"A proposal PDF was emailed to Mama Put Express six days ago. No reply yet.","best":"proposal","why":"Silence doesn't move a deal backwards. It stays at Proposal sent, with a follow-up task. (5.9 automates that reminder.)"},
+      {"t":"Kakanfo Inn paid ₦180,000 for a first trial order, delivered yesterday.","best":"trial","why":"A paid, delivered first order meets the Trial order exit rule. Next step: ask for the supply agreement."},
+      {"t":"The Grill Yard signed a three-month weekly supply agreement.","best":"won","why":"Signed agreement: Won. The contact's lifecycle stage becomes Customer, and onboarding starts (6.2)."},
+      {"t":"A café said: “We're happy with our current supplier. Try us again in six months.”","best":"lost","why":"Close it as Lost with the reason (current supplier) and a task in six months. Honest pipelines make honest forecasts."}],
+     "ok":"✓ All correct. Every deal has a stage the customer earned, so the pipeline value means something.",
+     "bad":"Deals in the wrong stage make the forecast wrong, and the wrong person gets chased."}</script>
+    <div class="ident" data-pick="pk-5-8">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Clean data: properties, imports and duplicates</h3>
+    <p>A CRM is only as good as what goes in. Most "the CRM doesn't work" complaints are really data problems.</p>
+    <div class="vocab">
+      <div><b>Properties are fields</b>Use dropdowns, not free text, for anything you will filter or report on: <code>lead_source</code> (Instagram, outreach, referral…), <code>business_type</code>, <code>delivery_zone</code>, <code>lost_reason</code>. "insta", "IG" and "Instagram" in a text box become three sources in your report.</div>
+      <div><b>Few, not many</b>HubSpot's free plan allows only 10 custom properties in total, so choose the ones the report needs. That limit is a good discipline on any plan.</div>
+      <div><b>Duplicates</b>HubSpot matches contacts on email address and companies on website domain when you import. Normalise first: lowercase emails, phones as +234…, one domain per company (no "www.").</div>
+      <div><b>Consent travels with the record</b>Store how and when each person agreed to marketing (from 5.6). Importing WhatsApp contacts does not give you consent to email them.</div>
+    </div>
+<pre class="codebox">Import checklist (do this in a sheet first)
+1. One row per person; company domain in its own column
+2. Emails lowercase; phones +234XXXXXXXXXX; blanks left blank
+3. lead_source and business_type use the dropdown values exactly
+4. A marketing_consent column (yes / no / unknown) and its date
+5. Remove test rows, staff and suppliers
+6. Import 10 rows first; check associations; then import the rest</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Choosing a CRM, and making people use it</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>HubSpot Free</th><th>Zoho CRM Free</th><th>Salesforce</th></tr></thead>
+      <tbody>
+        <tr><td>Best for</td><td>Small teams starting out; strong free email, forms and chat</td><td>Small teams who need more records and simple workflow rules free</td><td>Larger companies with admins; big job market</td></tr>
+        <tr><td>Free plan limits (Oct 2026)</td><td>2 users, 1,000 contacts, 1 pipeline, 10 custom properties</td><td>3 users, 5,000 records (check storage on the current plan)</td><td>No free plan for a business; a free Developer Edition for learning</td></tr>
+        <tr><td>Automation on free</td><td>Very little; basic workflows from Starter, full workflows from Professional</td><td>Up to 5 workflow rules</td><td>(paid editions)</td></tr>
+        <tr><td>API on free</td><td>Yes, with a private app token</td><td>Yes</td><td>Developer Edition</td></tr>
+      </tbody>
+    </table></div>
+    <p class="mgoal">Limits and prices change often. Check the vendor's pricing page on the day you advise a client, and write the date in your proposal.</p>
+    <div class="vocab">
+      <div><b>Adoption beats features</b>A CRM nobody updates is worse than a sheet. Keep stages few, make the mobile app the default, and let automation (5.9) do the typing.</div>
+      <div><b>Permissions</b>Each person sees and edits what their role needs. Owners are named people, never "sales".</div>
+      <div><b>One dashboard, one weekly meeting</b>Deals by stage and value, deals stuck too long, won and lost this month with reasons. Review it every Monday; the pipeline stays honest because people know it will be looked at.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/watch?v=OacMOtq9-kQ" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot Basics: set up your deal pipeline and stages</b><small>Creating stages and win chances. Compare with the exit rules in Card 2.</small></span></a>
+    <a class="wcard" href="https://academy.hubspot.com/courses/building-your-business-with-hubspot-smart-crm" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot Academy: Building Your Business With HubSpot</b><small>Free course on setting up the CRM for a small business.</small></span></a>
+    <a class="wcard" href="https://www.zoho.com/crm/free-crm.html" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zoho CRM Free edition</b><small>What the free plan includes, if a client prefers Zoho.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Harvest Lane's first CRM</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every restaurant and hotel lead from Track 5 lives in HubSpot's free CRM with a company, a contact, a deal in the right stage, an owner and a next step. Tolu reviews one dashboard every Monday. (Using Zoho? Every step has a Zoho equivalent, noted in brackets.)</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Write the design on one page first</h4>
+      <p>Before clicking anything: the objects you'll use (contacts, companies, deals), the pipeline stages with exit rules (Card 2), the custom properties (no more than 10), the owners (Tolu, and Bisi for households), and the four numbers the dashboard must show. Get Tolu to agree to this page.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Create the account and the pipeline</h4>
+      <p>Sign up for HubSpot's free CRM with Harvest Lane's own domain email. In <i>Settings → Objects → Deals → Pipelines</i>, rename the default stages to Harvest Lane's, and set each win chance. (Zoho: <i>Setup → Customization → Pipelines</i>, or edit the Stage picklist.)</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Add the properties that drive the report</h4>
+<pre class="codebox">Contact:  lead_source (dropdown) · marketing_consent (yes/no/unknown) · consent_date
+Company:  business_type (restaurant/hotel/caterer/household) · delivery_zone (in/out)
+Deal:     weekly_value_ngn · lost_reason (dropdown) · next_step_date
+          → 8 custom properties; 2 spare for later</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Import, carefully</h4>
+      <p>Export the leads sheet from Growth Desk, clean it with the Card 4 checklist, and import companies first, then contacts (matched to companies by domain), then open deals. Import 10 rows, check that each deal shows its company and contact, then import the rest.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Owners, views and the phone</h4>
+      <p>Assign every open deal an owner. Save a view "My deals needing a next step" (no task, or next step date passed). Install the HubSpot mobile app on Tolu's phone and log one call from it together, so she sees how quick it is.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>The Monday dashboard</h4>
+      <p>Four reports: open deal value by stage; deals in the same stage for more than 14 days; won and lost this month with reasons; new deals by <code>lead_source</code>. Book a 20-minute Monday review with Tolu for the next four weeks.</p>
+      <div class="stats">
+        <div class="stat"><b>5</b><span>stages with exit rules</span></div>
+        <div class="stat"><b>8</b><span>custom properties</span></div>
+        <div class="stat"><b>0</b><span>deals without an owner</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The design is agreed before anything is built.</li><li>Stages describe what the customer did.</li><li>Dropdowns keep the reports clean.</li><li>Every deal has an owner and a next step.</li><li>A weekly review keeps people using it.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Copying a big company's 12-stage pipeline.</li><li>Free-text fields for sources and reasons.</li><li>Importing everything at once, unchecked.</li><li>Treating WhatsApp contacts as email consent.</li><li>Setting it up and never reviewing it.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My CRM is very complete. Tolu just doesn't open it.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The pipeline has 14 stages, including "Very interested" and "Will call back".</td></tr>
+        <tr><td>B</td><td>The lead source report shows "IG", "insta", "Instagram" and "instagram ad" as four sources.</td></tr>
+        <tr><td>C</td><td>Bodija Suites appears as three companies: bodijasuites.example, www.bodijasuites.example and "Bodija Suites Hotel".</td></tr>
+        <tr><td>D</td><td>Glitch imported 3,000 phone contacts and sent them all the newsletter.</td></tr>
+        <tr><td>E</td><td>Half the open deals have no owner and no next step. The forecast says ₦9 million.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> stages based on feelings. Cut to five stages, each with an exit rule the customer meets.</li>
+        <li><b>B:</b> free text. Make <code>lead_source</code> a dropdown and fix the old values in one bulk edit.</li>
+        <li><b>C:</b> unnormalised domains and a company with no domain. Strip "www.", add the domain to every company, then merge the three records.</li>
+        <li><b>D:</b> no consent. Phone contacts didn't agree to email. Remove them from marketing, apologise if needed, and ask for opt-in (5.6).</li>
+        <li><b>E:</b> no owners, no next steps, so nobody chases and the forecast is fiction. Assign owners, require a next step date, and review stuck deals every Monday.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Design a CRM on one page</h4>
+    <ul><li>For a real business, write the objects, pipeline stages with exit rules, up to 10 custom properties, owners and the four dashboard numbers.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The owner agrees each stage describes something the customer does.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Set it up in HubSpot or Zoho free</h4>
+    <ul><li>Build your design in a free account; import at least 30 cleaned records with companies, contacts and deals associated.</li><li>Build the Monday dashboard.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No duplicates, every open deal has an owner and next step, and the dashboard shows all four numbers.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run a real pipeline for four weeks</h4>
+    <ul><li>Set up the CRM for a real business, train the team, and run four Monday reviews.</li><li>Report how many deals were found stuck and what happened to them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The team updated it themselves every week, and at least one stuck deal was rescued or honestly closed.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What's the difference between a lifecycle stage and a deal stage?</p><div class="opts">
+      <button type="button" data-opt="a">They're the same thing</button><button type="button" data-opt="b">Lifecycle is about the person; deal stage is about one sale in a pipeline</button><button type="button" data-opt="c">Lifecycle stages are only for Zoho</button><button type="button" data-opt="d">Deal stages are for marketing emails</button></div>
+      <p class="fb" hidden data-why="One person moves up the lifecycle once; they can have many deals over time."></p></div>
+    <div class="q" data-ans="c"><p>2. What makes a good pipeline stage?</p><div class="opts">
+      <button type="button" data-opt="a">A hopeful name like "Very interested"</button><button type="button" data-opt="b">As many stages as possible</button><button type="button" data-opt="c">An exit rule based on something the customer did</button><button type="button" data-opt="d">A stage for each salesperson</button></div>
+      <p class="fb" hidden data-why="Exit rules make stages facts, so the forecast can be trusted."></p></div>
+    <div class="q" data-ans="a"><p>3. Why make lead source a dropdown?</p><div class="opts">
+      <button type="button" data-opt="a">So the report doesn't split one source into many spellings</button><button type="button" data-opt="b">Dropdowns are cheaper</button><button type="button" data-opt="c">HubSpot doesn't allow text fields</button><button type="button" data-opt="d">To hide the source</button></div>
+      <p class="fb" hidden data-why="Free text gives you IG, insta and Instagram as three sources."></p></div>
+    <div class="q" data-ans="d"><p>4. A client has 4,000 customers, three staff and no budget. Which free plan fits best on the limits in this lesson?</p><div class="opts">
+      <button type="button" data-opt="a">HubSpot Free</button><button type="button" data-opt="b">Salesforce Developer Edition</button><button type="button" data-opt="c">None; a CRM is never free</button><button type="button" data-opt="d">Zoho CRM Free</button></div>
+      <p class="fb" hidden data-why="Zoho Free allows 3 users and 5,000 records; HubSpot Free is 2 users and 1,000 contacts. Check current limits before advising."></p></div>
+    <div class="q" data-ans="b"><p>5. Can you import a client's WhatsApp contacts and send them the newsletter?</p><div class="opts">
+      <button type="button" data-opt="a">Yes, they're customers</button><button type="button" data-opt="b">No; record consent and ask them to opt in first</button><button type="button" data-opt="c">Yes, if the CRM allows it</button><button type="button" data-opt="d">Only on weekends</button></div>
+      <p class="fb" hidden data-why="Being a contact isn't consent to marketing. Consent travels with each record."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-8">AUTOMANCY LOG · Lesson 5.8 · CRM Foundations
+Date:
+Business and CRM chosen (and why):
+Pipeline stages and exit rules:
+Custom properties (max 10):
+Records imported / duplicates found and merged:
+Dashboard numbers this week:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-8">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Contacts, companies, deals and activities, linked by associations.</li>
+      <li>Lifecycle stage is about the person; deal stage is about one sale.</li>
+      <li>Every stage has an exit rule the customer meets.</li>
+      <li>Dropdowns, normalised data and consent make the CRM trustworthy.</li>
+      <li>Owners, next steps and a weekly review make people use it.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/certification-overview" target="_blank" rel="noopener">HubSpot Academy: free certifications (Inbound Sales, Sales Hub Software, Reporting)</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/courses/hubspot-free-tools" target="_blank" rel="noopener">HubSpot Academy: HubSpot Free Tools</a></li>
+    <li><span class="kind">Text</span><a href="https://www.hubspot.com/products/crm" target="_blank" rel="noopener">HubSpot free CRM: what's included</a></li>
+    <li><span class="kind">Text</span><a href="https://www.zoho.com/crm/comparison.html" target="_blank" rel="noopener">Zoho CRM editions compared</a></li>
+    <li><span class="kind">Course</span><a href="https://trailhead.salesforce.com/" target="_blank" rel="noopener">Salesforce Trailhead (free)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Print the seven Pipeline lab notes on cards and give each table a five-column board drawn on paper. Teams place the cards, then defend one placement to the room. Then hand them a messy 20-row sheet and time how long it takes to clean it with the Card 4 checklist.</p>
+  </div>
+</section>
+
+</article>
+</template>

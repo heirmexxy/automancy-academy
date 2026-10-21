@@ -1,0 +1,256 @@
+{
+  "name": "GD·00 Rules · API budgets",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·00 API budgets (Boss 5 · D1 Rules)\nEvery morning: month-to-date spend per paid API (Places, X, AI, email plan) vs its monthly budget. Alert Tolu at 80%, once per API per month. At 100% the matching pause switch is set.\nEngines log spend as events: event = 'api_usage' or 'ai_usage', detail {api, channel, cost_ngn}.\n\nTables: api_budgets(api text pk, monthly_budget_ngn int, pause_key text), events, settings(key, value).\n**Credentials:** Postgres (Supabase), Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 320,
+        "width": 400
+      },
+      "id": "e2be8e57-6fb9-4931-ba02-6cfdfe01fc97",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "0d9faa23-f6f3-40ce-87aa-4b8fed61a1a6",
+      "name": "Every day 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH spend AS (\n  SELECT detail->>'api' AS api, sum((detail->>'cost_ngn')::numeric) AS ngn\n  FROM events WHERE event IN ('api_usage', 'ai_usage') AND at >= date_trunc('month', now())\n  GROUP BY 1\n)\nSELECT b.api, b.monthly_budget_ngn, coalesce(s.ngn, 0) AS spent, b.pause_key,\n       round(100 * coalesce(s.ngn, 0) / nullif(b.monthly_budget_ngn, 0)) AS pct\nFROM api_budgets b LEFT JOIN spend s ON s.api = b.api\nWHERE coalesce(s.ngn, 0) >= 0.8 * b.monthly_budget_ngn\n  AND NOT EXISTS (SELECT 1 FROM events e WHERE e.event = 'budget_alert' AND e.detail->>'api' = b.api\n                  AND e.detail->>'level' = CASE WHEN coalesce(s.ngn, 0) >= b.monthly_budget_ngn THEN '100' ELSE '80' END\n                  AND e.at >= date_trunc('month', now()));",
+        "options": {}
+      },
+      "id": "3d5ea9bd-5329-4d03-979d-f6e3deacb1f7",
+      "name": "Spend vs budget",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "967dbf8c-2c35-4a36-81aa-54d46341fa33",
+              "leftValue": "={{ $json.api ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7592c133-fb5b-4f59-a4e4-ac6e33f89624",
+      "name": "Over 80% only",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c3538f5b-bd9d-4653-8d06-2d85c55e55dd",
+              "leftValue": "={{ Number($json.pct) }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              },
+              "rightValue": 100
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "9e7ff163-48fb-4182-b7a6-4e23b97f29b9",
+      "name": "Over 100%?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO settings (key, value) SELECT $1, 'true' WHERE $1 <> ''\nON CONFLICT (key) DO UPDATE SET value = 'true'\nRETURNING key;",
+        "options": {
+          "queryReplacement": "={{ [ $json.pause_key ?? '' ] }}"
+        }
+      },
+      "id": "94dd3054-814e-4be7-be73-aa256f461a45",
+      "name": "Pause that engine",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        -90
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=💸 Budget: {{ $('Over 80% only').item.json.api }} has used ₦{{ Math.round($('Over 80% only').item.json.spent).toLocaleString() }} of ₦{{ $('Over 80% only').item.json.monthly_budget_ngn.toLocaleString() }} this month ({{ $('Over 80% only').item.json.pct }}%).{{ Number($('Over 80% only').item.json.pct) >= 100 ? ' Paused: ' + $('Over 80% only').item.json.pause_key + '. Raise the budget or wait for next month.' : '' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7be7cc2c-5f3d-466d-a77b-4b0376ada476",
+      "name": "Alert Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, lead_id, event, detail) VALUES ('GD·00', $1, 'budget_alert', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ api: $('Over 80% only').item.json.api, level: Number($('Over 80% only').item.json.pct) >= 100 ? '100' : '80' }) ] }}"
+        }
+      },
+      "id": "e117e18c-9486-4f23-b97d-6744a6239bee",
+      "name": "Log budget alert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every day 08:00": {
+      "main": [
+        [
+          {
+            "node": "Spend vs budget",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Spend vs budget": {
+      "main": [
+        [
+          {
+            "node": "Over 80% only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Over 80% only": {
+      "main": [
+        [
+          {
+            "node": "Over 100%?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Over 100%?": {
+      "main": [
+        [
+          {
+            "node": "Pause that engine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause that engine": {
+      "main": [
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log budget alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "id": "B5",
+  "items": [
+    {
+      "file": "B5-gd00-budgets.json",
+      "name": "GD·00 Rules · API budgets",
+      "what": "Every morning compares each paid API's month-to-date spend with its budget, alerts Tolu at 80% and sets the engine's pause switch at 100%.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create api_budgets with one row per paid API, e.g. ('places', 30000, 'outreach_paused'), ('x', 15000, 'posting_paused'), ('ai', 40000, ''). Make each engine log spend as events with event 'api_usage' or 'ai_usage' and detail {api, channel, cost_ngn}.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Insert test api_usage events adding up to 85% of the places budget and run it: Tolu gets one 80% alert and a budget_alert event; run again: no repeat. Push it past 100%: outreach_paused becomes true."
+    },
+    {
+      "file": "B5-gd01-find.json",
+      "name": "GD·01 Find · research, draft, approve",
+      "what": "Weekday mornings: finds restaurants and hotels in the zone with Google Places, reads their websites, keeps only facts that appear word for word on the page, scores fit in code, drafts and lints a short email, and asks Tolu to approve each one on Telegram.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose (small and cheap for labelling).",
+        "Your n8n must be reachable at a public HTTPS address (YOUR_N8N_DOMAIN) so Telegram approval buttons and webhooks work.",
+        "Create a Header Auth credential \"Google Places\": Name X-Goog-Api-Key, Value your Places API key, and select it in \"Places Text Search\". Set a budget alert in Google Cloud too.",
+        "Edit the areas in \"Search areas\" and the zone and ICP points in \"Verify fact and score\"; replace the signature name and domain in \"Lint draft\" with your own (keep the STOP line).",
+        "Adjust the per-call cost in \"Log Places cost\" to your field mask's price.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Run it once with a single area and your own test business page (test 1): a prospect whose site has no usable fact gets the general first line, nothing invented, and waits for Approve on Telegram; Approve sets status approved, Skip sets skipped."
+    },
+    {
+      "file": "B5-gd01-send.json",
+      "name": "GD·01 Find · send approved (max 20 a day)",
+      "what": "Weekdays at 9 a.m. sends up to 20 Tolu-approved outreach emails (and one follow-up after a quiet week) from the outreach subdomain, checking the pause switch and suppression list before every send and waiting 3–9 minutes between them.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Create a Gmail credential for the mailbox on your OUTREACH SUBDOMAIN (never your main domain) and select it in \"Send from outreach subdomain\". Replace the signature and domain in the follow-up text.",
+        "Create the suppression table (value text primary key, channel text default 'all', reason, at) used by every engine.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Approve two test prospects addressed to your own second inbox and run it: two emails arrive several minutes apart with the STOP line, leads show sent_at and GD·07 sees first_touch events. Put one address in suppression first: it is skipped. Set outreach_paused to true: nothing sends."
+    },
+    {
+      "file": "B5-gd01-replies.json",
+      "name": "GD·01 Find · sort replies",
+      "what": "Watches the outreach inbox, puts STOP replies and bounces on the suppression list for good, classifies other replies, upserts interested prospects into the CRM through GD·08 and alerts Tolu.",
+      "setup": [
+        "Select the outreach mailbox's Gmail credential in the trigger.",
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose (small and cheap for labelling).",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Replace YOUR_GD08_WORKFLOW_ID with the ID of GD·08 CRM · Upsert lead and YOUR_BOOKING_LINK with your booking link.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "From your second inbox reply \"STOP\" to a test outreach email (test 2): the address is in suppression, the lead is suppressed, and GD·01 Send never emails it again. Reply \"Yes, we'd like a tasting\": the lead is saved as interested, appears in HubSpot through GD·08, and Tolu gets an alert."
+    },
+    {
+      "file": "B5-gd02-listen.json",
+      "name": "GD·02 Listen",
+      "what": "Every 15 minutes collects Facebook and Instagram comments and web mentions, labels new ones with AI, alerts Tolu at once on hard-rule items like food safety, pauses posting and outreach during a negative storm, and sends an 18:00 summary and a Monday report with three quoted fixes.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose (small and cheap for labelling).",
+        "Create a Facebook Graph API credential with a Page access token (pages_read_engagement, instagram_basic, instagram_manage_comments) and select it in both Graph nodes; replace YOUR_PAGE_ID and YOUR_IG_USER_ID.",
+        "Create a Talkwalker Alert for \"Harvest Lane\" with RSS delivery and replace YOUR_TALKWALKER_RSS_URL.",
+        "Select a Gmail credential and replace tolu@harvestlane.example.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Comment \"My son was sick after the eggs\" on a test post (test 7): within 15 minutes Tolu gets an urgent alert even if the AI's confidence is low. Run it twice: the same comment is never processed again. Insert 10 negative test mentions on one topic: posting_paused and outreach_paused become true and Tolu gets the storm alert."
+    },
+    {
+      "file": "B5-gd03-draft.json",
+      "name": "GD·03 Publish · draft and approve",
+      "what": "Every Friday drafts next week's posts from the calendar and the current price list, one version per platform, blocks versions that break a platform rule (such as Instagram without a photo) before approval, and asks Tolu to approve each calendar item on Telegram.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose.",
+        "Your n8n must be reachable at a public HTTPS address (YOUR_N8N_DOMAIN) so Telegram approval buttons and webhooks work.",
+        "Fill settings rows brand_voice (one paragraph) and banned_phrases (comma-separated), and add next week's calendar rows with status planned.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Add a calendar row for an Instagram post with no photo (test 11): its Instagram version is saved as blocked and shown with ⛔ in Tolu's approval message; the other versions can be approved."
+    },
+    {
+      "file": "B5-gd03-publish.json",
+      "name": "GD·03 Publish · on time",
+      "what": "Every 15 minutes publishes approved posts that are due to Facebook, Instagram and X (other platforms go to Tolu as drafts), unless posting is paused, and holds any post whose price changed after approval.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create a Facebook Graph API credential with a Page token (pages_manage_posts, instagram_content_publish) and select it in the three Graph nodes; replace YOUR_PAGE_ID and YOUR_IG_USER_ID. Media URLs must be public image links.",
+        "Create an X OAuth2 credential for your app and select it in \"X: create post\"; check the current per-post price in your channel-rules sheet and adjust the cost logged in \"Save post ID\".",
+        "Add a settings row posting_paused = false (GD·02's storm rule and Tolu can set it to true).",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Approve a post that uses a price, then change that product's price in products before it is due (test 10): the post is held and Tolu is told. Approve another with no price change: it appears on the test Page/account and posts.post_id is filled."
+    },
+    {
+      "file": "B5-gd04-answer.json",
+      "name": "GD·04 Answer · Meta comments and DMs",
+      "what": "One signature-checked Meta webhook for Facebook and Instagram: comments get labelled, allowed actions are computed in code, the AI picks a reply among them (public, private, hide or hand over), leads are saved with their source and business leads go to the CRM; DMs are passed to GD·05 Unify.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose.",
+        "Your n8n must be reachable at a public HTTPS address (YOUR_N8N_DOMAIN) so Telegram approval buttons and webhooks work.",
+        "On the n8n server set META_APP_SECRET (your Meta app secret), META_VERIFY_TOKEN (any long random string), NODE_FUNCTION_ALLOW_BUILTIN=crypto and N8N_BLOCK_ENV_ACCESS_IN_NODE=false.",
+        "Create a Facebook Graph API credential with a Page token (pages_manage_engagement, pages_messaging, instagram_manage_comments, instagram_manage_messages) and select it in the Graph nodes; replace YOUR_PAGE_ID.",
+        "Publish, then in your Meta app's Webhooks settings use https://YOUR_N8N_DOMAIN/webhook/gd04-meta with META_VERIFY_TOKEN and subscribe to the Page feed, messages and Instagram comments and messages.",
+        "Replace YOUR_GD05_WORKFLOW_ID (GD·05 Unify) and YOUR_GD08_WORKFLOW_ID (GD·08 CRM · Upsert lead).",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "From a test account comment \"how much for a basket?\" on Instagram (test 3): a private reply with today's price, a short public note, and a lead row with source instagram. A Facebook comment 9 days old asking for supply gets a public reply only and a lead (test 4). A spam comment with a link is hidden with no reply (test 6). Send a POST without a valid signature: nothing happens."
+    },
+    {
+      "file": "B5-gd05-unify.json",
+      "name": "GD·05 Unify · one inbox",
+      "what": "Brings WhatsApp, the support inbox and Meta DMs into one customer record: resolves identity from verified identifiers only, links accounts only after a verification code, keeps one open conversation per customer, answers once on the latest channel with the full history, notes the other thread, and pings owners when response targets are close.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose.",
+        "Create a WhatsApp Trigger credential (Meta app) for \"WhatsApp in\" and a WhatsApp credential (access token) for \"Send WhatsApp\"; replace YOUR_WHATSAPP_PHONE_NUMBER_ID.",
+        "Select the support mailbox's Gmail credential in \"Support inbox\", \"Send email\", \"Send verification code\" and \"Note on email thread\".",
+        "Create a Facebook Graph API credential (Page token with pages_messaging and instagram_manage_messages) for \"Send Meta DM\"; replace YOUR_PAGE_ID.",
+        "Create the tables in the sticky note, including the partial unique index: CREATE UNIQUE INDEX one_open_conv ON conversations (customer_id) WHERE status = 'open'; and UNIQUE (type, value) on identities.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Email the support inbox from a test address, then WhatsApp from a test phone saying \"I emailed you from <that address>\" (test 8): a code is emailed; reply on WhatsApp with the code and the next answer comes on WhatsApp while the email thread gets one short note. Message as two different test customers both named \"Funke A.\": two separate customers (test 9). An Instagram DM whose customer message is 30 hours old is handed to Tolu, not answered (test 5)."
+    },
+    {
+      "file": "B5-gd06-nurture.json",
+      "name": "GD·06 Nurture · email",
+      "what": "Keeps consented customers in Brevo (welcome and 60-day win-back run as Brevo automations), drafts the weekly newsletter with AI and blocks unapproved prices or discounts before Tolu approves it, sends it at 17:00, pauses campaigns when complaints pass 0.1%, and turns every Brevo unsubscribe, bounce or complaint into a suppression on all channels.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node(s); replace YOUR_MODEL with a model you choose.",
+        "Your n8n must be reachable at a public HTTPS address (YOUR_N8N_DOMAIN) so Telegram approval buttons and webhooks work.",
+        "Authenticate mail.harvestlane.example (or your own sending subdomain) in Brevo with SPF, DKIM and DMARC passing before anything sends; replace news@mail.harvestlane.example with your sender.",
+        "Create a Header Auth credential \"Brevo\": Name api-key, Value your Brevo API key, and select it in every Brevo HTTP node. Replace YOUR_BREVO_LIST_ID with the \"Customers · opted in\" list ID.",
+        "In Brevo build the automations: contact added to the list → welcome 1 → wait 3 days → welcome 2 → wait 4 days → welcome 3; and a win-back when LAST_ORDER_DATE is 60 days old, stopping when they order.",
+        "Set the env var BREVO_WEBHOOK_TOKEN and add a Brevo webhook (unsubscribed, hard bounce, spam) to https://YOUR_N8N_DOMAIN/webhook/gd06-brevo?token=<that value>.",
+        "Create the tables products (with in_season), offers (code, description, approved, starts_on, ends_on), customer_stories (story, approved, used_at) and campaigns (brevo_id, week, subject, status, approved_at, sent_at); the suppression table is shared with every engine.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Add \"20% off this week\" when no such offer is approved and run the Thursday branch (test 12): Tolu gets a blocked message and nothing reaches Brevo. Unsubscribe a test contact from a Brevo test email (test 13): within a minute their email is in suppression with channel all and marketing_consent is false, so WhatsApp and outreach skip them too. Feed a campaign with a 0.15% complaint rate to the Monday branch (test 14): campaigns_paused becomes true and Tolu is alerted."
+    },
+    {
+      "file": "B5-gd07-growth-report.json",
+      "name": "GD·07 Growth report",
+      "what": "Every Monday traces leads and new customers to their first-touch source and calculates conversion, median reply times, cost per lead and per new customer by channel (including AI tokens, plans and Tolu's time), the CRM's open pipeline and weighted forecast, complaints and unsubscribes, then adds one AI recommendation backed by those numbers.",
+      "setup": [
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node; replace YOUR_MODEL with a model you choose.",
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Replace YOUR_PIPELINE_ID in \"Compute report\" with your Harvest Lane pipeline's ID (or leave it to use the default pipeline), and set each stage's win chance in HubSpot (5.8: 10%, 25%, 50%, 75%).",
+        "Fill fixed_costs (e.g. ('email', 'Brevo plan', 0), ('shared', 'n8n server', 9000), ('x', 'X API base', 0)) and the settings row tolu_hourly_ngn. Make the approval workflows log approval_time events with detail {channel, minutes}.",
+        "Make sure customers.first_touch_source is set once when the record is created (GD·05) and leads.customer_id links a lead to its customer.",
+        "Select a Gmail credential and replace tolu@harvestlane.example.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "With test data where an Instagram-comment lead's customer pays a test order this week (test 15), run it by hand: the report shows Instagram under \"By first touch\", a cost per new customer for Instagram, the pipeline by stage with a weighted forecast, and one recommendation that quotes the numbers. Empty the week in a test copy: Tolu gets the alarm instead.",
+      "walk": {
+        "title": "Build it: the growth report that answers the investor",
+        "sample": "Test week · an Instagram comment \"how much for a basket?\" becomes a lead, and that customer pays a test order on Thursday",
+        "steps": [
+          {
+            "at": null,
+            "say": "Six engines feed this report: find, listen, publish, answer, unify and nurture. Tolu's rule holds across all of them: anything that spends money, promises something or talks to an angry customer comes to her first.",
+            "show": [
+              "GD·01–06 log events with lead_id or order_id",
+              "Approvals: outreach, posts, newsletters, decisions",
+              "Budgets alert at 80%; pause switches at 100%"
+            ]
+          },
+          {
+            "at": "Monday 08:00",
+            "say": "Every Monday at 8, GD·07 answers the investor's question: where do customers come from, and what does each one cost?",
+            "show": [
+              "Cron: 0 8 * * 1"
+            ]
+          },
+          {
+            "at": "Funnel, replies and costs",
+            "say": "One query reads the shared Supabase record. New customers are counted by first-touch source, set once when the customer was created, from their first paid order.",
+            "show": [
+              "first_orders: min(paid_at) per customer",
+              "new_customers by c.first_touch_source",
+              "leads_week by source"
+            ],
+            "data": "Instagram 1 new customer"
+          },
+          {
+            "at": "Funnel, replies and costs",
+            "say": "It also gets conversion from lead to first order over 90 days, and the median first reply time per channel, with complaints measured separately.",
+            "show": [
+              "conversion: leads → first order, 90 days",
+              "replies: median minutes per channel and kind"
+            ]
+          },
+          {
+            "at": "Funnel, replies and costs",
+            "say": "Costs include the ones on no invoice: API and AI usage events, a weekly share of fixed plans, and Tolu's approval minutes at her hourly value.",
+            "show": [
+              "api_usage, ai_usage: cost_ngn",
+              "fixed_costs: monthly_ngn × 7 / 30",
+              "approval_time: minutes / 60 × tolu_hourly_ngn"
+            ],
+            "data": "costs per channel"
+          },
+          {
+            "at": "HubSpot: deal stages",
+            "say": "From the CRM we read the pipeline's stages and win chances, through the private app token in an n8n credential.",
+            "show": [
+              "GET crm/v3/pipelines/deals",
+              "Win chance: 10%, 25%, 50%, 75%"
+            ]
+          },
+          {
+            "at": "HubSpot: open deals",
+            "say": "Then all open deals, so the report can show value by stage. The report only reads; people move deals.",
+            "show": [
+              "POST crm/v3/objects/deals/search",
+              "hs_is_closed EQ false"
+            ],
+            "data": "open deals"
+          },
+          {
+            "at": "Compute report",
+            "say": "Code calculates every number: cost per lead and per new customer by channel, the overall cost, and the weighted forecast, each deal's value times its win chance.",
+            "show": [
+              "cost_per_customer = channel cost / customers",
+              "weighted += amount × stage probability",
+              "complaint_rate_pct · unsubscribe_rate_pct"
+            ],
+            "data": "Instagram cost per customer"
+          },
+          {
+            "at": "Numbers look real?",
+            "say": "If there were no leads, customers or events all week, that's not a quiet week, it's a broken engine. So no report goes out.",
+            "show": [
+              "data_ok: events_week > 0",
+              "&& (leads > 0 || customers > 0)"
+            ],
+            "data": "data_ok true"
+          },
+          {
+            "at": "Alarm, not a report",
+            "say": "Tolu gets an alarm instead, pointing her to the watchdog and the error workflow.",
+            "show": [
+              "Growth report NOT sent … That's an alarm"
+            ]
+          },
+          {
+            "at": "One recommendation",
+            "say": "The AI adds one recommendation, quoting the numbers exactly as given. It may not calculate or invent any. Code counts; AI explains.",
+            "show": [
+              "One or two sentences: move time or money",
+              "Quote numbers exactly · never recalculate",
+              "temperature 0.2"
+            ],
+            "data": "1 recommendation"
+          },
+          {
+            "at": "Assemble report",
+            "say": "We assemble one page: new customers by first touch, conversion, reply times, cost per customer, pipeline and forecast, complaints and unsubscribes.",
+            "show": [
+              "By first touch · Lead → first order",
+              "Median first reply · Cost per new customer",
+              "Pipeline · weighted forecast · complaints"
+            ]
+          },
+          {
+            "at": "Telegram to Tolu",
+            "say": "It goes to Tolu on Telegram, and by email for the full copy.",
+            "show": [
+              "Telegram: YOUR_TELEGRAM_CHAT_ID",
+              "Gmail: Growth report: week to …"
+            ],
+            "data": "report sent"
+          },
+          {
+            "at": "Log success",
+            "say": "Finally we log success as an event, so the watchdog knows GD·07 ran. Attach the error workflow before you publish.",
+            "show": [
+              "INSERT INTO events (workflow 'GD·07', 'success')",
+              "Error workflow: HL·00 Errors"
+            ]
+          }
+        ],
+        "end": "Run it by hand on the test week: Instagram shows under first touch with a cost per new customer, the pipeline has a weighted forecast, and an empty week sends the alarm instead."
+      }
+    },
+    {
+      "file": "B5-gd08-crm-upsert.json",
+      "name": "GD·08 CRM · Upsert lead",
+      "what": "The one sub-workflow every engine calls for a business lead: normalises email, phone and domain, scores the lead in code, finds or creates the company by domain, creates or updates the contact by email, associates them, flags call-first leads with a task, opens a New enquiry deal only when there is buying intent and no open deal, and saves the CRM IDs in Supabase.",
+      "setup": [
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create the custom properties from 5.8 (contact: lead_source, marketing_consent, consent_date, harvest_score; company: business_type, delivery_zone; deal: weekly_value_ngn, lost_reason, next_step_date).",
+        "Replace YOUR_HUBSPOT_OWNER_ID (Tolu's owner ID), YOUR_PIPELINE_ID and YOUR_STAGE_NEW_ENQUIRY (the stage's internal ID from Settings → Objects → Deals → Pipelines).",
+        "Add crm_company_id, crm_contact_id, crm_deal_id and harvest_score columns to both customers and leads.",
+        "Copy this workflow's ID into YOUR_GD08_WORKFLOW_ID in GD·01 Replies and GD·04 Answer (and any other engine that finds business leads).",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Run GD·04 with a test restaurant asking on Instagram, then send GD·01 Replies an interested email from the same restaurant's domain (test 16): HubSpot has one company, one contact and one New enquiry deal, all associated, and the IDs are saved on the lead and customer rows. Run the same lead twice: still no duplicates."
+    },
+    {
+      "file": "B5-gd08-stage-tasks.json",
+      "name": "GD·08 CRM · follow-ups on stage changes",
+      "what": "Every 15 minutes finds deals whose stage changed, and the first time a deal reaches a stage creates the matching follow-up task (tasting, proposal follow-up in 3 days, onboarding, lost reason or a 6-month check-in) and moves won contacts to Customer, without ever touching the deal stage.",
+      "setup": [
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Create crm_stage_seen (deal_id text, stage text, seen_at timestamptz, primary key (deal_id, stage)).",
+        "Replace YOUR_STAGE_TASTING_BOOKED and YOUR_STAGE_PROPOSAL_SENT in \"Task for this stage\" (and won/lost if your IDs differ) and YOUR_HUBSPOT_OWNER_ID as a fallback owner.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Move a test deal to Proposal sent in HubSpot (test 17): within 15 minutes one \"Follow up on proposal\" task due in 3 days appears on the deal; the next runs create nothing more, and the deal stage is untouched."
+    },
+    {
+      "file": "B5-gd08-morning-list.json",
+      "name": "GD·08 CRM · 7:30 call list",
+      "what": "Every morning at 7:30 sends Tolu one Telegram message with the call-first leads (score 65+, no call logged) and the open deals going cold (no activity for 7 days).",
+      "setup": [
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "With a test contact scored 70 and a test deal with no activity for 8 days, run it by hand: one message lists the contact under Call first and the deal under Going cold."
+    },
+    {
+      "file": "B5-gd08-ops-agent.json",
+      "name": "GD·08 CRM · Ops Agent (Monday)",
+      "what": "Every Monday an AI agent with read-only HubSpot tools and a single propose_change tool checks data, pipeline, score and adoption, sends Tolu a five-line health report, and each proposal that passes the code allow-list goes to Tolu for Approve or Reject on Telegram.",
+      "setup": [
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Create an OpenAI credential and select it in the model sub-node; replace YOUR_MODEL with a model you choose.",
+        "Create a Supabase API credential (project URL and service role key) and select it in propose_change; replace YOUR_SUPABASE_PROJECT. Create the crm_proposals table from the sticky note.",
+        "Select the HubSpot App Token credential in search_companies, search_contacts, search_deals and get_pipeline.",
+        "Import GD·08 CRM · Ops executor to carry out approved proposals.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Create two test companies with the same domain bodijasuites.example and run it by hand (test 18): Tolu gets the health report and a merge_companies proposal with that evidence; nothing changes in HubSpot until Approve, and a proposal to delete or change a stage never reaches Tolu (rejected_by_code)."
+    },
+    {
+      "file": "B5-gd08-ops-executor.json",
+      "name": "GD·08 CRM · Ops executor",
+      "what": "Every 10 minutes carries out Tolu-approved CRM proposals from a fixed allow-list: checks the list again in code, saves before-values, merges companies only when they share the verified domain, bulk-updates safe properties, creates tasks, hands settings changes to a person, and logs each result.",
+      "setup": [
+        "Create a HubSpot App Token credential from a private app \"n8n Growth Desk\" (Settings → Integrations → Private apps) with only contacts, companies and deals read/write scopes (plus tasks if listed), and select it in every HubSpot HTTP node. Start with a test portal.",
+        "Select your Postgres credential \"Supabase Postgres\" (Supabase → Connect → Session pooler host, user, password) in every Postgres node; create the tables named in the sticky note first.",
+        "Select a Telegram credential (Tolu's approval bot) in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Replace YOUR_HUBSPOT_OWNER_ID with a fallback task owner.",
+        "Set Settings → Error workflow to your error workflow (HL·00 Errors from 6.4, or 3.6), then publish."
+      ],
+      "test": "Approve the test merge proposal from the Ops Agent (test 18): within 10 minutes the two bodijasuites.example companies are merged, before_values holds both records and the proposal is executed. Approve a merge of two companies with different domains (e.g. two \"Funke A.\" businesses): it is refused with \"domains differ\"."
+    }
+  ],
+  "note": "GD·07 Growth report and GD·08 CRM sync (upsert, stage follow-ups, morning list, Ops Agent and executor) are built in full; GD·01–GD·06 follow the boss brief and the 5.2–5.7 solved builds, and GD·00 covers the API budgets from D1. All engines share one Supabase database (Postgres credential) and write events with lead_id or order_id. For the error workflow and watchdog that must cover every engine, use HL·00 Errors and HL·00 Watchdog from 6.4. The channel-rules sheet, consent policy, Brevo automations (welcome, win-back) and domain authentication are set up outside n8n."
+}

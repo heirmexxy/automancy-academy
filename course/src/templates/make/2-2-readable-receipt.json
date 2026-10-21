@@ -1,0 +1,69 @@
+{
+ "name": "HL · Readable receipt",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:watchRows",
+   "version": 2,
+   "parameters": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "limit": 10
+   },
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "google-sheets:updateRow",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "rowNumber": "{{1.`__ROW_NUMBER__`}}",
+    "valueInputOption": "USER_ENTERED",
+    "values": {
+     "14": "{{if(substring(replace(1.phone; /[^0-9]/g; emptystring); 0; 1) = \"0\"; \"+234\" + substring(replace(1.phone; /[^0-9]/g; emptystring); 1; 20); \"+\" + replace(1.phone; /[^0-9]/g; emptystring))}}",
+     "15": "{{startcase(lower(get(split(trim(1.customer_name); \" \"); 1)))}}",
+     "16": "{{if(formatDate(addDays(1.created_at; 1); \"d\") = \"0\"; formatDate(addDays(1.created_at; 2); \"dddd D MMM\"); formatDate(addDays(1.created_at; 1); \"dddd D MMM\"))}}",
+     "17": "Hi {{startcase(lower(get(split(trim(1.customer_name); \" \"); 1)))}}! Order {{1.order_id}} received.\nTotal: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}\nDelivery: {{if(formatDate(addDays(1.created_at; 1); \"d\") = \"0\"; formatDate(addDays(1.created_at; 2); \"dddd D MMM\"); formatDate(addDays(1.created_at; 1); \"dddd D MMM\"))}}, {{ifempty(1.delivery_window; \"time to be confirmed\")}}.\nThank you for choosing Harvest Lane."
+    }
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

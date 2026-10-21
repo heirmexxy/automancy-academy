@@ -1,0 +1,787 @@
+{
+  "name": "HL · Newsletter team (4.7)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Newsletter team\nLesson 4.7. Every Monday 06:00: Researcher (small model, temperature 0, two read-only tools, structured output) → research checked in code → Writer → Editor (checklist, structured verdict), at most two revision rounds, unrolled as nodes → Gmail DRAFT to Tolu (never an automatic send).\n\n**Credentials:** OpenAI (3 model nodes), Telegram API (alert), Gmail OAuth2.\n**Replace:** YOUR_SMALL_MODEL; YOUR_STRONG_MODEL; YOUR_EDITOR_MODEL; YOUR_PRICE_HISTORY_WORKFLOW_ID; YOUR_TOP_SELLERS_WORKFLOW_ID; YOUR_TELEGRAM_CHAT_ID; tolu@harvestlane.example (Tolu's address).\n\nWorkflow timeout is set to 10 minutes in Settings. Connect Settings → Error workflow to HL · Error alerts.",
+        "height": 480,
+        "width": 440
+      },
+      "id": "7a5cfaea-d3e6-47a8-a54e-6f8cd36aad86",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "id": "441d9771-6ceb-49e9-8a42-66618a0b2932",
+      "name": "Monday 06:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Collect this week\\'s market facts for the week starting ' + $now.setZone('Africa/Lagos').startOf('week').toISODate() + '. Call both tools.' }}",
+        "options": {
+          "systemMessage": "Collect facts only. Every price must come from a tool result, with its source. No opinions, no advice.\nUse get_price_history for prices (this week vs last) and get_top_sellers for what customers bought. Return the research in the required shape.",
+          "maxIterations": 5
+        },
+        "hasOutputParser": true
+      },
+      "id": "dfed7ab8-90fc-4f95-9a35-1e16da8fb2cd",
+      "name": "Researcher",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_SMALL_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "68e785b8-7c5d-42bb-8595-f1023a08ef32",
+      "name": "Small model (temp 0)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_price_history",
+        "description": "Returns this week's and last week's supplier price for every product, each with its source. Use it for all price facts. No input.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_PRICE_HISTORY_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "39d0ed27-3737-4822-92ea-4d632dbccb3c",
+      "name": "get_price_history",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        220,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_top_sellers",
+        "description": "Returns Harvest Lane's five best-selling products over the last 7 days, with units sold. Use it to know what restaurants are buying. No input.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_TOP_SELLERS_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "195878c4-9286-474a-b287-1c04909f826b",
+      "name": "get_top_sellers",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"week\": {\n      \"type\": \"string\",\n      \"description\": \"Monday date, YYYY-MM-DD\"\n    },\n    \"items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"product\": {\n            \"type\": \"string\"\n          },\n          \"price_now\": {\n            \"type\": \"number\"\n          },\n          \"price_last_week\": {\n            \"type\": \"number\"\n          },\n          \"change_pct\": {\n            \"type\": \"number\"\n          },\n          \"source\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"product\",\n          \"price_now\",\n          \"price_last_week\",\n          \"source\"\n        ]\n      }\n    },\n    \"notes\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n    \"week\",\n    \"items\"\n  ]\n}"
+      },
+      "id": "8f042da2-5aae-4a2b-9380-39032e795050",
+      "name": "Research shape",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        500,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Facts must be right before anyone writes. Code checks the hand-off.\nconst r = $json.output ?? $json;\nconst problems = [];\nconst items = Array.isArray(r.items) ? r.items : [];\nif (!items.length) problems.push('No items in research');\nfor (const it of items) {\n  for (const k of ['price_now', 'price_last_week']) {\n    if (typeof it[k] !== 'number' || !(it[k] > 0)) problems.push(`${it.product ?? '?'}: missing ${k}`);\n  }\n  if (!it.source) problems.push(`${it.product ?? '?'}: missing source`);\n  // Recalculate change_pct in code and overwrite whatever the model wrote.\n  if (it.price_last_week > 0) it.change_pct = Math.round((it.price_now - it.price_last_week) / it.price_last_week * 1000) / 10;\n}\nreturn [{ json: { ok: problems.length === 0, problems, research: { week: r.week, items, notes: r.notes ?? [] } } }];"
+      },
+      "id": "ce85e783-4774-45ff-aab2-1d18afffe391",
+      "name": "Check research",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c366f25a-f5c3-46e0-8a17-e6947a68a195",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "80541516-3eec-4c1d-95a2-15cb52e5e19f",
+      "name": "Research complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ '⚠ Newsletter research failed checks:\\n- ' + $json.problems.join('\\n- ') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c979bac0-675e-454f-813b-b7a120214d8c",
+      "name": "Alert Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        920,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "Newsletter research failed the code checks; see the Telegram alert."
+      },
+      "id": "71bf033f-8a54-47ac-b19e-1194e63d242e",
+      "name": "Stop: research incomplete",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Research:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nWrite this week\\'s newsletter.' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You write Harvest Lane's weekly note for restaurant customers. Warm, practical, Nigerian English; 180–250 words; headline, three 'cheaper this week' and three 'dearer this week' items with naira prices, one tip for restaurants. Use only numbers from the research."
+            }
+          ]
+        }
+      },
+      "id": "b501bcd4-6ae3-4a11-af5e-74fd2a0ef287",
+      "name": "Writer",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        920,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "hasOutputParser": true,
+        "text": "={{ 'RESEARCH:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nDRAFT:\\n' + $('Writer').first().json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the editor. Check the draft against the research and this checklist:\n1. Every number in the draft matches the research exactly.\n2. Length is 180–250 words.\n3. There is no advice beyond buying tips.\n4. The tone is warm, practical Nigerian English.\nReturn approved true only if all four pass. List each problem in issues, one short sentence each."
+            }
+          ]
+        }
+      },
+      "id": "0601fdc5-e6ca-42f6-b349-fbae9bafcb74",
+      "name": "Editor",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1140,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "4c35955a-74d7-432f-ad72-2a31cf9cc1bc",
+              "leftValue": "={{ $json.output?.approved ?? $json.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "61aaf3a0-851b-41c2-8e68-2aa0bff77210",
+      "name": "Approved? (draft 1)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Research:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nYour previous draft:\\n' + $('Writer').first().json.text + '\\n\\nEditor\\'s issues to fix:\\n- ' + (($('Editor').first().json.output ?? $('Editor').first().json).issues ?? []).join('\\n- ') + '\\n\\nRewrite the newsletter, fixing every issue.' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You write Harvest Lane's weekly note for restaurant customers. Warm, practical, Nigerian English; 180–250 words; headline, three 'cheaper this week' and three 'dearer this week' items with naira prices, one tip for restaurants. Use only numbers from the research."
+            }
+          ]
+        }
+      },
+      "id": "e0f15cfd-724e-41bd-ab7c-bcca44cffbf6",
+      "name": "Writer · revision 1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1580,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "hasOutputParser": true,
+        "text": "={{ 'RESEARCH:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nDRAFT:\\n' + $('Writer · revision 1').first().json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the editor. Check the draft against the research and this checklist:\n1. Every number in the draft matches the research exactly.\n2. Length is 180–250 words.\n3. There is no advice beyond buying tips.\n4. The tone is warm, practical Nigerian English.\nReturn approved true only if all four pass. List each problem in issues, one short sentence each."
+            }
+          ]
+        }
+      },
+      "id": "2f8b8350-19e1-44aa-95b9-af48eaa4dc4d",
+      "name": "Editor · round 1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1800,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "e0bbccaa-b4b5-4ec6-a2ea-f649d0921a00",
+              "leftValue": "={{ $json.output?.approved ?? $json.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e119270d-939e-44b3-bcd4-1857c531a6df",
+      "name": "Approved? (revision 1)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2020,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Research:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nYour previous draft:\\n' + $('Writer · revision 1').first().json.text + '\\n\\nEditor\\'s issues to fix:\\n- ' + (($('Editor · round 1').first().json.output ?? $('Editor · round 1').first().json).issues ?? []).join('\\n- ') + '\\n\\nRewrite the newsletter, fixing every issue.' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You write Harvest Lane's weekly note for restaurant customers. Warm, practical, Nigerian English; 180–250 words; headline, three 'cheaper this week' and three 'dearer this week' items with naira prices, one tip for restaurants. Use only numbers from the research."
+            }
+          ]
+        }
+      },
+      "id": "83baf6bc-5aee-459f-9bcf-e46f69f68309",
+      "name": "Writer · revision 2",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        2240,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "hasOutputParser": true,
+        "text": "={{ 'RESEARCH:\\n' + JSON.stringify($('Check research').first().json.research, null, 2) + '\\n\\nDRAFT:\\n' + $('Writer · revision 2').first().json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the editor. Check the draft against the research and this checklist:\n1. Every number in the draft matches the research exactly.\n2. Length is 180–250 words.\n3. There is no advice beyond buying tips.\n4. The tone is warm, practical Nigerian English.\nReturn approved true only if all four pass. List each problem in issues, one short sentence each."
+            }
+          ]
+        }
+      },
+      "id": "db4d2c3b-2d7f-4b4d-919c-974bd1c015d2",
+      "name": "Editor · round 2",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        2460,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// After round 2, whatever the verdict, a draft goes to Tolu. Pick the latest writer and editor.\nconst pairs = [['Writer · revision 2', 'Editor · round 2'], ['Writer · revision 1', 'Editor · round 1'], ['Writer', 'Editor']];\nconst [w, e] = pairs.find(([w]) => $(w).isExecuted);\nconst draft = $(w).first().json.text;\nconst v = $(e).first().json.output ?? $(e).first().json;\nconst week = $('Check research').first().json.research.week;\nconst approved = v.approved === true;\nconst subject = (approved ? '' : '⚠ Needs a human look: ') + `This week at the market (${week})`;\nconst body = approved ? draft : `EDITOR'S ISSUES\\n- ${(v.issues ?? []).join('\\n- ')}\\n\\n----\\n\\n${draft}`;\nreturn [{ json: { subject, body, approved } }];"
+      },
+      "id": "f2602c60-c589-4eb4-a9a7-5312a65efe90",
+      "name": "Prepare draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2680,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "sendTo": "tolu@harvestlane.example"
+        }
+      },
+      "id": "a729c888-003f-49fe-96ac-97466d161a95",
+      "name": "Gmail draft to Tolu",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2900,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_STRONG_MODEL",
+        "options": {}
+      },
+      "id": "72523680-f489-45b8-9e8d-8a927d1b25c4",
+      "name": "Writer model (strong)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_EDITOR_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "acaeb45e-4648-4644-a0e1-1dda703df414",
+      "name": "Editor model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"approved\": {\n      \"type\": \"boolean\"\n    },\n    \"issues\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n    \"approved\",\n    \"issues\"\n  ]\n}"
+      },
+      "id": "84c754d9-42d9-4802-baf3-1465e1840026",
+      "name": "Verdict shape",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2020,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Writer and editor nodes\nThe lesson calls them AI Agents with no tools. In this template they are Basic LLM Chains: one call each, no tool loop, same system message. Each has its own brief; the writer gets a stronger model, the editor a careful one at temperature 0.\n\nThe cap is the shape of the canvas: after Editor · round 2 the draft goes to Tolu whatever the verdict.",
+        "height": 260,
+        "width": 420
+      },
+      "id": "b84b55fd-aa5b-44fa-878e-08cc1b69186c",
+      "name": "Sticky Note 24",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        -340
+      ]
+    }
+  ],
+  "connections": {
+    "Monday 06:00": {
+      "main": [
+        [
+          {
+            "node": "Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Small model (temp 0)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Researcher",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_price_history": {
+      "ai_tool": [
+        [
+          {
+            "node": "Researcher",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_top_sellers": {
+      "ai_tool": [
+        [
+          {
+            "node": "Researcher",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research shape": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Researcher",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Researcher": {
+      "main": [
+        [
+          {
+            "node": "Check research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check research": {
+      "main": [
+        [
+          {
+            "node": "Research complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research complete?": {
+      "main": [
+        [
+          {
+            "node": "Writer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu": {
+      "main": [
+        [
+          {
+            "node": "Stop: research incomplete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer": {
+      "main": [
+        [
+          {
+            "node": "Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editor": {
+      "main": [
+        [
+          {
+            "node": "Approved? (draft 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved? (draft 1)": {
+      "main": [
+        [
+          {
+            "node": "Prepare draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Writer · revision 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer · revision 1": {
+      "main": [
+        [
+          {
+            "node": "Editor · round 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editor · round 1": {
+      "main": [
+        [
+          {
+            "node": "Approved? (revision 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved? (revision 1)": {
+      "main": [
+        [
+          {
+            "node": "Prepare draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Writer · revision 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer · revision 2": {
+      "main": [
+        [
+          {
+            "node": "Editor · round 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editor · round 2": {
+      "main": [
+        [
+          {
+            "node": "Prepare draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare draft": {
+      "main": [
+        [
+          {
+            "node": "Gmail draft to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer model (strong)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Writer · revision 1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Writer · revision 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editor model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Editor",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Editor · round 1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Editor · round 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verdict shape": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Editor",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Editor · round 1",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Editor · round 2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "executionTimeout": 600
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

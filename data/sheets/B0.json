@@ -1,0 +1,67 @@
+{
+  "id": "B0",
+  "boss": true,
+  "intro": "<p>Use this guide after you finish your blueprint, and before you check the reference blueprint. Reviewers score each deliverable against the rubric: full marks need every item named in the row, so check your work line by line. You win at 80 out of 100, and all three curveballs must be answered inside the deliverables they affect.</p>",
+  "rows": [
+    {
+      "area": "D1 Process maps",
+      "full": "Four swimlanes (customer now and future, hotel now and future), using the lanes Customer or Hotel, Automation, Tolu/Admin and Rider. Decisions are drawn as diamonds, every handoff is circled, the future maps put copying and checking in the Automation lane, and the 6 a.m. chef phone call (Curveball 1) has a clear entry point and a named person who records it.",
+      "partial": "Only the future maps, or only the customer flow; handoffs or decisions not marked; phone calls mentioned but not placed on the map.",
+      "low": "One map, a list of steps instead of a swimlane, or no hotel cycle."
+    },
+    {
+      "area": "D2 Priorities and ROI",
+      "full": "Every step scored at 780 orders a week with runs × minutes × error ÷ difficulty; the Friday invoice scored at 180 minutes with high error cost; dependencies checked so order capture comes first; 3 to 5 picks each justified; weekly hours saved and monthly value shown with working.",
+      "partial": "Scored at today's volume (270 a week) or mixed units; top picks listed without dependencies; hours saved with no monthly value or no working.",
+      "low": "No score table, or picks chosen by feel with no numbers."
+    },
+    {
+      "area": "D3 Data model",
+      "full": "Every table listed with an ID format and typed fields, including Standing_Orders, Order_Changes and Invoices; Orders carries invoice_id; unit_price is stored at sale and the hotel's contract price is fixed until a date (Curveball 2 handled for all three groups); one hotel order written as JSON that validates in the 0.3 lab.",
+      "partial": "Hotel tables present but missing IDs or types; price changes handled for old orders but not the hotel contract; JSON with type errors or not valid.",
+      "low": "Only the four original tables, or no JSON example."
+    },
+    {
+      "area": "D4 Integrations",
+      "full": "One row for each system (order form, WhatsApp, Gmail, Google Sheets, Paystack, AI provider, weather API, rider messaging), each with its role, trigger type (polling or webhook), auth method, key type (test or live) and where the secret lives.",
+      "partial": "Most systems listed but one or two columns empty, or secrets placed somewhere unsafe such as a sheet.",
+      "low": "A list of tool names with no trigger, auth or secret location."
+    },
+    {
+      "area": "D5 AI step",
+      "full": "A structured prompt with role, catalogue, null rule, output shape and at least one example; a 10-message test set with expected outputs; a measured score from actual runs; post-AI checks (parses, SKUs in catalogue, qty above 0, needs_confirmation goes to a person); and a monthly cost estimate at about 2,400 calls.",
+      "partial": "A good prompt but fewer than 10 tests, a score with no runs behind it, or no checks after the AI; cost at today's volume.",
+      "low": "A one-line prompt, no test set, or the AI asked to calculate totals."
+    },
+    {
+      "area": "D6 Security",
+      "full": "An access register covering every tool and person (Tolu, the new admin, four riders, the hotel contact); the one-page policy updated for December; an incident card that handles the stolen phone (Curveball 3) in the right order: remove the rider from the group and sheet, sign out the session, rotate any shared token, plus a change for next time.",
+      "partial": "A register missing people or tools, a policy not adapted for December, or an incident card that doesn't address the stolen phone.",
+      "low": "A general list of security tips with no register or incident card."
+    },
+    {
+      "area": "D7 Summary",
+      "full": "Fits on one page and gives the build order, what stays human, total weekly hours saved, monthly tool cost against the ₦60,000 budget, and the top risks with a mitigation for each.",
+      "partial": "Over a page, or missing either the cost against budget or the risks.",
+      "low": "No summary, or a summary that repeats the deliverables without decisions or numbers."
+    }
+  ],
+  "evidence": [
+    "D1: four swimlane maps (photos or Excalidraw exports), handoffs circled and the phone-call entry point marked.",
+    "D2: the priority sheet at 780 orders a week, plus the top-picks list and the ROI working.",
+    "D3: the table list with IDs, fields and types, and the hotel order JSON with a screenshot of it validating in the lab.",
+    "D4: the integration inventory table.",
+    "D5: the prompt, the 10-message test sheet with expected outputs and results, the post-AI checks and the cost estimate.",
+    "D6: the access register, the December policy and the incident card.",
+    "D7: the one-page summary.",
+    "The completed submission checklist with self-score, and a note on where each curveball is handled."
+  ],
+  "mistakes": [
+    "Scoring at today's 45 orders a day instead of December's 130, so every hours-saved figure is too small.",
+    "No dependency check, so the plan builds payment confirmation or invoicing before order capture.",
+    "A data model without a way to link orders to invoices or keep the hotel's contract price fixed.",
+    "An AI step with no measured score and no checks after it, or one that calculates prices.",
+    "Secrets placed in sheets or shared chats in the integration inventory, or riders given edit access to the full customer table.",
+    "Curveballs opened but not reflected in the maps, data model or incident card."
+  ]
+}

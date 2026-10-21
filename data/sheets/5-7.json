@@ -1,0 +1,38 @@
+{
+ "id": "5.7",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Ibadan Tiles Centre, a fictional tiles shop selling to builders and households.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Channel</th><th>Who answers</th><th>Reply rules</th><th>Reply time now</th></tr></thead><tbody><tr><td>WhatsApp (shop phone)</td><td>Shop manager</td><td>Free-form within 24 h; templates after</td><td>About 3 h</td></tr><tr><td>Email</td><td>Owner</td><td>Full sentences; quotes and invoices</td><td>1 to 2 days</td></tr><tr><td>Instagram DMs and comments</td><td>Owner's nephew</td><td>24-hour DM window; no details in public</td><td>Evenings only</td></tr><tr><td>Facebook comments</td><td>Nobody regularly</td><td>Public: one line; move personal things to DM</td><td>Often never</td></tr><tr><td>Phone calls</td><td>Whoever is free</td><td>Call-backs noted on paper</td><td>Same day, sometimes</td></tr></tbody></table></div><p><b>Matching rules</b>: merge on a verified phone (stored as +234…) or lowercase email from an invoice; link but verify when someone types a number in another channel; suggest to the owner when a business name is similar; never merge on a personal name alone.</p><p><b>Response targets</b>: questions 5 minutes (agent), order problems 15 minutes, complaints a person within 1 working hour; each conversation assigned to a named person.</p><p><b>Two-channel example found</b>: a contractor emailed for a quote on Monday, then asked on WhatsApp on Tuesday \"did you see my email?\" and got a second, different price from the manager.</p><p>Owner signed the map on 2 October.</p>",
+   "mistakes": [
+    "Listing channels without who answers them or how long replies take now.",
+    "Matching rules that allow a merge on a name.",
+    "Targets owned by 'the team' instead of a named person.",
+    "Skipping the hunt for a real two-channel customer."
+   ],
+   "pass": "A map of every channel with owner, rules and current reply time, matching rules (merge, verify, suggest, separate), response targets, one real case of a customer on two channels, and the owner's agreement.",
+   "redo": "Send it back if names can trigger a merge, any channel has no owner, or the owner has not agreed the map."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane, email and WhatsApp into one Supabase record and one agent.</p><ol><li>Adapters: Gmail Trigger and the 5.1 WhatsApp webhook, each producing <code>{ channel, thread_id, from_value, from_type, text, received_at, raw_id }</code> and calling Inbox · Receive.</li><li>Normalise (lesson's Code node): phones to +234…, emails trimmed and lowercase.</li><li>Supabase: find a verified identity with that value → that customer; none → new customer, unverified identity. A phone or email typed in the text that matches another customer → link suggestion and <code>needs_verification = true</code>, never a merge.</li><li>Upsert the open conversation for that order; update last_customer_msg_at and reply_channel.</li><li>Agent with get_customer_context (timeline, open orders, decisions). System message: reply only on reply_channel, in its style; no order or payment details if needs_verification.</li><li>Switch on reply_channel → Gmail or WhatsApp sender; other open threads get \"We've replied on WhatsApp so everything's in one place\" and close.</li></ol><p><b>Test 1</b>: you email from funke.a@example.com about HL-0412, then WhatsApp from +2348030001111 (both verified at checkout).</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Table</th><th>Rows after test</th></tr></thead><tbody><tr><td>customers</td><td>1 (Funke Adeyemi)</td></tr><tr><td>identities</td><td>email, phone: both verified</td></tr><tr><td>conversations</td><td>1, reply_channel = whatsapp</td></tr><tr><td>messages</td><td>2 in, 1 out (WhatsApp), 1 note (email)</td></tr></tbody></table></div><p><b>Test 2</b>: a friend writes from funke.a.other@example.com as \"Funke A.\" asking about a different order. Result: a second customer, nothing shared, no link suggested.</p><p>Evidence: Supabase screenshots after each test and both execution logs.</p>",
+   "mistakes": [
+    "Not normalising phones, so 0803…, 234803… and +234803… become three customers.",
+    "Merging when a customer types someone's number instead of linking and verifying.",
+    "Replying on both channels instead of once on the latest.",
+    "The agent not reading the decisions table before replying."
+   ],
+   "pass": "Supabase screenshots show one customer, one conversation and one reply on WhatsApp for the two-channel test, and two separate customers with nothing shared for the namesake test.",
+   "redo": "Send it back if the same person became two customers, the namesakes were merged or linked, or the customer got two replies."
+  },
+  "g": {
+   "answer": "<p>Worked example: Ibadan Tiles Centre (fictional) running one inbox across WhatsApp, email and Instagram for two weeks.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Channel</th><th>Median first reply before</th><th>After</th><th>Missed targets</th></tr></thead><tbody><tr><td>WhatsApp</td><td>3 h 10 min</td><td>2 min</td><td>1 (complaint, Saturday)</td></tr><tr><td>Email</td><td>26 h</td><td>11 min</td><td>0</td></tr><tr><td>Instagram</td><td>9 h</td><td>3 min</td><td>2 (order problems, evenings)</td></tr></tbody></table></div><p><b>Merges</b>: 64 automatic (verified phone or email); 9 suggested: 6 confirmed after a code was sent or the customer answered, 3 rejected (same first name, different people). Wrong merges: 0, checked by the owner reviewing every merge on Fridays.</p><p><b>Consistency</b>: two customers asked about the same refund on two channels; both got one answer on their latest channel, matching the decisions table.</p><p><b>Normalisation clean-up</b>: before go-live, 412 old contacts in mixed phone formats became 247 customers.</p><p><b>What changed for the team</b>: the manager owns WhatsApp and order problems, the owner owns complaints and quotes over ₦500,000; the 18:00 digest replaced the evening phone round-up.</p><p><b>Next step</b>: add Facebook comments in week 3, and move evening Instagram order problems to the manager's phone.</p><p>Submit: the before and after table with how \"before\" was measured (WhatsApp and email timestamps from the previous two weeks), the merge log with decisions, the missed-target alerts and the owner's note.</p>",
+   "mistakes": [
+    "No measured baseline for response times.",
+    "Counting automatic merges without anyone checking them.",
+    "Reporting one overall response time instead of one per channel.",
+    "Leaving missed targets out of the report."
+   ],
+   "pass": "Two weeks on three or more channels with median response time per channel against the previous two weeks, merges made and suggested, missed targets, and zero wrong merges confirmed by a review.",
+   "redo": "Send it back if any wrong merge happened, response times did not improve, or the merge counts are missing."
+  }
+ }
+}

@@ -1,0 +1,123 @@
+{
+  "id": "3.6",
+  "items": [
+    {
+      "file": "3-6-error-alerts.json",
+      "name": "HL · Error alerts",
+      "what": "The central error workflow: when any connected workflow fails on an automatic run, it sends Tolu a Telegram alert naming the workflow, node, error, time and run link (with an optional Incidents sheet log, switched off).",
+      "setup": [
+        "In Telegram, message @BotFather, send /newbot, name it (for example Harvest Lane Alerts) and copy the token. Send your new bot any message.",
+        "Create a Telegram API credential called \"Telegram alerts bot\" with that token and select it in the Telegram alert node.",
+        "Open https://api.telegram.org/bot<TOKEN>/getUpdates in your browser (your token in place of <TOKEN>), find \"chat\":{\"id\": and replace YOUR_TELEGRAM_CHAT_ID in Telegram alert with that number. Don't save or share that address.",
+        "Optional (Gold mission): create an Incidents tab (time, workflow, node, message, url, cause, fix, minutes_to_resolve), select a Google Sheets OAuth2 credential in Incidents sheet, replace YOUR_SHEET_ID, and re-enable that node.",
+        "Save the workflow (it doesn't need publishing). Then in every Harvest Lane workflow open Settings, set Error workflow to HL · Error alerts, and save.",
+        "Give every node that calls an outside service Retry On Fail: 3 tries, 2,000 ms apart."
+      ],
+      "test": "Import HL · Alarm test, set its error workflow to HL · Error alerts, publish it and wait a minute: your phone shows an alert starting with HL · Alarm test failed, Node: Stop and Error, Error: Test alarm: if you can read this, alerts work, with an Open link to the run. Clicking Execute on a broken workflow will not trigger it; that's expected.",
+      "walk": {
+        "title": "Build it: Harvest Lane's alarm system",
+        "sample": "HL · Alarm test fails on purpose at the Stop and Error node: \"Test alarm: if you can read this, alerts work.\"",
+        "steps": [
+          {
+            "at": null,
+            "say": "First, a Telegram bot. Message BotFather, create Harvest Lane Alerts, and keep the token like a password. Send your bot a hello so it's allowed to message you.",
+            "show": [
+              "@BotFather › /newbot",
+              "Credential: Telegram alerts bot (token)"
+            ]
+          },
+          {
+            "at": "Error Trigger",
+            "say": "This workflow starts with the Error Trigger. Whenever an automatic run of a connected workflow fails, n8n starts it and hands over the details.",
+            "show": [
+              "Error Trigger",
+              "Receives: execution { id, url, error, lastNodeExecuted }",
+              "and workflow { id, name }"
+            ],
+            "data": "1 item · workflow + execution"
+          },
+          {
+            "at": "Format",
+            "say": "Edit Fields formats the alert. The details live under execution and workflow, not at the top. Pointing at the wrong place is how alerts end up saying undefined.",
+            "show": [
+              "workflow: {{ $json.workflow?.name ?? 'Unknown workflow' }}",
+              "node: {{ $json.execution?.lastNodeExecuted ?? 'trigger' }}"
+            ],
+            "data": "HL · Alarm test · Stop and Error"
+          },
+          {
+            "at": "Format",
+            "say": "The question marks and fallbacks keep the alert useful even when the failure happens in a trigger and the data has a different shape.",
+            "show": [
+              "message: {{ $json.execution?.error?.message",
+              "  ?? $json.trigger?.error?.message ?? 'No message' }}",
+              "url: {{ $json.execution?.url ?? '' }}",
+              "time: {{ $now.toFormat('ccc d LLL, HH:mm') }}"
+            ],
+            "data": "Test alarm: if you can read this…"
+          },
+          {
+            "at": "Telegram alert",
+            "say": "Telegram sends Tolu the workflow, node, error, time, and a link straight to the failed run, so diagnosis starts with one tap.",
+            "show": [
+              "Telegram › Send Message",
+              "Chat ID: YOUR_TELEGRAM_CHAT_ID",
+              "🚨 {{ $json.workflow }} failed · Node · Error · When · Open"
+            ]
+          },
+          {
+            "at": "Telegram alert",
+            "say": "Find your chat ID from the getUpdates address in your browser, but never save that address in a workflow. It contains your token.",
+            "show": [
+              "api.telegram.org/bot<TOKEN>/getUpdates",
+              "\"chat\":{\"id\": 512349876 …"
+            ]
+          },
+          {
+            "at": "Incidents sheet",
+            "say": "An optional Incidents log is switched off for now. Turn it on later for the Gold mission, to track causes and fixes.",
+            "show": [
+              "Append Row · Sheet: Incidents (disabled)",
+              "time, workflow, node, message, url, cause, fix"
+            ]
+          },
+          {
+            "at": "Error Trigger",
+            "say": "Save it. Then open every Harvest Lane workflow's settings and choose this as its error workflow. One alarm for everything.",
+            "show": [
+              "Each workflow › Settings › Error workflow: HL · Error alerts"
+            ]
+          },
+          {
+            "at": "Error Trigger",
+            "say": "Add Retry On Fail to every node that calls an outside service, so short blips that fix themselves never wake Tolu.",
+            "show": [
+              "Retry On Fail · 3 tries · 2,000 ms"
+            ]
+          },
+          {
+            "at": "Telegram alert",
+            "say": "Prove it with a real failure. Manual runs don't trigger error workflows, so the alarm test fails on a schedule, every minute. Publish it, check your phone, then unpublish it straight away.",
+            "show": [
+              "HL · Alarm test: Every minute → Stop and Error",
+              "Publish → alert arrives → Unpublish"
+            ],
+            "data": "1 alert in under a minute"
+          }
+        ],
+        "end": "Publish the alarm test, read the alert on your phone, tap the link to the run, and unpublish it immediately."
+      }
+    },
+    {
+      "file": "3-6-alarm-test.json",
+      "name": "HL · Alarm test",
+      "what": "A deliberate failure every minute (Stop and Error) to prove the error workflow reaches your phone from a real automatic run.",
+      "setup": [
+        "Import and save HL · Error alerts first.",
+        "In this workflow open Settings, set Error workflow to HL · Error alerts, and save.",
+        "Publish it only for the test, and unpublish it as soon as the alert arrives."
+      ],
+      "test": "Publish, wait about one minute and check Telegram for the alert, then unpublish straight away. Executions shows one failed run per minute while it is published."
+    }
+  ]
+}

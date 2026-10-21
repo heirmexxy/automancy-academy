@@ -1,0 +1,40 @@
+{
+  "id": "1.1",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Invoices → Drive",
+      "what": "Every attachment that lands in the Gmail label Invoices is uploaded to the Google Drive folder Harvest Lane → Supplier invoices, named after who sent it and what it is. Two steps, so it fits the free plan.",
+      "steps": [
+        "1 · Trigger · Gmail › New Attachment: account = the Harvest Lane business Gmail; Label/Mailbox = Invoices; Search String = -in:sent. Test trigger with a real emailed PDF and pick that record as sample data.",
+        "2 · Action · Google Drive › Upload File: account = the same business Google account; Drive = My Google Drive; Folder = Harvest Lane → Supplier invoices; File = the attachment file pill from step 1 (the entry marked as a file, not the attachment's name or link); File name = [1. From Name] - [1. Subject] - [1. Attachment Name] (pills joined with the fixed text \" - \")."
+      ],
+      "setup": [
+        "Use the Harvest Lane business Google account from Module 0.6, not a personal one.",
+        "In Gmail, create a label called Invoices.",
+        "In Gmail Settings → Filters and blocked addresses → Create a new filter: match your suppliers' addresses plus \"has attachment\", and apply the label Invoices.",
+        "In Google Drive, create the folder Harvest Lane → Supplier invoices.",
+        "In Zapier, create a new Zap and build the two steps exactly as listed. Connect Gmail and Google Drive with the business account, and read each permission screen before allowing.",
+        "Rename the Zap to HL · Invoices → Drive and click Publish.",
+        "To share it as a template: open the Zap's menu, choose Share, and copy the share link."
+      ],
+      "test": "Email yourself a small PDF from another address so it lands in Invoices, then Test trigger and Test step: the PDF appears in Supplier invoices named like Farmgate Supplies - Invoice 0192 - inv_0192.pdf. After publishing, send a second invoice: within about 15 minutes (free plan polling) it appears in Drive with no clicks, and Zap history shows the run with the data in and out of each step.",
+      "tasks": "One task per attachment saved (only the Drive upload counts; Gmail polling does not), so about 25 tasks a month for Tolu's 25 invoices.",
+      "walk": {
+        "title": "Build it: supplier invoices file themselves",
+        "sample": "Email from Farmgate Supplies · Invoice 0192 · inv_0192.pdf · label Invoices",
+        "steps": [
+          {"at": "1", "say": "Our trigger is Gmail, New Attachment. Gmail's own filter already labels supplier invoices, so we only watch that one label.", "show": ["Gmail › New Attachment", "Label/Mailbox: Invoices"], "data": "1 email · inv_0192.pdf"},
+          {"at": "1", "say": "We add a search string so attachments you send yourself, like quotes to customers, are never filed as supplier invoices.", "show": ["Search String: -in:sent"], "data": "sent mail ignored"},
+          {"at": "1", "say": "Connect the business account, not your personal one, and read the permission screen before you click allow. Then test with a real emailed PDF.", "show": ["Account: Harvest Lane business Gmail", "Test trigger → pick the real email"], "data": "From Name, Subject, file"},
+          {"at": "2", "say": "Now the action: Google Drive, Upload File, into the Supplier invoices folder.", "show": ["Google Drive › Upload File", "Folder: Harvest Lane → Supplier invoices"]},
+          {"at": "2", "say": "For the File field, pick the pill that carries the actual file. A name or link pill only gives you a tiny text file.", "show": ["File: attachment file pill from step 1"], "data": "PDF file, not a link"},
+          {"at": "2", "say": "The file name mixes pills with fixed text, so every invoice says who sent it and what it is.", "show": ["From Name - Subject - Attachment Name"], "data": "Farmgate Supplies - Invoice 0192 - …"},
+          {"at": "2", "say": "Test the step, check Drive, name the Zap, then publish. Nothing runs by itself until you publish.", "show": ["Name: HL · Invoices → Drive", "Publish"], "data": "1 task used"}
+        ],
+        "end": "That's the whole Zap. Build it yourself, publish it, then open Zap history after the next live invoice."
+      }
+    }
+  ]
+}

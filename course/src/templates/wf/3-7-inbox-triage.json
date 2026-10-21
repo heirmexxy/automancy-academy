@@ -1,0 +1,903 @@
+{
+  "name": "HL · Support inbox triage",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Support inbox triage (Lesson 3.7)\nNew support email → trim → Text Classifier (5 categories + Other) → per route: extract fields, draft a reply into Gmail (never sent), alert Tolu on Telegram for complaints, refunds and Other, label spam \"Spam?\" (never deleted).\n\n**Credentials:** Gmail OAuth2 (Gmail Trigger and the three Gmail nodes) · OpenAI (all six chat model sub-nodes; or swap in your provider's model) · Telegram API (three Telegram nodes).\n**Placeholders:** YOUR_MODEL (each chat model: pick a small model for classifier and extractors), YOUR_TELEGRAM_CHAT_ID, YOUR_SHEET_ID (Order requests tab), YOUR_SPAM_LABEL_ID (Gmail label \"Spam?\").\n\nUse a **test inbox** while building. Connect Settings → Error workflow to HL · Error alerts, then publish.",
+        "height": 420,
+        "width": 460
+      },
+      "id": "f428add3-ce19-4b04-b584-d5b18adb9b48",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -576
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "8b122fa4-c8a4-4e51-b42d-11d272c6859d",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2ad517d0-ad4f-426b-a11c-2a258fc1dd2a",
+      "name": "Test set (12 emails)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 12 fake test emails (Card 4). expected = the right answer, written down first.\nconst emails = [\n  { expected: 'order', text: \"Please add 2 crates of tomatoes to tomorrow's delivery, order HL-0131.\" },\n  { expected: 'complaint', text: \"The pepper you delivered on Tuesday was rotten. This is the second time.\" },\n  { expected: 'refund', text: \"I was charged twice for HL-0127, please return ₦12,500.\" },\n  { expected: 'spam', text: \"Congratulations! You have won a $1,000,000 grant, click here.\" },\n  { expected: 'order', text: \"Can you deliver to Bodija on Saturday? I need 5 bunches of ugu.\" },\n  { expected: 'complaint', text: \"Your rider was rude to my staff at the gate.\" },\n  { expected: 'refund', text: \"I cancelled HL-0129 before dispatch but my money hasn't come back.\" },\n  { expected: 'enquiry', text: \"Do you sell organic carrots? What's the price per bag?\" },\n  { expected: 'spam', text: \"SEO services for your website, 50% off this week only.\" },\n  { expected: 'complaint', text: \"The onions were fine, but delivery came 3 hours late and my kitchen waited.\" },\n  { expected: 'enquiry', text: \"What are your opening hours on public holidays?\" },\n  { expected: 'refund', text: \"Half the eggs were broken. I want my money back for those.\" }\n];\nreturn emails.map((e, i) => ({ json: {\n  id: 'test-' + (i + 1),\n  From: 'customer' + (i + 1) + '@test.example',\n  Subject: 'Test email ' + (i + 1),\n  text: e.text,\n  expected: e.expected,\n} }));\n"
+      },
+      "id": "da74ff17-b5b2-4557-bfe9-37f407f0ee2f",
+      "name": "12 test emails",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf90990a-d222-4791-8316-a46da33c3384",
+              "name": "from",
+              "value": "={{ $json.from?.value?.[0]?.address ?? $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "709d6178-f3d7-4816-aa0a-769888dfafb2",
+              "name": "subject",
+              "value": "={{ $json.subject ?? $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "8b564c5c-0336-48a8-9acc-54637a51c1c1",
+              "name": "body",
+              "value": "={{ ($json.text ?? $json.snippet ?? '').split(/\\nOn .* wrote:/)[0].slice(0, 2000) }}",
+              "type": "string"
+            },
+            {
+              "id": "27d13043-f98a-470f-9192-299fce10928c",
+              "name": "message_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6a819de-619e-4491-8d66-1675ce4c7ae8",
+      "name": "Clean",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "=Subject: {{ $json.subject }}\n\n{{ $json.body }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "order",
+              "description": "The sender wants to buy, add to or change an order or delivery: items, quantities, dates or addresses. Includes repeat orders."
+            },
+            {
+              "category": "complaint",
+              "description": "The sender is unhappy about quality, lateness, damage, a rider's behaviour or service, even if polite. If they mainly want money back, choose refund."
+            },
+            {
+              "category": "refund",
+              "description": "The sender asks for money back, a double charge to be reversed, or credit for missing or damaged items."
+            },
+            {
+              "category": "enquiry",
+              "description": "A question about products, prices, opening hours or delivery areas, with no order placed yet."
+            },
+            {
+              "category": "spam",
+              "description": "Unsolicited marketing, prize or grant scams, phishing links, or anything unrelated to buying food from Harvest Lane. If unsure, do not choose spam."
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other"
+        }
+      },
+      "id": "3f86af97-86a1-4582-843c-00ca86c1dba9",
+      "name": "Text Classifier",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        505,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "f6c6a830-207e-4c6d-a75a-d2ec8128c5aa",
+      "name": "Classifier model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        505,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "text": "=Subject: {{ $('Clean').item.json.subject }}\n\n{{ $('Clean').item.json.body }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "items",
+              "type": "string",
+              "description": "Each product and quantity requested, e.g. '2 crates tomatoes; 5 bunches ugu'. Copy the customer's words.",
+              "required": true
+            },
+            {
+              "name": "delivery_date",
+              "type": "string",
+              "description": "Requested delivery date as written, or YYYY-MM-DD if a clear date is given. Empty if not mentioned.",
+              "required": false
+            },
+            {
+              "name": "area",
+              "type": "string",
+              "description": "Delivery area or address in Ibadan, e.g. Bodija. Empty if not mentioned.",
+              "required": false
+            },
+            {
+              "name": "order_id",
+              "type": "string",
+              "description": "Existing Harvest Lane order number, format HL-0000. Empty if not mentioned. Never invent one.",
+              "required": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f23c662-fb28-490a-93e6-e6de03eaf52c",
+      "name": "Extract order",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -468
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "e21937dc-c4f7-4a75-81d8-75e4f3bb2a77",
+      "name": "Order extractor model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -306
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Order requests",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "received_at": "={{ $now.toISO() }}",
+            "from": "={{ $('Clean').item.json.from }}",
+            "subject": "={{ $('Clean').item.json.subject }}",
+            "items": "={{ $json.output.items }}",
+            "delivery_date": "={{ $json.output.delivery_date }}",
+            "area": "={{ $json.output.area }}",
+            "order_id": "={{ $json.output.order_id }}",
+            "status": "to confirm"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "from",
+              "displayName": "from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delivery_date",
+              "displayName": "delivery_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "area",
+              "displayName": "area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "09a7ac1d-06dd-4057-b391-003a127a7e6c",
+      "name": "Order requests",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1166,
+        -468
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "text": "=Subject: {{ $('Clean').item.json.subject }}\n\n{{ $('Clean').item.json.body }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "order_id",
+              "type": "string",
+              "description": "Harvest Lane order number, format HL-0000. Empty if not mentioned. Never invent one.",
+              "required": false
+            },
+            {
+              "name": "issue",
+              "type": "string",
+              "description": "One sentence: what went wrong, in the customer's terms.",
+              "required": true
+            },
+            {
+              "name": "amount",
+              "type": "number",
+              "description": "Naira amount the customer mentions, as a number. Empty if none.",
+              "required": false
+            },
+            {
+              "name": "severity",
+              "type": "string",
+              "description": "low, medium or high. High = health risk, repeat problem, or a big customer.",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "45f9a094-218c-4afd-a6fd-f8697870033f",
+      "name": "Extract complaint",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -162
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "1c6e74f1-23f7-4de4-abaf-48db43d2d3c4",
+      "name": "Complaint extractor model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You write replies for Harvest Lane, a fresh-produce delivery business in Ibadan.\nTone: warm, brief, Nigerian English, no exaggerated promises.\nNever offer refunds, credits or discounts: say Tolu will review and reply today.\nCustomer email: {{ $('Clean').item.json.body }}\nIssue summary: {{ $json.output.issue }}\nWrite a reply of at most 80 words. No subject line."
+      },
+      "id": "db14077a-68bb-4062-a071-4649b6f922ec",
+      "name": "Draft complaint reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1166,
+        -162
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "b1028dad-0b6c-4f82-84c4-18cb55e05105",
+      "name": "Complaint draft model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1166,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "operation": "create",
+        "subject": "=Re: {{ $('Clean').item.json.subject }}",
+        "message": "={{ $json.text }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}",
+          "sendTo": "={{ $('Clean').item.json.from }}"
+        }
+      },
+      "id": "80c8279a-5386-447b-b803-f15654ee7c84",
+      "name": "Gmail draft (complaint)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1452,
+        -162
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🔴 Complaint · {{ $('Extract complaint').item.json.output.severity }} · {{ $('Extract complaint').item.json.output.issue }} · {{ $('Extract complaint').item.json.output.order_id || 'no order no.' }} · draft ready in Gmail",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dac33667-1ef8-43a3-8e4e-1d5270a93662",
+      "name": "Telegram: complaint",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1738,
+        -162
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "text": "=Subject: {{ $('Clean').item.json.subject }}\n\n{{ $('Clean').item.json.body }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "order_id",
+              "type": "string",
+              "description": "Harvest Lane order number, format HL-0000. Empty if not mentioned. Never invent one.",
+              "required": false
+            },
+            {
+              "name": "issue",
+              "type": "string",
+              "description": "One sentence: what went wrong, in the customer's terms.",
+              "required": true
+            },
+            {
+              "name": "amount",
+              "type": "number",
+              "description": "Naira amount the customer mentions, as a number. Empty if none.",
+              "required": false
+            },
+            {
+              "name": "severity",
+              "type": "string",
+              "description": "low, medium or high. High = health risk, repeat problem, or a big customer.",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a70b81dc-602d-4607-8226-a5aeaa42f34c",
+      "name": "Extract refund",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        880,
+        162
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "79ba7647-c21c-431e-a51b-1bbd2cff89a9",
+      "name": "Refund extractor model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        880,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🟠 Refund request · {{ $json.output.severity }} · {{ $json.output.issue }} · {{ $json.output.order_id || 'no order no.' }} · amount: {{ $json.output.amount ? '₦' + Number($json.output.amount).toLocaleString('en-NG') : 'not stated' }} · please review (nothing has been paid)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c7e267b2-c3c2-4b4f-b17e-ec4d53c372f6",
+      "name": "Telegram: refund",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1166,
+        162
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You write replies for Harvest Lane, a fresh-produce delivery business in Ibadan.\nTone: warm, brief, Nigerian English, no exaggerated promises.\nNever offer refunds, credits or discounts: say Tolu will review and reply today.\nCustomer email: {{ $('Clean').item.json.body }}\nIssue summary: {{ $('Clean').item.json.subject }}\nWrite a reply of at most 80 words. No subject line."
+      },
+      "id": "3d054711-7322-4993-a66a-95f01dc432f8",
+      "name": "Draft enquiry reply",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        880,
+        486
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "5b2a7b3e-c113-4578-b3b4-fe7bd700a766",
+      "name": "Enquiry draft model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        880,
+        648
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "operation": "create",
+        "subject": "=Re: {{ $('Clean').item.json.subject }}",
+        "message": "={{ $json.text }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}",
+          "sendTo": "={{ $('Clean').item.json.from }}"
+        }
+      },
+      "id": "a7eb8801-ce2d-4dc8-a329-c04333471461",
+      "name": "Gmail draft (enquiry)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1166,
+        486
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $('Clean').item.json.message_id }}",
+        "labelIds": [
+          "YOUR_SPAM_LABEL_ID"
+        ]
+      },
+      "id": "2c5be938-0427-43d6-9c2f-53cbe949e2f0",
+      "name": "Label Spam?",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1452,
+        324
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚪ Unclear email · from {{ $('Clean').item.json.from }} · {{ $('Clean').item.json.subject }} · please read it in Gmail",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e230b8f6-a542-461c-a294-860ac8f37ce6",
+      "name": "Telegram: other",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1452,
+        648
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "## Score before you go live\nRun **Test set (12 emails)** (Execute workflow → choose that trigger) and read each Text Classifier output against the expected field. Before running, deactivate the nodes after the classifier (select, press D) so the fake emails don't create drafts, labels or alerts.\n\nScore in Card 4. Don't go on until there are **no critical misses**: a complaint or refund that doesn't reach Tolu, or a real email marked spam.\n\nChat models: temperature 0 for classifier and extractors, 0.3 for drafts. Outputs: order · complaint · refund · enquiry · spam · Other.",
+        "height": 320,
+        "width": 460
+      },
+      "id": "bf31034b-f85d-4585-b3c9-c4b45fd72ace",
+      "name": "Scoring the test set",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        396
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## AI sorts and drafts; people decide\n- Drafts are created in Gmail, never sent. Tolu reviews and sends.\n- Refunds: Telegram to Tolu only. No node here pays, refunds or deletes.\n- Spam: labelled Spam?, never deleted.\n- The extractor must never invent an order number (\"Never invent one\").\n\nGmail draft: if your output shows no threadId on the trigger, remove the Thread ID option; the draft still goes to the sender.",
+        "height": 300,
+        "width": 400
+      },
+      "id": "c281ce30-97bc-42b9-aa01-defd6c48c4a6",
+      "name": "People stay in charge",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        108
+      ]
+    }
+  ],
+  "connections": {
+    "Classifier model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test set (12 emails)": {
+      "main": [
+        [
+          {
+            "node": "12 test emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12 test emails": {
+      "main": [
+        [
+          {
+            "node": "Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Extract order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract complaint",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract refund",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft enquiry reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Label Spam?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram: other",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order extractor model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract order",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract order": {
+      "main": [
+        [
+          {
+            "node": "Order requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complaint extractor model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract complaint",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complaint draft model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft complaint reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract complaint": {
+      "main": [
+        [
+          {
+            "node": "Draft complaint reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft complaint reply": {
+      "main": [
+        [
+          {
+            "node": "Gmail draft (complaint)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail draft (complaint)": {
+      "main": [
+        [
+          {
+            "node": "Telegram: complaint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refund extractor model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract refund",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract refund": {
+      "main": [
+        [
+          {
+            "node": "Telegram: refund",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enquiry draft model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft enquiry reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft enquiry reply": {
+      "main": [
+        [
+          {
+            "node": "Gmail draft (enquiry)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "6.4",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL·08 Supplier form (Zapier side)",
+      "what": "The Zapier end of the supplier sign-up edge: each Google Form submission is POSTed as the six-field JSON from the data contract to the n8n webhook hl-supplier with the shared secret header x-hl-secret; n8n validates, stores it as pending and asks Tolu to approve. If the POST fails, an error-handler step reports it to HL·00 Errors.",
+      "steps": [
+        "1 · Trigger · Google Forms › New Form Response: Form = Harvest Lane supplier sign-up (questions: Business name, Contact name, Phone, Email, Products you supply, Area), owned and edited by Tolu's assistant.",
+        "2 · Action · Webhooks by Zapier › POST (rename \"Send to n8n HL·08\"): URL = https://YOUR_N8N_DOMAIN/webhook/hl-supplier; Payload Type = json; Data: business_name = [1. Business name]; contact_name = [1. Contact name]; phone = [1. Phone]; email = [1. Email]; products = [1. Products you supply]; area = [1. Area]; Wrap Request In Array = No; Unflatten = Yes; Headers: x-hl-secret = YOUR_HL_EDGE_SECRET, Content-Type = application/json.",
+        "2 · Error handler on step 2 (Custom error handling, paid plans) · Webhooks by Zapier › POST (\"Report to HL·00\"): URL = https://YOUR_N8N_DOMAIN/webhook/hl-errors; Payload Type = json; Data: workflow = HL·08 Supplier form; step = Send to n8n HL·08; message = the error message pill from step 2; url = the Zap history link (or the Zap's editor link typed in); order_id left empty; platform = Zapier; Headers: x-hl-secret = YOUR_HL_EDGE_SECRET."
+      ],
+      "setup": [
+        "Webhooks by Zapier and custom error handling need a paid plan (Professional or up).",
+        "Build the Google Form with exactly the six questions above; Tolu's assistant can change wording but not remove a question without telling the builder (it is part of the data contract).",
+        "On the n8n side, import HL·08 Supplier form (n8n side) and HL·00 Errors from this lesson's templates and set HL_EDGE_SECRET on the server.",
+        "Paste the same secret value into the x-hl-secret header of both POST steps; it lives only in the n8n environment and this Zap, never in the form, documents or exports. Replace YOUR_N8N_DOMAIN with your n8n domain.",
+        "If custom error handling isn't on your plan, turn on Zapier's error notification emails for this Zap and route them to the alert channel instead.",
+        "Test each step, name the Zap HL·08 Supplier form and publish. Share it from the Zap's menu → Share."
+      ],
+      "test": "End-to-end test 9: submit the form with test data (e.g. Farmgate Supplies, +2348000000000, tomatoes and peppers, Bodija): n8n answers 200, a pending row appears in suppliers and Tolu gets an Approve/Reject message on Telegram. Change the header to a wrong value in a test copy: n8n answers 400 and logs edge_rejected, step 2 errors in Zap history, and the error handler sends an alert through HL·00 Errors.",
+      "tasks": "One task per supplier submission (the POST), plus one more only when the error handler fires; a few runs a month."
+    }
+  ]
+}

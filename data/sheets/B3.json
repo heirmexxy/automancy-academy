@@ -1,0 +1,67 @@
+{
+  "id": "B3",
+  "boss": true,
+  "intro": "<p>Use this guide to score a Telegram Order Bot against the Boss 3 rubric: 80 of 100 points wins. Each row says what full, partial and low marks look like, so learners can check their own build before submitting and reviewers can mark consistently. Score what the evidence proves (test report, screenshots, sheets and the demo), not what the learner says the bot can do.</p>",
+  "rows": [
+    {
+      "area": "Understanding",
+      "full": "The test report lists all 15 conversations with expected and actual routes, and at least 13 match. The Text Classifier has order, price question, change or cancel, and other, with the Other branch on. A separate 15-message extraction test set is scored and recorded, with \"tmrw\" resolved to the right date and local names (tatashe, rodo, ugu) handled.",
+      "partial": "10 to 12 conversations take the expected route, or the routes are right but the extraction test set was never scored, or dates like \"tmrw\" are resolved without giving the model today's date.",
+      "low": "Fewer than 10 correct routes, no test report, or the AI is trusted without any scored test set."
+    },
+    {
+      "area": "Pricing and guardrails",
+      "full": "SUB · Price an order reads Price_List and is the only source of prices and stock; conversation 2 shows ₦34,000 with free delivery; delivery is ₦1,500 under ₦30,000; more than 50 units or over ₦500,000 routes to Tolu; conversation 8 leaves every price unchanged and goes to Tolu; any price field from the AI is never read.",
+      "partial": "Prices come from the sheet but one rule is missing or wrong (for example the delivery threshold or the ₦500,000 limit), or pricing is built inline in the bot rather than as a reusable sub-workflow.",
+      "low": "The AI states or calculates prices, a limit is not enforced, or the injection message changes a price or creates an order."
+    },
+    {
+      "area": "Confirmation flow",
+      "full": "Summaries arrive with Confirm and Change inline buttons using short callback data (c:/x: plus pending ID); the callback query is answered; only Confirm creates an Orders row and reduces stock; Change cancels the Pending row; a double tap gives one order and an \"Already confirmed\" reply; a stock race re-checks and offers what's left. Conversations 3, 11, 12 and 13 prove it.",
+      "partial": "Buttons work and Confirm creates the order, but double taps or the stock race aren't handled, the spinner keeps turning, or the Pending row isn't checked against the chat ID.",
+      "low": "Orders are created before Confirm, buttons don't work, or stock can go negative."
+    },
+    {
+      "area": "Daily report",
+      "full": "A screenshot of the 20:00 Telegram message plus a hand check for the same test day: order count, revenue, top three products, low stock, pending older than two hours and items waiting for Tolu all match the sheets.",
+      "partial": "The report arrives but one figure doesn't match the hand check, a section is missing, or it was only run manually.",
+      "low": "No report, a report with wrong totals, or one message per order instead of one summary."
+    },
+    {
+      "area": "Reliability and hosting",
+      "full": "The bot runs on the learner's own server with HTTPS, and webhook URLs show the public address. Every workflow is connected to HL · Error alerts, AI and Sheets nodes have retries, and conversation 15 shows a holding reply plus an alert. The uptime monitor is tested by stopping n8n, and the nightly Git backup includes the bot.",
+      "partial": "Self-hosted with HTTPS, but one of error workflow, retries, uptime monitor or Git backup is missing or claimed without proof.",
+      "low": "Running on a laptop or tunnel without proper HTTPS, no error workflow, or the customer gets silence when the AI fails."
+    },
+    {
+      "area": "Curveballs",
+      "full": "All three answered with evidence: a separate test bot and duplicated workflow for development; \"pepper\" is in no alias and the bot asks \"Which pepper? [Rodo] [Tatashe]\"; Confirm reads the Pending status first, marks it processing, then re-checks stock, so no duplicates or negative stock.",
+      "partial": "Two of three handled, or all three described but only one shown working.",
+      "low": "None handled, or answers that rely on a cleverer prompt instead of design."
+    },
+    {
+      "area": "Report and demo",
+      "full": "A test report with expected vs. actual for all 15, measured tokens per message and AI cost per order, a server vs. n8n Cloud comparison based on counted executions (updates per day × days) and current prices with dates, and a 3-minute video taking a real order from message to Orders row to the evening report.",
+      "partial": "Report or video present but the cost is guessed, the Cloud comparison skips the execution count, or the video misses a step or runs well over 3 minutes.",
+      "low": "No test report or no demo video."
+    }
+  ],
+  "evidence": [
+    "Test report: the 15 conversations with expected vs. actual route, plus the scored 15-message extraction test set.",
+    "Screenshots of the five sheets (Price_List, Customers, Pending, Orders, Conversation_Log) after the test run, with made-up customer data.",
+    "Exported JSON of the bot workflow, SUB · Price an order and the daily report workflow, with no keys or tokens pasted into fields.",
+    "Telegram screenshots of conversations 2, 3, 8, 12 and 13 (summary with buttons, confirmation, injection attempt, double tap, stock race).",
+    "The 20:00 report screenshot and a hand-check table for the same day.",
+    "Reliability proof: an error alert from conversation 15, the uptime monitor alert from a stopped-n8n test, and the GitHub commit containing the bot.",
+    "Cost sheet: tokens per message, AI cost per order, monthly executions and server vs. n8n Cloud comparison with price sources and dates.",
+    "A demo video of about 3 minutes: message, summary, Confirm, Orders row, evening report."
+  ],
+  "mistakes": [
+    "Letting the AI return prices or totals and using them, so the injection test (conversation 8) changes what the customer is charged.",
+    "Creating the Orders row when the summary is sent instead of on the Confirm tap, or not checking the Pending status, so double taps create two orders.",
+    "Debugging with \"Listen for test event\" on the live bot, which steals its webhook and leaves real customers unanswered.",
+    "Building two workflows with Telegram Triggers for the same bot, so one of them never receives updates.",
+    "Leaving voice notes, photos or AI failures with no reply, when the brief says customers always get an answer.",
+    "Submitting cost and Cloud comparisons as guesses, without counted executions, measured tokens or dated price sources."
+  ]
+}

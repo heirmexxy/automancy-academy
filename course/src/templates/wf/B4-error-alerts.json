@@ -1,0 +1,127 @@
+{
+  "name": "HL · Error alerts (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Error alerts\nBoss 4 (from 3.6). Every Sage Desk workflow points here in Settings → Error workflow. Formats the failure and sends it to Tolu on Telegram.\n\n**Credential:** Telegram API.\n**Replace:** YOUR_TELEGRAM_CHAT_ID.\n\nTest: a Schedule Trigger → Stop and Error workflow with this as its error workflow; publish, wait a minute, check Telegram, unpublish.",
+        "height": 320,
+        "width": 380
+      },
+      "id": "89b27ccd-12bf-4396-818e-3edf69a23d19",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6b3a88f8-490d-4273-83eb-cfe57092072f",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68301b2d-608b-4b06-9209-68c74a9e24bc",
+              "name": "workflow",
+              "value": "={{ $json.workflow?.name ?? 'Unknown workflow' }}",
+              "type": "string"
+            },
+            {
+              "id": "64c73573-72d8-4204-b44a-74502d2d6da4",
+              "name": "node",
+              "value": "={{ $json.execution?.lastNodeExecuted ?? 'trigger' }}",
+              "type": "string"
+            },
+            {
+              "id": "547b3ab3-294c-4328-9fd8-44e882a4b10b",
+              "name": "message",
+              "value": "={{ $json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No message' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2283e18-f02a-423e-b9ae-c23c300bac35",
+              "name": "url",
+              "value": "={{ $json.execution?.url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "7e9f2f0e-3294-4114-83d5-ec2e2adc8205",
+              "name": "time",
+              "value": "={{ $now.toFormat('ccc d LLL, HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72c8bca3-4dc9-4648-b5d2-fc7d79543a9f",
+      "name": "Format",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚨 {{ $json.workflow }} failed\nNode: {{ $json.node }}\nError: {{ $json.message }}\nWhen: {{ $json.time }}\nOpen: {{ $json.url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "9ad52e13-853b-424a-8088-d0d039f02da7",
+      "name": "Telegram alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

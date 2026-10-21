@@ -1,0 +1,348 @@
+<template data-mod="6.3" id="tpl-6-3">
+<article style="--c:var(--sky)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 6 · Launchpad · Lesson 6.3</span>
+    <h1>Portfolio &amp; Templates</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Tolu</span><span class="pill">Tools: a screen recorder (Loom or similar), GitHub, your proof-of-work logs, n8n / Make / Zapier export</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#tolu"/></svg>
+</header>
+<p class="lede">Nobody hires a builder they can't see. You've built more than thirty working systems in this course, and the proof-of-work logs to show it. Now turn the best of them into a portfolio that wins calls: short case studies with real numbers, three-minute demos, and clean, documented templates someone else can import and run, without your secrets or your customers' data hiding inside.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Write case studies in a problem → build → result format, with honest numbers.</span></div>
+  <div><b>02</b><span>Record a clear three-minute demo.</span></div>
+  <div><b>03</b><span>Package a workflow as a template: cleaned, documented and tested on a fresh account.</span></div>
+  <div><b>04</b><span>Publish a portfolio page with three projects and a clear next step.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Show me something you've built"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A potential client asking Tolu to show examples on a call.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="40" width="145" height="64" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="232" y="66" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"Do you have examples</text>
+        <text x="232" y="84" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">I can look at?"</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The call</b>A school administrator asks for examples. Tolu scrolls through 40 workflow screenshots, explaining each one. The call goes quiet.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A screen full of tiny workflow nodes that nobody can read.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="30" y="30" width="260" height="130" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--sky)" opacity=".7"><rect x="45" y="50" width="16" height="10" rx="2"/><rect x="70" y="70" width="16" height="10" rx="2"/><rect x="95" y="50" width="16" height="10" rx="2"/><rect x="120" y="90" width="16" height="10" rx="2"/><rect x="145" y="60" width="16" height="10" rx="2"/><rect x="170" y="110" width="16" height="10" rx="2"/><rect x="195" y="70" width="16" height="10" rx="2"/><rect x="220" y="100" width="16" height="10" rx="2"/><rect x="245" y="60" width="16" height="10" rx="2"/></g>
+        <text x="160" y="145" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">"…and this node does…"</text>
+      </svg>
+      <div class="cap"><b>The problem</b>Clients don't buy nodes. They buy "your orders are confirmed in seconds, and you got your evenings back".</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three neat cards labelled problem, build and result.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+          <rect x="20" y="50" width="85" height="90" rx="10" fill="var(--glitch)"/><text x="62" y="100" fill="#fff">Problem</text>
+          <rect x="118" y="50" width="85" height="90" rx="10" fill="var(--sky)"/><text x="160" y="100" fill="#fff">Build</text>
+          <rect x="216" y="50" width="85" height="90" rx="10" fill="var(--volt)"/><text x="258" y="100" fill="#13233A">Result</text>
+        </g>
+      </svg>
+      <div class="cap"><b>Tolu's fix</b>Three stories, each one page and three minutes of video: the problem, what she built, and the numbers afterwards.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch uploading a template file that leaks a key and customer data.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="175" y="40" width="110" height="120" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--glitch)"><text x="185" y="64">"Bearer sk_live_…"</text><text x="185" y="84">"pinData": {</text><text x="185" y="98">  "Funmi, 0803…"</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Share the template! It's only a JSON file. Nobody reads JSON." (Attackers do.)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The one-page case study</h3>
+    <pre id="case-6-3" class="codebox">CASE STUDY · [Headline with the result: "Orders confirmed in 30 seconds, not 3 hours"]
+Client: [type of business, city, size]  (name only with written permission)
+The problem: [2–3 sentences in the client's words, with a number: hours, ₦, errors]
+What I built: [3–5 bullets in plain language: what happens, not which nodes]
+How it's safe: [1–2 lines: approvals, data handling, monitoring]
+Results after [N weeks]: [2–4 numbers: time saved, errors cut, revenue, response time]
+Client quote: ["…" with permission]
+Stack: [n8n · Telegram · Google Sheets · Claude …]   Time to build: [days]
+Demo: [link to 3-minute video]</pre>
+    <div><button type="button" class="btn ghost" data-copy="case-6-3">Copy the case study template</button></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#tolu"/></svg><div class="bubble"><b>Tolu:</b> Your proof-of-work logs already hold most of this. Course projects count too, labelled honestly as "built for a fictional business, Harvest Lane, with test data". Never invent a client or inflate a number. One true number beats five impressive guesses.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The three-minute demo</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Time</th><th>Show</th></tr></thead>
+      <tbody>
+        <tr><td>0:00–0:30</td><td>The problem, from the customer's side ("Iya Basira sends an order at 9 p.m. and waits until morning")</td></tr>
+        <tr><td>0:30–1:45</td><td>The solution working, from the customer's side: the phone, the reply, the confirmation</td></tr>
+        <tr><td>1:45–2:30</td><td>Behind the scenes, briefly: the workflow, one safety feature (approval, error alert)</td></tr>
+        <tr><td>2:30–3:00</td><td>The result in numbers, and one sentence on who this suits</td></tr>
+      </tbody>
+    </table></div>
+    <p>Use test data and test accounts on screen. Zoom in on what matters; hide your email, tokens and other tabs. Record twice; send the better one.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>What a shareable template needs</h3>
+    <div class="vocab">
+      <div><b>No secrets</b>Platforms don't export credential secrets, but anything you typed into a field (a header token, a key in a URL) goes along.</div>
+      <div><b>No personal data</b>Pinned test data travels inside an n8n workflow file. So do hard-coded emails, phone numbers and chat IDs.</div>
+      <div><b>No hidden dependencies</b>Sheet IDs, sub-workflow IDs and webhook paths point at <i>your</i> accounts. Replace them with placeholders and explain them in the README.</div>
+      <div><b>Sticky notes</b>Short notes on the canvas: what each section does, what to change.</div>
+      <div><b>Tested on a fresh account</b>Import it into a clean n8n (or a new Make or Zapier account) and set it up from the README alone. Whatever you had to guess, add to the README.</div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Each platform shares differently: n8n exports workflow JSON; Make exports a scenario blueprint; Zapier lets you share a copy of a Zap. The same rules apply to all three.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Try it: clean a workflow before sharing</h3>
+    <p>Paste an exported n8n workflow (or use Glitch's sample). The checker finds common secrets and personal data, removes pinned data and shows a cleaned copy. Everything stays in your browser.</p>
+    <div class="jsonlab" data-sanit>
+      <label class="crit" for="san-6-3">Exported workflow JSON</label>
+      <textarea id="san-6-3" spellcheck="false">{
+  "name": "HL · Telegram order bot",
+  "nodes": [
+    { "name": "Telegram Trigger", "type": "n8n-nodes-base.telegramTrigger",
+      "webhookId": "5f2c9a7e-1b3d-4e8f-9a0b-2c4d6e8f0a1b",
+      "credentials": { "telegramApi": { "id": "12", "name": "HL Telegram" } } },
+    { "name": "Price_List", "type": "n8n-nodes-base.googleSheets",
+      "parameters": { "documentId": { "value": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdEFGh" } } },
+    { "name": "Paystack verify", "type": "n8n-nodes-base.httpRequest",
+      "parameters": { "url": "https://api.paystack.co/transaction/verify/{{ $json.reference }}",
+        "headerParameters": { "parameters": [ { "name": "Authorization",
+          "value": "Bearer sk_test_4f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c" } ] } } },
+    { "name": "Alert Tolu", "type": "n8n-nodes-base.gmail",
+      "parameters": { "sendTo": "tolu@harvestlane.example",
+        "message": "Big order! Call the customer on 08031234567" } }
+  ],
+  "pinData": {
+    "Telegram Trigger": [ { "json": { "message": { "from": { "first_name": "Funmi" },
+      "text": "2 crates tomato to 14 Ring Road" } } } ]
+  }
+}</textarea>
+      <span class="jl-status"></span>
+      <ul class="dock-notes" data-o="finds" aria-live="polite"></ul>
+      <label class="crit">Cleaned copy</label>
+      <div class="jl-out" data-o="clean" id="san-out-6-3" style="max-height:300px;overflow:auto"></div>
+      <div><button type="button" class="btn ghost" data-copy="san-out-6-3">Copy cleaned JSON</button></div>
+      <p style="font-size:.84rem;color:var(--muted)">Pattern-based checks catch common cases, not everything. Always read the final file yourself before sharing.</p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The README</h3>
+    <pre id="readme-6-3" class="codebox"># [Template name]: [one-line outcome]
+What it does: 3 bullets, in plain words
+Who it's for: business type and size
+You'll need: n8n version, accounts (Telegram bot, Google Sheet, AI provider…)
+Credentials to create: [list, with links to each provider's docs]
+Setup (10–15 min):
+  1. Import the workflow   2. Create credentials   3. Copy the sample sheet (link)
+  4. Replace placeholders: &lt;YOUR_SHEET_ID&gt;, &lt;CHAT_ID&gt;…   5. Test with the sample data
+  6. Publish
+Test it: 3 sample inputs and the expected result for each
+Costs: what it uses per month at typical volume (AI tokens, messages)
+Safety: what needs approval; what data is stored, and where
+Support and licence: what's included; whether buyers may resell it
+Changelog: v1.0 [date]: first release</pre>
+    <div><button type="button" class="btn ghost" data-copy="readme-6-3">Copy the README template</button></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://n8n.io/workflows/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n workflow templates library</b><small>Open three popular templates: notice their sticky notes, descriptions and setup steps.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=automation+portfolio+case+study+examples" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: automation portfolio and case study examples</b><small>Watch two; note which ones lead with results.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/@n8n-io" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n official YouTube channel</b><small>See how short demos are paced: problem first, then the build.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Boss 3 as a sellable template</h2></div>
+  <div class="prose"><p><b>The goal.</b> Turn the Telegram order bot into a package another business can buy and set up in 15 minutes: a clean workflow file, a sample sheet, a README, a setup video and a case study.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Generalise it</h4>
+      <p>Duplicate the workflow. Rename "Harvest Lane" things to neutral names ("Your shop"). Move business settings (delivery fee, free-delivery threshold, 50-unit limit, Tolu's chat ID) into one <b>Edit Fields · Settings</b> node at the start, so buyers change them in one place. Add sticky notes for each section.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Clean it</h4>
+      <p>Unpin all data. Move any typed-in key into a credential. Export, run the file through Card 4, and fix anything found at the source (not just in the file). Replace the sheet ID with <code>&lt;YOUR_SHEET_ID&gt;</code>. Read the final JSON once yourself.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Make a sample sheet</h4>
+      <p>A Google Sheet with the Price_List, Customers, Pending and Orders tabs, ten fake products and two fake customers, shared as "anyone with the link can make a copy" (view-only for the original).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test on a fresh account</h4>
+      <p>Create a new n8n Cloud trial (or a fresh Docker volume), a new Telegram test bot and a copy of the sheet. Follow only the README. Time it. Each time you had to look something up, fix the README. Target: under 15 minutes.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the case study and record the demo</h4>
+      <p>From your Boss 3 log: problem (Tolu pricing orders by hand at night), build (bot, pricing from the sheet, confirm buttons, daily report), safety (prices never from AI; big orders to a human), results (your test numbers, labelled as test results). Record the three-minute demo following Card 2.</p>
+      <div class="stats">
+        <div class="stat"><b>15 min</b><span>setup on a fresh account, from the README alone</span></div>
+        <div class="stat"><b>0</b><span>secrets, phone numbers or pinned records in the file</span></div>
+        <div class="stat"><b>5</b><span>pieces: workflow, sheet, README, video, case study</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Nodo's tip:</b> put each template in its own GitHub repository (or folder) with the workflow file, README and changelog. When n8n changes something, you update once and every buyer gets the fix.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Clients see outcomes and numbers, not node diagrams.</li><li>Settings in one node make the template easy to adapt.</li><li>Cleaning at the source stops secrets returning in the next export.</li><li>A fresh-account test proves the README actually works.</li><li>Honest labels ("test data") build trust.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Screenshots of nodes as a portfolio.</li><li>Sharing exports with pinned customer data.</li><li>Keys typed into header fields.</li><li>READMEs written from memory, never tested.</li><li>Invented clients or numbers.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I helped publish your templates. Five surprises.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>A buyer imports the template and every request fails: it's calling your Paystack account with your key.</td></tr>
+        <tr><td>B</td><td>A buyer emails: "Who is Funmi, and why is her order in my workflow?"</td></tr>
+        <tr><td>C</td><td>The buyer's import errors: "Google Sheet not found".</td></tr>
+        <tr><td>D</td><td>Three buyers asked the same setup question in the first week.</td></tr>
+        <tr><td>E</td><td>A prospect asks to speak to the "pharmacy client" in your case study. There isn't one.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> a key typed into a header field travelled with the export. Revoke that key now, move it into a credential, re-export, and tell buyers which credential to create.</li>
+        <li><b>B:</b> pinned test data with personal details shipped in the file. Unpin before export, and check with Card 4.</li>
+        <li><b>C:</b> a hard-coded sheet ID pointing at your sheet. Use a placeholder and a copyable sample sheet, explained in the README.</li>
+        <li><b>D:</b> the README wasn't tested on a fresh account. Add the answer, and test again.</li>
+        <li><b>E:</b> an invented client. Remove it. Use real clients (with permission) or clearly labelled course projects.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 30 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>One case study</h4>
+    <ul><li>Pick your strongest Boss Battle and write its one-page case study from your proof-of-work log.</li><li>Every number must come from your log, labelled "test results" where they are.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>A non-technical friend can tell you, after one read, what problem it solves and what changed, with a number.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A three-minute demo and a clean template</h4>
+    <ul><li>Record a three-minute demo of the same project using the Card 2 structure.</li><li>Package its workflow as a template: settings node, sticky notes, cleaned export, README and sample sheet.</li><li>Have someone else set it up from the README on a fresh account.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>They succeed in under 20 minutes without asking you, and Card 4 finds nothing in the file.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Your portfolio page</h4>
+    <ul><li>Publish a portfolio page with three projects (case study, demo video and, where suitable, a template link), a short "who I help" line, your offer tiers from 6.2, and a booking link.</li><li>Send it to three people in your target market and ask one question: "What would make you book a call?"</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The page is live, three people have seen it, and you've changed it based on their answers.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What should a case study lead with?</p><div class="opts">
+      <button type="button" data-opt="a">The list of nodes used</button><button type="button" data-opt="b">The result, with a number</button><button type="button" data-opt="c">Your certifications</button><button type="button" data-opt="d">The price</button></div>
+      <p class="fb" hidden data-why="Clients buy outcomes: “orders confirmed in 30 seconds” beats a diagram."></p></div>
+    <div class="q" data-ans="d"><p>2. Which of these travels inside an exported n8n workflow file?</p><div class="opts">
+      <button type="button" data-opt="a">Your credential passwords</button><button type="button" data-opt="b">Your n8n login</button><button type="button" data-opt="c">Your server's IP</button><button type="button" data-opt="d">Pinned data and anything typed into fields</button></div>
+      <p class="fb" hidden data-why="Credential secrets stay behind; pinned data and typed-in values go along."></p></div>
+    <div class="q" data-ans="a"><p>3. A key was typed into a header and shared in a template. First step?</p><div class="opts">
+      <button type="button" data-opt="a">Revoke the key immediately, then fix the template</button><button type="button" data-opt="b">Delete the template and hope</button><button type="button" data-opt="c">Ask buyers not to use it</button><button type="button" data-opt="d">Rename the node</button></div>
+      <p class="fb" hidden data-why="Assume it's compromised: revoke, replace, then clean the source."></p></div>
+    <div class="q" data-ans="c"><p>4. How do you know your README works?</p><div class="opts">
+      <button type="button" data-opt="a">It's long</button><button type="button" data-opt="b">An AI wrote it</button><button type="button" data-opt="c">Someone sets the template up on a fresh account using only the README</button><button type="button" data-opt="d">You remember the steps</button></div>
+      <p class="fb" hidden data-why="Test documentation like you test workflows."></p></div>
+    <div class="q" data-ans="b"><p>5. You only have course projects. How do you present them?</p><div class="opts">
+      <button type="button" data-opt="a">As real clients, to look experienced</button><button type="button" data-opt="b">Honestly, as projects for a fictional business with test data, with real test numbers</button><button type="button" data-opt="c">Don't show them</button><button type="button" data-opt="d">Without any numbers</button></div>
+      <p class="fb" hidden data-why="Honesty builds trust; real test numbers still show what you can do."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-6-3">AUTOMANCY LOG · Lesson 6.3 · Portfolio & Templates
+Date:
+Projects chosen for the portfolio (and why):
+Case study headline and key numbers:
+Demo link and length:
+Template: issues found by the checker and fixed at the source:
+Fresh-account setup time (by whom):
+Portfolio page link and feedback received:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-6-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Show outcomes: problem → build → result, with honest numbers.</li>
+      <li>Three minutes of demo, customer's view first.</li>
+      <li>Templates carry what you typed and pinned. Clean at the source.</li>
+      <li>Settings in one node, sticky notes, placeholders, a sample sheet.</li>
+      <li>Test the README on a fresh account.</li>
+      <li>Never invent clients; label course work clearly.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://n8n.io/workflows/" target="_blank" rel="noopener">n8n workflow templates library</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=automation+portfolio+case+study+examples" target="_blank" rel="noopener">YouTube: automation portfolio and case study examples</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/@n8n-io" target="_blank" rel="noopener">n8n official YouTube channel</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.github.com/en/get-started/start-your-journey/hello-world" target="_blank" rel="noopener">GitHub Docs: Hello World (your first repository)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a "template swap": every learner exports and cleans one workflow, then swaps with a partner who must set it up from the README alone, on a fresh account, with a 20-minute timer. Then run every file through Card 4 on the projector. Someone always has a key or a phone number inside. Better here than in public.</p>
+  </div>
+</section>
+
+</article>
+</template>

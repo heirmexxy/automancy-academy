@@ -1,0 +1,337 @@
+<template data-mod="2.5" id="tpl-2-5">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.5</span>
+    <h1>HTTP, Webhooks &amp; Data Stores</h1>
+    <div class="kicker"><span class="pill">≈ 110 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Weave and Nodo</span><span class="pill">Tools: Make, Paystack (test mode), Hoppscotch</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#weave"/></svg>
+</header>
+<p class="lede">Money time. Today Harvest Lane's payments confirm themselves: the payment company rings a webhook, Make double-checks the payment with the payment company's own API, remembers which payments it has already handled, and marks the order paid. These three tools, webhooks, HTTP and data stores, let Make talk to almost anything safely.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Receive instant data with a custom webhook, and reply with a webhook response.</span></div>
+  <div><b>02</b><span>Call any API with the HTTP module, storing keys in a keychain.</span></div>
+  <div><b>03</b><span>Use a data store to remember things between runs.</span></div>
+  <div><b>04</b><span>Make payment handling safe: verify, deduplicate, and check amounts in kobo.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Paid twice, or not at all?</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu checking a payment dashboard against the order sheet line by line.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="70" height="140" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="230" y="20" width="70" height="140" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g stroke="var(--line)" stroke-width="3"><path d="M158 44 H212 M158 64 H212 M158 84 H212 M158 104 H212 M238 44 H292 M238 64 H292 M238 84 H292 M238 104 H292"/></g>
+        <path d="M212 64 L238 44 M212 84 L238 104" stroke="var(--spark)" stroke-width="2"/>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Every morning</b>Tolu matches the payment dashboard against the order sheet by hand. Forty minutes.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer receiving two identical receipts.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="110" y="20" width="100" height="160" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="120" y="44" width="80" height="40" rx="8" fill="var(--volt)" opacity=".4"/><rect x="120" y="94" width="80" height="40" rx="8" fill="var(--volt)" opacity=".4"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)"><text x="128" y="68">Receipt ₦26,500</text><text x="128" y="118">Receipt ₦26,500</text></g>
+        <text x="230" y="110" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="22" fill="var(--glitch)">×2?</text>
+      </svg>
+      <div class="cap"><b>The scare</b>A test automation sent Mrs Adebayo two receipts. Did she pay twice?</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch typing a fake payment message into a laptop.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="50" width="140" height="80" rx="8" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--paper)"><text x="170" y="74">"event":</text><text x="170" y="90" fill="var(--glitch)">"charge.success"</text><text x="170" y="110">"amount": 100</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Anyone can send a message that <i>looks</i> like a payment. I'll just post one to your webhook."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave holding a little notebook labelled data store, Nodo holding a phone to call the payment company.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="120" y="70" width="70" height="60" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="155" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#13233A">DATA STORE</text>
+        <text x="155" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#13233A">seen refs</text>
+        <use href="#weave" x="0" y="50" width="120" height="120"/>
+        <use href="#nodo" x="200" y="50" width="120" height="120"/>
+      </svg>
+      <div class="cap"><b>The plan</b>"I'll remember every payment I've handled," says Weave. "And I'll phone the payment company to check each one," says Nodo.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Custom webhooks: instant, and free of polling</h3>
+    <p>The <b>Webhooks · Custom webhook</b> trigger gives your scenario a URL. When something sends data to it, the scenario runs straight away, with no polling credits wasted (2.1). Send one sample request first so Make learns the data's shape; if the shape changes later, use "Redetermine data structure".</p>
+    <div class="vocab">
+      <div><b>Queue</b>If the scenario is off or busy, Make stores incoming requests in a queue and processes them later (within limits), so you don't lose them during maintenance.</div>
+      <div><b>Webhook response</b>A module that replies to the sender with a status code and body you choose, e.g. 200 "ok".</div>
+      <div><b>Headers</b>In the webhook's advanced settings you can include request headers, needed for checking signatures.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The HTTP module: call any API</h3>
+    <p><b>HTTP · Make a request</b> is Make's version of Hoppscotch (0.2) inside a scenario: method, URL, headers, query string, body type (choose raw JSON for most APIs) and a <b>Parse response</b> switch. Turn parsing on and the JSON reply becomes mappable fields.</p>
+    <div class="analogy"><b>Keys go in a keychain.</b> Make's HTTP app has versions that handle authentication, such as an API Key Auth request that stores the key in a <b>keychain</b> (Make's credential store). Never type a secret key straight into a header field where anyone viewing the scenario can read it (0.6).</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Data stores: Make's memory</h3>
+    <p>Scenarios forget everything between runs. A <b>data store</b> is a small database inside Make: records with a <b>key</b> and fields you define. Modules let you add or replace, get, search, check whether a key exists, update, delete and count records.</p>
+    <div class="why">
+      <div class="box"><h5>Good uses</h5><ul><li>"Have I already handled this payment reference?"</li><li>The last ID processed, so the next run starts after it.</li><li>Small lookup lists that change, like this week's holidays.</li></ul></div>
+      <div class="box"><h5>Keep using Sheets for</h5><ul><li>Business records people read: orders, customers.</li><li>Anything needing formulas or sharing.</li><li>Large data: data store size depends on your plan.</li></ul></div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Idempotency: handle each event exactly once</h3>
+    <p>Payment companies resend a webhook if they don't get a quick 200 reply, and networks occasionally deliver twice. So the same payment can arrive more than once. An <b>idempotent</b> automation produces the same result whether an event arrives once or five times. The tool: check the data store for the payment reference before acting.</p>
+    <div class="tablewrap" data-dedupe='[{"time":"09:12:04","ref":"HL-0061-a1","amount":2650000},{"time":"09:12:31","ref":"HL-0061-a1","amount":2650000},{"time":"09:40:10","ref":"HL-0062-b7","amount":1350000},{"time":"10:05:55","ref":"HL-0063-c2","amount":3550000},{"time":"10:06:20","ref":"HL-0063-c2","amount":3550000},{"time":"10:07:02","ref":"HL-0063-c2","amount":3550000}]'>
+      <div style="padding:10px 12px"><label class="check"><input id="dd-2-5" type="checkbox"> Check the data store for the reference first</label></div>
+      <table class="dt"><thead><tr><th>#</th><th>Arrived</th><th>Reference</th><th class="n">Amount</th><th>What the scenario did</th></tr></thead><tbody></tbody></table>
+      <p class="qscore" data-o="sum" style="padding:10px 12px"></p>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted)">Six webhooks, three real payments. Toggle the check and watch receipts and counted revenue change.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Verify, don't trust</h3>
+    <p>Anyone who finds your webhook URL can post a fake "payment succeeded" message (Glitch's trick). Two defences, both described in Paystack's developer documentation:</p>
+    <div class="never">
+      <div><b>Verify with the API</b>Take the payment reference and call Paystack's Verify Transaction endpoint with your secret key. Trust only what Paystack itself tells you: status and amount.</div>
+      <div><b>Check the signature</b>Paystack signs each webhook with an HMAC-SHA512 hash of the body, sent in the <code>x-paystack-signature</code> header. Recompute it with your secret key and compare.</div>
+      <div><b>Check the amount in kobo</b>Paystack amounts are in kobo. The order total ₦26,500 must match 2,650,000. Anything less is not a full payment.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy-content.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy public lessons: HTTP modules, and "Receive data with webhooks"</b><small>Look for: GET and POST with the HTTP module, webhook queues.</small></span></a>
+    <a class="wcard" href="https://paystack.com/docs/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Paystack docs: webhooks and verifying transactions</b><small>Read: the charge.success event, retries, the signature header, and the verify endpoint.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+data+store+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make data stores" walkthrough</b><small>Look for: creating a data structure and "Check the existence of a record".</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 40 MIN</span><h2>Solved problem: payments that confirm themselves, safely</h2></div>
+  <div class="prose"><p><b>The goal.</b> When Paystack reports a successful payment, mark the matching order Paid and send one receipt, only if Paystack confirms it, only if the amount is right, and only once per payment. Build it in <b>test mode</b> with test keys (0.6). No real money moves.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Create the data store</h4>
+      <p>In Make, create a data store <b>processed_payments</b> with fields <code>order_id</code> (text), <code>amount_kobo</code> (number), <code>processed_at</code> (date). The record key will be the payment reference.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the webhook and teach it the shape</h4>
+      <p>New scenario: <b>Webhooks · Custom webhook</b>. Copy its URL into your Paystack <b>test</b> dashboard's webhook URL setting. To teach Make the data structure, send this sample from Hoppscotch (a simplified charge.success event):</p>
+<pre class="codebox">{
+  "event": "charge.success",
+  "data": {
+    "reference": "HL-0061-a1",
+    "amount": 2650000,
+    "currency": "NGN",
+    "status": "success",
+    "customer": { "email": "customer@example.com" },
+    "metadata": { "order_id": "HL-0061" }
+  }
+}</pre>
+      <p style="font-size:.9rem;color:var(--muted)">The <code>metadata.order_id</code> is something you add when creating the payment link or transaction, so the payment can be matched to its order.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Reply quickly, then filter the event</h4>
+      <p>Add <b>Webhooks · Webhook response</b> right after the trigger: status 200, body <code>ok</code>. A fast reply stops Paystack retrying. Then add a filter on the next link: <code>event</code> equal to <code>charge.success</code>.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Stop duplicates with the data store</h4>
+      <p>Add <b>Data store · Check the existence of a record</b>, key = <code>1.data.reference</code>. On the next link, filter: continue only if the record does <b>not</b> exist. Duplicate webhooks stop here, before any work or receipts.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Ask Paystack if it's real</h4>
+      <p>Add an <b>HTTP</b> request with API key authentication. Store your test secret key in a keychain as an <code>Authorization</code> header with the value <code>Bearer sk_test_…</code>. Method GET, URL:</p>
+<pre class="codebox">https://api.paystack.co/transaction/verify/{{1.data.reference}}</pre>
+      <p>Turn on <b>Parse response</b>. Filter the next link: <code>data.status</code> (from this HTTP module) equal to <code>success</code>. Glitch's fake message fails here, because Paystack has no such successful transaction.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Find the order and check the amount</h4>
+      <p><b>Google Sheets · Search Rows</b> in Orders where <code>order_id</code> = <code>1.data.metadata.order_id</code>. Filter the next link with a numeric condition:</p>
+<pre class="codebox">HTTP data.amount   equal to   {{search.total * 100}}
+<span class="c">2650000 = 26500 × 100  ✓</span></pre>
+      <p>Add a second route on a router (2.3) for the mismatch case: amount too low → email Tolu "Partial or wrong payment for HL-0061".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Mark paid, remember, and send one receipt</h4>
+      <p>On the success route: <b>Update a Row</b> (status Paid, paid_at now), <b>Data store · Add/replace a record</b> (key = reference, plus order_id, amount, time), and <b>Gmail · Send</b> the receipt text from 2.2.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Going further: the signature.</b> For a second layer, include request headers in the webhook settings and pass the raw body through, then compare <code>x-paystack-signature</code> with an HMAC-SHA512 of the raw body using your secret key (Make's text functions include SHA hashing with a key). Paystack's docs describe the exact rule. The verify call alone already blocks fake payments; the signature also blocks fake <i>attempts</i> before they cost you a credit.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test every case</h4>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Test</th><th>How</th><th>Expected</th></tr></thead>
+        <tbody>
+          <tr><td>Real test payment</td><td>Pay a test link with Paystack's test card</td><td>Order Paid, one receipt, one data store record</td></tr>
+          <tr><td>Duplicate</td><td>Resend the same webhook (Paystack dashboard or Hoppscotch)</td><td>Stops at the existence check</td></tr>
+          <tr><td>Fake</td><td>POST a made-up reference from Hoppscotch</td><td>Stops at the verify filter</td></tr>
+          <tr><td>Wrong amount</td><td>Test payment for less than the order total</td><td>Tolu alerted; order not marked Paid</td></tr>
+          <tr><td>Other event</td><td>POST event "transfer.success"</td><td>Stops at the event filter</td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Instant webhook, no polling credits.</li><li>The data store makes repeats harmless.</li><li>Only Paystack's own API decides what's paid.</li><li>Kobo-to-naira is checked explicitly, so partial payments are caught.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Trusting the webhook body without verifying.</li><li>Comparing kobo to naira.</li><li>Typing the secret key into a visible header field.</li><li>Replying slowly, so the sender retries and duplicates pile up.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My payment scenario has five problems. I'm calling them features.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Customers sometimes get two or three receipts for one payment.</td></tr>
+        <tr><td>B</td><td>Every payment is flagged "wrong amount", including correct ones.</td></tr>
+        <tr><td>C</td><td>A ₦100 order was marked Paid after someone posted a homemade JSON message.</td></tr>
+        <tr><td>D</td><td>The HTTP module's output is one long block of text; <code>data.status</code> can't be mapped.</td></tr>
+        <tr><td>E</td><td>A new team member could see the secret key while viewing the scenario.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no deduplication, and a slow reply makes the sender retry. Check the data store first and respond with 200 early.</li>
+        <li><b>B:</b> comparing kobo to naira. Multiply the order total by 100 (or divide Paystack's amount).</li>
+        <li><b>C:</b> the webhook body was trusted. Verify with the API and/or check the signature.</li>
+        <li><b>D:</b> "Parse response" is off.</li>
+        <li><b>E:</b> the key was typed into a header field. Use a keychain with API key authentication.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A webhook that answers back</h4>
+    <ul><li>Create a custom webhook and a Webhook response that returns JSON: <code>{"received": true, "order_id": "&lt;the order_id you sent&gt;"}</code>.</li><li>POST to it from Hoppscotch and read the reply.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Hoppscotch shows your custom JSON reply with the order_id you sent.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build and pass the five payment tests</h4>
+    <ul><li>Build the solved scenario in Paystack test mode. (Outside Paystack's countries, use the sample payload and a mock verify endpoint on webhook.site that returns a success JSON.)</li><li>Run all five tests in the table.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Each test stops exactly where expected, and the data store holds one record per real payment.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A holiday-aware delivery run</h4>
+    <ul><li>Build a weekly scenario that calls the public holidays API from 0.2 with the HTTP module and stores Nigeria's upcoming holidays in a data store.</li><li>Change the 8 p.m. run from 2.3: if tomorrow is a holiday (check the data store), don't build the rider list; instead message customers that delivery moves to the next working day.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>With a test holiday added for tomorrow, the 8 p.m. run sends the "moved" messages and no rider list.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Why use a custom webhook trigger instead of polling for payments?</p><div class="opts">
+      <button type="button" data-opt="a">It's the only option in Make</button><button type="button" data-opt="b">It costs more but looks better</button><button type="button" data-opt="c">It's instant and uses no credits checking for nothing</button><button type="button" data-opt="d">It doesn't need a URL</button></div>
+      <p class="fb" hidden data-why="Webhooks run only when data arrives, immediately."></p></div>
+    <div class="q" data-ans="a"><p>2. The same payment webhook arrives three times. What makes your scenario act only once?</p><div class="opts">
+      <button type="button" data-opt="a">Checking a data store for the payment reference before acting</button><button type="button" data-opt="b">A slower schedule</button><button type="button" data-opt="c">Parsing the response</button><button type="button" data-opt="d">Sending three receipts and apologising</button></div>
+      <p class="fb" hidden data-why="Remember what you've handled. That's idempotency."></p></div>
+    <div class="q" data-ans="d"><p>3. An order total is ₦26,500. What should Paystack's amount be?</p><div class="opts">
+      <button type="button" data-opt="a">26500</button><button type="button" data-opt="b">265000</button><button type="button" data-opt="c">26.5</button><button type="button" data-opt="d">2650000</button></div>
+      <p class="fb" hidden data-why="Paystack counts in kobo: naira × 100."></p></div>
+    <div class="q" data-ans="b"><p>4. Someone posts a fake charge.success message to your webhook. What stops it?</p><div class="opts">
+      <button type="button" data-opt="a">The webhook response</button><button type="button" data-opt="b">Verifying the reference with Paystack's API (and/or checking the signature)</button><button type="button" data-opt="c">The data store</button><button type="button" data-opt="d">Nothing can stop it</button></div>
+      <p class="fb" hidden data-why="Only the payment company's own records decide what's paid."></p></div>
+    <div class="q" data-ans="c"><p>5. Where should a secret API key live in Make?</p><div class="opts">
+      <button type="button" data-opt="a">In the URL</button><button type="button" data-opt="b">Typed into a header field</button><button type="button" data-opt="c">In a keychain used by the HTTP module's authentication</button><button type="button" data-opt="d">In a data store</button></div>
+      <p class="fb" hidden data-why="Keychains are Make's credential store; anyone viewing the scenario can't read them."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-5">AUTOMANCY LOG · Lesson 2.5 · HTTP, Webhooks & Data Stores
+Date:
+Webhook: trigger + response set up (yes/no):
+Data store name, key and fields:
+HTTP call (method, endpoint, auth type):
+Tests passed (real / duplicate / fake / wrong amount / other event):
+Where the secret key lives:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold
+(Never paste keys or real payment details here.)</pre>
+    <div><button type="button" class="btn" data-copy="log-2-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Custom webhooks run instantly and waste no credits on checking.</li>
+      <li>Reply fast with a webhook response so senders don't retry.</li>
+      <li>The HTTP module calls any API; turn on Parse response; keep keys in a keychain.</li>
+      <li>Data stores give scenarios memory between runs.</li>
+      <li>Handle each event once: check the reference before acting.</li>
+      <li>For money: verify with the provider, and compare in kobo.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: HTTP and webhooks</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy learning paths</a></li>
+    <li><span class="kind">Text</span><a href="https://paystack.com/docs/" target="_blank" rel="noopener">Paystack developer docs: webhooks, verify transaction, test mode</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+HTTP+module+API+tutorial" target="_blank" rel="noopener">YouTube: Make HTTP module tutorials</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Paystack+webhook+verify+transaction" target="_blank" rel="noopener">YouTube: Paystack webhooks and verification</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Act out the payment as a play: one learner is Paystack, one is the webhook, one is the data store with a notebook, one is Glitch with a fake note. Run it three times: once normal, once with Paystack "resending", once with Glitch's fake. Then build. Insist on test mode for every learner, every time.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -1,0 +1,366 @@
+{
+ "name": "HL · Posting week · approve",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Posting week: approve (Lesson 5.4)\nFridays 16:00: one Telegram message per calendar item with the photo and every platform version. Tolu chooses Approve, Edit or Skip. Edits come back as lines like instagram: new caption, and replace that caption. Approved rows get status approved. Versions marked needs_edit stay unapproved until Tolu edits them.\n\nCredentials: Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 300,
+    "width": 480
+   },
+   "id": "b3f74b91-1639-4664-894a-f09f809bc5bf",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -300
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 16 * * 5"
+      }
+     ]
+    }
+   },
+   "id": "d2c5a6f8-a7de-41d9-af82-eb84d43d3a50",
+   "name": "Fridays 16:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "15021622-2725-4f99-ac6f-4c720503aa7e",
+   "name": "Read Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const rows = $input.all().map(i => i.json).filter(r => ['awaiting_approval', 'needs_edit'].includes(r.status));\nconst groups = {};\nfor (const r of rows) (groups[r.calendar_id] = groups[r.calendar_id] || []).push(r);\nreturn Object.entries(groups).map(([calendar_id, versions]) => ({ json: {\n  calendar_id, media_file: versions[0].media_file, scheduled_at: versions[0].scheduled_at,\n  versions,\n  text: `${versions[0].scheduled_at} · ${versions[0].pillar}\\n\\n` + versions.map(v =>\n    `[${v.platform}]${v.status === 'needs_edit' ? ' NEEDS EDIT: ' + v.problems : ''}\\n${v.caption}`).join('\\n\\n'),\n} }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "f4517f1c-125a-400e-8bd1-3a9589156ce6",
+   "name": "Group by calendar item",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "batchSize": 1,
+    "options": {}
+   },
+   "id": "9cb6aea2-ce3f-43a0-aa79-96baa20f2068",
+   "name": "One item at a time",
+   "type": "n8n-nodes-base.splitInBatches",
+   "typeVersion": 3,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "c9fad221-4205-46d4-80b1-141c50f1100e",
+   "name": "All reviewed",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    880,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "5a770a09-b596-4b95-8f9b-76f6bd947e12",
+       "leftValue": "={{ $json.media_file }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "70fd4300-e458-4bd4-8030-19012952a83e",
+   "name": "Has a photo?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "sendPhoto",
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "file": "={{ $json.media_file }}",
+    "additionalFields": {
+     "caption": "={{ $json.scheduled_at }}"
+    }
+   },
+   "id": "d29ac264-a122-43be-b69f-54032c1c3e4c",
+   "name": "Send the photo",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "sendAndWait",
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "message": "={{ $('One item at a time').item.json.text }}",
+    "responseType": "customForm",
+    "formFields": {
+     "values": [
+      {
+       "fieldLabel": "Decision",
+       "fieldType": "dropdown",
+       "fieldOptions": {
+        "values": [
+         {
+          "option": "Approve"
+         },
+         {
+          "option": "Edit"
+         },
+         {
+          "option": "Skip"
+         }
+        ]
+       },
+       "requiredField": true
+      },
+      {
+       "fieldLabel": "Edits (one per line, platform: new caption)",
+       "fieldType": "textarea"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "196563f1-0f3c-4851-81c2-c52ec02e8b83",
+   "name": "Ask Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1320,
+    90
+   ],
+   "webhookId": "d0ee2451-298a-436c-9924-09f1ffbee9e3"
+  },
+  {
+   "parameters": {
+    "jsCode": "const item = $('One item at a time').item.json;\nconst d = $json.data || $json;\nconst decision = d['Decision'] || d.decision;\nconst edits = {};\nfor (const line of String(d['Edits (one per line, platform: new caption)'] || '').split('\\n')) {\n  const m = line.match(/^\\s*(facebook|instagram|linkedin|x|tiktok|whatsapp)\\s*:\\s*(.+)$/i);\n  if (m) edits[m[1].toLowerCase()] = m[2].trim();\n}\nreturn item.versions.map(v => {\n  let status = v.status, caption = v.caption;\n  if (decision === 'Skip') status = 'skipped';\n  else if (edits[v.platform]) { caption = edits[v.platform]; status = 'approved'; }\n  else if (v.status === 'awaiting_approval' && (decision === 'Approve' || decision === 'Edit')) status = 'approved';\n  return { json: { post_key: v.post_key, caption, status, approved_by: status === 'approved' ? 'Tolu' : '' } };\n});\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "3659936e-835e-483c-b5fa-ddbfebf533ab",
+   "name": "Apply decision",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1540,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "post_key"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "9f8ce36c-2b17-4342-aac5-4f757625b3e6",
+   "name": "Update Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1760,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Fridays 16:00": {
+   "main": [
+    [
+     {
+      "node": "Read Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Posts": {
+   "main": [
+    [
+     {
+      "node": "Group by calendar item",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Group by calendar item": {
+   "main": [
+    [
+     {
+      "node": "One item at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item at a time": {
+   "main": [
+    [
+     {
+      "node": "All reviewed",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Has a photo?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Has a photo?": {
+   "main": [
+    [
+     {
+      "node": "Send the photo",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Ask Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Send the photo": {
+   "main": [
+    [
+     {
+      "node": "Ask Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ask Tolu": {
+   "main": [
+    [
+     {
+      "node": "Apply decision",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Apply decision": {
+   "main": [
+    [
+     {
+      "node": "Update Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Update Posts": {
+   "main": [
+    [
+     {
+      "node": "One item at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,243 @@
+{
+ "name": "HL · Listening post · Monday report",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Listening post: Monday report (Lesson 5.3)\nMondays 08:00. Code counts (by sentiment, topic and source, compared with last week; spam excluded and the exclusion reported). AI only explains: three fixes, each backed by real quotes. Email to Tolu plus a Telegram summary.\n\nCredentials: Google Sheets; OpenAI; Gmail; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL, YOUR_TOLU_EMAIL, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 280,
+    "width": 480
+   },
+   "id": "e4ce01da-5ef1-4bf9-ab12-6a0c4d3184b1",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -280
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "6a17cda1-518e-41f1-95d2-f5c0697c617c",
+   "name": "Mondays 08:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "23b50a08-defc-4af8-8563-9973ea804dd8",
+   "name": "Read Mentions",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const DAY = 864e5, now = Date.now();\nconst all = $input.all().map(i => i.json);\nconst inRange = (r, from, to) => { const t = new Date(r.posted_at).getTime(); return t >= now - from * DAY && t < now - to * DAY; };\nconst tally = (rows) => {\n  const real = rows.filter(r => r.intent !== 'spam');\n  const by = (k) => real.reduce((a, r) => (a[r[k]] = (a[r[k]] || 0) + 1, a), {});\n  const pos = real.filter(r => r.sentiment === 'positive').length;\n  return { total: real.length, spam_excluded: rows.length - real.length, pct_positive: real.length ? Math.round(100 * pos / real.length) : 0,\n    negative: real.filter(r => r.sentiment === 'negative').length, by_topic: by('topic'), by_source: by('source'),\n    urgent: real.filter(r => String(r.urgent) === 'true').length,\n    urgent_handled: real.filter(r => String(r.urgent) === 'true' && r.handled_by).length };\n};\nconst thisWeek = all.filter(r => inRange(r, 7, 0));\nconst lastWeek = all.filter(r => inRange(r, 14, 7));\nconst negatives = thisWeek.filter(r => r.sentiment === 'negative' && r.intent !== 'spam')\n  .map(r => `[${r.topic}] ${String(r.text).slice(0, 200)}`);\nreturn [{ json: { this_week: tally(thisWeek), last_week: tally(lastWeek), negatives } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "2ca85ca5-6cb0-4527-976c-a2cccec81ee0",
+   "name": "Counts",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=This week's negative comments (topic in brackets):\n{{ $json.negatives.join('\\n') }}\n\nTopic counts this week: {{ JSON.stringify($json.this_week.by_topic) }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "You help a small business owner decide what to fix this week. Write exactly three fixes, most frequent first. For each: a short title, the number of mentions it covers, and one quote copied exactly from the comments given. Do not calculate percentages or totals; do not invent quotes. Plain text, one line per fix."
+      }
+     ]
+    }
+   },
+   "id": "737cfa8a-ea2c-4710-acc1-7398e4350445",
+   "name": "Three fixes",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "18672766-e619-4e9b-a4b3-08eae9c8ce84",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    660,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const c = $('Counts').first().json;\nconst tw = c.this_week, lw = c.last_week;\nconst topics = Object.entries(tw.by_topic).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ');\nconst text = [\n  'Harvest Lane · what customers said · last 7 days',\n  `${tw.total} comments and reviews · ${tw.pct_positive}% positive (last week ${lw.pct_positive}%) · ${tw.negative} negative`,\n  `Top topics: ${topics || 'none'}`,\n  `${tw.urgent} urgent items, ${tw.urgent_handled} marked handled`,\n  `${tw.spam_excluded} spam items excluded from the numbers`,\n  '',\n  'Three things to fix:',\n  String($json.text || '').trim(),\n].join('\\n');\nreturn [{ json: { text } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "6e3be472-51a7-428f-b177-4994d9fe058e",
+   "name": "Report",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "sendTo": "YOUR_TOLU_EMAIL",
+    "subject": "Harvest Lane · what customers said this week",
+    "emailType": "text",
+    "message": "={{ $json.text }}",
+    "options": {
+     "appendAttribution": false
+    }
+   },
+   "id": "52b074c5-3e5e-4b30-9e38-51cac67caf1a",
+   "name": "Email Tolu",
+   "type": "n8n-nodes-base.gmail",
+   "typeVersion": 2.1,
+   "position": [
+    1100,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $('Report').first().json.text.split('\\n').slice(0, 5).join('\\n') }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "67b96e49-84be-42d5-a49d-433718479dbe",
+   "name": "Telegram summary",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1100,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Mondays 08:00": {
+   "main": [
+    [
+     {
+      "node": "Read Mentions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Mentions": {
+   "main": [
+    [
+     {
+      "node": "Counts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Counts": {
+   "main": [
+    [
+     {
+      "node": "Three fixes",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Three fixes": {
+   "main": [
+    [
+     {
+      "node": "Report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Report": {
+   "main": [
+    [
+     {
+      "node": "Email Tolu",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Telegram summary",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Three fixes",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

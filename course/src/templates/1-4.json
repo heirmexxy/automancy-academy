@@ -1,0 +1,152 @@
+{
+  "id": "1.4",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Website order → checked + saved",
+      "what": "The website posts each order as JSON to a Zapier webhook. A Code step parses the raw body, checks the shared token, recalculates every line and the total, and returns valid/errors. Valid orders become one Orders row plus one Order_Items row per item; anything else emails Tolu the exact problems.",
+      "steps": [
+        "1 · Trigger · Webhooks by Zapier › Catch Raw Hook: copy the hook URL Zapier shows and treat it as a secret (share only with the website's developer). Test trigger after sending the good sample from Hoppscotch (POST, Content-Type: application/json).",
+        "2 · Code by Zapier › Run JavaScript (rename \"Check order\"): Input Data raw = [1. Raw Body]; secret = your shared token (the lesson's sample is hl-web-7Q2x; for real use a long random string). Code:\nconst errors = [];\nlet order;\ntry { order = JSON.parse(inputData.raw); }\ncatch (e) { order = {}; errors.push(\"body is not valid JSON\"); }\nif (order.token !== inputData.secret) errors.push(\"wrong or missing token\");\nif (!order.customer || !order.customer.phone) errors.push(\"missing phone\");\nif (!Array.isArray(order.items) || order.items.length === 0) errors.push(\"no items\");\nlet items_total = 0;\nconst line_items = (order.items || []).map((it, i) => {\n  const qty = Number(it.qty), unit_price = Number(it.unit_price);\n  if (!(qty > 0)) errors.push(`item ${i + 1}: bad qty`);\n  if (!(unit_price > 0)) errors.push(`item ${i + 1}: bad price`);\n  const line_total = qty * unit_price;\n  items_total += line_total;\n  return { order_id: order.order_id, sku: it.sku, qty, unit_price, line_total };\n});\nconst delivery_fee = Number(order.delivery_fee) || 0;\nconst total = items_total + delivery_fee;\nif (order.total !== undefined && Number(order.total) !== total)\n  errors.push(`total mismatch: sent ${order.total}, calculated ${total}`);\noutput = {\n  order_id: order.order_id || \"\",\n  phone: (order.customer || {}).phone || \"\",\n  valid: errors.length === 0,\n  errors: errors.join(\"; \"),\n  items_total, delivery_fee, total,\n  item_count: line_items.length,\n  line_items    // wrapped in a key, so later steps run once, not once per item\n};",
+        "3 · Paths by Zapier (\"Valid or not\"):",
+        "3A · Path A · Valid: Only continue if… [2. Valid] (Boolean) Is true.",
+        "3A.1 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Orders; order_id = [2. Order Id]; phone = [2. Phone]; items_total = [2. Items Total]; delivery_fee = [2. Delivery Fee]; total = [2. Total].",
+        "3A.2 · Google Sheets › Create Multiple Spreadsheet Rows: Spreadsheet = your 0.4 workbook; Worksheet = Order_Items; map each column from the line_items fields of step 2: order_id = [2. Line Items Order Id]; sku = [2. Line Items Sku]; qty = [2. Line Items Qty]; unit_price = [2. Line Items Unit Price]; line_total = [2. Line Items Line Total] (one row per item).",
+        "3B · Path B · Rejected: set as the fallback branch.",
+        "3B.1 · Gmail › Send Email: To = Tolu (e.g. tolu@harvestlane.example); Subject = Rejected website order [2. Order Id]; Body = Rejected website order [2. Order Id]: [2. Errors]."
+      ],
+      "setup": [
+        "Webhooks by Zapier, Code and Paths need a paid plan (Professional or up) or a trial.",
+        "In the 0.4 workbook, check the headers in row 1: Orders has order_id, phone, items_total, delivery_fee, total; Order_Items has order_id, sku, qty, unit_price, line_total.",
+        "Create the Zap, choose Catch Raw Hook (not Catch Hook) so the Code step can catch broken JSON itself, and copy the hook URL into Hoppscotch.",
+        "Type the token into the Code step's secret input only; never put the hook URL or token in a public web page, your log, or an AI chat.",
+        "Connect Google Sheets and Gmail with the Harvest Lane business account, test each step, name the Zap and publish. Give the developer the URL and token, and share the Zap from its menu → Share.",
+        "Remember the hook always answers \"success\" to the sender, even if the Zap is off or fails, so the rejection email is how problems reach a person."
+      ],
+      "test": "From Hoppscotch send the lesson's four samples: the good order HL-0051 (one Orders row with total 35500 and two Order_Items rows), the edited total HL-0052 (email: total mismatch: sent 11, calculated 126500), no token with qty \"two\" HL-0053 (email listing wrong or missing token, missing phone, item 1: bad qty), and the broken JSON (email: body is not valid JSON). Nothing invalid reaches the sheet.",
+      "tasks": "About three tasks per valid order (Code step, Orders row, Order_Items rows) and two per rejected one (Code step and the email); Paths use none and the webhook trigger is free.",
+      "walk": {
+        "title": "Build it: website orders, checked and saved",
+        "sample": "POST from Hoppscotch · order HL-0051 · Mrs Adebayo · 2 tomato crates + 1 tatashe · total 35500",
+        "steps": [
+          {
+            "at": "1",
+            "say": "Tolu's website has no Zapier app, so we give the Zap its own doorbell: Webhooks by Zapier, Catch Raw Hook. Raw, so our code can catch broken JSON itself.",
+            "show": [
+              "Webhooks by Zapier › Catch Raw Hook"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "Copy the hook URL and treat it like a key. Only the website's developer gets it. Then ring it from Hoppscotch with the good sample order.",
+            "show": [
+              "POST <hook URL>",
+              "Content-Type: application/json",
+              "Test trigger"
+            ],
+            "data": "Raw Body · HL-0051"
+          },
+          {
+            "at": "2",
+            "say": "Now a Code by Zapier step called Check order. We pass in the raw body and the shared secret token as inputs.",
+            "show": [
+              "Code by Zapier › Run JavaScript",
+              "raw = [1. Raw Body]",
+              "secret = hl-web-7Q2x (long random in real use)"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "First, parse the body. If it isn't valid JSON, we don't crash, we write down the problem. Then we check the token, so strangers can't ring our doorbell.",
+            "show": [
+              "try { order = JSON.parse(inputData.raw) }",
+              "order.token !== inputData.secret → error"
+            ],
+            "data": "token ok"
+          },
+          {
+            "at": "2",
+            "say": "Never trust a total from outside. We recalculate every line, quantity times price, turning text into numbers first so they add instead of joining.",
+            "show": [
+              "const qty = Number(it.qty)",
+              "line_total = qty * unit_price"
+            ],
+            "data": "25000 + 9000 + 1500"
+          },
+          {
+            "at": "2",
+            "say": "If the total sent doesn't match ours, that's an error. This is what stops ten crates for one naira.",
+            "show": [
+              "Number(order.total) !== total",
+              "→ \"total mismatch: sent …, calculated …\""
+            ],
+            "data": "total 35500 · matches"
+          },
+          {
+            "at": "2",
+            "say": "The output says valid or not, lists every error in one line, and wraps the line items in one key so later steps run once, not once per item.",
+            "show": [
+              "valid: errors.length === 0",
+              "errors: errors.join(\"; \")",
+              "line_items (wrapped in a key)"
+            ],
+            "data": "valid: true · 2 line items"
+          },
+          {
+            "at": "3",
+            "say": "Paths split valid orders from rejected ones.",
+            "show": [
+              "Paths by Zapier · \"Valid or not\""
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Branch A runs only when valid is true.",
+            "show": [
+              "[2. Valid] (Boolean) Is true"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "Save one Orders row with our recalculated totals, never the website's.",
+            "show": [
+              "Worksheet: Orders",
+              "items_total, delivery_fee, total from step 2"
+            ],
+            "data": "HL-0051 · total 35500"
+          },
+          {
+            "at": "6",
+            "say": "Then Create Multiple Spreadsheet Rows fills Order_Items from the line items list, one row per product.",
+            "show": [
+              "Create Multiple Spreadsheet Rows",
+              "Worksheet: Order_Items",
+              "order_id, sku, qty, unit_price, line_total"
+            ],
+            "data": "2 item rows"
+          },
+          {
+            "at": "8",
+            "say": "The fallback emails Tolu every rejection with its exact reasons. The hook always tells the sender success, so this email is how problems reach a person.",
+            "show": [
+              "Fallback · Gmail › Send Email",
+              "Subject: Rejected website order [order_id]",
+              "Body: [2. Errors]"
+            ],
+            "data": "HL-0052: total mismatch: sent 11"
+          },
+          {
+            "at": "8",
+            "say": "Send all four samples: the good one, the edited total, the missing token and the broken JSON. Only the good one reaches the sheet. Then publish.",
+            "show": [
+              "4 test requests",
+              "Publish · give developer URL + token"
+            ]
+          }
+        ],
+        "end": "Glitch's one-naira order bounces with a reason, and the real one lands in both tabs. Now ring your own doorbell."
+      }
+    }
+  ]
+}

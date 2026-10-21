@@ -1,0 +1,206 @@
+{
+  "id": "5.3",
+  "items": [
+    {
+      "file": "5-3-label-alert.json",
+      "name": "SUB · Listening post · label and alert",
+      "what": "Removes duplicates by item_id, labels each comment (sentiment, topic, urgent, intent, confidence) with local-language examples, applies the alert rules in code, saves to Mentions and alerts Tolu immediately on hard-rule items.",
+      "setup": [
+        "Import this first and note its workflow ID.",
+        "Create a Google Sheet with a Mentions tab: source, item_id, link, posted_at, text, sentiment, topic, urgent, intent, confidence, level, alerted, handled_by.",
+        "Select your Google Sheets credential in the three sheet nodes and replace YOUR_SHEET_ID.",
+        "Select your OpenAI credential and replace YOUR_MODEL with a small, cheap model.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID.",
+        "In workflow settings, set your error workflow from 3.6."
+      ],
+      "test": "Click Test workflow with the pinned test comments: the food-safety comment alerts on Telegram straight away, the slang praise ('sick') is labelled positive and doesn't alert, and all three rows appear in Mentions. Run it again: nothing new is added or alerted.",
+      "walk": {
+        "title": "Build it: ears that only wake Tolu when it matters",
+        "sample": "3 test comments · \"My daughter was sick after eating the ugu\" · \"This pepper is sick 🔥\" · \"Price don cost o\"",
+        "steps": [
+          {
+            "at": null,
+            "say": "Every 15 minutes, the collector gathers comments from your own Facebook Page and Instagram, plus web mentions from a Talkwalker Alerts feed, all through official routes, and hands them to this sub-workflow in one shape.",
+            "show": [
+              "Sources: Facebook Graph API · Instagram API",
+              "Talkwalker Alerts RSS · Google review emails",
+              "Shape: source, item_id, link, posted_at, text"
+            ]
+          },
+          {
+            "at": "When called by a collector",
+            "say": "This sub-workflow is called by each collector. Import it first and note its ID, because the collectors need it.",
+            "show": [
+              "Execute Workflow Trigger",
+              "Called by: HL · Listening post · collect"
+            ],
+            "data": "3 comments in"
+          },
+          {
+            "at": "Read Mentions",
+            "say": "We read the Mentions sheet first. It stores comments and labels only: no phone numbers, no profiles of people.",
+            "show": [
+              "Sheet: Mentions",
+              "source, item_id, link, text, sentiment, topic…"
+            ],
+            "data": "earlier rows"
+          },
+          {
+            "at": "Remove duplicates",
+            "say": "Each comment's platform ID is checked against the sheet. Without this, one angry comment alerts Tolu thirty times in a day.",
+            "show": [
+              "skip if item_id already in Mentions",
+              "skip if empty text or seen this run"
+            ],
+            "data": "3 new comments"
+          },
+          {
+            "at": "Label",
+            "say": "The extractor returns four labels, not one: sentiment, topic, urgent and intent, plus a confidence. A small, cheap model is enough for labelling.",
+            "show": [
+              "sentiment · topic · urgent · intent",
+              "confidence 0 to 1",
+              "Model: a small, cheap one"
+            ],
+            "data": "labels per comment"
+          },
+          {
+            "at": "Label",
+            "say": "The system message carries local examples: Pidgin, slang and sarcasm. Sick with a fire emoji is praise, and price don cost is about price, not anger.",
+            "show": [
+              "\"This bread is sick 🔥\" → positive, praise",
+              "\"Price don cost o\" → neutral, price",
+              "13 examples incl. sarcasm and spam"
+            ],
+            "data": "pepper → positive · ugu → food safety"
+          },
+          {
+            "at": "Combine",
+            "say": "We join the labels back onto the original comment, so the link and source travel with them.",
+            "show": [
+              "{ ...comment, ...labels }"
+            ]
+          },
+          {
+            "at": "Alert rules",
+            "say": "The alert rules are code. Anything that can hurt someone, like food safety, a threat or sick after, alerts on a hard rule, never on a confidence score.",
+            "show": [
+              "hard = topic food safety || /threat|police|lawyer|sick after/",
+              "→ level now"
+            ],
+            "data": "ugu comment → now"
+          },
+          {
+            "at": "Alert rules",
+            "say": "For the rest, only a confident negative about a refund or late delivery counts, and it waits for the 6 p.m. summary. Everything else goes in Monday's report.",
+            "show": [
+              "soft = negative && confidence ≥ 0.8",
+              "&& topic in refund, late delivery → today",
+              "else → report"
+            ],
+            "data": "pepper, price → report"
+          },
+          {
+            "at": "Append to Mentions",
+            "say": "Every labelled comment is saved, with its level, and alerted set to no for now.",
+            "show": [
+              "Append · Mentions",
+              "alerted = no · handled_by empty"
+            ],
+            "data": "3 rows added"
+          },
+          {
+            "at": "Level",
+            "say": "The switch sends each comment by level: now, today or report.",
+            "show": [
+              "now · today · report"
+            ]
+          },
+          {
+            "at": "Telegram alert now",
+            "say": "Urgent items go to Tolu on Telegram straight away, with the exact words and the link, so she can answer within hours, not nine days.",
+            "show": [
+              "URGENT (food safety) on facebook:",
+              "\"…sick after eating the ugu…\" + link"
+            ],
+            "data": "1 alert"
+          },
+          {
+            "at": "Mark alerted",
+            "say": "Then we mark it alerted, so it never alerts twice.",
+            "show": [
+              "Update Mentions · match item_id",
+              "alerted = yes"
+            ]
+          },
+          {
+            "at": "Waits for Monday report",
+            "say": "Monday at 8, code counts the week and AI writes three fixes quoting real comments. Monthly, re-measure against people and delete raw text older than 90 days.",
+            "show": [
+              "Mon 08:00 report: code counts, AI explains",
+              "Monthly: +10 reference comments, re-measure",
+              "Delete raw text after 90 days"
+            ]
+          }
+        ],
+        "end": "Test it with the pinned comments: the sick-after-ugu comment alerts Tolu at once, the sick pepper stays praise, and a second run adds nothing."
+      }
+    },
+    {
+      "file": "5-3-collect.json",
+      "name": "HL · Listening post · collect",
+      "what": "Every 15 minutes, collects Facebook Page comments, Instagram comments and Talkwalker Alerts mentions in one shape and sends them to the label-and-alert sub-workflow.",
+      "setup": [
+        "Create a Facebook Graph API credential with your Page access token and select it in Facebook Page comments.",
+        "Create a Header Auth credential called \"Meta page token\": Name Authorization, Value Bearer followed by your Page access token. Select it in Instagram recent media and Instagram comments.",
+        "Replace YOUR_PAGE_ID, YOUR_IG_USER_ID (your Instagram Business account ID) and YOUR_TALKWALKER_RSS_URL (create a free brand alert delivered by RSS).",
+        "Replace YOUR_LABEL_WORKFLOW_ID with the ID of SUB · Listening post · label and alert.",
+        "Attach your error workflow (3.6) in workflow settings."
+      ],
+      "test": "Comment on one of your Page's posts and one Instagram post, then click Test workflow. The sub-workflow execution shows both comments labelled and stored; running again adds nothing."
+    },
+    {
+      "file": "5-3-google-reviews.json",
+      "name": "HL · Listening post · Google review emails",
+      "what": "Feeds Google review notification emails into the same label-and-alert sub-workflow until you have Business Profile API access.",
+      "setup": [
+        "Select the Gmail credential for the inbox that receives Google Business Profile notifications.",
+        "Check the sender address in the Gmail Trigger search matches your notification emails.",
+        "Replace YOUR_LABEL_WORKFLOW_ID."
+      ],
+      "test": "Forward a review notification to that inbox (or wait for one) and check that it appears in Mentions with labels."
+    },
+    {
+      "file": "5-3-today-summary.json",
+      "name": "HL · Listening post · 18:00 summary",
+      "what": "At 6 p.m. sends Tolu one Telegram message with the day's level-today items and marks them alerted.",
+      "setup": [
+        "Select your Google Sheets credential in both sheet nodes and replace YOUR_SHEET_ID.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Add a test row to Mentions with level today and alerted no, then click Test workflow: one summary arrives and the row's alerted becomes yes."
+    },
+    {
+      "file": "5-3-monday-report.json",
+      "name": "HL · Listening post · Monday report",
+      "what": "Every Monday at 08:00, code counts the week's labels against last week (spam excluded) and the AI writes three fixes with real quotes; sent by email with a Telegram summary.",
+      "setup": [
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select a Gmail credential and replace YOUR_TOLU_EMAIL.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "With a week of labelled rows (or test rows), click Test workflow: the email shows totals, percent positive against last week, top topics, spam excluded and three fixes, each quoting a real comment."
+    },
+    {
+      "file": "5-3-housekeeping.json",
+      "name": "HL · Listening post · monthly housekeeping",
+      "what": "Monthly: clears raw comment text older than 90 days and reminds Tolu to grow and re-measure the reference set.",
+      "setup": [
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Add a test row dated four months ago and click Test workflow: its text is emptied (labels kept) and the reminder arrives."
+    }
+  ]
+}

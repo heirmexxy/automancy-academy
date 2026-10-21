@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.vercel
+next-env.d.ts
+
+# course preview build outputs
+course/flowforge.html
+course/t.js

@@ -1,0 +1,370 @@
+<template data-mod="3.4" id="tpl-3-4">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.4</span>
+    <h1>HTTP Request Mastery</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n HTTP Request, Hoppscotch, DummyJSON (practice API), Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Every app has an API, but not every app has an n8n node. The HTTP Request node is your universal key. This module covers the four things that separate a demo from a dependable integration: authentication, pagination, rate limits and retries, and turning API documentation into a working request in seconds.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Authenticate with an API key, a bearer token or OAuth2, always through credentials.</span></div>
+  <div><b>02</b><span>Fetch every page of a paginated API, with no duplicates and no gaps.</span></div>
+  <div><b>03</b><span>Stay under rate limits, and recover from <code>429</code> and other temporary errors.</span></div>
+  <div><b>04</b><span>Import a cURL example from API docs and adapt it in minutes.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Page 1 of 8</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu reading an email from a supplier announcing a new price list API.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="35" width="140" height="110" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="230" y="60" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">From: Agro Depot</text>
+        <text x="230" y="84" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">Our prices are</text>
+        <text x="230" y="102" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">now on an API!</text>
+        <text x="230" y="128" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--sky)">docs.agrodepot.example</text>
+        <use href="#tolu" x="15" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Thursday</b>Agro Depot, Harvest Lane's main supplier, publishes its daily price list as an API. No n8n node exists for it.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A JSON response showing 50 products and the text page 1 of 8.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="30" y="25" width="260" height="140" rx="10" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--paper)">
+          <text x="45" y="52">"products": [ …50 items… ],</text>
+          <text x="45" y="74">"page": 1,</text>
+          <text x="45" y="96" fill="var(--sun)">"total_pages": 8,</text>
+          <text x="45" y="118">"total": 400</text>
+        </g>
+        <text x="160" y="150" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--glitch)">350 products not here</text>
+      </svg>
+      <div class="cap"><b>The catch</b>The API returns 50 products at a time. There are 400. One request isn't enough.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A red error badge reading 429 Too Many Requests.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="70" y="55" width="180" height="80" rx="14" fill="var(--glitch)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="160" y="95" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="30" fill="#fff">429</text>
+        <text x="160" y="120" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fff">Too Many Requests</text>
+      </svg>
+      <div class="cap"><b>Attempt 1</b>Tolu fires all eight requests at once. The supplier allows two per second. Request three bounces.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo holding a key labelled HTTP, Glitch peeking from behind a server.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g transform="translate(180 70)"><circle cx="20" cy="25" r="22" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/><rect x="40" y="19" width="70" height="12" rx="4" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/><text x="20" y="30" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" fill="#13233A">HTTP</text></g>
+        <use href="#nodo" x="10" y="45" width="140" height="140"/>
+        <use href="#glitch" x="250" y="10" width="64" height="64"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"One node, four settings: who you are, which page, how fast, and what to do when it says no."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Authentication: proving who you are</h3>
+    <p>In the HTTP Request node, set <b>Authentication</b> to either a <b>predefined credential type</b> (reuse a credential n8n already knows, such as Google or Slack, for an endpoint its node doesn't cover) or a <b>generic credential type</b>:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>The API docs say…</th><th>Use generic type</th><th>What you fill in</th></tr></thead>
+      <tbody>
+        <tr><td>"Send <code>Authorization: Bearer YOUR_KEY</code>"</td><td>Header Auth</td><td>Name <code>Authorization</code>, value <code>Bearer sk_live_…</code></td></tr>
+        <tr><td>"Send header <code>x-api-key</code>"</td><td>Header Auth</td><td>Name <code>x-api-key</code>, value: the key</td></tr>
+        <tr><td>"Add <code>?api_key=…</code> to the URL"</td><td>Query Auth</td><td>Name <code>api_key</code>, value: the key</td></tr>
+        <tr><td>"Username and password"</td><td>Basic Auth</td><td>User and password</td></tr>
+        <tr><td>"Register an app, users log in, you get a token"</td><td>OAuth2 API</td><td>Authorization URL, Access Token URL, Client ID, Client Secret, Scope. Copy n8n's redirect URL into the app's settings.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> If you can see a key in a URL, a header field or a body, it's in the wrong place. Credentials are encrypted, reusable and left out of exports. And with OAuth2, n8n refreshes expiring tokens for you.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Pagination: getting every page</h3>
+    <p>APIs return big lists in pages. Read the docs to find which of three styles the API uses:</p>
+    <div class="vocab">
+      <div><b>Page number</b><code>?page=1&amp;per_page=50</code>, then <code>page=2</code>… Usually starts at <b>1</b>.</div>
+      <div><b>Offset / skip</b><code>?limit=50&amp;skip=0</code>, then <code>skip=50</code>, <code>skip=100</code>… Starts at <b>0</b>.</div>
+      <div><b>Next URL or cursor</b>The response includes the next page's address or a cursor token: <code>"next": "https://…?cursor=abc"</code>. You follow it until it's empty.</div>
+    </div>
+    <p>The HTTP Request node does this for you under <b>Options → Pagination</b>:</p>
+    <div class="vocab">
+      <div><b>Mode</b><i>Update a Parameter in Each Request</i> (page number or offset) or <i>Response Contains Next URL</i>.</div>
+      <div><b><code>$pageCount</code></b>How many pages have been fetched so far, <b>starting at 0</b>. Page numbers: <code>{{ $pageCount + 1 }}</code>. Offsets: <code>{{ $pageCount * 50 }}</code>.</div>
+      <div><b><code>$response</code></b>The last response, e.g. <code>{{ $response.body.next }}</code> for next-URL APIs.</div>
+      <div><b>Pagination complete when</b>The response is empty, a specific status code arrives, or your own expression is true, such as <code>{{ $response.body.products.length &lt; 50 }}</code>.</div>
+      <div><b>Safety settings</b><i>Limit Pages Fetched</i> (a maximum, so a bug can't loop forever) and <i>Interval Between Requests</i> in milliseconds.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Rate limits, 429s and retries</h3>
+    <p>APIs limit how fast you can call them. Go over and they answer <code>429 Too Many Requests</code>, often with a <code>Retry-After</code> header saying how long to wait. Other temporary failures, such as <code>500</code>, <code>502</code>, <code>503</code> and timeouts, deserve a retry too. A <code>400</code> or <code>401</code> won't get better if you repeat it.</p>
+    <div class="vocab">
+      <div><b>Slow down: pagination</b>Set <i>Interval Between Requests</i>, e.g. 500 ms for "2 requests per second".</div>
+      <div><b>Slow down: many items</b>When the node runs once per item (100 customers → 100 calls), use <i>Options → Batching</i>: items per batch and batch interval.</div>
+      <div><b>Retry</b>In the node's <b>Settings</b>: <i>Retry On Fail</i>, <i>Max Tries</i> and <i>Wait Between Tries</i>.</div>
+      <div><b>See the limits</b><i>Options → Response → Include Response Headers and Status</i> shows headers like <code>Retry-After</code> or <code>X-RateLimit-Remaining</code>. <i>Never Error</i> lets you handle error responses yourself with an IF.</div>
+    </div>
+    <p><b>Try it.</b> The supplier has 400 products, 50 per page, and allows 2 requests per second. The settings below are broken in three ways. Fix them until you get every product exactly once.</p>
+    <div class="pager" data-pager>
+      <div class="row">
+        <label>API style (from the docs)<select data-pg="style"><option value="page" selected>Page number: ?page=…</option><option value="skip">Offset: ?skip=…</option></select></label>
+        <label>Parameter value<select data-pg="expr"></select></label>
+        <label>Pagination complete when<select data-pg="stop"><option value="empty" selected>Response is empty</option><option value="short">{{ $response.body.products.length &lt; 50 }}</option><option value="fixed">{{ $pageCount &gt;= 3 }} (Glitch's)</option></select></label>
+      </div>
+      <div class="row">
+        <label>Total products<input data-pg="total" type="number" value="400" min="0"></label>
+        <label>Page size<input data-pg="size" type="number" value="50" min="1"></label>
+        <label>Interval between requests (ms)<input data-pg="interval" type="number" value="0" min="0" step="100"></label>
+        <label>API limit (requests per second)<input data-pg="limit" type="number" value="2" min="1"></label>
+      </div>
+      <label class="check"><input type="checkbox" data-pg="retry"> Retry On Fail (wait 1,000 ms between tries)</label>
+      <div class="rows" data-o="rows" aria-live="polite"></div>
+      <div class="stats">
+        <div class="stat"><b data-o="req">–</b><span>requests made</span></div>
+        <div class="stat"><b data-o="uniq">–</b><span>unique products fetched</span></div>
+        <div class="stat"><b data-o="dup">–</b><span>duplicates</span></div>
+      </div>
+      <p class="mgoal" data-o="verdict"></p>
+      <p style="font-size:.84rem;color:var(--muted)">A teaching simulation. Like many APIs, this one treats <code>page=0</code> as page 1; real APIs vary, so always test the first two pages by hand.</p>
+    </div>
+    <details class="reveal"><summary>Stuck? The three fixes</summary><div>
+      <ol>
+        <li><b>Speed:</b> set the interval to 500 ms (2 per second), or turn on Retry On Fail. Do both in production.</li>
+        <li><b>Start:</b> page numbers start at 1, but <code>$pageCount</code> starts at 0. Use <code>{{ $pageCount + 1 }}</code>, or switch to the offset style with <code>{{ $pageCount * 50 }}</code>.</li>
+        <li><b>Stop:</b> never hard-code the page count. "Response is empty" or "fewer than 50 products" both work and adapt when the list grows.</li>
+      </ol>
+    </div></details>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Import from cURL</h3>
+    <p>Most API docs show examples as <b>cURL</b> commands. Read one like this:</p>
+<pre class="codebox">curl -X GET <span class="k">'https://dummyjson.com/products?limit=50&amp;skip=0'</span> \
+  -H <span class="k">'Accept: application/json'</span> \
+  -H <span class="k">'Authorization: Bearer YOUR_TOKEN'</span>
+<span class="c"># -X: method · URL: endpoint and query · -H: a header · -d: a body (for POST)</span></pre>
+    <p>In the HTTP Request node, click <b>Import cURL</b>, paste, and n8n fills in the method, URL, query, headers and body. Then do the two things import can't do for you:</p>
+    <div class="vocab">
+      <div><b>Move secrets into a credential</b>Delete the <code>Authorization</code> header that came in with the example, and select a Header Auth credential instead.</div>
+      <div><b>Replace sample values with expressions</b><code>skip=0</code> becomes pagination; <code>customer_id=123</code> becomes <code>{{ $json.customer_id }}</code>.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>From response to rows</h3>
+    <p>With pagination on, the HTTP Request node outputs <b>one item per page</b>, each holding a list (<code>products: [50 items]</code>). Before saving, turn the lists into one item per product:</p>
+    <div class="vocab">
+      <div><b>Split Out</b>Takes a list field (<code>products</code>) and outputs one item per entry. 8 pages × 50 → 400 items.</div>
+      <div><b>Edit Fields</b>Keep and rename only the fields you need, add <code>fetched_at</code>.</div>
+      <div><b>Append or Update Row</b>In Google Sheets, match on a unique column (<code>sku</code>), so running again updates prices instead of duplicating rows.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: HTTP Request node</b><small>Read: authentication, Import cURL, and the Options list (batching, pagination, response).</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/build/code-in-n8n/cookbook/http-request-node/pagination" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: pagination in the HTTP Request node</b><small>Read: both modes, $pageCount and $response, with examples.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+HTTP+request+node+pagination+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n HTTP Request and pagination tutorials</b><small>Watch one that uses a real API end to end.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: the whole price list, every morning</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every morning at 07:00, pull the supplier's full product list, all pages, and update a <b>Supplier prices</b> sheet, one row per product. Agro Depot is fictional, so we practise on <b>DummyJSON</b>, a free public test API with about 200 products that uses offset pagination (<code>limit</code> and <code>skip</code>) and needs no key. The steps are the same for a real supplier.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Test by hand first</h4>
+      <p>In Hoppscotch (0.3), send <code>GET https://dummyjson.com/products?limit=50&amp;skip=0&amp;select=title,price,stock,category</code>. Read the response: <code>products</code> (a list of 50), <code>total</code>, <code>skip</code>, <code>limit</code>. Change <code>skip</code> to 50 and confirm the first product changes. Now you know the style (offset), where the list lives and how to tell when you've finished.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Import the request</h4>
+      <p>New workflow <b>HL · Supplier prices → Sheet</b>. Add a <b>Schedule Trigger</b> (daily, 07:00), then <b>HTTP Request</b> → <b>Import cURL</b>:</p>
+<pre class="codebox">curl 'https://dummyjson.com/products?limit=50&amp;skip=0&amp;select=title,price,stock,category'</pre>
+      <p>n8n fills in GET, the URL and four query parameters. Delete the <code>skip</code> parameter from the list: pagination will manage it. Execute: one item, 50 products.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Turn on pagination, with brakes</h4>
+      <p><b>Options → Pagination</b>:</p>
+<pre class="codebox"><span class="k">Mode</span>                       Update a Parameter in Each Request
+<span class="k">Type · Name · Value</span>        Query · skip · {{ $pageCount * 50 }}
+<span class="k">Pagination Complete When</span>   Other
+<span class="k">Complete Expression</span>        {{ $response.body.products.length &lt; 50 }}
+<span class="k">Limit Pages Fetched</span>        On · Max Pages 20
+<span class="k">Interval Between Requests</span>  500 ms</pre>
+      <p>Execute: about four items come out, one per page; the last page holds fewer than 50 products, which ends the loop. In the node's <b>Settings</b>, turn on <b>Retry On Fail</b> (Max Tries 3, Wait Between Tries 2,000 ms).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Split, shape and save</h4>
+      <ol>
+        <li><b>Split Out</b> on field <code>products</code> → one item per product (about 200).</li>
+        <li><b>Edit Fields</b>: <code>sku</code> = <code>{{ $json.id }}</code>, <code>name</code> = <code>{{ $json.title }}</code>, <code>price</code>, <code>stock</code>, <code>category</code>, and <code>fetched_at</code> = <code>{{ $now.toISO() }}</code>. Turn off Include Other Input Fields.</li>
+        <li><b>Google Sheets · Append or Update Row</b> on <b>Supplier prices</b>, column to match on: <code>sku</code>.</li>
+      </ol>
+      <p>Run it twice. The second run updates the same rows; the row count doesn't change.</p>
+      <div class="stats">
+        <div class="stat"><b>≈4</b><span>API requests, 500 ms apart</span></div>
+        <div class="stat"><b>≈200</b><span>rows, each product once</span></div>
+        <div class="stat"><b>1</b><span>execution a day on n8n Cloud</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's preview:</b> once the price list lives in a sheet, an AI step can answer "which items rose more than 10% since last week?" in plain language. Track 4 builds that. Clean, complete data comes first.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Testing by hand first tells you the pagination style and where the data lives.</li><li>The stop rule adapts when the supplier adds products; nothing is hard-coded.</li><li>The interval, page limit and retries protect both you and the supplier.</li><li>Append or Update on a unique key makes the workflow safe to rerun.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Starting page numbers at 0.</li><li>Hard-coding "fetch 8 pages".</li><li>Retrying 401s and 400s, which will never succeed.</li><li>Leaving the example's <code>Authorization</code> header in place after import.</li><li>Saving one row per page instead of per product.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Six price-list mornings, six mistakes. Diagnose each one.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Pages 1 and 2 arrive, then the node fails with <code>429 Too Many Requests</code>. The sheet isn't updated at all.</td></tr>
+        <tr><td>B</td><td>Using Append Row, one run adds 450 rows for 400 products: the first 50 products appear twice.</td></tr>
+        <tr><td>C</td><td>Since the supplier added 80 products, only the old 400 ever show up.</td></tr>
+        <tr><td>D</td><td>A request imported from the docs returns <code>401 Unauthorized</code>, though the credential is set up correctly.</td></tr>
+        <tr><td>E</td><td>The sheet has 8 rows, each with a huge block of text in one cell.</td></tr>
+        <tr><td>F</td><td>Every morning the sheet grows by another 400 rows.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> requests went out faster than 2 per second. Set Interval Between Requests (500 ms) and turn on Retry On Fail.</li>
+        <li><b>B:</b> a page-number API with <code>{{ $pageCount }}</code>: the API treated page 0 as page 1, so page 1 came twice. Use <code>{{ $pageCount + 1 }}</code>. (If the page count were also hard-coded at 8, the last page would go missing too.)</li>
+        <li><b>C:</b> the stop rule (or Limit Pages Fetched) is hard-coded at 8 pages. Stop on an empty or short page, and keep the page limit well above the real count.</li>
+        <li><b>D:</b> the imported example kept its own <code>Authorization: Bearer YOUR_TOKEN</code> header, which overrides the credential. Delete it.</li>
+        <li><b>E:</b> one item per page went straight to the sheet. Add Split Out on <code>products</code>.</li>
+        <li><b>F:</b> the Sheets node uses Append Row. Use Append or Update Row, matching on <code>sku</code>.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>From docs to node in five minutes</h4>
+    <ul><li>Pick a public API with cURL examples in its docs (Paystack's "List Banks" endpoint, or DummyJSON's users).</li><li>Import the cURL into n8n, move any key into a credential and delete the pasted header.</li><li>Run it, and replace one hard-coded value with an expression.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The request works, no secret is visible anywhere in the node, and you can name every part of the original cURL.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Two pagination styles</h4>
+    <ul><li>Build the solved workflow on DummyJSON (offset style).</li><li>Then paginate the Rick and Morty API (<code>https://rickandmortyapi.com/api/character</code>), which returns <code>info.next</code>: use "Response Contains Next URL" with <code>{{ $response.body.info.next }}</code>, and stop when it's empty.</li><li>Split Out the results and count them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both counts match the API's own <code>total</code> / <code>info.count</code>, with no duplicates (check with a Remove Duplicates node or a sheet formula).</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>OAuth2 without a node</h4>
+    <ul><li>Choose a service that offers OAuth2 and has an endpoint n8n's built-in node doesn't cover (or no n8n node at all).</li><li>Register an app in its developer console, create a Generic OAuth2 credential in n8n (paste n8n's redirect URL into the app), and connect.</li><li>Call one endpoint, and make the workflow cope with a 429: Include Response Headers and Status, then use an IF on the status code.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The token refreshes on its own (it still works the next day), and you've written a half-page "how to connect" guide another learner could follow.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Docs say "send <code>Authorization: Bearer &lt;key&gt;</code>". Where does the key go in n8n?</p><div class="opts">
+      <button type="button" data-opt="a">In the URL</button><button type="button" data-opt="b">In a header field of the node</button><button type="button" data-opt="c">In a Header Auth credential</button><button type="button" data-opt="d">In the workflow description</button></div>
+      <p class="fb" hidden data-why="Credentials are encrypted, reusable and left out of exports."></p></div>
+    <div class="q" data-ans="b"><p>2. A page-number API starts at page 1. Which value is right?</p><div class="opts">
+      <button type="button" data-opt="a">{{ $pageCount }}</button><button type="button" data-opt="b">{{ $pageCount + 1 }}</button><button type="button" data-opt="c">{{ $pageCount * 50 }}</button><button type="button" data-opt="d">{{ 1 }}</button></div>
+      <p class="fb" hidden data-why="$pageCount starts at 0, so add 1 for APIs that number pages from 1."></p></div>
+    <div class="q" data-ans="a"><p>3. Which errors are worth retrying automatically?</p><div class="opts">
+      <button type="button" data-opt="a">429 and 503</button><button type="button" data-opt="b">401 and 403</button><button type="button" data-opt="c">400 and 404</button><button type="button" data-opt="d">All of them, forever</button></div>
+      <p class="fb" hidden data-why="429 (slow down) and 5xx (server trouble) are often temporary. 4xx errors like 401 or 400 need a fix, not a retry."></p></div>
+    <div class="q" data-ans="d"><p>4. With pagination on, the node outputs 8 items. What's in each?</p><div class="opts">
+      <button type="button" data-opt="a">One product</button><button type="button" data-opt="b">A page number only</button><button type="button" data-opt="c">An error message</button><button type="button" data-opt="d">One page's response, with its list of products</button></div>
+      <p class="fb" hidden data-why="One item per page; use Split Out to get one item per product."></p></div>
+    <div class="q" data-ans="c"><p>5. The workflow runs daily. How do you stop the sheet filling with duplicates?</p><div class="opts">
+      <button type="button" data-opt="a">Delete the sheet each morning</button><button type="button" data-opt="b">Run it only once a week</button><button type="button" data-opt="c">Append or Update Row, matching on a unique sku</button><button type="button" data-opt="d">Use Append Row twice</button></div>
+      <p class="fb" hidden data-why="Matching on a unique key turns a rerun into an update: the workflow is safe to repeat."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-4">AUTOMANCY LOG · Lesson 3.4 · HTTP Request Mastery
+Date:
+API used, auth type and credential name:
+Pagination style, parameter expression and stop rule:
+Requests per run, interval and retry settings:
+Products fetched vs. API total (duplicates?):
+Second run: rows updated or added?
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>No node? The HTTP Request node plus the API docs is enough.</li>
+      <li>Keys live in credentials: Header, Query, Basic or OAuth2.</li>
+      <li>Learn the pagination style by hand first; <code>$pageCount</code> starts at 0.</li>
+      <li>Stop on an empty or short page, with a page limit as a safety net.</li>
+      <li>Slow down with an interval or batching; retry 429 and 5xx, fix 4xx.</li>
+      <li>Import cURL, then move secrets out and expressions in.</li>
+      <li>Split Out, then Append or Update on a unique key.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest" target="_blank" rel="noopener">n8n Docs: HTTP Request node</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/code-in-n8n/cookbook/http-request-node/pagination" target="_blank" rel="noopener">n8n Docs: pagination</a></li>
+    <li><span class="kind">Text</span><a href="https://dummyjson.com/docs/products" target="_blank" rel="noopener">DummyJSON docs: products (limit, skip, select)</a></li>
+    <li><span class="kind">Text</span><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" target="_blank" rel="noopener">MDN: 429 Too Many Requests and Retry-After</a></li>
+    <li><span class="kind">Course</span><a href="https://www.coursera.org/learn/build-ai-agents-n8n" target="_blank" rel="noopener">Coursera: Build AI Agents with n8n (free to audit)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+HTTP+request+node+pagination+tutorial" target="_blank" rel="noopener">YouTube: n8n HTTP Request and pagination tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Project the simulator in Card 3 and play "fix it in three moves": the room votes on one change at a time and watches the verdict. Then give each pair a different public API's docs page and ten minutes to identify its auth type and pagination style. Matching docs to settings is the real skill.</p>
+  </div>
+</section>
+
+</article>
+</template>

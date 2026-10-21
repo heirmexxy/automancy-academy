@@ -1,0 +1,61 @@
+{
+  "id": "4.7",
+  "items": [
+    {
+      "file": "4-7-sub-price-history.json",
+      "name": "SUB · Price history",
+      "what": "Researcher tool: this week's vs last week's supplier price per product, each with a source.",
+      "setup": [
+        "Select your Google Sheets OAuth2 credential in Supplier prices and replace YOUR_SHEET_ID.",
+        "Add a price_last_week column to the 3.4 Supplier prices tab and fill it with last week's prices (copy price into it once a week).",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Execute: one item with found: true and an items list of product, price_now, price_last_week and source."
+    },
+    {
+      "file": "4-7-sub-top-sellers.json",
+      "name": "SUB · Top sellers",
+      "what": "Researcher tool: the five best-selling products over the last 7 days from Orders.",
+      "setup": [
+        "Select your Google Sheets OAuth2 credential in Read Orders and replace YOUR_SHEET_ID.",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Execute: top_sellers lists up to five products with units_sold, counted from orders created in the last 7 days."
+    },
+    {
+      "file": "4-7-newsletter-team.json",
+      "name": "HL · Newsletter team (4.7)",
+      "what": "Monday 06:00 researcher → code check → writer → editor pipeline with at most two revision rounds, ending in a Gmail draft to Tolu.",
+      "setup": [
+        "Import SUB · Price history and SUB · Top sellers first.",
+        "Create an OpenAI credential and select it in Small model (temp 0), Writer model (strong) and Editor model. Replace YOUR_SMALL_MODEL, YOUR_STRONG_MODEL and YOUR_EDITOR_MODEL.",
+        "In get_price_history and get_top_sellers, replace YOUR_PRICE_HISTORY_WORKFLOW_ID and YOUR_TOP_SELLERS_WORKFLOW_ID by choosing the sub-workflows from the list.",
+        "Select your Telegram API credential in Alert Tolu and replace YOUR_TELEGRAM_CHAT_ID.",
+        "Create a Gmail OAuth2 credential, select it in Gmail draft to Tolu, and replace tolu@harvestlane.example with Tolu's address.",
+        "Open Settings → Error workflow and choose HL · Error alerts. Publish (activate) when happy."
+      ],
+      "test": "Click Execute workflow. The Researcher returns structured items, Check research passes, and a draft \"This week at the market (date)\" appears in Gmail Drafts. To see the cap, temporarily add \"Never approve\" to the editor's message: you get exactly two revisions and a draft whose subject starts with \"⚠ Needs a human look\".",
+      "walk": {
+        "title": "Build it: the newsletter team",
+        "sample": "Week of 2026-10-05 · Tomatoes ₦10,400 → ₦12,500 · top sellers from Orders",
+        "steps": [
+          {"at": "Monday 06:00", "say": "Every Monday at six, the team wakes up. By the time Tolu has breakfast, a draft is waiting.", "show": ["Schedule: weekly · Monday · 06:00"], "data": "week starting 2026-10-05"},
+          {"at": "Researcher", "say": "Agent one, the researcher, collects facts only. Every price must come from a tool result with its source. No opinions, no advice.", "show": ["Collect facts only. Every price must come from a tool result", "Max Iterations: 5"]},
+          {"at": "Small model (temp 0)", "say": "Lookups don't need a big brain. A small model at temperature zero is cheap and steady.", "show": ["Model: YOUR_SMALL_MODEL", "Temperature: 0"]},
+          {"at": "get_price_history", "say": "Its first tool reads this week's and last week's supplier prices. Read-only, no input, so it can't change a single price.", "show": ["Name: get_price_history", "Workflow: SUB · Price history"], "data": "Tomatoes · 12500 · 10400 · source"},
+          {"at": "get_top_sellers", "say": "The second tool counts the five best sellers from the last seven days of orders. Again, it only reads.", "show": ["Name: get_top_sellers", "Workflow: SUB · Top sellers"], "data": "5 products · units_sold"},
+          {"at": "Research shape", "say": "The hand-off is a contract, not a chat. This parser forces the research into a fixed shape: product, price now, price last week, and source.", "show": ["Structured Output Parser", "required: product, price_now, price_last_week, source"]},
+          {"at": "Check research", "say": "Before anyone writes, code checks every item has both prices and a source, and recalculates the change percentage itself. The model's maths is overwritten.", "show": ["missing price or source → problem", "change_pct recalculated in code"], "data": "Tomatoes +20.2% · ok: true"},
+          {"at": "Alert Tolu", "say": "If the facts fail, nothing gets written. Tolu gets a Telegram alert listing the problems, and the run stops.", "show": ["Research complete? false → Alert Tolu", "→ Stop: research incomplete"]},
+          {"at": "Writer", "say": "Agent two, the writer, has no tools and a stronger model. Its brief: warm, practical, one eighty to two fifty words, using only numbers from the research.", "show": ["Writer model (strong): YOUR_STRONG_MODEL", "3 cheaper · 3 dearer · 1 tip for restaurants", "Use only numbers from the research"], "data": "draft 1"},
+          {"at": "Editor", "say": "Agent three, the editor, checks the draft against a four-point checklist, not make it better. It returns a verdict: approved true or false, and a list of issues.", "show": ["1 numbers match · 2 180–250 words", "3 no advice beyond buying tips · 4 tone", "Verdict shape: approved, issues"], "data": "approved: false · 1 issue"},
+          {"at": "Writer · revision 1", "say": "If it isn't approved, the writer gets its draft plus the editor's issues, and rewrites. Then the editor checks again.", "show": ["Approved? (draft 1) false → Writer · revision 1", "→ Editor · round 1"]},
+          {"at": "Editor · round 2", "say": "Round two is the last. The rounds are drawn as separate nodes, so the cap is impossible to miss. No endless back and forth.", "show": ["Max 2 revision rounds", "Workflow timeout: 10 minutes"]},
+          {"at": "Prepare draft", "say": "After that, whatever the verdict, the draft goes to a human. If it's still not approved, the subject is flagged and the editor's issues sit at the top.", "show": ["Subject: ⚠ Needs a human look: This week at the market", "EDITOR'S ISSUES listed first"]},
+          {"at": "Gmail draft to Tolu", "say": "And it's a Gmail draft, never an automatic send. Tolu reads it, tweaks it, and presses send herself.", "show": ["Resource: Draft", "To: tolu@harvestlane.example"], "data": "1 draft · This week at the market (2026-10-05)"}
+        ],
+        "end": "Three agents, two rounds at most, one draft in Tolu's inbox: her Sunday night is now a five-minute Monday read."
+      }
+    }
+  ]
+}

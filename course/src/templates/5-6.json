@@ -1,0 +1,179 @@
+{
+  "id": "5.6",
+  "items": [
+    {
+      "file": "5-6-consent-to-brevo.json",
+      "name": "HL · Consent at checkout → Brevo",
+      "what": "After a verified payment, adds the customer to Brevo's opted-in list only if they ticked the marketing box, records when and where they agreed, and otherwise only updates LAST_ORDER_DATE for people who opted in earlier.",
+      "setup": [
+        "Authenticate mail.harvestlane.example in Brevo (DKIM, verification code, DMARC p=none, one SPF record ending in ~all) before any campaign.",
+        "In Brevo, create the list \"Customers · opted in\" and the contact attributes FIRSTNAME, SEGMENT, FAV_CATEGORY, LAST_ORDER_DATE (date), USUAL_ORDER_DAY.",
+        "Run the marketing_consent table SQL from the Brevo setup sticky note in Supabase.",
+        "Create a Header Auth credential \"Brevo API key\": Name api-key, Value your Brevo API key. Select it in both Brevo nodes.",
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Replace YOUR_BREVO_LIST_ID with the list's numeric ID.",
+        "In HL·03, after the payment is verified, add an Execute Workflow node that calls this workflow with email, first_name, segment, fav_category, order_date, usual_order_day, marketing_consent and consent_source.",
+        "Build the welcome, win-back and re-order automations in Brevo as the sticky note describes."
+      ],
+      "test": "Click Test workflow with the pinned order (consent true): the contact appears in Brevo's list with lowercase email and attributes, and marketing_consent has a row. Change marketing_consent to false and use a new email: nothing is added."
+    },
+    {
+      "file": "5-6-newsletter.json",
+      "name": "HL · Weekly newsletter",
+      "what": "Every Thursday, drafts the newsletter from the sheets, blocks any price or offer not in them, lets Tolu choose a subject and approve, then creates the Brevo campaign with UTM-tagged links and sends it at 17:00 unless email is paused.",
+      "setup": [
+        "Add tabs Price list (product, price), In season (item, note), Customer stories (story, approved), Approved offers (offer) and Settings (setting, value) with a row email_paused false.",
+        "Select your Google Sheets credential in every sheet node and replace YOUR_SHEET_ID.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select your Telegram credential in the Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID.",
+        "Select the \"Brevo API key\" credential in both Brevo nodes.",
+        "In Config, replace YOUR_BREVO_LIST_ID, YOUR_BREVO_TEST_LIST_ID (a list with only your own addresses) and YOUR_ORDER_LINK. Keep test_mode true until Tolu approves going live."
+      ],
+      "test": "Click Test workflow: Tolu gets the draft with three subjects. Approve subject 2: a campaign is created for the test list and goes out at 17:00 (for a quick test, shorten the Wait). Add a fake 20% discount to a section by hand in the Check node's input, or remove a price from the sheet: the draft is blocked.",
+      "walk": {
+        "title": "Build it: a newsletter that lands, and only says what's true",
+        "sample": "Week 41 · Price list (tatashe, ugu, tomatoes) · ugu in season · one approved restaurant story · no approved offers",
+        "steps": [
+          {
+            "at": null,
+            "say": "Two things come before any campaign. Authenticate mail.harvestlane.example in Brevo with DKIM, one SPF record ending in tilde all, and DMARC at p equals none. And only people who ticked the box at checkout are on the list.",
+            "show": [
+              "Domain: mail.harvestlane.example",
+              "DKIM ✓ · one SPF ~all · DMARC p=none",
+              "List: Customers · opted in (consent recorded)"
+            ]
+          },
+          {
+            "at": "Thursdays 10:00",
+            "say": "Every Thursday morning we draft, so Tolu has the day to approve before the 5 p.m. send.",
+            "show": [
+              "Cron: 0 10 * * 4"
+            ]
+          },
+          {
+            "at": "Config",
+            "say": "Test mode stays on until Tolu approves going live. It sends to a test list with only your own addresses.",
+            "show": [
+              "test_mode: true",
+              "list_id · test_list_id · order_link"
+            ],
+            "data": "test list only"
+          },
+          {
+            "at": "Facts",
+            "say": "We gather the facts from the sheets: prices, what's in season, one approved customer story, and the approved offers. The AI gets nothing else to work from.",
+            "show": [
+              "Price list · In season",
+              "Customer stories (approved = yes)",
+              "Approved offers"
+            ],
+            "data": "6 prices · 0 offers"
+          },
+          {
+            "at": "Draft newsletter",
+            "say": "The AI drafts from those facts only, with three subject options under 50 characters, a preview line and sections. It must never invent a discount or promise.",
+            "show": [
+              "Out: subject_options[3], preview_text, sections[]",
+              "Use only the prices and offers given"
+            ],
+            "data": "3 subjects · 4 sections"
+          },
+          {
+            "at": "Check prices and offers",
+            "say": "Then code checks every naira amount is in the price list and every percent is an approved offer. An invented 20 percent off is caught here.",
+            "show": [
+              "₦ amount not in Price list → problem",
+              "% not in Approved offers → problem",
+              "offer words with no approved offer → problem"
+            ],
+            "data": "problems: none"
+          },
+          {
+            "at": "Blocked: tell Tolu",
+            "say": "If anything fails, nothing goes to approval at all. Tolu is told exactly what was blocked, so she can fix the sheets.",
+            "show": [
+              "Newsletter draft blocked: {{ problems }}"
+            ]
+          },
+          {
+            "at": "Tolu picks and approves",
+            "say": "Tolu reads the draft on Telegram, picks a subject, and approves or rejects. A person approves every campaign.",
+            "show": [
+              "Telegram · Send and Wait · custom form",
+              "Subject: 1, 2 or 3",
+              "Decision: Approve or Reject"
+            ],
+            "data": "subject 2 · Approve"
+          },
+          {
+            "at": "Build email HTML",
+            "say": "The order link gets UTM tags, so we can count orders from email, not opens. The footer says why they get it, with Brevo's one-tap unsubscribe.",
+            "show": [
+              "utm_source=email&utm_campaign=week41",
+              "Footer: why you get this + Unsubscribe",
+              "list_id: test list while test_mode"
+            ]
+          },
+          {
+            "at": "Brevo · create campaign",
+            "say": "We create the campaign in Brevo from our authenticated subdomain, never from a free Gmail address, which can't pass DMARC.",
+            "show": [
+              "POST api.brevo.com/v3/emailCampaigns",
+              "sender: news@mail.harvestlane.example",
+              "Auth: Header Auth · Brevo API key"
+            ],
+            "data": "campaign id"
+          },
+          {
+            "at": "Wait until 17:00",
+            "say": "Then we wait until 5 p.m., when customers plan tomorrow's cooking.",
+            "show": [
+              "Resume: at 17:00 today"
+            ]
+          },
+          {
+            "at": "Email paused?",
+            "say": "Just before sending, we read the pause setting again. Monday's report switches it on if complaints pass 0.1 percent, so a bad week stops the next send.",
+            "show": [
+              "Settings: email_paused = true → stop",
+              "Complaints > 0.1% → paused"
+            ],
+            "data": "not paused"
+          },
+          {
+            "at": "Brevo · send now",
+            "say": "Then Brevo sends it, and Tolu gets a note with the subject. Unsubscribes and complaints come back by webhook and are honoured on every channel the same day.",
+            "show": [
+              "POST …/emailCampaigns/{id}/sendNow",
+              "Brevo webhook → mark in Supabase"
+            ],
+            "data": "sent to the test list"
+          }
+        ],
+        "end": "Run it: Tolu gets three subjects, approves one, and the campaign goes to your test list at five; slip in a fake discount and the draft is blocked instead."
+      }
+    },
+    {
+      "file": "5-6-unsubscribes.json",
+      "name": "HL · Unsubscribes everywhere",
+      "what": "Receives Brevo unsubscribe, hard-bounce and spam-complaint events and marks the person in Supabase the same day so no channel markets to them again.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Replace YOUR_WEBHOOK_SECRET with a long random string, activate the workflow, and add the webhook in Brevo: https://YOUR_N8N_DOMAIN/webhook/hl-brevo-events?token=YOUR_WEBHOOK_SECRET with events unsubscribed, hard bounce and spam."
+      ],
+      "test": "Unsubscribe a test contact from a test email: marketing_consent shows status unsubscribed with suppressed_at. A request without the token gets 401."
+    },
+    {
+      "file": "5-6-monday-report.json",
+      "name": "HL · Email · Monday report",
+      "what": "Every Monday, reports delivered, clicks, orders from email, unsubscribes and complaints, and pauses the next send automatically if complaints pass 0.1%.",
+      "setup": [
+        "Select the \"Brevo API key\" credential in Brevo · last campaign stats.",
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node. Adjust the orders query to your orders table (utm_source, total, created_at).",
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "After one test campaign, click Test workflow: Tolu gets the numbers without open rates. To test the pause, temporarily change 0.001 to 0 in Numbers: Settings gets email_paused true and the next newsletter stops before sending."
+    }
+  ]
+}

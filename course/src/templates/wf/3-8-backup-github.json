@@ -1,0 +1,289 @@
+{
+  "name": "HL · Backup workflows → GitHub",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Backup workflows → GitHub (Lesson 3.8)\nNightly at 02:00: list every workflow through the n8n API and commit each one as workflows/<name>.json to a private GitHub repo (edit if it exists, create if it's new).\n\nThis template uses **HTTP Request** for the n8n API and GitHub, in place of the lesson's n8n and GitHub nodes. Same steps: Get many workflows → Code → Edit a file, with the error output → Create a file.\n\n**Credentials (Header Auth):**\n- \"n8n API\": Name X-N8N-API-KEY, Value = key from Settings → n8n API. Select in Get many workflows.\n- \"GitHub backup\": Name Authorization, Value = Bearer + a fine-grained token limited to harvestlane-n8n (Contents: read and write). Select in the three GitHub nodes.\n\n**Placeholders:** YOUR_N8N_DOMAIN (e.g. n8n.harvestlane.example), YOUR_GITHUB_OWNER.\n\nConnect Settings → Error workflow to HL · Error alerts. Keep the repo private.",
+        "height": 520,
+        "width": 460
+      },
+      "id": "0b9ea4e1-e23a-40a4-a99e-17218de87d77",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -468
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Before this: the server (Lesson 3.8)\nUbuntu LTS, 2 GB RAM, SSH key, provider backups on. DNS A record n8n → server IP.\n```\nsudo apt update && sudo apt upgrade -y\ncurl -fsSL https://get.docker.com | sudo sh\nsudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw enable\nmkdir ~/n8n && cd ~/n8n\n```\nCreate .env, docker-compose.yml and Caddyfile (Card 3: pinned version, generated key, N8N_WEBHOOK_URL=https://YOUR_N8N_DOMAIN/ and N8N_PROXY_HOPS=1, no 5678 port mapping). Save the key in your password manager. Then:\n```\ndocker compose up -d\ndocker compose logs -f n8n\n```\nOwner account + two-factor login. Import workflows, recreate credentials, publish, switch off the laptop copies. UptimeRobot on https://YOUR_N8N_DOMAIN/healthz every 5 min.",
+        "height": 520,
+        "width": 460
+      },
+      "id": "69baec2a-b67d-47a2-9a31-2ed356c66cf1",
+      "name": "Server setup (from the lesson)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        72
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 2,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "cf92f3ba-b7c6-419e-84e8-97f4c2bb8142",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_N8N_DOMAIN/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "250"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7242ab41-0484-4970-b17b-8ef1446b5972",
+      "name": "Get many workflows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "id": "4368f625-7c01-42ed-b249-5c6c5430be8a",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: { path: `workflows/${$json.name.replace(/[^\\w-]+/g, '_')}.json`, content: JSON.stringify($json, null, 2), content_b64: Buffer.from(JSON.stringify($json, null, 2), 'utf8').toString('base64') } };"
+      },
+      "id": "c9fc821e-4170-466a-90c3-55810c616c62",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/{{ $json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b33d0bd-4266-402c-9979-997df885b20b",
+      "name": "GitHub · Get file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/{{ $('Code').item.json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: 'nightly backup ' + $now.toISODate(), content: $('Code').item.json.content_b64, sha: $json.sha }) }}",
+        "options": {}
+      },
+      "id": "c2174286-2c64-4de8-b315-7d670d4ff8f1",
+      "name": "GitHub · Edit a file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1166,
+        -90
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/{{ $('Code').item.json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: 'nightly backup ' + $now.toISODate(), content: $('Code').item.json.content_b64 }) }}",
+        "options": {}
+      },
+      "id": "a2fcb59e-f65f-41aa-b68a-186be488b9a4",
+      "name": "GitHub · Create a file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1166,
+        108
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "## Edit, or create if new\nGitHub needs the file's current sha to edit it. GitHub · Get file reads it; Settings → On Error: **Continue (using error output)**. A 404 (workflow new since last night) goes out of the red error output to GitHub · Create a file.\n\nCode (Run Once for Each Item) builds the path workflows/<name>.json and the content, plus content_b64 because GitHub's API wants base64.\n\nThe n8n API returns up to 250 workflows per call; if you have more, add pagination on nextCursor.\n\nWorkflow JSON holds credential names and IDs, not secrets. Never commit the .env.",
+        "height": 330,
+        "width": 420
+      },
+      "id": "85233e51-08ba-40ba-964d-1b25e018a201",
+      "name": "Edit or create",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        660,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "GitHub · Get file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub · Get file": {
+      "main": [
+        [
+          {
+            "node": "GitHub · Edit a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GitHub · Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

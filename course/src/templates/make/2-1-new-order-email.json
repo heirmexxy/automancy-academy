@@ -1,0 +1,63 @@
+{
+ "name": "HL · New order → email Tolu",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:watchRows",
+   "version": 2,
+   "parameters": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "limit": 10
+   },
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "google-email:ActionSendEmail",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "to": [
+     "tolu@harvestlane.example"
+    ],
+    "subject": "New order · {{1.customer_name}} · {{1.total}}",
+    "bodyType": "rawHtml",
+    "content": "New order from {{1.customer_name}}. Total: {{1.total}}."
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

@@ -1,0 +1,174 @@
+{
+ "name": "HL · Listening post · monthly housekeeping",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Listening post: monthly housekeeping (Lesson 5.3)\n1st of each month, 03:00:\n- Delete raw comment text older than 90 days (labels and counts stay).\n- Remind Tolu to add 10 new real comments to the reference set and re-measure agreement (Card 4). Never ship a prompt that misses an urgent case.\n\nCredentials: Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 280,
+    "width": 480
+   },
+   "id": "61411a40-b064-4989-9d1b-de73012fa836",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -280
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 3 1 * *"
+      }
+     ]
+    }
+   },
+   "id": "fc69d14c-cdd2-4ec4-af8d-ecc953383246",
+   "name": "Monthly",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "65309f7b-9d5b-422b-b968-9139e976cc96",
+   "name": "Read Mentions",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const cutoff = Date.now() - 90 * 864e5;\nreturn $input.all().map(i => i.json)\n  .filter(r => r.text && new Date(r.posted_at).getTime() < cutoff)\n  .map(r => ({ json: { item_id: r.item_id, text: '' } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "05b8b65d-6a3c-4a9d-a7d6-bf8361b805a5",
+   "name": "Older than 90 days",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "item_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "27957efd-b490-472d-937f-53bfd6022670",
+   "name": "Clear raw text",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "Monthly check: add 10 new real comments (include Pidgin and slang) to the reference set, label them with a second person, re-run the labeller and record agreement. Keep the version that agrees most and misses no urgent case.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "6b117fe7-ce63-439e-850d-d934637e491e",
+   "name": "Reference set reminder",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    220,
+    125
+   ]
+  }
+ ],
+ "connections": {
+  "Monthly": {
+   "main": [
+    [
+     {
+      "node": "Read Mentions",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Reference set reminder",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Mentions": {
+   "main": [
+    [
+     {
+      "node": "Older than 90 days",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Older than 90 days": {
+   "main": [
+    [
+     {
+      "node": "Clear raw text",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,190 @@
+{
+  "id": "5.4",
+  "items": [
+    {
+      "file": "5-4-draft.json",
+      "name": "HL · Posting week · draft",
+      "what": "Every Friday at 14:00, drafts one version per platform for each of next week's calendar ideas from the brand voice, current prices and last week's results, checks each version in code, retries failures once, and saves them for approval.",
+      "setup": [
+        "Create a Google Sheet with tabs Calendar (date, time, pillar, idea, product, platforms, media_file, status), Posts (post_key, calendar_id, platform, pillar, product, caption, alt_text, media_file, scheduled_at, uses_price, price_used, problems, status, approved_by, post_id, published_at, reach, engagement, clicks), Brand voice (rules) and Price list (product, price, stock).",
+        "Select your Google Sheets credential in every sheet node and replace YOUR_SHEET_ID.",
+        "Select your OpenAI credential in both model nodes and replace YOUR_MODEL.",
+        "Put media_file as a public image or video URL (Instagram needs one; TikTok needs a video)."
+      ],
+      "test": "Add two Calendar rows dated next week (one with an Instagram photo and a product price, one text-only idea that lists Instagram), then click Test workflow. Posts gets one row per platform; the text-only Instagram version is saved as needs_edit with the reason."
+    },
+    {
+      "file": "5-4-approve.json",
+      "name": "HL · Posting week · approve",
+      "what": "Every Friday at 16:00, sends Tolu each calendar item's photo and platform versions on Telegram and records Approve, Edit (replacing captions) or Skip.",
+      "setup": [
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID in both sheet nodes.",
+        "Select your Telegram credential in the three Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Run it after the draft test: you get the photo and a form. Approve one item and edit another with a line like instagram: Fresh ugu today. Posts shows approved with approved_by Tolu and the new caption."
+    },
+    {
+      "file": "5-4-publish.json",
+      "name": "HL · Posting week · publish",
+      "what": "Every 15 minutes, respects the pause setting, re-checks prices and the X budget, then publishes approved, due posts to each platform (TikTok as a draft to Tolu, WhatsApp as an approved template to opted-in customers) and saves the post IDs.",
+      "setup": [
+        "Add tabs Settings (setting, value) with posting_paused false and x_monthly_budget_usd 5, and Customers (name, phone, whatsapp_opt_in).",
+        "Create a Header Auth credential \"Meta page token\" (Name Authorization, Value Bearer followed by your Page access token) and select it in the Facebook and Instagram nodes.",
+        "Create a LinkedIn OAuth2 credential (an admin or content admin of the Page) and an X OAuth2 credential, and select them in the LinkedIn and X nodes.",
+        "Select your WhatsApp API credential in WhatsApp weekly_offer template; create and get approval for a marketing template weekly_offer with one body variable.",
+        "Select Google Sheets and Telegram credentials in their nodes.",
+        "Replace YOUR_SHEET_ID, YOUR_PAGE_ID, YOUR_IG_USER_ID, YOUR_LINKEDIN_ORG_ID, YOUR_LINKEDIN_API_VERSION (a currently supported YYYYMM version), YOUR_PHONE_NUMBER_ID, YOUR_TEST_PHONE and YOUR_TELEGRAM_CHAT_ID.",
+        "Test on a test Page and test accounts first. Attach your error workflow (3.6)."
+      ],
+      "test": "Approve one Facebook post with scheduled_at in the past and click Test workflow: it publishes and Posts gets its post_id. Change that product's price in Price list and approve another price post: it is held and Tolu is told. Set posting_paused to true: nothing runs.",
+      "walk": {
+        "title": "Build it: approved posts publish on time, everywhere",
+        "sample": "Approved posts due now · Facebook and Instagram photo of tomatoes loaded at dawn · tatashe post approved at ₦18,000, now ₦21,000",
+        "steps": [
+          {
+            "at": null,
+            "say": "Friday at 2, the draft workflow writes one version per platform and checks each in code. At 4, Tolu approves, edits or skips on Telegram. This workflow only ever publishes what she approved.",
+            "show": [
+              "Fri 14:00 draft → Fri 16:00 approve",
+              "Only status = approved is published"
+            ]
+          },
+          {
+            "at": "Every 15 minutes",
+            "say": "Every 15 minutes we look for approved posts that are due.",
+            "show": [
+              "Schedule: every 15 minutes"
+            ]
+          },
+          {
+            "at": "Settings",
+            "say": "First we read the Settings tab. One pause setting stops everything on a bad news day, an outage or a national event.",
+            "show": [
+              "posting_paused: false",
+              "x_monthly_budget_usd: 5"
+            ],
+            "data": "paused false"
+          },
+          {
+            "at": "Posting paused?",
+            "say": "If posting is paused, the run stops here and nothing publishes.",
+            "show": [
+              "{{ $json.posting_paused }} is true → stop"
+            ],
+            "data": "not paused → carry on"
+          },
+          {
+            "at": "Due now",
+            "say": "We pick posts that are approved, due, and not yet published. Prices come from the price list now, not from the draft. If a price changed since approval, the post is held.",
+            "show": [
+              "status approved · no post_id · scheduled_at ≤ now",
+              "price_used ≠ Price list → hold"
+            ],
+            "data": "tatashe ₦18,000 vs ₦21,000 → hold"
+          },
+          {
+            "at": "Due now",
+            "say": "X charges for every API post, more with a link, so code adds up this month's spend and holds the post once the budget is reached.",
+            "show": [
+              "xCost: 0.015, or 0.20 with a link",
+              "xSpent + cost > budget → hold"
+            ],
+            "data": "X within budget"
+          },
+          {
+            "at": "Tell Tolu: held",
+            "say": "A held post is marked held and Tolu is told why, so she can re-approve it with the new price or skip it.",
+            "show": [
+              "Post held (…): price changed (approved ₦18000, now ₦21000)"
+            ],
+            "data": "1 held · Tolu told"
+          },
+          {
+            "at": "Platform",
+            "say": "Everything else is routed by platform, because each one has its own way to publish.",
+            "show": [
+              "facebook · instagram · linkedin",
+              "x · tiktok · whatsapp"
+            ],
+            "data": "2 posts to publish"
+          },
+          {
+            "at": "Facebook photo post",
+            "say": "Facebook gets a photo post with the caption, on the Page, using the Page token in a Header Auth credential.",
+            "show": [
+              "POST graph.facebook.com/v21.0/YOUR_PAGE_ID/photos",
+              "url: media_file · message: caption"
+            ],
+            "data": "Facebook post_id"
+          },
+          {
+            "at": "Instagram media container",
+            "say": "Instagram takes two steps. First a media container from a public image or video URL. There are no text-only posts, which is why the draft check needs media.",
+            "show": [
+              "POST …/YOUR_IG_USER_ID/media",
+              "image_url (or video_url, REELS) + caption"
+            ],
+            "data": "container id"
+          },
+          {
+            "at": "Instagram publish",
+            "say": "Then we publish that container.",
+            "show": [
+              "POST …/YOUR_IG_USER_ID/media_publish",
+              "creation_id: {{ $json.id }}"
+            ],
+            "data": "Instagram post_id"
+          },
+          {
+            "at": "LinkedIn organisation post",
+            "say": "LinkedIn posts as the organisation, so the credential must belong to a page admin or content admin.",
+            "show": [
+              "POST api.linkedin.com/rest/posts",
+              "author: urn:li:organization:YOUR_LINKEDIN_ORG_ID"
+            ]
+          },
+          {
+            "at": "TikTok draft to Tolu",
+            "say": "Until TikTok audits the app, API posts stay private. So TikTok goes to Tolu as a draft, and she publishes it from the app.",
+            "show": [
+              "Telegram: TikTok draft for … Publish it from the TikTok app"
+            ]
+          },
+          {
+            "at": "Recipients (test mode)",
+            "say": "WhatsApp isn't a feed. The weekly offer goes only to customers who opted in, as an approved marketing template, and each one is charged. In test mode, only your own phone gets it.",
+            "show": [
+              "Customers: whatsapp_opt_in = yes",
+              "TEST_MODE = true → YOUR_TEST_PHONE",
+              "Template: weekly_offer (approved, marketing)"
+            ],
+            "data": "1 test recipient"
+          },
+          {
+            "at": "Save post ID",
+            "say": "Each platform's post ID is saved with published at, so Monday's report can fetch insights. Attach the error workflow, so a failed post alerts Tolu instead of failing silently.",
+            "show": [
+              "status = published · published_at = now",
+              "Update Posts · match post_key",
+              "Error workflow: 3.6"
+            ],
+            "data": "2 published · 1 held"
+          }
+        ],
+        "end": "Test it on a test Page: the due Facebook post publishes with its ID saved, the re-priced tatashe post is held, and setting posting_paused to true stops everything."
+      }
+    },
+    {
+      "file": "5-4-report.json",
+      "name": "HL · Posting week · Monday report",
+      "what": "Every Monday at 08:00, fetches insights for last week's Facebook and Instagram posts, stores them on each post, totals them by platform and pillar in code, and adds one AI-suggested plan change.",
+      "setup": [
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID.",
+        "Select the \"Meta page token\" Header Auth credential in Get insights.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select Gmail and Telegram credentials; replace YOUR_TOLU_EMAIL and YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "After a week of published posts (or one test post), click Test workflow: Posts rows get reach, engagement and clicks, and Tolu receives totals by pillar plus one plan change."
+    }
+  ]
+}

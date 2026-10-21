@@ -1,0 +1,18 @@
+{"id": "0.3", "items": [], "walk": {
+  "title": "Solve it: turn a WhatsApp order into clean cargo",
+  "sample": "Mrs Adebayo · 2 crates of tomatoes + 1 big bag of tatashe · Tuesday afternoon · 14 Ring Road",
+  "steps": [
+    {"at": null, "say": "A real order arrived on WhatsApp on Monday morning. We'll turn it into JSON any automation could use, then work out the total from paths.", "show": ["Received: Mon 5 Oct 2026, 8:14 a.m.", "Tomatoes ₦12,500 · tatashe ₦9,000 · delivery ₦1,500"]},
+    {"at": "1", "say": "Read it the way a machine would need it: who, what, and where and when. And Tuesday after Monday the fifth is the sixth of October.", "show": ["Who: name, phone", "What: 2 products with quantities", "Where/when: address, day, time of day"], "data": "Tuesday → 2026-10-06"},
+    {"at": "2", "say": "Choose a type for every field before writing anything. The phone is a string, because you never add phone numbers, and that keeps the country code safe.", "show": ["phone: string", "qty, unit_price: number"]},
+    {"at": "2", "say": "Products go in an array, because an order can have any number of them. Paid is a true or false, and notes is null on purpose.", "show": ["items: array of objects", "delivery.date: string (ISO)", "paid: boolean · notes: null"]},
+    {"at": "3", "say": "Now write it. Customer and delivery become objects, and each product gets a stable sku, so later steps don't care how someone spells tatashe.", "show": ["\"customer\": { \"name\", \"phone\" }", "\"sku\": \"PEP-TATASHE-L\""], "data": "order HL-0043"},
+    {"at": "3", "say": "Money stays a plain number with no naira sign or commas, and the date is ISO, so nothing can be misread.", "show": ["\"unit_price\": 12500", "\"date\": \"2026-10-06\""]},
+    {"at": "4", "say": "Test it in the lab. Tap a path and see the value and its type. Remember, counting starts at zero.", "show": ["customer.name → \"Mrs Adebayo\"", "items[1].unit_price → 9000"], "data": "2 items: [0] and [1]"},
+    {"at": "4", "say": "Try items two. There are only two items, so it comes back empty. That's the most common beginner bug.", "show": ["items[2].qty → nothing there"]},
+    {"at": "5", "say": "Calculate the total from paths: each quantity times its price, plus the delivery fee.", "show": ["items[0].qty × items[0].unit_price = 25000", "items[1].qty × items[1].unit_price = 9000", "+ delivery.fee 1500"], "data": "total = 35500"},
+    {"at": "5", "say": "Only when we show it to Mrs Adebayo does it become thirty-five thousand five hundred naira with a sign. Inside the data it stays a number.", "show": ["Data: 35500 · Message: ₦35,500"]},
+    {"at": "6", "say": "Spreadsheets can't hold a list in one cell, so we flatten it: one row in Orders, one row per item in Order items, linked by the order ID.", "show": ["Orders: 1 row", "Order items: 1 row per sku", "Linked by order_id"], "data": "HL-0043 · 2 item rows"}
+  ],
+  "end": "Right types, clear paths, a total you can trust. In Module 0.5 you'll make AI produce exactly this JSON from any messy message."
+}}

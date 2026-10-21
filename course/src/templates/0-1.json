@@ -1,0 +1,18 @@
+{"id": "0.1", "items": [], "walk": {
+  "title": "Solve it: Harvest Lane's first three automations",
+  "sample": "One week of Tolu's admin diary · 270 orders a week · 9 admin steps",
+  "steps": [
+    {"at": null, "say": "Tolu spends almost four hours a day moving information around. Before we touch any tool, we find out which parts a machine should take.", "show": ["45 orders a day · 6 days a week", "≈ 4 hours of admin a day"]},
+    {"at": "1", "say": "We start with a week of real data. Tolu writes down every admin step, how often it happens and how long it takes, because a measured week beats a guess.", "show": ["Step · runs per week · minutes per run", "Error cost: Tolu rates it", "Difficulty: Bolt rates it"], "data": "9 admin steps logged"},
+    {"at": "2", "say": "Now we score each row. Runs times minutes gives the time; the error factor makes costly mistakes count more.", "show": ["Weighted = runs × min × error factor", "Error: low ×1 · medium ×1.5 · high ×2"], "data": "Copy order: 270 × 1 × 2 = 540"},
+    {"at": "2", "say": "Then we divide by difficulty, never multiply, so hard tasks drop down the list. Keep every row in per-week units.", "show": ["Priority = weighted ÷ difficulty", "Easy ÷1 · Medium ÷2 · Hard ÷3"], "data": "1,358 min a week ≈ 22.6 hours"},
+    {"at": "3", "say": "Sort by priority. Copying orders into the notebook leads at 540, then the total and the payment check at 270 each.", "show": ["Copy order 540", "Work out total 270 · Check payment 270", "Send total 203 · Update stock 203"], "data": "ranked list of 9"},
+    {"at": "3", "say": "Notice reading the WhatsApp order scores lowest, at 45. Keep an eye on it, because the next step pulls it back in.", "show": ["Read the order: 45 (Hard ÷3)"]},
+    {"at": "4", "say": "The ranking says automate copying first, but copying needs the order in a clean shape, and reading messy WhatsApp text is hard. So we check what depends on what.", "show": ["Steps 2–4 depend on step 1", "Step 1 is hard"], "data": "dependency found"},
+    {"at": "4", "say": "Here's the key move: change the input, not just the steps. A short order form makes the order arrive already structured, and steps one to four collapse into one automation.", "show": ["Input: order form or WhatsApp menu", "Steps 1–4 → one automation"]},
+    {"at": "5", "say": "We choose three. Order capture first, then payment confirmation from a payment link, then a stock update that rides on the clean order data.", "show": ["A · Order capture (steps 1–4): 675 min/wk", "B · Payment confirmation (step 5): 270 min/wk", "C · Stock update (step 7): 135 min/wk"]},
+    {"at": "5", "say": "Route planning stays with a person on purpose. It happens six times a week and needs local judgment.", "show": ["Manual: route planning (step 6)", "Later quick wins: thank-you, weekly summary"]},
+    {"at": "6", "say": "Last, the payback. Eighteen hours saved a week, worth about one hundred and ninety-three thousand naira a month if Tolu's hour is worth two thousand five hundred.", "show": ["Saved: 1,080 of 1,358 min a week ≈ 18 h", "18 × ₦2,500 × 4.3 = ₦193,500 a month"], "data": "4.6 h of admin left"}
+  ],
+  "end": "Measured pain, scored honestly, dependencies checked: that's how you pick what to automate. Now score five tasks of your own."
+}}

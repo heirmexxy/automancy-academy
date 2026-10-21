@@ -1,0 +1,318 @@
+{
+ "name": "HL · Paystack payments → Paid, once",
+ "flow": [
+  {
+   "id": 1,
+   "module": "gateway:CustomWebHook",
+   "version": 1,
+   "parameters": {
+    "hook": null,
+    "maxResults": 1
+   },
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Paystack webhook"
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "gateway:WebhookRespond",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "status": "200",
+    "body": "ok",
+    "headers": []
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Reply 200 ok"
+    }
+   }
+  },
+  {
+   "id": 3,
+   "module": "datastore:ExistRecord",
+   "version": 1,
+   "parameters": {
+    "datastore": null
+   },
+   "mapper": {
+    "key": "{{1.data.reference}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0,
+     "name": "Seen this reference?"
+    }
+   },
+   "filter": {
+    "name": "charge.success only",
+    "conditions": [
+     [
+      {
+       "a": "{{1.event}}",
+       "b": "charge.success",
+       "o": "text:equal"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 4,
+   "module": "http:ActionSendDataAPIKeyAuth",
+   "version": 3,
+   "parameters": {
+    "handleErrors": false,
+    "useNewZLibDeCompress": true
+   },
+   "mapper": {
+    "url": "https://api.paystack.co/transaction/verify/{{1.data.reference}}",
+    "method": "get",
+    "headers": [],
+    "qs": [],
+    "bodyType": "",
+    "parseResponse": true,
+    "serializeUrl": false,
+    "shareCookies": false,
+    "rejectUnauthorized": true,
+    "followRedirect": true,
+    "useQuerystring": false,
+    "gzip": true,
+    "useMtls": false,
+    "timeout": ""
+   },
+   "metadata": {
+    "designer": {
+     "x": 900,
+     "y": 0,
+     "name": "Verify with Paystack"
+    }
+   },
+   "filter": {
+    "name": "Not processed before",
+    "conditions": [
+     [
+      {
+       "a": "{{3.exists}}",
+       "b": "false",
+       "o": "boolean:equal"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 5,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_ORDERS_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "1",
+    "filter": [
+     [
+      {
+       "a": "A",
+       "b": "{{1.data.metadata.order_id}}",
+       "o": "text:equal"
+      }
+     ]
+    ]
+   },
+   "metadata": {
+    "designer": {
+     "x": 1200,
+     "y": 0,
+     "name": "Find the order"
+    }
+   },
+   "filter": {
+    "name": "Paystack says success",
+    "conditions": [
+     [
+      {
+       "a": "{{4.data.data.status}}",
+       "b": "success",
+       "o": "text:equal"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 6,
+   "module": "builtin:BasicRouter",
+   "version": 1,
+   "parameters": {},
+   "mapper": null,
+   "metadata": {
+    "designer": {
+     "x": 1500,
+     "y": 0,
+     "name": "Amount check"
+    }
+   },
+   "routes": [
+    {
+     "flow": [
+      {
+       "id": 7,
+       "module": "google-sheets:updateRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "spreadsheetId": "YOUR_ORDERS_SHEET_ID",
+        "sheetId": "Orders",
+        "includesHeaders": true,
+        "rowNumber": "{{5.__ROW_NUMBER__}}",
+        "valueInputOption": "USER_ENTERED",
+        "values": {
+         "5": "Paid",
+         "12": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 1800,
+         "y": -150,
+         "name": "Mark order Paid"
+        }
+       },
+       "filter": {
+        "name": "Amount matches (kobo)",
+        "conditions": [
+         [
+          {
+           "a": "{{4.data.data.amount}}",
+           "b": "{{5.`7` * 100}}",
+           "o": "number:equal"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "id": 8,
+       "module": "datastore:AddRecord",
+       "version": 1,
+       "parameters": {
+        "datastore": null,
+        "overwrite": true
+       },
+       "mapper": {
+        "key": "{{1.data.reference}}",
+        "data": {
+         "order_id": "{{1.data.metadata.order_id}}",
+         "amount_kobo": "{{4.data.data.amount}}",
+         "processed_at": "{{now}}"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 2100,
+         "y": -150,
+         "name": "Remember the payment"
+        }
+       }
+      },
+      {
+       "id": 9,
+       "module": "google-email:ActionSendEmail",
+       "version": 4,
+       "parameters": {},
+       "mapper": {
+        "to": [
+         "{{1.data.customer.email}}"
+        ],
+        "subject": "Payment received · {{5.`0`}}",
+        "bodyType": "rawHtml",
+        "contentType": "text",
+        "content": "{{5.`11`}}\n\nPayment received: ₦{{formatNumber(4.data.data.amount / 100; 0; \".\"; \",\")}} (ref {{1.data.reference}}). Thank you!"
+       },
+       "metadata": {
+        "designer": {
+         "x": 2400,
+         "y": -150,
+         "name": "Send one receipt"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 10,
+       "module": "google-email:ActionSendEmail",
+       "version": 4,
+       "parameters": {},
+       "mapper": {
+        "to": [
+         "tolu@harvestlane.example"
+        ],
+        "subject": "Partial or wrong payment for {{5.`0`}}",
+        "bodyType": "rawHtml",
+        "contentType": "text",
+        "content": "Paystack confirmed ₦{{formatNumber(4.data.data.amount / 100; 0; \".\"; \",\")}} for {{5.`0`}} ({{5.`2`}}), but the order total is ₦{{formatNumber(5.`7`; 0; \".\"; \",\")}}.\nReference: {{1.data.reference}}\nThe order was NOT marked Paid. Please contact the customer."
+       },
+       "metadata": {
+        "designer": {
+         "x": 1800,
+         "y": 150,
+         "name": "Alert Tolu: wrong amount"
+        }
+       },
+       "filter": {
+        "name": "Amount wrong (kobo)",
+        "conditions": [
+         [
+          {
+           "a": "{{4.data.data.amount}}",
+           "b": "{{5.`7` * 100}}",
+           "o": "number:notequal"
+          }
+         ]
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": true,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "id": "5.1",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Harvest Lane's Boss 4 agent split into one brain and a Telegram adapter.</p><p><b>SUB · Sage Desk brain</b> (new workflow)</p><ol><li>Sub-workflow trigger (When Executed by Another Workflow) with three inputs: <code>channel</code>, <code>user_id</code>, <code>text</code>.</li><li>AI Agent: Boss 4's system message, tools and guardrails, unchanged. Memory session key = <code>{{ $json.user_id }}</code>.</li><li>Edit Fields: return <code>reply</code> and <code>handover</code> (true or false).</li></ol><p><b>HL · Telegram adapter</b></p><ol><li>Telegram Trigger (message).</li><li>IF the message has text; anything else gets \"please type your message\".</li><li>Edit Fields: <code>channel</code> = telegram, <code>user_id</code> = <code>tg-{{ $json.message.chat.id }}</code>, <code>text</code> = <code>{{ $json.message.text }}</code>.</li><li>Execute Sub-workflow: SUB · Sage Desk brain.</li><li>Telegram · Send Message to the same chat ID, text = <code>{{ $json.reply }}</code>.</li></ol><p>Test: ask the same five questions from your Boss 4 evaluation set and compare the replies with last week's. Then open the brain's executions list: each run should show an input like <code>user_id: tg-7781234567</code>.</p><p>Submit: both workflows, the five before-and-after replies, and the executions screenshot.</p>",
+   "mistakes": [
+    "Copying the whole agent into the Telegram workflow instead of calling a shared sub-workflow.",
+    "Keeping the memory session key as the raw chat ID, so the tg- prefix never reaches memory.",
+    "Not passing all three inputs (channel, user_id, text), so the brain cannot tell channels apart.",
+    "Checking only that Telegram replies, without comparing answers with the Boss 4 results."
+   ],
+   "pass": "Telegram gives the same answers as before on the Boss 4 test questions, and a screenshot of the brain's executions shows user_id values starting with tg-.",
+   "redo": "Send it back if the agent is still inside the Telegram workflow, the user_id has no tg- prefix, or there is no before-and-after comparison."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane on the WhatsApp Cloud API test number, with your own phone as the verified recipient.</p><p><b>HL · WhatsApp adapter</b>: WhatsApp Trigger (messages) → IF text message (statuses such as sent, delivered and read stop here) → Edit Fields: <code>channel</code> = whatsapp, <code>user_id</code> = <code>wa-</code> plus the sender's phone (path copied from the trigger output) → Execute Sub-workflow: SUB · Sage Desk brain → WhatsApp Business Cloud · Send, from the test phone number ID, text = reply. Every incoming text also updates <code>last_customer_msg_at</code> on the customer row.</p><p><b>Template</b> (WhatsApp Manager): name <code>order_ready</code>, category Utility, English: \"Hello {{1}}, your Harvest Lane order {{2}} is on its way and should arrive {{3}}. Reply here if you have any questions.\"</p><p><b>Order-dispatched branch</b>: IF <code>opted_in</code> is false → stop. Then a Code node:</p><pre class=\"codebox\">const hours = (Date.now() - new Date($json.last_customer_msg_at)) / 36e5;\nreturn { ...$json, path: hours &lt; 24 ? 'free-form' : 'template' };</pre><p>Switch on <code>path</code>: free-form → Send message; template → Send Template <code>order_ready</code> with name, order ID and arrival time.</p><p><b>Test log</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Order</th><th>Last message</th><th>Path</th><th>Result</th></tr></thead><tbody><tr><td>HL-T01</td><td>Message the test number, then dispatch 5 minutes later</td><td>free-form</td><td>Arrived</td></tr><tr><td>HL-T02</td><td>Stored time set to 30 hours ago</td><td>template (order_ready, utility)</td><td>Arrived</td></tr></tbody></table></div><p>The template path always works because templates are allowed outside the window. Never test the free-form path on a customer whose window has closed: it fails. Keep the token in an n8n credential, and replace the temporary token before it expires.</p>",
+   "mistakes": [
+    "Letting delivery and read receipts reach the brain, so the agent replies twice or answers receipts.",
+    "Trying a free-form message outside the 24-hour window instead of the approved utility template.",
+    "Creating the order update as a marketing template instead of a utility template.",
+    "Skipping the opt-in check before sending a business-initiated message.",
+    "Pasting the access token into a node instead of an n8n credential."
+   ],
+   "pass": "Two execution screenshots, one taking the free-form path inside 24 hours and one taking the template path, both delivered to the verified number, plus a log line naming the template and its category (utility) and approval status.",
+   "redo": "Send it back if both updates took the same path, the template is in the wrong category or unapproved, receipts are not filtered, or a token appears in plain text."
+  },
+  "g": {
+   "answer": "<p>Worked example: a voice prototype for Harvest Lane on a voice-agent platform's free trial. The figures below are a sample; read yours from the platform's usage page.</p><p><b>Opening line</b>: \"Hello, this is Harvest Lane's AI assistant. I can help with opening hours, delivery areas and order status. Say 'person' at any time and Tolu will call you back.\" No recording without asking first.</p><p><b>Tool</b>: <code>get_order_status</code> → POST to the n8n webhook with <code>order_id</code>; n8n returns one short sentence in under a second. Answers are kept under 25 words.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Call</th><th>Caller</th><th>Setting</th><th>Worked?</th><th>Length</th><th>Cost</th></tr></thead><tbody><tr><td>1</td><td>Tolu</td><td>Quiet office</td><td>Yes</td><td>1:20</td><td>from dashboard</td></tr><tr><td>2</td><td>Restaurant manager</td><td>Kitchen</td><td>Yes</td><td>1:45</td><td>from dashboard</td></tr><tr><td>3</td><td>Customer in her 70s</td><td>Home</td><td>Yes, slowly</td><td>2:40</td><td>from dashboard</td></tr><tr><td>4</td><td>Rider</td><td>Bodija market</td><td>No: noise cut in</td><td>1:10</td><td>from dashboard</td></tr><tr><td>5</td><td>Student, Pidgin</td><td>Hostel</td><td>Yes</td><td>1:35</td><td>from dashboard</td></tr></tbody></table></div><p>Success: 4 of 5. Average length: 1 min 42 s. Cost per call: total trial spend ÷ 5.</p><p><b>Three biggest problems</b>: market noise triggered false interruptions; order numbers said in Pidgin were misheard twice; a 2-second pause while the webhook ran made callers repeat themselves.</p><p><b>Recommendation</b>: go, for a narrow pilot only (hours, delivery areas, order status, \"call me back\"), with a person on offer. No-go for taking orders by voice until noise handling improves.</p><p>Submit: the call table, the platform config, the webhook workflow and this recommendation.</p>",
+   "mistakes": [
+    "Testing only with themselves in a quiet room, with no older caller and no noisy setting.",
+    "Leaving out the AI disclosure or the offer of a person.",
+    "Reporting cost per minute from the pricing page instead of actual cost per call from usage.",
+    "Giving the voice agent risky jobs such as refunds or negotiating prices.",
+    "Writing 'it works well' with no go or no-go decision."
+   ],
+   "pass": "Notes for five real calls (including an older caller and a noisy place) show at least four successes, the opening line discloses AI and offers a person, and the notes give success rate, average length, cost per call, three problems and a clear go or no-go.",
+   "redo": "Send it back if fewer than five people were tested, the disclosure or person option is missing, costs are guessed rather than measured, or there is no recommendation."
+  }
+ }
+}

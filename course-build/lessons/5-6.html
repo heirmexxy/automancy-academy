@@ -1,0 +1,332 @@
+<template data-mod="5.6" id="tpl-5-6">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.6</span>
+    <h1>Email Campaigns That Land</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Echo</span><span class="pill">Tools: Brevo and Mailchimp (free plans), your domain's DNS, n8n, Supabase or Sheets, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Email is still the channel a business owns: no algorithm decides who sees it. But only if it reaches the inbox. In this lesson you set up a consented list, authenticate a domain so Gmail and Yahoo trust it, build welcome, newsletter and win-back sequences in Brevo or Mailchimp, let AI draft from real facts with a person approving, and measure what actually brings customers back.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Build a list people agreed to join, and segment it by what they buy.</span></div>
+  <div><b>02</b><span>Set up SPF, DKIM, DMARC and one-click unsubscribe, and stay under spam-complaint limits.</span></div>
+  <div><b>03</b><span>Choose between Brevo and Mailchimp, and automate both from n8n.</span></div>
+  <div><b>04</b><span>Write sequences with AI from true facts, and judge them by clicks and orders, not opens.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>1,400 in spam</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An inbox with 1,400 of 2,000 emails in the spam folder.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="35" width="135" height="115" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="175" y="50" width="115" height="22" rx="5" fill="var(--volt)"/><text x="232" y="66" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">Inbox · 600</text>
+        <rect x="175" y="80" width="115" height="50" rx="5" fill="var(--glitch)"/><text x="232" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fff">Spam · 1,400</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"My first newsletter went to 2,000 contacts from my Gmail. 1,400 landed in spam, and Gmail blocked my account for a day."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a USB drive labelled 10,000 emails, cheap.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="185" y="70" width="100" height="44" rx="8" fill="var(--glitch)"/><rect x="285" y="82" width="16" height="20" rx="3" fill="#C8D0DA"/>
+        <text x="235" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">10,000 EMAILS</text><text x="235" y="104" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">₦15,000 ONLY</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Not enough people? I bought you ten thousand more! Fresh off a flash drive. Totally verified."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Echo next to three keys labelled SPF, DKIM and DMARC opening a mailbox.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+          <rect x="165" y="30" width="60" height="26" rx="13" fill="var(--sky)"/><text x="195" y="48" fill="#fff">SPF</text>
+          <rect x="235" y="30" width="60" height="26" rx="13" fill="var(--grape)"/><text x="265" y="48" fill="#fff">DKIM</text>
+          <rect x="195" y="66" width="70" height="26" rx="13" fill="var(--volt)"/><text x="230" y="84" fill="#fff">DMARC</text>
+        </g>
+        <rect x="195" y="105" width="70" height="50" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><path d="M195 110 L230 135 L265 110" stroke="var(--ink)" stroke-width="2" fill="none"/>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Inboxes trust senders who prove who they are, and who only email people who asked. Three keys, one rule."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A chart of orders rising after a win-back email.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--volt)"><rect x="175" y="120" width="18" height="30"/><rect x="200" y="115" width="18" height="35"/><rect x="225" y="90" width="18" height="60"/><rect x="250" y="70" width="18" height="80"/></g>
+        <path d="M170 150 H285" stroke="var(--ink)" stroke-width="2"/>
+        <text x="230" y="50" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="var(--ink)">31 customers came back</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Two months later</b>A win-back email to customers quiet for 60 days brought 31 of them back. All from inboxes, not spam.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Permission first</h3>
+    <div class="vocab">
+      <div><b>Opt-in</b>A clear, unticked box at checkout or on a form: "Send me weekly prices and offers." Record when and where they said yes.</div>
+      <div><b>Double opt-in</b>A confirmation email they must click. It proves the address is real and keeps typos and traps off the list. Both Brevo and Mailchimp offer it.</div>
+      <div><b>Not consent</b>Having someone's email from an order, a WhatsApp chat or a business card isn't permission for marketing. Bought lists never are.</div>
+      <div><b>The law</b>Nigeria's data protection rules require consent for direct marketing and let people object at any time. Every email needs an easy unsubscribe, honoured promptly (Gmail and Yahoo ask within 2 days).</div>
+      <div><b>Segments</b>Group by behaviour: restaurants vs households, what they buy, how recently. Smaller, relevant sends beat one big blast.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Brevo or Mailchimp?</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>Brevo</th><th>Mailchimp</th></tr></thead>
+      <tbody>
+        <tr><td>Free plan</td><td>300 emails a day; up to 100,000 contacts stored; Brevo branding on emails</td><td>250 contacts; 500 emails a month, at most 250 a day; 1 audience</td></tr>
+        <tr><td>Automation on free</td><td>Yes, for up to 2,000 contacts</td><td>One single-email automation (e.g. a welcome email); multi-step flows need a paid plan</td></tr>
+        <tr><td>Also does</td><td>Transactional email; SMS and WhatsApp campaigns on paid plans</td><td>Strong templates, reporting and integrations</td></tr>
+        <tr><td>From n8n</td><td>Brevo node (contacts, attributes, sending); HTTP Request for campaigns</td><td>Mailchimp node (members, tags, campaigns: replicate and send)</td></tr>
+        <tr><td>From Make</td><td>Brevo app</td><td>Mailchimp app</td></tr>
+        <tr><td>Good fit</td><td>Small Nigerian businesses starting free, with automation</td><td>Clients already on Mailchimp, or wanting its design tools</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Plans and limits checked Oct 2026; check each pricing page before quoting a client.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Three keys to the inbox</h3>
+    <div class="vocab">
+      <div><b>SPF</b>A DNS record listing which services may send email for your domain. Think of it as the guest list at the gate. One record only, ending in <code>~all</code> or <code>-all</code>.</div>
+      <div><b>DKIM</b>A digital signature on every email, checked against a public key in your DNS. Like a sealed envelope: proof nobody changed it on the way.</div>
+      <div><b>DMARC</b>Tells inboxes what to do when SPF or DKIM fail, and sends you reports. Start with <code>p=none</code>, read the reports, then move to <code>quarantine</code>.</div>
+      <div><b>One-click unsubscribe</b>A header that lets people leave in one tap. Gmail and Yahoo require it for bulk senders; Brevo and Mailchimp add it for you.</div>
+      <div><b>Complaint rate</b>Keep "marked as spam" below 0.1% of emails; at 0.3% Gmail and Yahoo start filtering you.</div>
+      <div><b>Your own domain</b>Send from a subdomain such as <code>mail.harvestlane.example</code>, never from @gmail.com through an email tool, and start with small, engaged segments.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Deliverability lab</h3>
+    <p>Glitch set up Harvest Lane's first campaign. Fix the records and settings until every check passes.</p>
+    <div class="deliv" data-deliv>
+      <div class="two">
+        <div>
+          <label>SPF record (TXT at harvestlane.example)<textarea data-dl="spf" spellcheck="false">v=spf1 include:_spf.google.com include:spf.your-email-tool.example +all</textarea></label>
+          <label>DMARC record (TXT at _dmarc.harvestlane.example)<textarea data-dl="dmarc" spellcheck="false" placeholder="v=DMARC1; p=none; rua=mailto:dmarc@harvestlane.example"></textarea></label>
+          <label class="inl"><input type="checkbox" data-dl="dkim"> DKIM records added and verified in the email tool</label>
+          <label class="inl"><input type="checkbox" data-dl="unsub" checked> One-click unsubscribe link in every email</label>
+        </div>
+        <div>
+          <label>From address<select data-dl="from"><option value="gmail" selected>harvestlane.orders@gmail.com</option><option value="own">news@mail.harvestlane.example</option></select></label>
+          <label>Email tool and plan<select data-dl="plan"><option value="brevo">Brevo Free</option><option value="mailchimp">Mailchimp Free</option><option value="paid">A paid plan</option></select></label>
+          <label>Contacts on the list<input type="number" data-dl="size" min="0" value="2000"></label>
+          <label>Where the contacts came from<select data-dl="src"><option value="whatsapp">Imported from WhatsApp chats</option><option value="bought" selected>A bought list</option><option value="optin">Opted in at checkout or on a form</option></select></label>
+          <label>Spam complaint rate last send (%)<input type="number" data-dl="cr" min="0" step="0.01" value="0.45"></label>
+        </div>
+      </div>
+      <ul data-o="checks"></ul>
+      <p class="note" data-o="plan"></p>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Sequences, and what to measure</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Sequence</th><th>When</th><th>What it says</th></tr></thead>
+      <tbody>
+        <tr><td>Welcome (3 emails)</td><td>On opt-in; day 3; day 7</td><td>Who Harvest Lane is; how ordering works; this week's best produce</td></tr>
+        <tr><td>Weekly newsletter</td><td>Thursday 5 p.m.</td><td>What's in season, prices, one kitchen tip, one customer story</td></tr>
+        <tr><td>Re-order reminder</td><td>The day before their usual order day</td><td>"Your usual Friday order? Tomatoes are ₦X this week."</td></tr>
+        <tr><td>Win-back</td><td>60 days with no order</td><td>"We miss you": what's new, and a reason to return that Tolu approved</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>AI writes, from facts</b>The AI drafts from the product sheet, prices and the customer's own order history. Discounts and promises come only from a list Tolu approved.</div>
+      <div><b>Opens are unreliable</b>Apple Mail's privacy protection loads images automatically, so many "opens" aren't real. Judge by clicks, replies and orders (tag links with UTM codes).</div>
+      <div><b>Stop rules</b>If complaints pass 0.1% or unsubscribes jump, pause and look at frequency and relevance before the next send.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.hubspot.com/courses/email-marketing" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot Academy: Email Marketing (free)</b><small>The strategy side: lists, segments, writing and testing.</small></span></a>
+    <a class="wcard" href="https://senders.yahooinc.com/best-practices/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Yahoo Sender Hub: best practices</b><small>The rules bulk senders must meet, in plain language.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=SPF+DKIM+DMARC+explained+simply" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: SPF, DKIM and DMARC explained</b><small>Ten minutes that will save every client's sender reputation.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's email engine</h2></div>
+  <div class="prose"><p><b>The goal.</b> Customers who opt in at checkout join a Brevo list automatically. They get a welcome series, a weekly newsletter that AI drafts and Tolu approves, a reminder before their usual order day, and a win-back email after 60 quiet days, all from an authenticated subdomain. The Mailchimp version of each step is noted.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Authenticate the domain</h4>
+      <p>In Brevo, add the sending domain <code>mail.harvestlane.example</code>. Brevo shows the records to add at your DNS provider (DKIM and a verification code); add a DMARC record (<code>v=DMARC1; p=none; rua=mailto:dmarc@harvestlane.example</code>) and check SPF has one record only. Press "Authenticate" in Brevo. In Mailchimp: Website → Domains → authenticate, with the same idea.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Consent at checkout → contact in Brevo</h4>
+      <p>The checkout form gets an unticked box: "Send me weekly prices and offers". In the payment workflow (HL·03 from the capstone), after a verified payment: if consent is true, the <b>Brevo</b> node creates or updates the contact with attributes <code>FIRSTNAME, SEGMENT (restaurant/household), FAV_CATEGORY, LAST_ORDER_DATE, USUAL_ORDER_DAY</code>, adds it to the "Customers · opted in" list, and stores <code>consent_at</code> and <code>consent_source</code> in Supabase. Mailchimp node: Member → Create, with tags.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Welcome and win-back automations</h4>
+      <p>In Brevo's automation builder: "contact added to list" → welcome email 1 → wait 3 days → email 2 → wait 4 days → email 3. For win-back, n8n updates <code>LAST_ORDER_DATE</code> on every order; a Brevo automation sends the win-back when that date is 60 days old, and stops if they order. (Mailchimp's free plan allows only one single-email automation, so a three-email series needs a paid plan, or let n8n schedule these sends.)</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>The weekly newsletter, drafted by AI, approved by Tolu</h4>
+      <p>Thursday 10:00, n8n reads the price list, what's in season and one approved customer story, and asks the AI for structured output: <code>{ subject_options[3], preview_text, sections[] }</code>. A Code node checks there are no prices or discounts that aren't in the sheet. Tolu picks a subject and approves on Telegram. Then an HTTP Request creates the campaign in Brevo (<code>POST /v3/emailCampaigns</code>, segment list, HTML from the template) and sends it at 17:00 (<code>/emailCampaigns/{id}/sendNow</code>, triggered on schedule). Mailchimp node: replicate last week's campaign, update content, Send.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Unsubscribes everywhere</h4>
+      <p>A Brevo webhook (unsubscribed, hard bounce, spam complaint) calls n8n, which marks the person in Supabase so no other channel markets to them either, the same day. Mailchimp has the same webhooks.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Measure what matters</h4>
+      <p>Every link carries <code>utm_source=email&amp;utm_campaign=week41</code>, so orders can be traced back. Monday's report adds: emails delivered, clicks, orders from email, unsubscribes and complaints, and pauses the next send automatically if complaints pass 0.1%.</p>
+      <div class="stats">
+        <div class="stat"><b>3</b><span>DNS records between spam and inbox</span></div>
+        <div class="stat"><b>0</b><span>contacts without consent</span></div>
+        <div class="stat"><b>1 tap</b><span>to unsubscribe, honoured everywhere</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Everyone on the list asked to be there.</li><li>The domain is authenticated, so inboxes trust it.</li><li>Sequences fire on real behaviour, not on a calendar alone.</li><li>AI drafts from facts; Tolu approves anything with a price or promise.</li><li>Success is measured in clicks and orders.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Bought or borrowed lists.</li><li>Sending from free Gmail through an email tool.</li><li>Two SPF records, or <code>+all</code>.</li><li>Celebrating open rates.</li><li>Discounts invented by the AI.</li><li>Unsubscribes ignored on other channels.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My campaign had an 80% open rate! Also, a few small problems.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>After importing the bought list, Brevo suspended sending pending review.</td></tr>
+        <tr><td>B</td><td>Every email failed DMARC at Gmail. The From address was harvestlane.orders@gmail.com.</td></tr>
+        <tr><td>C</td><td>The domain had two SPF records, one ending in +all.</td></tr>
+        <tr><td>D</td><td>The newsletter promised "20% off everything this weekend". Nobody had approved it, and customers expected it.</td></tr>
+        <tr><td>E</td><td>"80% opened!", yet clicks and orders were almost zero.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> bought lists mean complaints, bounces and spam traps; email tools suspend accounts for it. Delete the list; grow it with opt-ins.</li>
+        <li><b>B:</b> a free-mailbox From address can't pass DMARC through a third-party sender. Send from your own authenticated (sub)domain.</li>
+        <li><b>C:</b> only one SPF record is valid, and +all lets anyone send as you. Merge them into one record ending in ~all.</li>
+        <li><b>D:</b> the AI invented an offer. Offers come only from an approved list; a Code check blocks any discount not on it; a person approves every campaign.</li>
+        <li><b>E:</b> automatic image loading (such as Apple Mail's privacy protection) inflates opens. Measure clicks, replies and orders.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Authenticate a domain</h4>
+    <ul><li>Set up SPF, DKIM and DMARC for a domain you control (or a client's, with permission) in Brevo or Mailchimp.</li><li>Send a test to a Gmail account and open "Show original".</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The message shows SPF, DKIM and DMARC all as PASS.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Welcome and win-back sequences</h4>
+    <ul><li>Build the consent-at-checkout flow into Brevo (or Mailchimp), plus the welcome series and the 60-day win-back.</li><li>Test with three test contacts at different order dates.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Each test contact receives exactly the right emails, and unsubscribing one stops everything for that contact the same day.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A real campaign with real results</h4>
+    <ul><li>For a real business with a consented list, run four weekly newsletters drafted by AI and approved by the owner.</li><li>Report clicks, orders from email, unsubscribes and complaints, against a baseline.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Complaints stayed under 0.1% and you can show orders that came from email.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Which contacts can receive the newsletter?</p><div class="opts">
+      <button type="button" data-opt="a">Everyone who ever ordered</button><button type="button" data-opt="b">People who ticked "send me offers" and confirmed</button><button type="button" data-opt="c">Everyone in your WhatsApp chats</button><button type="button" data-opt="d">A bought list of food lovers</button></div>
+      <p class="fb" hidden data-why="Consent first. An order or a chat isn't permission for marketing."></p></div>
+    <div class="q" data-ans="c"><p>2. What does DKIM do?</p><div class="opts">
+      <button type="button" data-opt="a">Lists which servers may send for you</button><button type="button" data-opt="b">Tells inboxes what to do with failures</button><button type="button" data-opt="c">Signs each email so inboxes can check it wasn't changed and really came from you</button><button type="button" data-opt="d">Unsubscribes people</button></div>
+      <p class="fb" hidden data-why="SPF is the guest list, DKIM the sealed envelope, DMARC the instructions."></p></div>
+    <div class="q" data-ans="a"><p>3. Your free Mailchimp list has 2,000 contacts. What's the problem?</p><div class="opts">
+      <button type="button" data-opt="a">The free plan holds 250 contacts and 500 sends a month</button><button type="button" data-opt="b">Nothing</button><button type="button" data-opt="c">Mailchimp doesn't work in Nigeria</button><button type="button" data-opt="d">It needs a Gmail address</button></div>
+      <p class="fb" hidden data-why="Know the plan limits before you promise a client anything. Brevo's free plan sends 300 a day."></p></div>
+    <div class="q" data-ans="d"><p>4. Which result best shows a campaign worked?</p><div class="opts">
+      <button type="button" data-opt="a">An 80% open rate</button><button type="button" data-opt="b">The number of emails sent</button><button type="button" data-opt="c">Number of hashtags</button><button type="button" data-opt="d">Clicks and orders traced from the email links</button></div>
+      <p class="fb" hidden data-why="Opens are inflated by automatic image loading. Clicks and orders are real."></p></div>
+    <div class="q" data-ans="b"><p>5. Complaints reach 0.3%. What happens, and what do you do?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing; send more</button><button type="button" data-opt="b">Gmail and Yahoo start filtering you; pause, fix the list and frequency</button><button type="button" data-opt="c">Change the subject line only</button><button type="button" data-opt="d">Switch to a new Gmail account</button></div>
+      <p class="fb" hidden data-why="Aim for under 0.1%. Fix the cause before the next send."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-6">AUTOMANCY LOG · Lesson 5.6 · Email Campaigns That Land
+Date:
+Email tool and plan (Brevo / Mailchimp):
+Domain check in Gmail "Show original": SPF __ · DKIM __ · DMARC __
+Consent source and list size:
+Sequences built (welcome / newsletter / reminder / win-back):
+Results: delivered · clicks · orders from email · unsubscribes · complaints:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Only email people who agreed, and record when and how.</li>
+      <li>SPF, DKIM, DMARC and one-click unsubscribe, from your own domain.</li>
+      <li>Brevo's free plan includes automation; Mailchimp's free plan is small and allows only one single-email automation.</li>
+      <li>AI drafts from facts; a person approves prices and promises.</li>
+      <li>Measure clicks and orders; pause if complaints climb.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/courses/email-marketing" target="_blank" rel="noopener">HubSpot Academy: Email Marketing (free)</a></li>
+    <li><span class="kind">Text</span><a href="https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans" target="_blank" rel="noopener">Brevo: pricing plans explained</a></li>
+    <li><span class="kind">Text</span><a href="https://mailchimp.com/pricing/marketing/" target="_blank" rel="noopener">Mailchimp: plans and limits</a></li>
+    <li><span class="kind">Text</span><a href="https://support.google.com/a/answer/81126" target="_blank" rel="noopener">Google: email sender guidelines</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.brevo/" target="_blank" rel="noopener">n8n Docs: Brevo node</a> · <a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.mailchimp/" target="_blank" rel="noopener">Mailchimp node</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=SPF+DKIM+DMARC+explained+simply" target="_blank" rel="noopener">YouTube: SPF, DKIM and DMARC explained</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Do the Bronze mission live: one learner shares their screen and adds the DNS records while the room watches the Gmail "Show original" page turn from FAIL to PASS. It's the moment email deliverability stops being mysterious. Then let pairs write subject lines for the same newsletter and vote on which one they'd click.</p>
+  </div>
+</section>
+
+</article>
+</template>

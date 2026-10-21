@@ -1,0 +1,333 @@
+<template data-mod="5.7" id="tpl-5-7">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.7</span>
+    <h1>One Inbox for Every Channel</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Sage</span><span class="pill">Tools: n8n, Gmail, WhatsApp Cloud API, Meta webhooks, Supabase, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Customers don't think in channels. One person emails, then WhatsApps, then comments on Instagram, all about the same late order. If each channel is handled separately, they get three different answers, or the same answer three times. In this lesson you join email, WhatsApp, Instagram and Facebook into one customer record and one conversation history, with one agent that answers consistently in each channel's style and rules, and routes the hard ones to the right person on time.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Design one customer record with many identities, and one shared conversation history.</span></div>
+  <div><b>02</b><span>Match identities safely: merge on proof, suggest on hints, never on a name alone.</span></div>
+  <div><b>03</b><span>Run one agent brain with channel-specific replies and rules.</span></div>
+  <div><b>04</b><span>Route by priority, assign a person, and keep response-time promises.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Three channels, three answers</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three phones showing an email, a WhatsApp message and an Instagram DM from the same customer.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="160" y="40" width="45" height="80" rx="8" fill="var(--sky)"/><rect x="212" y="40" width="45" height="80" rx="8" fill="var(--volt)"/><rect x="264" y="40" width="45" height="80" rx="8" fill="var(--rose)"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="8" fill="#fff" text-anchor="middle"><text x="182" y="84">email</text><text x="234" y="84">WhatsApp</text><text x="286" y="84">Instagram</text></g>
+        <text x="234" y="145" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">"Where is my order?" ×3</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>9:02 to 9:35 a.m.</b>Mrs Adeyemi asks about her late order by email, then WhatsApp, then Instagram.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two contradictory replies: refund approved and no refunds.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="35" width="135" height="40" rx="10" fill="var(--card)" stroke="var(--volt)" stroke-width="2"/><text x="232" y="59" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">Email: "Refund approved!"</text>
+        <rect x="165" y="90" width="135" height="40" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="2"/><text x="232" y="114" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">WhatsApp: "No refunds"</text>
+        <use href="#sage" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Sage</b>"Two bots, two memories, two answers. The customer screenshots both. Now nobody trusts either."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch stapling two different people named Funke together.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="165" y="55" width="60" height="70" rx="8" fill="var(--card)"/><rect x="240" y="55" width="60" height="70" rx="8" fill="var(--card)"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" fill="#13233A" text-anchor="middle"><text x="195" y="95">Funke A.</text><text x="270" y="95">Funke A.</text></g>
+        <path d="M222 90 H243" stroke="var(--glitch)" stroke-width="6"/>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Same name? Same person! I merged them. Funke from Bodija can now see Funke from Mokola's orders. Efficient!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="One timeline with messages from three channels and one reply.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="25" width="145" height="145" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--ink)"><text x="170" y="48">09:02 email</text><text x="170" y="68">09:20 WhatsApp</text><text x="170" y="88">09:35 Instagram</text></g>
+        <rect x="168" y="100" width="128" height="36" rx="6" fill="var(--volt)"/><text x="232" y="116" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="#fff">One reply on Instagram:</text><text x="232" y="129" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="#fff">out for delivery, 10:15</text>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"One customer, one timeline, one answer, on the channel she used last. The other threads get a short note."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>One customer, many identities</h3>
+    <p>Store the person once, and each way of reaching them as a separate, verified identity.</p>
+<pre class="codebox">customers      id, display_name, segment, consent_marketing, created_at
+identities     customer_id, type (phone|email|instagram|facebook|x), value,
+               verified (true|false), source ("checkout", "said in IG DM"), added_at
+conversations  id, customer_id, channel, thread_id, status, priority,
+               assigned_to, sla_due_at, last_customer_msg_at
+messages       conversation_id, direction (in|out), channel, text, at, sent_by (agent|person)
+decisions      customer_id, type (refund|credit|exception), value, decided_by, at</pre>
+    <div class="vocab">
+      <div><b>Normalise first</b>0803 000 1111, +234 803 000 1111 and 2348030001111 are the same number. Store phones in one format (+2348030001111) and emails in lowercase, or you'll create duplicates.</div>
+      <div><b>One source of truth for decisions</b>Refunds, credits and exceptions live in <code>decisions</code>. Every channel's agent reads it before answering, so all channels say the same thing.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Matching rules: proof, hints and names</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Evidence</th><th>Action</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Exact phone or email already verified on a customer (e.g. from checkout)</td><td>Merge automatically</td><td>It's proof.</td></tr>
+        <tr><td>The customer tells you their number or email in another channel</td><td>Link the conversation for context, but verify (a code sent to that number) before sharing order or payment details</td><td>Anyone can type someone else's number.</td></tr>
+        <tr><td>Similar business name, same topic, no shared identifier</td><td>Suggest to a person; ask the customer</td><td>Probably the same, but not proven.</td></tr>
+        <tr><td>Same personal name only</td><td>Keep separate</td><td>Names are shared by thousands of people.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> A wrong merge is worse than a missed one. A missed merge costs a little consistency; a wrong merge shows a stranger someone's address and orders.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Identity lab: who is who?</h3>
+    <p>Seven messages arrived this morning. Decide each pair. (Funke Adeyemi's checkout record has email funke.a@example.com and phone +2348030001111, both verified.)</p>
+    <script type="application/json" id="id-5-7">{"msgs":[
+      {"n":1,"ch":"Email","from":"funke.a@example.com","at":"09:02","text":"Order HL-0412 hasn't arrived."},
+      {"n":2,"ch":"WhatsApp","from":"+234 803 000 1111","at":"09:20","text":"Hello, still waiting for my order since morning."},
+      {"n":3,"ch":"Instagram DM","from":"@funkescakes","at":"09:35","text":"Hi, this is Funke. My WhatsApp is 0803 000 1111. Any update on my order?"},
+      {"n":4,"ch":"Facebook comment","from":"Funke A.","at":"09:40","text":"Harvest Lane, late again??"},
+      {"n":5,"ch":"WhatsApp","from":"+234 805 111 2222","at":"09:41","text":"Do you have ugu today?"},
+      {"n":6,"ch":"Email","from":"orders@grillyard.example","at":"10:05","text":"Please send the invoice for last week."},
+      {"n":7,"ch":"Instagram DM","from":"@grill_yard_ibadan","at":"10:12","text":"Did you get our email about the invoice?"}],
+     "pairs":[
+      {"a":1,"b":2,"evidence":"The email and the phone number are both verified on Funke Adeyemi's checkout record.","best":"merge","why":"Both identifiers are verified on the same customer: merge automatically and treat it as one conversation."},
+      {"a":2,"b":3,"evidence":"The Instagram account says it's Funke and types the verified phone number.","best":"verify","why":"Link it for context, but anyone can type a number. Send a code to that WhatsApp number before sharing order details on Instagram."},
+      {"a":1,"b":4,"evidence":"Same first name and initial; no shared phone, email or handle.","best":"separate","why":"A name alone proves nothing, and there are many Funke A.s in Ibadan. Reply publicly without details and invite them to message you."},
+      {"a":2,"b":5,"evidence":"Both WhatsApp, different numbers, different topics.","best":"separate","why":"Different numbers are different identities. Nothing links them."},
+      {"a":6,"b":7,"evidence":"Similar business names, same topic (invoice), no shared identifier.","best":"verify","why":"Very likely the same restaurant, but not proven. Suggest the link to a person, or ask: “Is this The Grill Yard, orders@grillyard.example?”"}]}</script>
+    <div class="ident" data-ident="id-5-7">
+      <div data-o="msgs" style="display:grid;gap:6px"></div>
+      <div data-o="pairs" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>One brain, many voices</h3>
+    <p>The same agent (Sage Desk, B4) answers every channel, with the same knowledge, tools and decisions. Only the reply's shape and rules change:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Channel</th><th>Reply style</th><th>Rules (from 5.1 and 5.5)</th></tr></thead>
+      <tbody>
+        <tr><td>Email</td><td>Full sentences, greeting, signature, order details allowed</td><td>Reply to the thread; marketing rules don't apply to service replies</td></tr>
+        <tr><td>WhatsApp</td><td>Short, friendly, one message, buttons where useful</td><td>Free-form only within 24 hours of their last message; otherwise a template</td></tr>
+        <tr><td>Instagram and Messenger DMs</td><td>Short and warm</td><td>24-hour window; details only after identity is verified</td></tr>
+        <tr><td>Public comments</td><td>One line, no personal details</td><td>Move anything personal to private</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Answer once</b>Reply on the channel the customer used most recently. Close the other threads with "We've replied on WhatsApp so everything's in one place."</div>
+      <div><b>Read before writing</b>Before every reply, the agent loads the whole timeline and the <code>decisions</code> table, so it never contradicts an earlier answer.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Routing, people and promises</h3>
+    <div class="vocab">
+      <div><b>Priority</b>Safety or legal → complaint or refund → order problem → buying question → general question → praise.</div>
+      <div><b>Assignment</b>Each conversation that needs a person is assigned to one named person (Tolu, or her assistant Bisi), never "the team".</div>
+      <div><b>Response targets</b>Complaints: a person within 1 working hour. Order problems: 15 minutes. Questions: 5 minutes (the agent). A timer on every conversation; alerts when one is about to be missed.</div>
+      <div><b>A screen for the team</b>Telegram works for one or two people. For a bigger team, an open-source shared inbox such as Chatwoot can show every conversation in one place, while n8n and the agent work behind it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.gmailtrigger/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Gmail Trigger</b><small>The email door into the shared inbox.</small></span></a>
+    <a class="wcard" href="https://github.com/chatwoot/chatwoot" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Chatwoot (open source)</b><small>See how a shared omnichannel inbox looks, if a client's team needs a screen.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=omnichannel+customer+support+AI+agent+n8n" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: omnichannel AI support with n8n</b><small>Watch one build; check how it matches the same customer across channels.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's one inbox</h2></div>
+  <div class="prose"><p><b>The goal.</b> Email, WhatsApp, Instagram and Facebook messages all flow into one Supabase record per customer. One agent answers with the full history and the same decisions, in each channel's style and rules. Hard cases go to a named person with a response timer.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Doors in, one shape out</h4>
+      <p>Three small "adapter" workflows: <b>Gmail Trigger</b>, the <b>WhatsApp</b> webhook (5.1), and the <b>Meta</b> webhook (5.5). Each turns its event into the same shape and calls one sub-workflow, <b>Inbox · Receive</b>:</p>
+<pre class="codebox">{ channel, thread_id, from_value, from_type, text, received_at, raw_id }</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Resolve the identity</h4>
+<pre class="codebox">// Code node: normalise, then look up
+const v = $json.from_type === 'phone'
+  ? '+234' + $json.from_value.replace(/\D/g,'').replace(/^(234|0)/,'')
+  : $json.from_value.trim().toLowerCase();
+return { ...$json, from_value: v };</pre>
+      <p>Supabase: find a verified identity with that value. Found → that customer. Not found → a new customer with an unverified identity. Then check the message text for a phone or email the customer typed; if it matches another customer's verified identity, create a <b>link suggestion</b> (not a merge) and set <code>needs_verification = true</code>.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Upsert the conversation</h4>
+      <p>One open conversation per customer per topic: if the customer has an open conversation about the same order, add the message there, whichever channel it came from. Update <code>last_customer_msg_at</code> and the channel they used most recently.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Answer with the whole picture</h4>
+      <p>The Sage Desk agent gets a tool <code>get_customer_context</code> that returns the timeline across channels, open orders and the <code>decisions</code> rows. The system message adds: "Reply only on <code>reply_channel</code>, in its style; if <code>needs_verification</code>, don't share order or payment details." Allowed actions per channel come from code, as in 5.5. Refunds still need Tolu's approval, and approved decisions are written to <code>decisions</code> so every channel sees them.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Send through the right door, then tidy up</h4>
+      <p>A Switch on <code>reply_channel</code> calls the Gmail, WhatsApp or Meta sender. Other open threads for the same customer get one short "replied on WhatsApp" note, then close.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Route and time</h4>
+      <p>Priority and assignment are set in code from intent and urgency. A watchdog every 5 minutes checks <code>sla_due_at</code>; at 80% of the time it pings the assigned person, at 100% it escalates to Tolu. A daily digest at 18:00: conversations by channel, median response time, missed targets, open hand-overs.</p>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>record per customer</span></div>
+        <div class="stat"><b>1</b><span>answer, on the latest channel</span></div>
+        <div class="stat"><b>0</b><span>merges on a name alone</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Identities are normalised and verified, so merges are safe.</li><li>Decisions live in one table every channel reads.</li><li>One agent, one memory, channel-specific voice and rules.</li><li>Each customer gets one answer, not three.</li><li>Named owners and timers keep promises.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>A separate bot per channel.</li><li>Merging on names.</li><li>Phone numbers in mixed formats.</li><li>Sharing order details before verifying identity.</li><li>Replying on every channel at once.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I unified everything. Mostly. Here's the morning.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>A customer was told "refund approved" by email and "no refunds for late deliveries" on WhatsApp, an hour apart.</td></tr>
+        <tr><td>B</td><td>Two different customers called Funke were merged. One was sent the other's address.</td></tr>
+        <tr><td>C</td><td>A customer got the same answer three times: email, WhatsApp and Instagram.</td></tr>
+        <tr><td>D</td><td>The customers table has 312 "new" customers who are really 140 people: 0803…, 234803… and +234803…</td></tr>
+        <tr><td>E</td><td>A hotel's procurement manager got "ok 👍 dey come" by email at 3 a.m.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> each channel answered without the shared record. Store decisions in one table and make the agent read it before every reply.</li>
+        <li><b>B:</b> merged on a name. Merge only on verified identifiers; verify before sharing details.</li>
+        <li><b>C:</b> replied on every channel. Reply once on the latest channel, then close the others with a note.</li>
+        <li><b>D:</b> no normalisation. Store phones as +234… and emails in lowercase, then de-duplicate the existing records carefully.</li>
+        <li><b>E:</b> WhatsApp style on email, and no business-hours rule for business clients. Channel-specific style in the prompt; send non-urgent business replies in working hours.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Map a real business's channels</h4>
+    <ul><li>List every channel a real business uses, who answers each, their reply rules, and how long replies take now.</li><li>Write its matching rules and response targets.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The owner agrees with your map and targets, and you've found at least one customer who used two channels for the same issue.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Two channels, one record, one agent</h4>
+    <ul><li>Connect email and WhatsApp (or Instagram) to one customers/identities/conversations schema and one agent.</li><li>Test with one person writing on both channels, and two people with the same name.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The first person gets one consistent answer; the two namesakes are never merged.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run a unified inbox for two weeks</h4>
+    <ul><li>For a real business, run the one inbox across at least three channels for two weeks.</li><li>Report median response time per channel, merges made and suggested, and missed targets.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Response times improved against the previous two weeks, with zero wrong merges.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Two messages come from customers both named "Funke A.". What do you do?</p><div class="opts">
+      <button type="button" data-opt="a">Merge them</button><button type="button" data-opt="b">Merge them if they're in the same city</button><button type="button" data-opt="c">Keep them separate unless a verified identifier links them</button><button type="button" data-opt="d">Delete one</button></div>
+      <p class="fb" hidden data-why="A wrong merge leaks private data. Names prove nothing."></p></div>
+    <div class="q" data-ans="a"><p>2. An Instagram user types the phone number of a known customer. What's safe?</p><div class="opts">
+      <button type="button" data-opt="a">Link for context; verify by code before sharing order details</button><button type="button" data-opt="b">Share the order details straight away</button><button type="button" data-opt="c">Block them</button><button type="button" data-opt="d">Ignore the number</button></div>
+      <p class="fb" hidden data-why="Anyone can type a number. Verify before revealing anything personal."></p></div>
+    <div class="q" data-ans="b"><p>3. Why does every channel's agent read the <code>decisions</code> table?</p><div class="opts">
+      <button type="button" data-opt="a">To slow it down</button><button type="button" data-opt="b">So refunds and exceptions are the same answer everywhere</button><button type="button" data-opt="c">For marketing</button><button type="button" data-opt="d">It doesn't need to</button></div>
+      <p class="fb" hidden data-why="One source of truth for decisions means one answer, whatever the channel."></p></div>
+    <div class="q" data-ans="d"><p>4. A customer wrote on email, then WhatsApp. Where do you reply?</p><div class="opts">
+      <button type="button" data-opt="a">On both, with the same text</button><button type="button" data-opt="b">On email, always</button><button type="button" data-opt="c">On whichever is cheaper</button><button type="button" data-opt="d">On WhatsApp (the latest), with a short note on the email thread</button></div>
+      <p class="fb" hidden data-why="Answer once, where they are now; keep the other thread tidy."></p></div>
+    <div class="q" data-ans="c"><p>5. Why normalise phone numbers to +234…?</p><div class="opts">
+      <button type="button" data-opt="a">WhatsApp requires it for marketing</button><button type="button" data-opt="b">It looks nicer</button><button type="button" data-opt="c">So 0803…, 234803… and +234803… are recognised as one person</button><button type="button" data-opt="d">To hide the number</button></div>
+      <p class="fb" hidden data-why="One format, or the same customer becomes three."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-7">AUTOMANCY LOG · Lesson 5.7 · One Inbox for Every Channel
+Date:
+Channels connected:
+Matching rules (merge / suggest / separate):
+Test: one person on two channels → answers consistent? Namesakes kept apart?
+Response targets and median response time per channel:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-7">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>One customer record, many verified identities, one timeline.</li>
+      <li>Merge on proof, suggest on hints, never on a name.</li>
+      <li>Decisions live in one place that every channel reads.</li>
+      <li>One agent brain, channel-specific voice and rules; answer once, on the latest channel.</li>
+      <li>Named owners and timers turn promises into practice.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.gmailtrigger/" target="_blank" rel="noopener">n8n Docs: Gmail Trigger</a></li>
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/policy" target="_blank" rel="noopener">Meta Messenger Platform policy</a></li>
+    <li><span class="kind">Text</span><a href="https://github.com/chatwoot/chatwoot" target="_blank" rel="noopener">Chatwoot: open-source shared inbox</a></li>
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/agents-course" target="_blank" rel="noopener">Hugging Face AI Agents Course (free certificate)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=omnichannel+customer+support+AI+agent+n8n" target="_blank" rel="noopener">YouTube: omnichannel AI support with n8n</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Play "the same customer": three volunteers each hold a phone and message the class bot about the same order, on different channels, a minute apart, while a fourth volunteer named the same as one of them asks about a different order. Watch the timeline on screen. Then argue as a room about the Card 3 pairs; the disagreements are the lesson.</p>
+  </div>
+</section>
+
+</article>
+</template>

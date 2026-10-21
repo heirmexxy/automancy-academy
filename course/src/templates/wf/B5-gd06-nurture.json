@@ -1,0 +1,1134 @@
+{
+  "name": "GD·06 Nurture · email",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·06 Nurture (Boss 5 · D6, from 5.6)\nBrevo, from an authenticated domain (SPF, DKIM, DMARC pass), consented contacts only.\n1. Hourly: customers who ticked consent at checkout → Brevo contact (attributes + list) and LAST_ORDER_DATE kept current. The welcome series and the 60-day win-back run as Brevo automations on that list and attribute.\n2. Thursday 10:00: AI drafts the newsletter → CODE blocks any price or discount not on the approved lists → Tolu approves → campaign created in Brevo.\n3. Thursday 17:00: send the approved campaign, unless campaigns are paused.\n4. Monday 07:00: last campaign's stats; complaints over 0.1% pause the next campaign and alert Tolu; stats logged for GD·07.\n5. Brevo webhook (unsubscribed, hard bounce, spam complaint) → suppression for ALL channels, consent off, the same minute.\n\n**Credentials:** Postgres, Brevo API key (Header Auth \"Brevo\": api-key), OpenAI, Telegram. **Env:** BREVO_WEBHOOK_TOKEN.\n**Replace:** YOUR_BREVO_LIST_ID, news@mail.harvestlane.example, YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 520,
+        "width": 460
+      },
+      "id": "fbe63f34-0909-4ec0-8c2e-7e02b43448d9",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -576
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "9b74fd3e-d30a-41f5-8e53-5c33adad566a",
+      "name": "Every hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT c.customer_id, i.value AS email, c.first_name, c.segment, c.fav_category, c.usual_order_day,\n       (SELECT max(paid_at)::date FROM orders o WHERE o.customer_id = c.customer_id) AS last_order_date\nFROM customers c JOIN identities i ON i.customer_id = c.customer_id AND i.type = 'email' AND i.verified\nWHERE c.marketing_consent = true AND c.consent_at IS NOT NULL\n  AND NOT EXISTS (SELECT 1 FROM suppression s WHERE s.value = i.value)\n  AND (c.brevo_synced_at IS NULL OR c.brevo_synced_at < (SELECT max(paid_at) FROM orders o WHERE o.customer_id = c.customer_id))\nLIMIT 200;",
+        "options": {}
+      },
+      "id": "749572f7-ef05-4d3d-8cc1-88142cc4af0f",
+      "name": "Consented customers to sync",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        -360
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "2433d551-3aba-43dd-8fbc-2c93f890b8fa",
+              "leftValue": "={{ $json.email ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "059cdc32-2018-4aae-af89-53352e2a9ed8",
+      "name": "Any to sync",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/contacts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email, updateEnabled: true, listIds: [Number('YOUR_BREVO_LIST_ID')], attributes: { FIRSTNAME: $json.first_name || '', SEGMENT: $json.segment || 'household', FAV_CATEGORY: $json.fav_category || '', LAST_ORDER_DATE: $json.last_order_date, USUAL_ORDER_DAY: $json.usual_order_day || '' } }) }}",
+        "options": {}
+      },
+      "id": "a55d0dc1-aeca-42e0-8c12-8aa9225ae1fd",
+      "name": "Brevo: create or update contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE customers SET brevo_synced_at = now() WHERE customer_id = $1 RETURNING customer_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Any to sync').item.json.customer_id ] }}"
+        }
+      },
+      "id": "e3f8c712-0105-415f-b86a-ce8b1011de54",
+      "name": "Mark synced",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * 4"
+            }
+          ]
+        }
+      },
+      "id": "23405728-d5b9-4ee9-bfe7-cd1edbd56410",
+      "name": "Thursday 10:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT json_agg(json_build_object('name', name, 'price_ngn', price_ngn, 'unit', unit)) FROM products WHERE in_stock) AS prices,\n  (SELECT json_agg(name) FROM products WHERE in_season) AS in_season,\n  (SELECT story FROM customer_stories WHERE approved ORDER BY used_at NULLS FIRST LIMIT 1) AS story,\n  (SELECT json_agg(code || ': ' || description) FROM offers WHERE approved AND current_date BETWEEN starts_on AND ends_on) AS approved_offers,\n  coalesce((SELECT value FROM settings WHERE key = 'campaigns_paused'), 'false') AS paused;",
+        "options": {}
+      },
+      "id": "6c5eaef9-6365-4311-be89-f4a22f756607",
+      "name": "Inputs and pause switch",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "54c516ae-eeb4-4907-9b84-8fb7c1637c7b",
+              "leftValue": "={{ $json.paused }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "true"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2ecfc88f-1833-456d-ade0-8858f5441e57",
+      "name": "Campaigns paused?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⏸️ Newsletter not drafted: campaigns are paused (complaint rate or a manual pause). Set campaigns_paused to false when you're ready.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "20127759-f5ca-47a4-9ef0-dacaab5799c9",
+      "name": "Tell Tolu: paused",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        54
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Prices this week: {{ JSON.stringify($json.prices) }}\nIn season: {{ JSON.stringify($json.in_season) }}\nApproved customer story: {{ $json.story ?? 'none' }}\nApproved offers (the ONLY discounts allowed): {{ JSON.stringify($json.approved_offers ?? []) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Write Harvest Lane's weekly newsletter (fresh produce, Ibadan). Friendly, short. Use only the prices given, exactly. Mention a discount only if it is in the approved offers, word for word. Every link must end with ?utm_source=email&utm_campaign=weekNN (code fills in NN). Return JSON."
+            }
+          ]
+        },
+        "hasOutputParser": true
+      },
+      "id": "964b9797-dc0f-45b6-9e46-35f81e459100",
+      "name": "Draft newsletter",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        660,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "c2450c32-df7d-4817-9b79-8b8e383d46fc",
+      "name": "Newsletter model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -18
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"subject_options\": [\n    \"...\",\n    \"...\",\n    \"...\"\n  ],\n  \"preview_text\": \"...\",\n  \"sections\": [\n    {\n      \"heading\": \"...\",\n      \"body\": \"...\"\n    }\n  ]\n}"
+      },
+      "id": "25e99849-c931-4320-bacb-4ea380a26cdf",
+      "name": "Newsletter JSON",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -18
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Blocks any price or discount that isn't on the approved lists (test 12).\nconst inp = $('Inputs and pause switch').first().json;\nconst n = $json.output || $json;\nconst text = [n.preview_text, ...(n.sections || []).flatMap(s => [s.heading, s.body]), ...(n.subject_options || [])].join(' ');\nconst prices = new Set((inp.prices || []).map(p => Number(p.price_ngn)));\nconst offers = (inp.approved_offers || []).join(' ').toLowerCase().replace(/\\s/g, '');\nconst problems = [];\nfor (const m of text.match(/₦\\s?[\\d,]+/g) || []) if (!prices.has(Number(m.replace(/[^\\d]/g, '')))) problems.push('price ' + m + ' is not on the price list');\nfor (const m of text.match(/\\d+\\s?%|\\bfree delivery\\b|\\bdiscount\\b|\\bpromo code\\b/gi) || []) if (!offers.includes(m.toLowerCase().replace(/\\s/g, ''))) problems.push('\"' + m + '\" is not an approved offer');\nconst week = $now.toFormat('W');\nconst html = (n.sections || []).map(s => `<h2>${s.heading}</h2><p>${String(s.body).replace(/\\n/g, '<br>')}</p>`).join('') +\n  '<p style=\"font-size:12px;color:#666\">You get this because you ticked \"Send me weekly prices and offers\" at checkout. <a href=\"' + '{' + '{ unsubscribe }' + '}' + '\">Unsubscribe</a></p>';\nreturn [{ json: { ok: problems.length === 0, problems, subject: (n.subject_options || [])[0] || 'This week at Harvest Lane',\n  subject_options: n.subject_options || [], preview: n.preview_text || '', html: html.replace(/utm_campaign=weekNN/g, 'utm_campaign=week' + week), week } }];"
+      },
+      "id": "31792d81-2809-4e51-a9fd-8fffc5e7ca9f",
+      "name": "Check prices and discounts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "5f77a47a-8ebe-4fff-8e4d-6a0d38155b17",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "bd6ba303-68fd-451f-8b7b-12c3dc4ad2ce",
+      "name": "Passed the check?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⛔ Newsletter blocked by the check:\n• {{ $json.problems.join('\\n• ') }}\nNothing was created in Brevo.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d31ce369-c073-434a-9c6f-451c6a7ed3c3",
+      "name": "Blocked: tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        -54
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=📰 Newsletter week {{ $json.week }}\nSubject: {{ $json.subject }}\n(other options: {{ $json.subject_options.slice(1).join(' | ') }})\nPreview: {{ $json.preview }}\n\n{{ $json.html.replace(/<[^>]+>/g, ' ').slice(0, 2500) }}\n\nApprove to schedule it for 17:00 today.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 6,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "222dd60c-66ea-439e-83e3-274d810d6f1f",
+      "name": "Tolu approves newsletter",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        -288
+      ],
+      "webhookId": "cfd02f67-f927-4de0-8ef0-b0a0dd7596df"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "7cbcdfea-a488-40b8-abec-21d39f83b4f1",
+              "leftValue": "={{ $json.data?.approved === true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b11821df-8846-48e7-91ec-9f0b40e347cb",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/emailCampaigns",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: 'Weekly week ' + $('Check prices and discounts').item.json.week, subject: $('Check prices and discounts').item.json.subject, previewText: $('Check prices and discounts').item.json.preview, sender: { name: 'Harvest Lane', email: 'news@mail.harvestlane.example' }, htmlContent: $('Check prices and discounts').item.json.html, recipients: { listIds: [Number('YOUR_BREVO_LIST_ID')] } }) }}",
+        "options": {}
+      },
+      "id": "af925a8a-e392-4161-a134-868eaf87d71e",
+      "name": "Brevo: create campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO campaigns (brevo_id, week, subject, status, approved_at) VALUES ($1, $2, $3, 'approved', now()) RETURNING brevo_id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $('Check prices and discounts').item.json.week, $('Check prices and discounts').item.json.subject ] }}"
+        }
+      },
+      "id": "927e4478-cdcb-4813-800e-44708305b774",
+      "name": "Save campaign",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * 4"
+            }
+          ]
+        }
+      },
+      "id": "ff88d8c2-fb75-4c20-8993-1560a1e4f43c",
+      "name": "Thursday 17:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT brevo_id FROM campaigns\nWHERE status = 'approved' AND approved_at::date = current_date\n  AND coalesce((SELECT value FROM settings WHERE key = 'campaigns_paused'), 'false') <> 'true'\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "1cf30263-29f2-4740-bfb0-7ccc867947b0",
+      "name": "Approved campaign today",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ea8dbfc5-e848-432a-b573-9da0053cb77b",
+              "leftValue": "={{ $json.brevo_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c288ac36-a87e-41dd-8222-0ae6f70171d3",
+      "name": "Campaign ready",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.brevo.com/v3/emailCampaigns/{{ $json.brevo_id }}/sendNow",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "897fc99c-5a52-407c-a28f-71ef0c547adb",
+      "name": "Brevo: send now",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE campaigns SET status = 'sent', sent_at = now() WHERE brevo_id = $1 RETURNING brevo_id)\nINSERT INTO events (workflow, event, detail) SELECT 'GD·06', 'campaign_sent', jsonb_build_object('campaign', brevo_id, 'channel', 'email') FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Campaign ready').item.json.brevo_id ] }}"
+        }
+      },
+      "id": "b2a53e1a-4773-4496-898e-051ba1d26cae",
+      "name": "Mark sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "36afad21-ea27-49ac-8e70-7faeed81ddc7",
+      "name": "Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.brevo.com/v3/emailCampaigns",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "sent"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "desc"
+            },
+            {
+              "name": "statistics",
+              "value": "globalStats"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02b4436a-ebe6-431c-81bb-4d9dfcbe4d5d",
+      "name": "Brevo: last campaign stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = ($json.campaigns || [])[0];\nif (!c) return [];\nconst g = c.statistics?.globalStats || {};\nconst delivered = Number(g.delivered || 0);\nconst rate = delivered ? Number(g.complaints || 0) / delivered : 0;\nreturn [{ json: { campaign: c.id, name: c.name, delivered, clicks: Number(g.uniqueClicks || 0), complaints: Number(g.complaints || 0),\n  unsubscribes: Number(g.unsubscriptions || 0), complaint_rate: rate, pause: rate > 0.001 } }];"
+      },
+      "id": "3052b359-cc74-411b-a51a-678107481cb7",
+      "name": "Complaint rate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, event, detail) VALUES ('GD·06', 'campaign_stats', $1::jsonb) RETURNING 1;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify({ ...$json, channel: 'email' }) ] }}"
+        }
+      },
+      "id": "8a3cebd2-9e3a-4e2f-b889-f6ab706049ab",
+      "name": "Log stats for GD·07",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "d05beda0-8f4a-4536-8540-3ed3a32cd76b",
+              "leftValue": "={{ $('Complaint rate').item.json.pause }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2a4d3e63-3429-4599-9aa4-03e1b817b804",
+      "name": "Over 0.1%?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO settings (key, value) VALUES ('campaigns_paused', 'true') ON CONFLICT (key) DO UPDATE SET value = 'true' RETURNING key;",
+        "options": {}
+      },
+      "id": "515170ee-6e98-4e8d-a29c-aa3ce89943a3",
+      "name": "Pause campaigns",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🛑 Complaint rate {{ ($('Complaint rate').item.json.complaint_rate * 100).toFixed(2) }}% on \"{{ $('Complaint rate').item.json.name }}\" (limit 0.1%). The next campaign is PAUSED. Check the list source and content before resuming.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "23ff1ed9-bee8-493b-8d62-9a3f775b840c",
+      "name": "Alert Tolu: paused",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gd06-brevo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ef541f9b-c73f-4cee-bc7d-4cdce6c3e4c2",
+      "name": "Brevo webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        720
+      ],
+      "webhookId": "70b19c28-e51d-44d4-8ea5-48e50defa69b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "3aa44ed6-f059-448e-b58b-f29bbec0616a",
+              "leftValue": "={{ $json.query.token }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "={{ $env.BREVO_WEBHOOK_TOKEN }}"
+            },
+            {
+              "id": "8852fe11-6d2a-4379-ba61-630870bc0a57",
+              "leftValue": "={{ $env.BREVO_WEBHOOK_TOKEN ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "f08d0e00-823c-42dd-8c74-8dc9100993a4",
+      "name": "Token valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        220,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "forbidden",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "id": "2702535d-1824-4b1f-8842-165f4d7e664e",
+      "name": "Reject",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH s AS (\n  INSERT INTO suppression (value, channel, reason, at) VALUES (lower($1), 'all', $2, now())\n  ON CONFLICT (value) DO UPDATE SET reason = EXCLUDED.reason RETURNING value\n), c AS (\n  UPDATE customers SET marketing_consent = false, consent_withdrawn_at = now()\n  WHERE customer_id IN (SELECT customer_id FROM identities WHERE value = lower($1)) RETURNING customer_id\n), p AS (\n  INSERT INTO suppression (value, channel, reason, at)\n  SELECT i.value, 'all', 'email ' || $2, now() FROM identities i JOIN c ON c.customer_id = i.customer_id WHERE i.type IN ('phone', 'psid', 'igsid')\n  ON CONFLICT (value) DO NOTHING\n)\nINSERT INTO events (workflow, event, detail)\nVALUES ('GD·06', CASE WHEN $2 = 'unsubscribed' THEN 'unsubscribed' ELSE 'suppressed' END, jsonb_build_object('reason', $2, 'channel', 'email'));",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.email ?? '', $json.body.event ?? 'unsubscribed' ] }}"
+        }
+      },
+      "id": "340c2ec9-9995-4c9b-b17f-c491f991aa3d",
+      "name": "Suppress everywhere",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        612
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "613a5ac6-c7c7-4934-94b5-e0b7d0a46f37",
+      "name": "OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        612
+      ]
+    }
+  ],
+  "connections": {
+    "Every hour": {
+      "main": [
+        [
+          {
+            "node": "Consented customers to sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consented customers to sync": {
+      "main": [
+        [
+          {
+            "node": "Any to sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any to sync": {
+      "main": [
+        [
+          {
+            "node": "Brevo: create or update contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brevo: create or update contact": {
+      "main": [
+        [
+          {
+            "node": "Mark synced",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thursday 10:00": {
+      "main": [
+        [
+          {
+            "node": "Inputs and pause switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inputs and pause switch": {
+      "main": [
+        [
+          {
+            "node": "Campaigns paused?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Campaigns paused?": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu: paused",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Newsletter model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft newsletter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Newsletter JSON": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Draft newsletter",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft newsletter": {
+      "main": [
+        [
+          {
+            "node": "Check prices and discounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check prices and discounts": {
+      "main": [
+        [
+          {
+            "node": "Passed the check?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Passed the check?": {
+      "main": [
+        [
+          {
+            "node": "Tolu approves newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blocked: tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tolu approves newsletter": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Brevo: create campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brevo: create campaign": {
+      "main": [
+        [
+          {
+            "node": "Save campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thursday 17:00": {
+      "main": [
+        [
+          {
+            "node": "Approved campaign today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved campaign today": {
+      "main": [
+        [
+          {
+            "node": "Campaign ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Campaign ready": {
+      "main": [
+        [
+          {
+            "node": "Brevo: send now",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brevo: send now": {
+      "main": [
+        [
+          {
+            "node": "Mark sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monday 07:00": {
+      "main": [
+        [
+          {
+            "node": "Brevo: last campaign stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brevo: last campaign stats": {
+      "main": [
+        [
+          {
+            "node": "Complaint rate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Complaint rate": {
+      "main": [
+        [
+          {
+            "node": "Log stats for GD·07",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log stats for GD·07": {
+      "main": [
+        [
+          {
+            "node": "Over 0.1%?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Over 0.1%?": {
+      "main": [
+        [
+          {
+            "node": "Pause campaigns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause campaigns": {
+      "main": [
+        [
+          {
+            "node": "Alert Tolu: paused",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brevo webhook": {
+      "main": [
+        [
+          {
+            "node": "Token valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token valid?": {
+      "main": [
+        [
+          {
+            "node": "Suppress everywhere",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suppress everywhere": {
+      "main": [
+        [
+          {
+            "node": "OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

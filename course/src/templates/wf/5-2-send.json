@@ -1,0 +1,495 @@
+{
+ "name": "HL · Prospects · send (max 20 a day)",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Prospects: send slowly (Lesson 5.2)\nWeekdays 09:00: up to 20 emails a day in total (first emails, then follow-ups). Before every single send: look up the address in Suppression and skip if found. Gmail from the outreach subdomain, then a random 3 to 9 minute wait.\nOne follow-up after 5 working days, only if there's no reply and no STOP.\n\nTEST MODE is on in Config: every email goes to YOUR_TEST_INBOX. Turn it off only after the client approves the ICP, template and rules.\n\nCredentials: Google Sheets; Gmail (the outreach subdomain mailbox, never the main domain).\nPlaceholders: YOUR_SHEET_ID, YOUR_TEST_INBOX.\nSuppression tab: email, reason, date.",
+    "height": 400,
+    "width": 500
+   },
+   "id": "fdb57e58-16a2-43fe-88b0-a13b7b5f5955",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -300
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 9 * * 1-5"
+      }
+     ]
+    }
+   },
+   "id": "15d6865c-3141-4670-888d-8e3b545cc496",
+   "name": "Weekdays 09:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "2a7fe866-31fa-4134-bb3e-f4a58b4460a5",
+       "name": "test_mode",
+       "value": true,
+       "type": "boolean"
+      },
+      {
+       "id": "32bd1268-6e5e-47b9-a36b-3c15843b40e7",
+       "name": "test_inbox",
+       "value": "YOUR_TEST_INBOX",
+       "type": "string"
+      },
+      {
+       "id": "5e4e8352-a188-4aa1-b4aa-bfbbbaafe5f9",
+       "name": "daily_cap",
+       "value": 20,
+       "type": "number"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "a906ad43-b97c-453d-adb2-d9528d23b6bb",
+   "name": "Config",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "0a2e583d-7277-4935-bdc9-0fb859e0fb42",
+   "name": "Read Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    440,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const cfg = $('Config').first().json;\nconst rows = $input.all().map(i => i.json);\nconst today = new Date().toISOString().slice(0, 10);\nconst sentToday = rows.filter(r => String(r.sent_at).startsWith(today) || String(r.followup_sent_at).startsWith(today)).length;\nlet remaining = Math.max(0, cfg.daily_cap - sentToday);\n// working days between two dates\nconst workingDaysSince = (iso) => {\n  let d = new Date(iso), n = 0; const now = new Date();\n  while (d < now) { d.setDate(d.getDate() + 1); const wd = d.getDay(); if (d <= now && wd !== 0 && wd !== 6) n++; }\n  return n;\n};\nconst firsts = rows.filter(r => r.status === 'approved' && !r.sent_at && r.business_email)\n  .map(r => ({ ...r, kind: 'first', send_subject: r.subject, send_body: r.draft }));\nconst followups = rows.filter(r => r.status === 'sent' && r.sent_at && !r.followup_sent_at && !r.reply_type\n    && workingDaysSince(r.sent_at) >= 5)\n  .map(r => ({ ...r, kind: 'follow-up', send_subject: 'Re: ' + r.subject,\n    send_body: 'Hi again,\\n\\nJust checking whether a free sample crate of tomatoes, peppers and greens would be useful for your kitchen. If not, no problem at all.\\n\\nTolu Adebayo\\nHarvest Lane, Bodija, Ibadan\\n\\nNot interested? Reply STOP and we will never email you again.' }));\nconst picked = [...firsts, ...followups].slice(0, remaining);\nreturn picked.map(r => ({ json: { ...r, business_email: String(r.business_email).trim().toLowerCase() } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "e7310666-9ed7-4fc3-bd54-a899c3b900e4",
+   "name": "Pick today's sends (max 20)",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "batchSize": 1,
+    "options": {}
+   },
+   "id": "2bfcdb60-cd12-4f82-b030-0930fcf6e897",
+   "name": "One email at a time",
+   "type": "n8n-nodes-base.splitInBatches",
+   "typeVersion": 3,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "0fc9a257-bfa0-4830-a9d7-d003dd28a783",
+   "name": "All sent",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Suppression",
+     "mode": "name"
+    },
+    "filtersUI": {
+     "values": [
+      {
+       "lookupColumn": "email",
+       "lookupValue": "={{ $json.business_email }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "8a1cf865-9252-44cd-af4b-5a17d9051a88",
+   "name": "Look up Suppression",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    90
+   ],
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "6cf13a0f-7223-4621-aa42-27735a7240b0",
+       "leftValue": "={{ $json.email }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "02cba6dc-bf43-4bd2-ab2b-89c3db9caf20",
+   "name": "On suppression list?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "place_id": "={{ $('One email at a time').item.json.place_id }}",
+      "status": "suppressed"
+     },
+     "matchingColumns": [
+      "place_id"
+     ],
+     "schema": [
+      {
+       "id": "place_id",
+       "displayName": "place_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "status",
+       "displayName": "status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "b393104d-308f-4c0b-9376-3fb1324e3e27",
+   "name": "Mark suppressed",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1540,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "sendTo": "={{ $('Config').first().json.test_mode ? $('Config').first().json.test_inbox : $('One email at a time').item.json.business_email }}",
+    "subject": "={{ $('One email at a time').item.json.send_subject }}",
+    "emailType": "text",
+    "message": "={{ $('One email at a time').item.json.send_body }}",
+    "options": {
+     "appendAttribution": false
+    }
+   },
+   "id": "5737b2d8-af14-4b79-88dd-fdd95925a3a4",
+   "name": "Send from outreach inbox",
+   "type": "n8n-nodes-base.gmail",
+   "typeVersion": 2.1,
+   "position": [
+    1540,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const p = $('One email at a time').item.json;\nconst now = new Date().toISOString();\nreturn p.kind === 'first'\n  ? { place_id: p.place_id, status: 'sent', sent_at: now }\n  : { place_id: p.place_id, followup_sent_at: now };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "6d8f48c8-b65b-4bba-8dc5-4ca2d20648f9",
+   "name": "Log sent",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1760,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "place_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "fcf0defb-3da7-4715-807c-c03407c280c6",
+   "name": "Update Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1980,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "amount": "={{ Math.floor(Math.random() * 7) + 3 }}",
+    "unit": "minutes"
+   },
+   "id": "a8c7ffd4-f175-4540-967a-388e2562c1b8",
+   "name": "Wait 3 to 9 minutes",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    2200,
+    180
+   ],
+   "webhookId": "99eed0be-665e-43b5-9fde-869d9f760eb3"
+  }
+ ],
+ "connections": {
+  "Weekdays 09:00": {
+   "main": [
+    [
+     {
+      "node": "Config",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Config": {
+   "main": [
+    [
+     {
+      "node": "Read Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Prospects": {
+   "main": [
+    [
+     {
+      "node": "Pick today's sends (max 20)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Pick today's sends (max 20)": {
+   "main": [
+    [
+     {
+      "node": "One email at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One email at a time": {
+   "main": [
+    [
+     {
+      "node": "All sent",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Look up Suppression",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Look up Suppression": {
+   "main": [
+    [
+     {
+      "node": "On suppression list?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "On suppression list?": {
+   "main": [
+    [
+     {
+      "node": "Mark suppressed",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Send from outreach inbox",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark suppressed": {
+   "main": [
+    [
+     {
+      "node": "One email at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Send from outreach inbox": {
+   "main": [
+    [
+     {
+      "node": "Log sent",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Log sent": {
+   "main": [
+    [
+     {
+      "node": "Update Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Update Prospects": {
+   "main": [
+    [
+     {
+      "node": "Wait 3 to 9 minutes",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Wait 3 to 9 minutes": {
+   "main": [
+    [
+     {
+      "node": "One email at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

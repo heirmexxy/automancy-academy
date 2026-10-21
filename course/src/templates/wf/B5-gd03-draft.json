@@ -1,0 +1,448 @@
+{
+  "name": "GD·03 Publish · draft and approve",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·03 Publish: draft (Boss 5 · D4, from 5.4)\nFridays 14:00: next week's calendar rows + CURRENT product prices and photos → AI writes one version per platform (Instagram, Facebook, X; add more in the prompt) → CODE checks each platform's rules (Instagram needs a photo, X ≤ 280 characters, banned phrases, prices must match today's price list) → saved → Tolu approves each calendar item on Telegram. Blocked versions never reach approval.\n\nTables: calendar(id, post_date, post_time, pillar, idea, product_sku, media_url, status), posts(id, calendar_id, platform, caption, alt_text, media_url, uses_price, price_snapshot, status, scheduled_at, post_id, published_at), products(sku, name, price_ngn, unit, in_stock, photo_url), settings (brand_voice, banned_phrases).\n**Credentials:** Postgres, OpenAI, Telegram. **Replace:** YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 400,
+        "width": 420
+      },
+      "id": "9025dffa-9eed-4481-9ea7-96fcee34872a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -324
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 14 * * 5"
+            }
+          ]
+        }
+      },
+      "id": "617ff8b7-6e51-4176-8b3f-8dd49171a7c1",
+      "name": "Fridays 14:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT c.id, c.post_date, c.post_time, c.pillar, c.idea, coalesce(c.media_url, p.photo_url) AS media_url,\n       p.name AS product, p.price_ngn, p.unit, p.in_stock,\n       (SELECT value FROM settings WHERE key = 'brand_voice') AS brand_voice,\n       (SELECT value FROM settings WHERE key = 'banned_phrases') AS banned_phrases\nFROM calendar c LEFT JOIN products p ON p.sku = c.product_sku\nWHERE c.post_date BETWEEN current_date + 3 AND current_date + 9 AND c.status = 'planned'\nORDER BY c.post_date, c.post_time;",
+        "options": {}
+      },
+      "id": "4843da94-cd93-4dbd-b9de-337becc492fd",
+      "name": "Next week's calendar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Idea: {{ $json.idea }} (pillar: {{ $json.pillar }})\nProduct: {{ $json.product ?? 'none' }}{{ $json.price_ngn ? ' at ₦' + $json.price_ngn.toLocaleString() + ' per ' + $json.unit : '' }}{{ $json.in_stock === false ? ' (OUT OF STOCK: do not promote)' : '' }}\nPhoto available: {{ $json.media_url ? 'yes' : 'no' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You write social posts for Harvest Lane, fresh produce delivered in Ibadan. Brand voice: {{ $json.brand_voice }}\nWrite one version each for instagram, facebook and x. Use only the price given, exactly, or no price. X captions must be under 250 characters including hashtags. Alt text describes the photo plainly. Return JSON only."
+            }
+          ]
+        },
+        "hasOutputParser": true
+      },
+      "id": "fc0d0170-9eb3-4f97-a583-6290c77193d2",
+      "name": "Write versions",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "00813016-212a-4464-8209-411689e24b57",
+      "name": "Writer model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"versions\": [\n    {\n      \"platform\": \"instagram\",\n      \"caption\": \"...\",\n      \"hashtags\": [\n        \"ibadanfood\",\n        \"farmtotable\"\n      ],\n      \"alt_text\": \"Crates of tomatoes being loaded into a van at dawn\",\n      \"uses_price\": true,\n      \"price_ngn_used\": 9500\n    }\n  ]\n}"
+      },
+      "id": "e2cff172-522b-4894-bea3-3ece128ce4cf",
+      "name": "Versions JSON",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Card 3 checks in code. Failures are blocked BEFORE approval.\nconst cal = $('Next week\\'s calendar').item.json;\nconst banned = String(cal.banned_phrases || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);\nconst versions = (($json.output || $json).versions || []).map(v => {\n  const caption = String(v.caption || '') + ((v.hashtags || []).length ? '\\n' + v.hashtags.map(h => '#' + String(h).replace(/^#/, '')).join(' ') : '');\n  const problems = [];\n  if (v.platform === 'instagram' && !cal.media_url) problems.push('Instagram needs a photo');\n  if (v.platform === 'x' && caption.length > 280) problems.push('X caption ' + caption.length + ' > 280');\n  if (v.platform === 'instagram' && caption.length > 2200) problems.push('Instagram caption too long');\n  if (banned.some(b => caption.toLowerCase().includes(b))) problems.push('banned phrase');\n  const prices = (caption.match(/₦\\s?[\\d,]+/g) || []).map(p => Number(p.replace(/[^\\d]/g, '')));\n  if (prices.some(p => p !== Number(cal.price_ngn))) problems.push('price not on today\\'s list');\n  if (cal.in_stock === false && v.uses_price) problems.push('product out of stock');\n  return { platform: v.platform, caption, alt_text: v.alt_text || '', uses_price: !!v.uses_price || prices.length > 0, problems };\n});\nreturn { json: { calendar_id: cal.id, post_date: cal.post_date, post_time: cal.post_time, media_url: cal.media_url,\n  price_ngn: cal.price_ngn, idea: cal.idea, versions, ok_count: versions.filter(v => !v.problems.length).length } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "d68898d0-3008-4cbc-92b6-ec2b6ad4c023",
+      "name": "Platform rules check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO posts (calendar_id, platform, caption, alt_text, media_url, uses_price, price_snapshot, status, scheduled_at)\nSELECT $1, v->>'platform', v->>'caption', v->>'alt_text', $3, (v->>'uses_price')::boolean, $4::int,\n       CASE WHEN jsonb_array_length(v->'problems') = 0 THEN 'pending' ELSE 'blocked' END,\n       ($5::date + $6::time) AT TIME ZONE 'Africa/Lagos'\nFROM jsonb_array_elements($2::jsonb) v\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.calendar_id, JSON.stringify($json.versions), $json.media_url, $json.price_ngn, $json.post_date, $json.post_time ] }}"
+        }
+      },
+      "id": "78b00dc2-ba18-4bfb-b918-aa9e5e45bc11",
+      "name": "Save versions",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One item per calendar row again (Save versions returned one row per version).\nreturn $('Platform rules check').all().map(i => ({ json: i.json }));"
+      },
+      "id": "e0f1682f-1bbb-4277-8e22-df954476e467",
+      "name": "Calendar items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1430,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7d9db2e6-e1bb-4597-8dab-95382d850c22",
+      "name": "One at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=🗓️ {{ $json.post_date }} {{ $json.post_time }} · {{ $json.idea }}\nPhoto: {{ $json.media_url || 'none' }}\n{{ $json.versions.map(v => (v.problems.length ? '⛔ ' : '✅ ') + v.platform.toUpperCase() + (v.problems.length ? ' (blocked: ' + v.problems.join(', ') + ')' : '') + '\\n' + v.caption).join('\\n\\n') }}\n\nApprove publishes the ✅ versions at their time. Blocked ones need an edit in the posts table.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Skip"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 48,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "8e65e103-e4a3-4ebe-aa5b-bf43fa23b48a",
+      "name": "Tolu approves on Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        -108
+      ],
+      "webhookId": "59786c49-dabd-4391-9134-18f9c46a647e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b3828457-28f2-4340-8708-b23ebe965b37",
+              "leftValue": "={{ $json.data?.approved === true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8383f1ba-856c-4650-8cad-e19ba2749d6f",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE posts SET status = 'approved', approved_by = 'Tolu', approved_at = now()\n           WHERE calendar_id = $1 AND status = 'pending' RETURNING id)\nUPDATE calendar SET status = 'approved' WHERE id = $1 RETURNING (SELECT count(*) FROM u) AS approved_versions;",
+        "options": {
+          "queryReplacement": "={{ [ $('One at a time').item.json.calendar_id ] }}"
+        }
+      },
+      "id": "9bb84e76-c9b0-41a7-98a6-8da81a02ea34",
+      "name": "Mark approved",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2420,
+        -216
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE posts SET status = 'skipped' WHERE calendar_id = $1 AND status = 'pending' RETURNING id)\nUPDATE calendar SET status = 'skipped' WHERE id = $1 RETURNING (SELECT count(*) FROM u) AS skipped;",
+        "options": {
+          "queryReplacement": "={{ [ $('One at a time').item.json.calendar_id ] }}"
+        }
+      },
+      "id": "590e059e-76a1-4051-941d-2fff8a38fc74",
+      "name": "Mark skipped",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2420,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, lead_id, event, detail) VALUES ('GD·03', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ step: 'draft' }) ] }}"
+        }
+      },
+      "id": "719e03d2-74f8-4cbc-ba87-4cc16fd29df0",
+      "name": "Log success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        144
+      ],
+      "executeOnce": true
+    }
+  ],
+  "connections": {
+    "Fridays 14:00": {
+      "main": [
+        [
+          {
+            "node": "Next week's calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next week's calendar": {
+      "main": [
+        [
+          {
+            "node": "Write versions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write versions": {
+      "main": [
+        [
+          {
+            "node": "Platform rules check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Platform rules check": {
+      "main": [
+        [
+          {
+            "node": "Save versions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save versions": {
+      "main": [
+        [
+          {
+            "node": "Calendar items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar items": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write versions",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Versions JSON": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Write versions",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One at a time": {
+      "main": [
+        [
+          {
+            "node": "Log success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tolu approves on Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tolu approves on Telegram": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Mark approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark approved": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark skipped": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

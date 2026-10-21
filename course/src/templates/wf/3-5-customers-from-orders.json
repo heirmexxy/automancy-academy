@@ -1,0 +1,333 @@
+{
+  "name": "HL · Customers from orders",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Customers from orders (Lesson 3.5)\nReads every order (messy names and phone formats), sends rows with no phone to a Fix list, then one Code node (Run Once for All Items) normalises phones to +234, groups by phone, sums lifetime value, finds first and last order dates, ranks customers, and updates the Customers sheet by phone.\n\n**Credential:** Google Sheets (OAuth2) in Orders, Fix list and Customers.\n**Placeholder:** YOUR_SHEET_ID (tabs Orders, Fix list, Customers).\n\nOrders has the lesson's **12 sample rows pinned** (fake phones). Expect 6 customers, Chef Tunde first with 164,000 over 3 orders, and 1 Walk-in row on the Fix list. Unpin Orders to use your real sheet.\n\nLater: swap Manual Trigger for a nightly Schedule Trigger.",
+        "height": 440,
+        "width": 420
+      },
+      "id": "0b586d9c-b6cd-4b40-9efb-78b5318ec8d5",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -216
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6af4397c-5550-4876-972b-219a9b9d3e29",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "b3ac3664-1b42-4571-8158-c28da6420d44",
+      "name": "Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "bd3db0f2-36f5-409a-8a4f-7a5da876fe27",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0d63d2b4-36ce-4498-8339-9f543bcd0b62",
+      "name": "IF phone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. One phone format for everyone\nconst normPhone = p => {\n  const d = String(p ?? '').replace(/\\D/g, '');       // keep digits only\n  if (!d) return null;\n  if (d.startsWith('234')) return '+' + d;\n  if (d.startsWith('0')) return '+234' + d.slice(1);\n  return '+234' + d;\n};\n\n// 2. Group orders by phone\nconst byPhone = {};\nfor (const item of $input.all()) {\n  const o = item.json;\n  const phone = normPhone(o.phone);\n  if (!phone) continue;                               // no phone: handled by an IF before this node\n  const c = byPhone[phone] ??= {\n    phone, name: String(o.name).trim(), orders: 0,\n    lifetime_value: 0, first_order: o.date, last_order: o.date,\n  };\n  c.orders += 1;\n  c.lifetime_value += Number(o.total) || 0;           // \"45000\" → 45000\n  if (o.date < c.first_order) c.first_order = o.date;\n  if (o.date > c.last_order) { c.last_order = o.date; c.name = String(o.name).trim(); }\n}\n\n// 3. Rank by value and return items\nreturn Object.values(byPhone)\n  .sort((a, b) => b.lifetime_value - a.lifetime_value)\n  .map((c, i) => ({ json: { ...c, rank: i + 1 } }));\n"
+      },
+      "id": "3db833a1-ca07-431f-90ce-d80262883211",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -54
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Fix list",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "d13ed5af-7fb8-48ee-a304-f8e5d6801636",
+      "name": "Fix list",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Customers",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "phone"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "5f55d082-d3f0-44ac-ba80-f59d036d124a",
+      "name": "Customers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        -54
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders": {
+      "main": [
+        [
+          {
+            "node": "IF phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF phone": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fix list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Orders": [
+      {
+        "json": {
+          "order_id": "HL-0101",
+          "name": "Mrs Adebayo",
+          "phone": "0800 000 0001",
+          "total": 34000,
+          "date": "2026-08-02"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0102",
+          "name": "Mr Okafor",
+          "phone": "08000000002",
+          "total": 4000,
+          "date": "2026-08-03"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0104",
+          "name": "Iya Basira",
+          "phone": "0800 000 0003",
+          "total": 21000,
+          "date": "2026-08-05"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0106",
+          "name": "Mama Nkechi",
+          "phone": "08000000006",
+          "total": 12500,
+          "date": "2026-08-09"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0108",
+          "name": "mrs adebayo ",
+          "phone": "+2348000000001",
+          "total": 21000,
+          "date": "2026-08-19"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0110",
+          "name": "Chef Tunde",
+          "phone": "+234 800 000 0004",
+          "total": 58000,
+          "date": "2026-08-22"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0112",
+          "name": "Walk-in customer",
+          "phone": "",
+          "total": 3000,
+          "date": "2026-08-25"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0115",
+          "name": "Mrs. Adebayo",
+          "phone": "2348000000001",
+          "total": 18500,
+          "date": "2026-09-14"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0117",
+          "name": "Chef Tunde",
+          "phone": "08000000004",
+          "total": 61000,
+          "date": "2026-09-16"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0120",
+          "name": "Mr Okafor",
+          "phone": "0800-000-0002",
+          "total": 6500,
+          "date": "2026-09-21"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0124",
+          "name": "Hotel Grace",
+          "phone": "0800 000 0005",
+          "total": 96000,
+          "date": "2026-09-28"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0123",
+          "name": "Chef Tunde",
+          "phone": "08000000004",
+          "total": "45000",
+          "date": "2026-09-30"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

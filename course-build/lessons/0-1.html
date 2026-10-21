@@ -1,0 +1,441 @@
+<template data-mod="0.1" id="tpl-0-1">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.1</span>
+    <h1>Think Like an Automator</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt</span><span class="pill">No software needed</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Before you build anything, you need to see work the way a machine would: as triggers, steps and outcomes. This module teaches you to find the work worth automating and prove it's worth the effort.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Describe any automation as trigger → actions → outcome.</span></div>
+  <div><b>02</b><span>Tell whether a task needs rules, AI, or an agent.</span></div>
+  <div><b>03</b><span>Map a real process, including who does what and where it's handed off.</span></div>
+  <div><b>04</b><span>Score and rank tasks, then pick your first three automations with a payback estimate.</span></div>
+</div>
+
+<!-- ============ PART 1: STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Monday at Harvest Lane</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu at dawn holding a phone showing 63 unread messages.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="270" cy="40" r="20" fill="var(--sun)" opacity=".8"/>
+        <rect x="170" y="44" width="70" height="120" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="180" y="62" width="50" height="10" rx="5" fill="var(--volt)"/><rect x="180" y="78" width="40" height="10" rx="5" fill="var(--line)"/><rect x="186" y="94" width="44" height="10" rx="5" fill="var(--volt)"/><rect x="180" y="110" width="36" height="10" rx="5" fill="var(--line)"/><rect x="186" y="126" width="44" height="10" rx="5" fill="var(--volt)"/>
+        <circle cx="238" cy="46" r="15" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="238" y="51" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">63</text>
+        <use href="#tolu" x="30" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>7:40 a.m.</b>63 unread WhatsApp messages. Orders, questions, a voice note about pepper prices.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu copying orders into a notebook with a calculator; the clock reads 11:20.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="96" width="120" height="78" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="3" transform="rotate(-4 210 135)"/>
+        <path d="M162 116 H254 M162 132 H250 M162 148 H240" stroke="var(--line)" stroke-width="3" transform="rotate(-4 210 135)"/>
+        <rect x="258" y="120" width="44" height="58" rx="6" fill="var(--ink)"/><rect x="264" y="126" width="32" height="12" fill="var(--volt)"/>
+        <circle cx="270" cy="46" r="26" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/><path d="M270 46 L270 30 M270 46 L260 52" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+        <text x="220" y="30" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">11:20</text>
+        <use href="#tolu" x="20" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>11:20 a.m.</b>Still copying. Every order goes into a notebook, then a calculator, then a message back to the customer.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An angry customer message says she ordered tomatoes, not pepper, while Glitch grins nearby.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="24" y="26" width="200" height="62" rx="16" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M60 86 L52 104 L80 88" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="40" y="52" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="15" fill="var(--ink)">I ordered TOMATOES.</text>
+        <text x="40" y="72" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--muted)">Why is there pepper at my door?</text>
+        <use href="#glitch" x="200" y="84" width="104" height="104"/>
+        <use href="#tolu" x="40" y="100" width="90" height="90"/>
+      </svg>
+      <div class="cap"><b>2:05 p.m.</b>A copying mistake. Wrong delivery, a refund, and an unhappy regular customer. Glitch loves manual work.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt the robot appears and speaks to Tolu.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="112" y="18" width="196" height="84" rx="16" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M150 100 L136 118 L172 100" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="126" y="44" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">You don't need to work faster.</text>
+        <text x="126" y="64" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">You need to stop doing the parts</text>
+        <text x="126" y="84" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">a machine can do.</text>
+        <use href="#bolt" x="10" y="40" width="140" height="140"/>
+        <use href="#tolu" x="210" y="112" width="80" height="80"/>
+      </svg>
+      <div class="cap"><b>6:30 p.m.</b>Bolt shows up. "But first," says Bolt, "we find out which parts those are."</div>
+    </div>
+  </div>
+  <div class="prose"><p>Tolu's problem is common. The business works, customers are happy most of the time, but the owner spends almost four hours a day moving information from one place to another. Most people in this situation try to automate everything at once, or buy a tool before they know what it's for. We'll do the opposite: look first, measure, then choose.</p></div>
+</section>
+
+<!-- ============ PART 2: CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 15 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Every automation has three parts</h3>
+    <p>A <b>trigger</b> is the event that starts it. <b>Actions</b> are the steps that run after. The <b>outcome</b> is the result a person cares about. If you can't name all three, you're not ready to build.</p>
+    <figure class="fig"><svg viewBox="0 0 640 170" role="img" aria-label="Diagram: a new WhatsApp order triggers three actions (log in sheet, calculate total and reply, alert rider), producing the outcome of an order recorded, paid and delivered.">
+      <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="50" width="130" height="70" rx="35" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="75" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">TRIGGER</text>
+      <text x="75" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="700" font-size="14" fill="#13233A">New order</text>
+      <path d="M140 85 H182" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#a1)"/>
+      <rect x="186" y="10" width="190" height="42" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="281" y="36" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">1 · Log it in the sheet</text>
+      <rect x="186" y="64" width="190" height="42" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="281" y="90" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">2 · Reply with the total</text>
+      <rect x="186" y="118" width="190" height="42" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="281" y="144" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">3 · Alert the rider</text>
+      <text x="281" y="6" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)"></text>
+      <path d="M376 85 H436" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#a1)"/>
+      <rect x="440" y="45" width="190" height="80" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="535" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">OUTCOME</text>
+      <text x="535" y="94" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="700" font-size="14" fill="#13233A">Order recorded,</text>
+      <text x="535" y="112" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="700" font-size="14" fill="#13233A">paid and delivered</text>
+    </svg><figcaption>The same shape describes every automation in this course, from a two-step Zap to a 40-node n8n workflow.</figcaption></figure>
+    <div class="analogy"><b>Think of a bank standing order.</b> Trigger: the 1st of the month. Action: move ₦20,000 to your landlord. Outcome: rent paid, and you never had to remember.</div>
+    <div class="vocab">
+      <div><b>Trigger</b>The event that starts a run: a new message, a new row, a time of day.</div>
+      <div><b>Action</b>One thing the automation does: create, update, send, calculate.</div>
+      <div><b>Workflow</b>The whole chain. Zapier calls it a Zap, Make a scenario, n8n a workflow.</div>
+      <div><b>Run</b>One time the workflow fires. 270 orders a week means 270 runs.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Rules, AI, or agent: use the simplest that works</h3>
+    <p>Not every task needs AI. Pick the lowest level on this ladder that does the job. Each step up adds power, cost and ways to go wrong.</p>
+    <figure class="fig"><svg viewBox="0 0 640 190" role="img" aria-label="A three-step ladder: rules automation, AI automation, and AI agent, each with a Harvest Lane example.">
+      <rect x="10" y="120" width="200" height="60" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="22" y="143" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="#13233A">1 · Rules</text>
+      <text x="22" y="164" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Paid? Then send receipt.</text>
+      <rect x="220" y="70" width="200" height="110" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2" opacity=".85"/>
+      <text x="232" y="94" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="#fff">2 · AI automation</text>
+      <text x="232" y="116" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">Read "2 crates tomato, 1 bag</text>
+      <text x="232" y="132" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">pepper, Tues" and turn it</text>
+      <text x="232" y="148" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">into clean data. Steps fixed.</text>
+      <rect x="430" y="20" width="200" height="160" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="442" y="44" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)">3 · Agent</text>
+      <text x="442" y="66" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"Can I get a refund and move</text>
+      <text x="442" y="82" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">my order to Friday?" The agent</text>
+      <text x="442" y="98" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">decides which tools to use and</text>
+      <text x="442" y="114" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">in what order.</text>
+      <use href="#sage" x="560" y="120" width="60" height="60"/>
+      <use href="#bolt" x="150" y="64" width="56" height="56"/>
+    </svg><figcaption>Tracks 1–3 live mostly on steps 1 and 2. Track 4 climbs to step 3.</figcaption></figure>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> If a rule can do it, don't wake me up. I'm slower, I cost money per message, and I sometimes guess. Save me for the messy parts.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Is the task FRIED? Then automate it</h3>
+    <p>A task is a strong candidate when it matches most of these five signs. Check any task against them before scoring it.</p>
+    <div class="fried">
+      <div><b>F</b><span>Frequent</span><p>Happens daily or many times a week.</p></div>
+      <div><b>R</b><span>Rule-describable</span><p>You can explain it to a new hire in a few sentences.</p></div>
+      <div><b>I</b><span>Input is digital</span><p>The information already lives in an app, message or file.</p></div>
+      <div><b>E</b><span>Errors cost money</span><p>Mistakes cause refunds, delays or angry customers.</p></div>
+      <div><b>D</b><span>Dull</span><p>Nobody wants to do it and nobody learns from doing it.</p></div>
+    </div>
+    <div class="analogy"><b>A quick test:</b> "Copy every order into the notebook" is FRIED on all five. "Decide whether to give a loyal customer credit this month" fails R and D. It needs judgment and a relationship, so a person keeps it.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Map the process before you touch a tool</h3>
+    <p>A process map lists every step from trigger to outcome, in order, with who does each one. A <b>swimlane</b> map gives each person or system its own row, so handoffs between people become visible. Handoffs are where orders get lost.</p>
+    <figure class="fig"><svg viewBox="0 0 700 250" role="img" aria-label="Swimlane map of Harvest Lane's current order process across Customer, Tolu and Rider lanes, with handoffs marked.">
+      <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="0" y="0" width="700" height="80" fill="var(--card)"/><rect x="0" y="80" width="700" height="90" fill="var(--paper)"/><rect x="0" y="170" width="700" height="80" fill="var(--card)"/>
+      <path d="M0 80 H700 M0 170 H700" stroke="var(--line)" stroke-width="2"/>
+      <text x="10" y="44" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">CUSTOMER</text>
+      <text x="10" y="129" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">TOLU</text>
+      <text x="10" y="214" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">RIDER</text>
+      <rect x="90" y="20" width="86" height="40" rx="20" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="133" y="45" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Sends order</text>
+      <rect x="150" y="104" width="78" height="44" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="189" y="124" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">Read &amp; copy</text><text x="189" y="138" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">to notebook</text>
+      <rect x="240" y="104" width="78" height="44" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="279" y="124" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">Work out</text><text x="279" y="138" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">total</text>
+      <rect x="300" y="20" width="86" height="40" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="343" y="45" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Pays by transfer</text>
+      <rect x="400" y="104" width="78" height="44" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="439" y="124" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">Check bank</text><text x="439" y="138" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10.5" fill="var(--ink)">app</text>
+      <path d="M526 102 L556 126 L526 150 L496 126 Z" fill="var(--paper2)" stroke="var(--ink)" stroke-width="2"/><text x="526" y="130" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">Paid?</text>
+      <rect x="570" y="190" width="100" height="40" rx="20" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="620" y="215" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Delivers</text>
+      <path d="M150 58 L170 102" stroke="var(--ink)" stroke-width="2" marker-end="url(#a2)"/>
+      <path d="M228 126 H238" stroke="var(--ink)" stroke-width="2" marker-end="url(#a2)"/>
+      <path d="M300 104 L320 62" stroke="var(--ink)" stroke-width="2" marker-end="url(#a2)"/>
+      <path d="M370 62 L410 102" stroke="var(--ink)" stroke-width="2" marker-end="url(#a2)"/>
+      <path d="M478 126 H494" stroke="var(--ink)" stroke-width="2" marker-end="url(#a2)"/>
+      <path d="M556 126 Q610 126 616 186" stroke="var(--ink)" stroke-width="2" fill="none" marker-end="url(#a2)"/>
+      <text x="580" y="140" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">yes</text>
+      <circle cx="160" cy="80" r="9" fill="var(--glitch)"/><text x="160" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600" fill="#fff">!</text>
+      <circle cx="310" cy="80" r="9" fill="var(--glitch)"/><text x="310" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600" fill="#fff">!</text>
+      <circle cx="590" cy="170" r="9" fill="var(--glitch)"/><text x="590" y="174" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600" fill="#fff">!</text>
+    </svg><figcaption>Red marks are handoffs: every time work crosses from one lane to another, something can be lost or delayed. Scroll sideways on a phone.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Write steps as verb + object</b>"Check payment", not "payment stuff".</div>
+      <div><b>One start, one end</b>Start at the trigger; end at the outcome.</div>
+      <div><b>Diamonds for decisions</b>Any yes/no question gets its own shape.</div>
+      <div><b>Map what really happens</b>Not what should happen. Ask the person who does it.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The Automation Score</h3>
+    <p>FRIED tells you <i>whether</i> a task is a candidate. The score tells you <i>which one first</i>. It weighs how much time a task eats, how much damage its mistakes do, and how hard it is to automate.</p>
+    <div class="formula">Weighted minutes = <em>runs per week</em> × <em>minutes per run</em> × <em>error factor</em><br>Priority score   = weighted minutes ÷ <em>difficulty</em><br><br>error factor:  low ×1 · medium ×1.5 · high ×2<br>difficulty:    easy ÷1 · medium ÷2 · hard ÷3</div>
+    <div class="analogy"><b>Worked row:</b> "Copy order into notebook" runs 270 times a week, takes 1 minute, and mistakes are costly (×2). Weighted minutes = 270 × 1 × 2 = 540. It's easy to replace (÷1), so priority = 540.</div>
+    <p>Then check two more things the score can't see:</p>
+    <div class="never">
+      <div><b>Dependencies</b>Some steps can't be automated until an earlier one is. You can't auto-calculate an order the system can't read.</div>
+      <div><b>A messy process</b>Automating chaos gives you faster chaos. Fix the steps first, then automate them.</div>
+      <div><b>Relationship work</b>Negotiating, comforting, deciding on credit. Keep a person here and let automation prepare the facts.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PART 3: WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://learn.zapier.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Academy · Jumpstart (≈20 min, free)</b><small>Look for: how they decide which work to hand off first. Compare it to FRIED.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=business+process+mapping+for+beginners" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Any 10-minute "process mapping for beginners" video</b><small>Look for: start and end points, verb-first steps, and decision diamonds.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=swimlane+diagram+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A short "swimlane diagram" tutorial</b><small>Look for: how handoffs between lanes are drawn. You'll draw one in the Gold mission.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ PART 4: GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 25 MIN</span><h2>Solved problem: find Harvest Lane's first three automations</h2></div>
+  <div class="prose"><p><b>The problem.</b> Tolu handles about 45 orders a day, six days a week (270 a week). The admin eats nearly four hours a day. Which three automations should come first, and are they worth it?</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Collect a week of real data</h4>
+      <p>Bolt asks Tolu to keep a simple diary for one week: every admin step, how often it happens, and how long it takes. Guessing is fine for the first pass, but a real week beats a guess. Tolu also rates how bad a mistake is at each step, and Bolt rates how hard each step is to automate.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Score every step</h4>
+      <p>Apply the formula from Card 5 to each row.</p>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>#</th><th>Step</th><th class="n">Runs/wk</th><th class="n">Min/run</th><th class="n">Min/wk</th><th>Error</th><th class="n">Weighted</th><th>Difficulty</th><th class="n">Priority</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Read the WhatsApp order</td><td class="n">270</td><td class="n">0.5</td><td class="n">135</td><td>Low ×1</td><td class="n">135</td><td>Hard ÷3</td><td class="n">45</td></tr>
+          <tr class="pick"><td>2</td><td>Copy order into notebook</td><td class="n">270</td><td class="n">1</td><td class="n">270</td><td>High ×2</td><td class="n">540</td><td>Easy ÷1</td><td class="n">540</td></tr>
+          <tr class="pick"><td>3</td><td>Work out the total</td><td class="n">270</td><td class="n">0.5</td><td class="n">135</td><td>High ×2</td><td class="n">270</td><td>Easy ÷1</td><td class="n">270</td></tr>
+          <tr class="pick"><td>4</td><td>Send total and bank details</td><td class="n">270</td><td class="n">0.5</td><td class="n">135</td><td>Med ×1.5</td><td class="n">203</td><td>Easy ÷1</td><td class="n">203</td></tr>
+          <tr class="pick"><td>5</td><td>Check payment in bank app</td><td class="n">270</td><td class="n">1</td><td class="n">270</td><td>High ×2</td><td class="n">540</td><td>Medium ÷2</td><td class="n">270</td></tr>
+          <tr><td>6</td><td>Plan the rider's route</td><td class="n">6</td><td class="n">20</td><td class="n">120</td><td>Med ×1.5</td><td class="n">180</td><td>Medium ÷2</td><td class="n">90</td></tr>
+          <tr class="pick"><td>7</td><td>Update the stock sheet</td><td class="n">270</td><td class="n">0.5</td><td class="n">135</td><td>Med ×1.5</td><td class="n">203</td><td>Easy ÷1</td><td class="n">203</td></tr>
+          <tr><td>8</td><td>Send a thank-you message</td><td class="n">270</td><td class="n">0.25</td><td class="n">68</td><td>Low ×1</td><td class="n">68</td><td>Easy ÷1</td><td class="n">68</td></tr>
+          <tr><td>9</td><td>Weekly sales summary</td><td class="n">1</td><td class="n">90</td><td class="n">90</td><td>Med ×1.5</td><td class="n">135</td><td>Easy ÷1</td><td class="n">135</td></tr>
+        </tbody>
+        <tfoot><tr><td></td><td>Total admin time</td><td></td><td></td><td class="n">1,358</td><td colspan="4">≈ 22.6 hours a week</td></tr></tfoot>
+      </table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Rank by priority</h4>
+      <figure class="fig"><svg viewBox="0 0 600 300" role="img" aria-label="Horizontal bar chart of priority scores. Copy order 540; work out total 270; check payment 270; send total 203; update stock 203; weekly summary 135; plan route 90; thank-you 68; read order 45. The chosen steps are highlighted.">
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">
+          <line x1="200" y1="10" x2="200" y2="286" stroke="var(--line)" stroke-width="1"/>
+          <line x1="360" y1="10" x2="360" y2="286" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
+          <line x1="520" y1="10" x2="520" y2="286" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
+          <text x="200" y="298" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">0</text>
+          <text x="360" y="298" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">300</text>
+          <text x="520" y="298" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">600</text>
+          <g><title>Copy order into notebook: 540</title><text x="192" y="30" text-anchor="end">2 · Copy order</text><rect x="200" y="16" width="288" height="20" rx="4" fill="var(--volt)"/><text x="494" y="31" font-family="JetBrains Mono,monospace" font-size="11">540</text></g>
+          <g><title>Work out the total: 270</title><text x="192" y="60" text-anchor="end">3 · Work out total</text><rect x="200" y="46" width="144" height="20" rx="4" fill="var(--volt)"/><text x="350" y="61" font-family="JetBrains Mono,monospace" font-size="11">270</text></g>
+          <g><title>Check payment: 270</title><text x="192" y="90" text-anchor="end">5 · Check payment</text><rect x="200" y="76" width="144" height="20" rx="4" fill="var(--volt)"/><text x="350" y="91" font-family="JetBrains Mono,monospace" font-size="11">270</text></g>
+          <g><title>Send total and bank details: 203</title><text x="192" y="120" text-anchor="end">4 · Send total</text><rect x="200" y="106" width="108" height="20" rx="4" fill="var(--volt)"/><text x="314" y="121" font-family="JetBrains Mono,monospace" font-size="11">203</text></g>
+          <g><title>Update stock sheet: 203</title><text x="192" y="150" text-anchor="end">7 · Update stock</text><rect x="200" y="136" width="108" height="20" rx="4" fill="var(--volt)"/><text x="314" y="151" font-family="JetBrains Mono,monospace" font-size="11">203</text></g>
+          <g><title>Weekly sales summary: 135</title><text x="192" y="180" text-anchor="end">9 · Weekly summary</text><rect x="200" y="166" width="72" height="20" rx="4" fill="var(--muted)" opacity=".45"/><text x="278" y="181" font-family="JetBrains Mono,monospace" font-size="11">135</text></g>
+          <g><title>Plan rider route: 90</title><text x="192" y="210" text-anchor="end">6 · Plan route</text><rect x="200" y="196" width="48" height="20" rx="4" fill="var(--muted)" opacity=".45"/><text x="254" y="211" font-family="JetBrains Mono,monospace" font-size="11">90</text></g>
+          <g><title>Thank-you message: 68</title><text x="192" y="240" text-anchor="end">8 · Thank-you</text><rect x="200" y="226" width="36" height="20" rx="4" fill="var(--muted)" opacity=".45"/><text x="242" y="241" font-family="JetBrains Mono,monospace" font-size="11">68</text></g>
+          <g><title>Read the order: 45 (but a dependency for 2–4)</title><text x="192" y="270" text-anchor="end">1 · Read order</text><rect x="200" y="256" width="24" height="20" rx="4" fill="var(--volt)" opacity=".55"/><text x="230" y="271" font-family="JetBrains Mono,monospace" font-size="11">45 · pulled in by dependency</text></g>
+        </g>
+      </svg><figcaption>Green steps are chosen. Step 1 scores lowest but gets pulled in, because steps 2–4 depend on it (see step 4 below).</figcaption></figure>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Check dependencies and redesign the input</h4>
+      <p>A ranking alone would say "automate step 2 first". But step 2 (copy the order) needs the order in a clean shape, and step 1 (reading a messy WhatsApp message) is hard. Automating step 2 alone isn't possible.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>The key move: change the input, not only the steps.</b> If customers order through a short order form (or a WhatsApp menu with fixed options), step 1 stops being hard. The order arrives already structured. Now steps 1, 2, 3 and 4 collapse into one automation. Later, in Module 0.5, AI will let Tolu accept free-text orders too.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Choose three and justify each</h4>
+      <div class="picks">
+        <div class="pickcard"><span class="lbl">AUTOMATION A · STEPS 1–4</span><h4>Order capture</h4><p>Order form → new row in the Orders sheet → total calculated by formula → automatic reply with total and bank details. Saves 675 min/week.</p></div>
+        <div class="pickcard"><span class="lbl">AUTOMATION B · STEP 5</span><h4>Payment confirmation</h4><p>Use a payment link from a provider that sends a signal when money lands. The order row updates to "Paid" by itself. Saves 270 min/week. Built in Track 1–2.</p></div>
+        <div class="pickcard"><span class="lbl">AUTOMATION C · STEP 7</span><h4>Stock update</h4><p>Rides on A's clean data: each paid order reduces stock per product. Saves 135 min/week, and ends overselling.</p></div>
+      </div>
+      <p><b>What stays manual, on purpose:</b> route planning (step 6) happens only six times a week and needs local judgment. The thank-you (step 8) and weekly summary (step 9) are easy quick wins to add once A exists, but they don't hurt enough to go first.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Estimate the payback</h4>
+      <div class="stats">
+        <div class="stat"><b>18 h</b><span>saved per week (1,080 of 1,358 minutes)</span></div>
+        <div class="stat"><b>4.6 h</b><span>of admin left each week, down from 22.6 h</span></div>
+        <div class="stat"><b>₦193,500</b><span>monthly value if Tolu's hour is worth ₦2,500 (18 × 2,500 × 4.3 weeks)</span></div>
+      </div>
+      <p>Tool costs for these three automations start at zero on free plans and stay small at this volume. Even if building them takes Tolu 20 hours of learning, the time pays back within the first two weeks. <i>Figures are illustrative; your Silver mission uses your own numbers.</i></p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>It starts from measured pain, not from the tool.</li><li>The error factor puts costly mistakes first, not only slow tasks.</li><li>Checking dependencies turns a ranked list into a buildable plan.</li><li>Redesigning the input made the hardest step disappear.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Automating the most annoying task instead of the most costly one.</li><li>Mixing units (minutes per month for one row, per week for others).</li><li>Multiplying by difficulty instead of dividing.</li><li>Automating a step that only exists because of a bad earlier step.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ PART 5: GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I scored Tolu's supplier tasks for you. My top pick is obviously the best. Hehehe.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Task</th><th class="n">Runs</th><th class="n">Min/run</th><th>Error</th><th>Difficulty</th><th class="n">Glitch's score</th></tr></thead>
+      <tbody>
+        <tr><td>Negotiate bulk price with hotel buyer</td><td class="n">2 / month</td><td class="n">60</td><td>High ×2</td><td>Hard ×3</td><td class="n">720</td></tr>
+        <tr><td>Email supplier the weekly restock list</td><td class="n">1 / week</td><td class="n">25</td><td>Med ×1.5</td><td>Easy ×1</td><td class="n">38</td></tr>
+        <tr><td>Record supplier deliveries in stock sheet</td><td class="n">12 / week</td><td class="n">4</td><td>High ×2</td><td>Easy ×1</td><td class="n">96</td></tr>
+      </tbody>
+    </table></div>
+    <p>Find the three mistakes Glitch made, then re-rank the tasks.</p>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>Difficulty multiplied instead of divided.</b> Glitch wrote ×3. Hard tasks should score lower, not higher.</li>
+        <li><b>Mixed units.</b> Negotiation runs 2 a month, about 0.5 a week. Correct: 0.5 × 60 × 2 ÷ 3 = 20.</li>
+        <li><b>Relationship work.</b> Negotiation fails the R and D in FRIED. Even with the right maths it shouldn't be automated. Automation can prepare the price history for the meeting instead.</li>
+      </ol>
+      <p><b>Correct ranking:</b> record supplier deliveries (96), email restock list (38), negotiation (20, keep manual).</p>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ PART 6: MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 17 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Map one task you repeat every day</h4>
+    <ul><li>Choose a task you did at least three times this week.</li><li>Write it as 5–10 steps, each as verb + object.</li><li>Label the trigger, the outcome, and every tool or app you touch.</li><li>Run it through FRIED: how many of the five letters does it hit?</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Someone else could follow your steps without asking a question.</li></ul>
+    <details class="reveal"><summary>See a model answer</summary><div>
+      <p><b>Task:</b> Sending a monthly invoice to a client. <b>Trigger:</b> the 25th of the month. <b>Outcome:</b> invoice received and logged.</p>
+      <ol><li>Open last month's invoice file.</li><li>Duplicate it and rename it.</li><li>Update date, invoice number and hours.</li><li>Recalculate the total.</li><li>Export to PDF.</li><li>Write the email and attach the PDF.</li><li>Log the invoice in the tracking sheet.</li></ol>
+      <p><b>FRIED:</b> F no (monthly), R yes, I yes, E yes, D yes. Four of five: a good candidate, but low frequency, so check its score before building.</p>
+    </div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Score five processes and pick one</h4>
+    <ul><li>Use the calculator below with five tasks from your work or business. Replace the three example rows.</li><li>Pick your top task and write three sentences: why it scores high, what it depends on, and one change to its input that would make it easier.</li></ul>
+    <div class="calc" data-calc='[["Example: copy orders into a sheet",270,1,2,1],["Example: weekly sales report",1,90,1.5,1],["Example: reply to price questions",60,2,1,2]]'>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Task</th><th>Runs/wk</th><th>Min/run</th><th>Error</th><th>Difficulty</th><th class="n">Weighted</th><th class="n">Priority</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div><button type="button" class="btn ghost" data-addrow>+ Add a task</button></div>
+      <div class="box"><h5>Your ranking (top three in green)</h5><ol class="rank"></ol></div>
+    </div>
+    <span class="crit">Done when</span>
+    <ul><li>All five rows use per-week units, and your justification names at least one dependency.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Swimlane a real process and make the case</h4>
+    <ul><li>Pick a process involving at least two people or teams in a real business (yours, a friend's, or a local shop).</li><li>Interview the person who does it. Map what actually happens as a swimlane, with decisions as diamonds.</li><li>Circle every handoff. Mark where things get lost or delayed.</li><li>Score the steps, choose the first automation, and write a one-paragraph case with weekly hours saved and monthly value.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The map has at least two lanes, one decision and one marked handoff.</li><li>The case includes a payback estimate and names one step you'll keep manual, with the reason.</li></ul>
+    <details class="reveal"><summary>See a model answer (short version)</summary><div>
+      <p><b>Business:</b> a small pharmacy restocking fast-moving drugs. <b>Lanes:</b> counter staff, pharmacist, supplier.</p>
+      <p><b>Finding:</b> counter staff note low stock on paper; the pharmacist collects the notes on Friday; the supplier gets a phone call. Two handoffs, and the paper notes go missing.</p>
+      <p><b>First automation:</b> a shared low-stock form that adds to a restock sheet and emails the supplier a list every Thursday. Saves about 2.5 hours a week and cuts stock-outs.</p>
+      <p><b>Kept manual:</b> choosing substitute brands. It needs the pharmacist's judgment.</p>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ PART 7: QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Which part of an automation starts a run?</p><div class="opts">
+      <button type="button" data-opt="a">The outcome</button><button type="button" data-opt="b">The trigger</button><button type="button" data-opt="c">The first action</button><button type="button" data-opt="d">The workflow name</button></div>
+      <p class="fb" hidden data-why="The trigger is the event (a new message, a new row, a time) that starts every run."></p></div>
+    <div class="q" data-ans="c"><p>2. Which task is the weakest candidate for automation?</p><div class="opts">
+      <button type="button" data-opt="a">Copying form responses into a sheet</button><button type="button" data-opt="b">Sending a receipt when a payment lands</button><button type="button" data-opt="c">Deciding whether to give a loyal customer credit after a bad month</button><button type="button" data-opt="d">Compiling a weekly sales total</button></div>
+      <p class="fb" hidden data-why="It fails R and D in FRIED: it needs judgment and a relationship. Automation can gather the facts; a person decides."></p></div>
+    <div class="q" data-ans="b"><p>3. A task runs 50 times a week, takes 3 minutes, errors are costly (high ×2), and it's easy to automate. What's its priority score?</p><div class="opts">
+      <button type="button" data-opt="a">150</button><button type="button" data-opt="b">300</button><button type="button" data-opt="c">100</button><button type="button" data-opt="d">450</button></div>
+      <p class="fb" hidden data-why="50 × 3 × 2 = 300 weighted minutes, divided by difficulty 1 = 300."></p></div>
+    <div class="q" data-ans="a"><p>4. Why did Tolu group steps 1–4 into one automation?</p><div class="opts">
+      <button type="button" data-opt="a">Because steps 2–4 depend on the order being readable first</button><button type="button" data-opt="b">Because they had the highest scores</button><button type="button" data-opt="c">Because Zapier requires four steps</button><button type="button" data-opt="d">Because AI can do all of them</button></div>
+      <p class="fb" hidden data-why="Dependencies: you can't copy or total an order the system can't read. Changing the input to a form removed the hard step."></p></div>
+    <div class="q" data-ans="d"><p>5. A process is messy and done differently every time. What should you do first?</p><div class="opts">
+      <button type="button" data-opt="a">Automate it quickly to save time</button><button type="button" data-opt="b">Add an AI agent to handle the variety</button><button type="button" data-opt="c">Leave it alone forever</button><button type="button" data-opt="d">Map it and simplify the steps, then automate</button></div>
+      <p class="fb" hidden data-why="Automating a messy process only gives you a faster mess. Fix it, then automate."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ PART 8: LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+    <p>Copy this into your notes app or notebook and fill it in. By the end of the course these logs become your portfolio and your case studies.</p>
+<pre id="log-0-1">AUTOMANCY LOG · Lesson 0.1 · Think Like an Automator
+Date:
+Process I mapped:
+Steps (count):          Handoffs found:
+FRIED letters it hit:
+Top task and its priority score:
+What it depends on:
+Input change that makes it easier:
+Estimated hours saved per week:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-0-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS + DEEPER ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Every automation is trigger → actions → outcome.</li>
+      <li>Use the simplest level that works: rules, then AI, then agents.</li>
+      <li>If a task is FRIED (frequent, rule-describable, input digital, errors costly, dull), it's a candidate.</li>
+      <li>Map what really happens, lane by lane. Handoffs are where work gets lost.</li>
+      <li>Priority = runs × minutes × error factor ÷ difficulty, all per week.</li>
+      <li>Check dependencies and fix the input before you automate.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/path/zapier-basics-from-a-to-zap" target="_blank" rel="noopener">Zapier: Basics from A to Zap (the "Automate your work" course covers picking tasks)</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy: Foundation path, first course (how scenarios map processes)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=business+process+mapping+for+beginners" target="_blank" rel="noopener">YouTube: business process mapping for beginners</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=what+to+automate+first+in+a+small+business" target="_blank" rel="noopener">YouTube: what to automate first in a small business</a></li>
+    <li><span class="kind">Tool</span><a href="https://excalidraw.com/" target="_blank" rel="noopener">Excalidraw: free whiteboard for swimlane maps</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators (when you teach this)</h4>
+    <p>Run Part 2 as a live whiteboard: have the group call out Harvest Lane's steps before showing the table. For the Silver mission, pair learners so each interviews the other about a real process. Expect most groups to pick the most annoying task first; use the Glitch hunt to correct that. In a cohort, ask two volunteers to present their Gold swimlanes.</p>
+  </div>
+</section>
+
+</article>
+</template>

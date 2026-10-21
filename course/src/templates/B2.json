@@ -1,0 +1,261 @@
+{
+  "id": "B2",
+  "items": [
+    {
+      "file": "B2-1a-receipts-to-drive.json",
+      "kind": "make",
+      "name": "Books · 1a Receipts mail → Drive",
+      "what": "Feeds the second source into the first: every attachment on an email in the Gmail label Receipts is uploaded to the Supplier invoices Drive folder, so one intake scenario reads invoices and receipts alike. A failed upload is logged to Errors and skipped.",
+      "setup": [
+        "Gmail: create the label Receipts and a filter that applies it to forwarded receipts. Connect Gmail with the Harvest Lane business Google account and pick the label in \"Watch Receipts label\" (choose \"From now on\").",
+        "Google Drive: same account; replace YOUR_SUPPLIER_INVOICES_FOLDER_ID with the folder your 1.1 Zap fills.",
+        "Errors tab: pick the books spreadsheet (YOUR_BOOKS_SHEET_ID) and the Errors tab in \"Log to Errors\".",
+        "Schedule: every 60 minutes, 08:00–21:00 (14 runs a day)."
+      ],
+      "test": "Forward the airtime email receipt (test 6) and the logo email (test 10) to the business inbox with the Receipts label: within the hour both attachments appear in Supplier invoices named \"receipt - date - file\". Rename the target folder to break the upload: an Errors row appears and the run still ends Success.",
+      "build": [
+        "1 · Gmail › Watch Emails \"Watch Receipts label\": label Receipts; criteria All; mark as read No; max results 10.",
+        "Filter on 1→2 \"Has attachments\": {{length(1.attachments)}} Numeric: Greater than 0.",
+        "2 · Flow control › Iterator \"Iterator · attachments\": Array {{1.attachments}}.",
+        "3 · Google Drive › Upload a File \"Upload to Supplier invoices\": folder Supplier invoices; File name receipt - {{formatDate(1.date; \"YYYY-MM-DD\")}} - {{2.fileName}}; Data {{2.data}}.",
+        "Error handler on 3 · Google Sheets › Add a Row \"Log to Errors\": Errors; time now, scenario B2 · 1a Receipts mail, module Upload to Drive, file {{2.fileName}} · {{1.subject}}, type {{error.type}}, message {{error.message}} → Ignore."
+      ]
+    },
+    {
+      "file": "B2-1-intake.json",
+      "kind": "make",
+      "name": "Books · 1 Intake (hourly)",
+      "what": "Reads every new document in Supplier invoices with AI (an array of invoices per file, with doc_type), applies category rules first and the AI's category second, builds a dedupe key and stops duplicates at a data store, checks line maths, subtotal + VAT = total and required fields, then books clean documents to Expenses and Expense_Lines or sends doubtful ones to Needs_Review with reasons and an email to Tolu.",
+      "setup": [
+        "Connections: Google Drive, Google Sheets and Gmail with the business Google account; OpenAI with your own API key in \"Read document (AI)\" (replace YOUR_MODEL with a vision-capable model).",
+        "In \"Read document (AI)\" attach the downloaded file to the user message (file/image input = Download a File → Data). If your OpenAI module can't take PDFs, add Make's AI Content Extractor after Download a File and map its text into the user message.",
+        "In \"Parse JSON\" generate the data structure from a sample: {\"invoice_numbers_seen\": [\"FG-0192\"], \"invoices\": [{\"doc_type\": \"invoice\", \"supplier\": \"Farmgate Supplies\", \"invoice_number\": \"FG-0192\", \"invoice_date\": \"2026-10-12\", \"currency\": \"NGN\", \"lines\": [{\"description\": \"Tomatoes, crate\", \"qty\": 20, \"unit_price\": 9000, \"line_total\": 180000}], \"subtotal\": 180000, \"vat\": 13500, \"total\": 193500, \"ai_category\": \"Cost of goods\", \"unreadable_parts\": []}]}.",
+        "Data store: create books_dedupe with fields status (text: review or booked), expense_id (text), added_at (date). Select it in every Data store module of Scenarios 1 and 2 (the key is the dedupe key).",
+        "Books spreadsheet (replace YOUR_BOOKS_SHEET_ID) tabs and columns: Expenses = A expense_id, B doc_date, C supplier, D invoice_number, E category, F amount_ex_vat, G vat, H total, I source_link, J dedupe_key, K added_at. Expense_Lines = A expense_id, B description, C qty, D unit_price, E line_total. Needs_Review = Expenses columns A–K + L review_reason, M status (dropdown New · Approved · Rejected), N processed_at. Review_Lines = A dedupe_key, B expense_id, C description, D qty, E unit_price, F line_total. Intake_Log = A time, B file, C supplier, D dedupe_key, E outcome. Errors = A time, B scenario, C module, D file/key, E type, F message. Monthly_PL = A month, B revenue, C cogs, D gross_profit, E gross_margin_pct, F fuel, G packaging, H airtime_data, I rider_pay, J other, K opex, L net_profit, M vat_paid, N created_at. Category column: dropdown Cost of goods · Fuel · Packaging · Airtime & data · Rider pay · Other.",
+        "Replace YOUR_SUPPLIER_INVOICES_FOLDER_ID and tolu@harvestlane.example. Add your own known suppliers to the switch() in \"Rules: category + dedupe key\" as Tolu approves them.",
+        "Scenario settings: Allow storing of incomplete executions (Break needs it). Schedule: every 60 minutes, 08:00–21:00.",
+        "Use only the 12 test documents you made yourself: no real financial data."
+      ],
+      "test": "Drop the 12 test documents in (receipts via 1a): 1, 3, 4, 5 and 6 land in Expenses with the right category and lines; 2 (FG-0192 resent) is logged as \"duplicate: stopped\" in Intake_Log; 7, 8 and 9 land in Needs_Review with reasons (no invoice number / unclear digit, lines vs subtotal, new supplier) and Tolu gets one email each; 10 is logged \"skipped: not_a_receipt\"; 11 (two invoices in one PDF) becomes two Expenses rows, or goes to review if fewer invoices came back than invoice numbers seen. Two separate fuel receipts with the same station, date and amount both land in Expenses; forwarding one again is stopped.",
+      "build": [
+        "1 · Google Drive › Watch Files in a Folder \"Watch Supplier invoices\": folder Supplier invoices; files only; limit 10.",
+        "2 · Google Drive › Download a File \"Download a File\": {{1.id}}. Error handler: Add a Row to Errors (time, B2 · 1 Intake, Download a File, {{1.name}}, {{error.type}}, {{error.message}}) → Ignore (one bad attachment shouldn't stop the rest).",
+        "5 · OpenAI › Create a Completion \"Read document (AI)\": temperature 0; JSON object response; system prompt = the 2.7 prompt extended with doc_type (invoice · receipt · not_a_receipt), an invoices array (Curveball 2), invoice_numbers_seen and ai_category; user message \"Document: {{1.name}} (attached).\" with the file attached. Error handler: Errors row → Gmail \"Alert Tolu\" → Break (2 attempts, 15 min).",
+        "9 · JSON › Parse JSON \"Parse JSON\": {{5.result}} with the generated data structure. Error handler: Errors row → Ignore.",
+        "12 · Tools › Set variable \"File fingerprint\": file_hash = {{md5(base64(2.data))}}.",
+        "13 · Flow control › Iterator \"Iterator · invoices\": {{9.invoices}}.",
+        "14 · Tools › Set multiple variables \"Rules: category + dedupe key\": rule_category = {{if(contains(lower(13.supplier); \"fuel\"); \"Fuel\"; if(contains(lower(13.supplier); \"totalenergies\"); \"Fuel\"; if(contains(lower(13.supplier); \"nnpc\"); \"Fuel\"; switch(lower(trim(13.supplier)); \"farmgate supplies\"; \"Cost of goods\"; \"ibadan onion co.\"; \"Cost of goods\"; \"mama bisi farm\"; \"Cost of goods\"; \"packright ltd\"; \"Packaging\"; \"mtn\"; \"Airtime & data\"; emptystring))))}}; dedupe_key = if invoice_number is empty: md5(lower(trim(supplier)) + \"|\" + invoice_date + \"|\" + total + \"|\" + 12.file_hash), else md5(lower(trim(supplier)) + \"|\" + lower(trim(invoice_number))).",
+        "15 · Tools › Set multiple variables \"Category, amounts, id\": category = {{ifempty(14.rule_category; ifempty(13.ai_category; \"Other\"))}}; new_supplier = yes when rule_category is empty; amount_ex_vat = {{ifempty(13.subtotal; ifempty(13.total; 0) - ifempty(13.vat; 0))}}; expense_id = \"EXP-\" + formatDate(now; \"YYMMDD\") + \"-\" + first 6 characters of dedupe_key.",
+        "16 · Router \"What is it?\" with three routes.",
+        "Route 1 · filter \"Not a receipt\": {{13.doc_type}} Equal to not_a_receipt → 17 · Add a Row to Intake_Log (time, file, supplier, empty, skipped: not_a_receipt); error handler Ignore.",
+        "Route 2 · filter \"No lines\": doc_type Not equal to not_a_receipt AND {{length(13.lines)}} Equal to 0 → 19 · Add a Row to Needs_Review (Expenses fields + reason \"No line items could be read.\", status New; handler: Gmail alert → Break 2×15 min) → 22 · Data store › Add/replace a record (key dedupe_key; status review) → 23 · Gmail \"Email Tolu (no lines)\" (handler Ignore).",
+        "Route 3 · filter \"Has lines\": doc_type Not equal to not_a_receipt AND {{length(13.lines)}} Greater than 0 → 25 · Data store › Check the existence of a record \"Seen before?\": key {{14.dedupe_key}}.",
+        "50 · Router \"Duplicate?\": route filter \"Duplicate\" {{25.exists}} = true → 51 · Add a Row to Intake_Log (…, duplicate: stopped; handler Ignore). Route filter \"New document\" {{25.exists}} = false → 53.",
+        "53 · Iterator \"Iterator · lines\": {{13.lines}} → 54 · Set variable \"Line check\": line_problem = {{if(abs(53.qty * 53.unit_price - 53.line_total) > 1; 53.description + \": \" + 53.qty + \" x \" + 53.unit_price + \" is not \" + 53.line_total; emptystring)}} → 55 · Array aggregator (source 53; line_total, line_problem).",
+        "26 · Set multiple variables \"Sum and bad lines\": lines_sum = {{sum(map(55.array; \"line_total\"))}}; bad_lines = {{join(remove(map(55.array; \"line_problem\"); emptystring); \"; \")}}.",
+        "27 · Set multiple variables \"Verdict\": review_reasons = text built from: bad lines; abs(lines_sum − subtotal) > 1; abs(subtotal + VAT − total) > 1; no total; no date; doc_type invoice without invoice_number; unreadable_parts; new supplier (\"New supplier: AI suggests …\"); more invoice_numbers_seen than invoices extracted (Curveball 2).",
+        "28 · Router \"Books or review\".",
+        "Route \"All checks pass\" · filter {{length(trim(27.review_reasons))}} = 0 → 29 · Add a Row to Expenses: expense_id, doc_date = invoice_date, supplier, invoice_number, category, amount_ex_vat, vat, total, source_link {{1.webViewLink}}, dedupe_key, added_at (handler: Errors row → Gmail alert → Break 2×15 min) → 33 · Data store › Add/replace (key dedupe_key, status booked, expense_id) → 34 · Iterator {{13.lines}} → 35 · Add a Row to Expense_Lines: expense_id, description, qty, unit_price, line_total (handler Break 2×15 min).",
+        "Route \"Fallback · review\" · filter {{length(trim(27.review_reasons))}} > 0 (or tick Fallback route) → 37 · Add a Row to Needs_Review: Expenses fields + review_reason {{27.review_reasons}}, status New (handler: Errors row → Gmail alert → Break) → 42 · Data store › Add/replace (status review) → 43 · Gmail \"Email Tolu (review)\" with reasons and link (handler Ignore) → 45 · Iterator {{13.lines}} → 46 · Add a Row to Review_Lines: dedupe_key, expense_id, description, qty, unit_price, line_total (handler Break).",
+        "Scenario settings: Allow storing of incomplete executions Yes; schedule hourly 08:00–21:00."
+      ],
+      "walk": {
+        "title": "Build it: the intake scenario an accountant would trust",
+        "sample": "Farmgate Supplies FG-0192 PDF, then the same invoice resent the next day, then a fuel station photo with no number",
+        "steps": [
+          {
+            "at": "1",
+            "say": "One intake reads everything. The 1a helper copies Receipts label attachments into the Supplier invoices folder, so we only watch that one folder, hourly in business hours.",
+            "show": [
+              "Google Drive › Watch Files in a Folder",
+              "Folder: Supplier invoices · Limit: 10",
+              "Schedule: hourly 08:00–21:00"
+            ],
+            "data": "1 file · FG-0192.pdf"
+          },
+          {
+            "at": "2",
+            "say": "Download the file. If one attachment won't download, we log it to Errors and ignore it, so one bad file never stops the rest.",
+            "show": [
+              "Google Drive › Download a File · {{1.id}}",
+              "Error: Add a Row to Errors → Ignore"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "The AI reads it with your 2.7 prompt, plus a doc type, a suggested category, and an invoices list, because one PDF can hold two invoices.",
+            "show": [
+              "OpenAI › Create a Completion · temperature 0 · JSON object",
+              "doc_type: invoice | receipt | not_a_receipt",
+              "invoices: [ … ] · invoice_numbers_seen"
+            ],
+            "data": "1 invoice · doc_type invoice"
+          },
+          {
+            "at": "8",
+            "say": "If the AI step fails, we log it, alert Tolu, then Break with retries. An outage delays documents; it never loses them.",
+            "show": [
+              "Error: Errors row → Gmail alert Tolu",
+              "Break · 2 attempts · 15 minutes"
+            ]
+          },
+          {
+            "at": "9",
+            "say": "Parse the JSON with a generated data structure so every field can be mapped.",
+            "show": [
+              "JSON › Parse JSON · {{5.result}}"
+            ]
+          },
+          {
+            "at": "12",
+            "say": "We fingerprint the file itself. A forwarded copy has the same content, but two real fuel receipts are different photos.",
+            "show": [
+              "file_hash = {{md5(base64(2.data))}}"
+            ]
+          },
+          {
+            "at": "13",
+            "say": "Then iterate over the invoices the AI found, one bundle each. That's how a PDF with two invoices becomes two Expenses rows.",
+            "show": [
+              "Iterator · {{9.invoices}}"
+            ],
+            "data": "1 bundle per invoice"
+          },
+          {
+            "at": "14",
+            "say": "Rules first, AI second. Known suppliers get their category from a switch rule, and any fuel station counts as Fuel.",
+            "show": [
+              "switch(lower(trim(13.supplier)); \"farmgate supplies\"; \"Cost of goods\"…)",
+              "contains \"fuel\", \"totalenergies\", \"nnpc\" → Fuel"
+            ],
+            "data": "Cost of goods"
+          },
+          {
+            "at": "14",
+            "say": "And the dedupe key. With an invoice number, it's supplier plus number. Without one, it's supplier, date, total and the file fingerprint, so two genuine same-day fill-ups are both kept.",
+            "show": [
+              "md5(supplier | invoice_number)",
+              "no number: md5(supplier | date | total | file_hash)"
+            ]
+          },
+          {
+            "at": "16",
+            "say": "A router sorts what it is. Logos and other non-receipts are logged and skipped. Documents with no readable lines go straight to review.",
+            "show": [
+              "Not a receipt → Intake_Log: skipped",
+              "No lines → Needs_Review + email Tolu"
+            ]
+          },
+          {
+            "at": "25",
+            "say": "For real documents, check the data store: have we seen this key before?",
+            "show": [
+              "Data store › Check the existence of a record",
+              "Key: {{14.dedupe_key}}"
+            ],
+            "data": "FG-0192 resent → exists: true"
+          },
+          {
+            "at": "51",
+            "say": "A resent invoice stops here and is logged as a duplicate. Nothing is ever counted twice.",
+            "show": [
+              "Filter: Duplicate · {{25.exists}} = true",
+              "Intake_Log: duplicate: stopped"
+            ]
+          },
+          {
+            "at": "53",
+            "say": "New documents get the 2.7 arithmetic: each line checked, then summed through an array aggregator sourced from this iterator.",
+            "show": [
+              "Iterator · {{13.lines}}",
+              "qty × unit_price = line_total, within ₦1"
+            ]
+          },
+          {
+            "at": "27",
+            "say": "The verdict gathers every reason to doubt it: bad maths, no total or date, a missing number, unreadable parts, a new supplier, or fewer invoices than numbers seen.",
+            "show": [
+              "review_reasons: empty = all checks pass",
+              "new supplier → review the first time"
+            ]
+          },
+          {
+            "at": "29",
+            "say": "Clean documents go into Expenses, with the amount before VAT and the VAT kept separate for the accountant. Then the key is stored as booked, and the lines are added.",
+            "show": [
+              "Add a Row · Expenses: amount_ex_vat, vat, total, dedupe_key",
+              "Data store: status booked",
+              "Expense_Lines per line"
+            ],
+            "data": "EXP-… · Farmgate · Cost of goods"
+          },
+          {
+            "at": "37",
+            "say": "Anything doubtful goes to Needs_Review with its reasons, and Tolu gets an email. When Tolu sets it to Approved, the review scenario books it exactly once.",
+            "show": [
+              "Add a Row · Needs_Review · status: New",
+              "Gmail: Needs your review · {{13.supplier}}"
+            ],
+            "data": "Mama Bisi slip → review"
+          }
+        ],
+        "end": "Run all twelve test documents and compare each route with the expected column, especially the resent invoice and the two same-day fuel receipts."
+      }
+    },
+    {
+      "file": "B2-2-review.json",
+      "kind": "make",
+      "name": "Books · 2 Review loop (every 2 hours)",
+      "what": "Every two hours, takes Needs_Review rows Tolu has set to Approved or Rejected and not yet processed: approved rows go into Expenses with their lines from Review_Lines exactly once (the data store key must not already be \"booked\"), rejected rows are logged and left out, and each row is stamped processed.",
+      "setup": [
+        "Connections: Google Sheets and Gmail with the business Google account; pick YOUR_BOOKS_SHEET_ID in every Sheets module. Use the same data store books_dedupe as Scenario 1 in \"Key status\" and \"Store key (booked)\".",
+        "Books spreadsheet (replace YOUR_BOOKS_SHEET_ID) tabs and columns: Expenses = A expense_id, B doc_date, C supplier, D invoice_number, E category, F amount_ex_vat, G vat, H total, I source_link, J dedupe_key, K added_at. Expense_Lines = A expense_id, B description, C qty, D unit_price, E line_total. Needs_Review = Expenses columns A–K + L review_reason, M status (dropdown New · Approved · Rejected), N processed_at. Review_Lines = A dedupe_key, B expense_id, C description, D qty, E unit_price, F line_total. Intake_Log = A time, B file, C supplier, D dedupe_key, E outcome. Errors = A time, B scenario, C module, D file/key, E type, F message. Monthly_PL = A month, B revenue, C cogs, D gross_profit, E gross_margin_pct, F fuel, G packaging, H airtime_data, I rider_pay, J other, K opex, L net_profit, M vat_paid, N created_at. Category column: dropdown Cost of goods · Fuel · Packaging · Airtime & data · Rider pay · Other.",
+        "Replace tolu@harvestlane.example with Tolu's address.",
+        "Scenario settings: Allow storing of incomplete executions. Schedule: every 2 hours, 08:00–20:00.",
+        "Tell Tolu the routine: fix the fields in the Needs_Review row (supplier, invoice_number, category, amounts), then set status to Approved or Rejected. Leave processed_at empty; the scenario fills it."
+      ],
+      "test": "Correct test 9 (Oja Fresh) in Needs_Review, set category Cost of goods and status Approved, and Run once: one Expenses row with the corrected values, its lines in Expense_Lines, and processed_at filled. Run again: nothing happens. Set another row to Approved whose key is already booked: it is stamped \"already in Expenses\" and no second Expenses row appears. Set test 8 to Rejected: stamped rejected, one Intake_Log row, nothing in Expenses.",
+      "build": [
+        "1 · Google Sheets › Search Rows \"Approved or Rejected, not processed\": Needs_Review; filter (status M = Approved AND processed_at N does not exist) OR (status = Rejected AND processed_at does not exist). Error handler: Errors row → Break (2 attempts, 30 min).",
+        "4 · Router \"Approved or Rejected\".",
+        "Route 1 · filter \"Approved\": {{1.status}} Equal to Approved → 5 · Data store › Get a record \"Key status\": key {{1.dedupe_key}}.",
+        "6 · Router \"Already booked?\": route filter \"Already booked\" {{5.status}} = booked → 7 · Update a Row (Needs_Review, row {{1.__ROW_NUMBER__}}, processed_at = now · already in Expenses).",
+        "Route filter \"Not booked yet\" {{5.status}} ≠ booked → 8 · Add a Row to Expenses with columns A–J copied from the review row (Tolu's corrected values) and added_at now (handler: Errors row → Gmail alert → Break 2×15 min) → 12 · Data store › Add/replace (key {{1.dedupe_key}}, status booked, expense_id) → 13 · Update a Row (processed_at = now · added to Expenses) → 14 · Search Rows Review_Lines where dedupe_key (A) = {{1.dedupe_key}} → 15 · Add a Row to Expense_Lines: expense_id {{1.expense_id}}, description, qty, unit_price, line_total (handler Break).",
+        "Route 2 · filter \"Rejected\": {{1.status}} Equal to Rejected → 17 · Update a Row (processed_at = now · rejected, left out) → 18 · Add a Row to Intake_Log (time, source_link, supplier, dedupe_key, rejected by Tolu; handler Ignore).",
+        "Scenario settings: Allow storing of incomplete executions Yes; schedule every 2 hours."
+      ]
+    },
+    {
+      "file": "B2-3-monthly-pl.json",
+      "kind": "make",
+      "name": "Books · 3 Monthly P&L (1st, 07:00)",
+      "what": "On the 1st at 07:00, sums last month's paid orders and Expenses by category, works out gross profit and margin, operating expenses, net profit and VAT paid (separate, all figures ex VAT), compares every line with the previous Monthly_PL row (amount and %), saves a Monthly_PL row and emails the table to Tolu and the accountant.",
+      "setup": [
+        "Connections: Google Sheets and Gmail with the business Google account. Pick the Orders spreadsheet (YOUR_ORDERS_SHEET_ID) in \"Paid orders\" and the books spreadsheet (YOUR_BOOKS_SHEET_ID) everywhere else.",
+        "Column letters: the blueprint assumes Orders = A order_id, B customer_id, C customer_name, D delivery_date, E fee, F status, G items_total, H total (0.4), I phone_clean, J first_name, K delivery_day, L receipt_text (2.2), M paid_at, N channel, O area, P email, Q delivery_window. If yours differ, open each Google Sheets module after import and re-pick the columns. The P&L uses F status = Paid and M paid_at for the month.",
+        "Books spreadsheet (replace YOUR_BOOKS_SHEET_ID) tabs and columns: Expenses = A expense_id, B doc_date, C supplier, D invoice_number, E category, F amount_ex_vat, G vat, H total, I source_link, J dedupe_key, K added_at. Expense_Lines = A expense_id, B description, C qty, D unit_price, E line_total. Needs_Review = Expenses columns A–K + L review_reason, M status (dropdown New · Approved · Rejected), N processed_at. Review_Lines = A dedupe_key, B expense_id, C description, D qty, E unit_price, F line_total. Intake_Log = A time, B file, C supplier, D dedupe_key, E outcome. Errors = A time, B scenario, C module, D file/key, E type, F message. Monthly_PL = A month, B revenue, C cogs, D gross_profit, E gross_margin_pct, F fuel, G packaging, H airtime_data, I rider_pay, J other, K opex, L net_profit, M vat_paid, N created_at. Category column: dropdown Cost of goods · Fuel · Packaging · Airtime & data · Rider pay · Other.",
+        "Replace tolu@harvestlane.example and accountant@harvestlane.example with the real addresses.",
+        "Organisation timezone: Africa/Lagos (Profile → Time zone), so \"the 1st at 07:00\" and the month boundaries are Lagos time. Schedule: Monthly, day 1, 07:00.",
+        "First month: there is no previous Monthly_PL row, so changes show n/a. To test now, temporarily replace now with a date in the month after your test month (e.g. parseDate(\"2026-11-01\"; \"YYYY-MM-DD\")) in \"Month boundaries\", then put now back.",
+        "Scenario settings: Allow storing of incomplete executions."
+      ],
+      "test": "Load a test month of orders and expenses whose totals you have worked out by hand (e.g. the lesson's illustrative October: revenue 4,820,000, cost of goods 2,910,000, opex 800,000) plus a September Monthly_PL row, and Run once with the test date: the email shows gross 1,910,000 (margin 39.6%), net 1,110,000, VAT paid on its own line and a change % on every line, and a matching October row appears in Monthly_PL.",
+      "build": [
+        "1 · Tools › Set multiple variables \"Month boundaries\": this_first = {{formatDate(setDate(now; 1); \"YYYY-MM-DD\")}}; last_first = {{formatDate(addMonths(setDate(now; 1); -1); \"YYYY-MM-DD\")}}; month_label = {{formatDate(addMonths(setDate(now; 1); -1); \"MMMM YYYY\")}}; prev_label = {{formatDate(addMonths(setDate(now; 1); -2); \"MMMM YYYY\")}}.",
+        "2 · Google Sheets › Search Rows \"Paid orders\": Orders; filter status (F) Equal to Paid; limit 5000. Error handler: Errors row → Gmail alert → Break (3 attempts, 15 min).",
+        "Filter on 2→3 \"Paid last month\": {{formatDate(2.paid_at; \"YYYY-MM-DD\")}} Text: Greater than or equal to {{1.last_first}} AND Less than {{1.this_first}}.",
+        "3 · Array aggregator \"Orders last month\": source 2; fields order_id, total.",
+        "4 · Google Sheets › Search Rows \"All expenses\": Expenses; limit 5000. Error handler: Errors row → Gmail alert → Break (3, 15 min).",
+        "Filter on 4→5 \"Dated last month\": doc_date (B) ≥ {{1.last_first}} AND < {{1.this_first}}.",
+        "5 · Array aggregator \"Expenses last month\": source 4; fields category, amount_ex_vat, vat.",
+        "6 · Google Sheets › Search Rows \"Previous P&L row\": Monthly_PL where month (A) = {{1.prev_label}}; limit 1 → 8 · Array aggregator \"Previous month\" (source 6; revenue, cogs, gross, fuel, packaging, airtime, rider, other, opex, net, vat).",
+        "11 · Set multiple variables \"Totals\": revenue = {{sum(map(3.array; \"total\"))}}; cogs = {{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Cost of goods\"))}}; fuel, packaging, airtime (\"Airtime & data\"), rider (\"Rider pay\"), other the same way; vat_paid = {{sum(map(5.array; \"vat\"))}}.",
+        "12 · Set multiple variables \"Previous month values\": p_revenue … p_vat = {{ifempty(first(map(8.array; \"revenue\")); 0)}} and so on.",
+        "13 · Set multiple variables \"Profit\": gross = revenue − cogs; opex = fuel + packaging + airtime + rider + other; net = revenue − cogs − opex; margin = {{if(11.revenue = 0; 0; round((11.revenue - 11.cogs) / 11.revenue * 1000) / 10)}}.",
+        "14 · Google Sheets › Add a Row \"Add Monthly_PL row\": month, revenue, cogs, gross_profit, gross_margin_pct, fuel, packaging, airtime_data, rider_pay, other, opex, net_profit, vat_paid, created_at. Error handler: Errors row → Break (3, 15 min).",
+        "15 · Gmail › Send an email \"Email P&L\": To Tolu and the accountant; HTML table with columns Line · this month · previous month · Change, one row each for Revenue, Cost of goods, Gross profit (margin %), Fuel, Packaging, Airtime & data, Rider pay, Other, Operating expenses, Net profit, then VAT paid on purchases (separate). Change = {{if(prev = 0; \"n/a\"; formatNumber(round((this - prev) / prev * 1000) / 10; 1; \".\"; \",\") + \"%\")}}. Error handler: Errors row → Break (3, 15 min).",
+        "Schedule: monthly, day 1, 07:00 (Africa/Lagos). Allow storing of incomplete executions Yes."
+      ]
+    }
+  ]
+}

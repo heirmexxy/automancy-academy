@@ -1,0 +1,393 @@
+<template data-mod="3.2" id="tpl-3-2">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.2</span>
+    <h1>Items &amp; Expressions</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n, Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">This is the module that makes n8n click. Data moves between nodes as a list of <b>items</b>, and <b>expressions</b> let any field reach into that data, including data from nodes further back. Get these two ideas right and most "why is it doing that?" moments in n8n disappear.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain n8n's item model and predict how many times a node runs.</span></div>
+  <div><b>02</b><span>Write expressions with <code>$json</code> and reference earlier nodes with <code>$('Node').item</code>.</span></div>
+  <div><b>03</b><span>Know when <code>.item</code>, <code>.first()</code> and <code>.all()</code> are right, and when <code>.first()</code> is a bug.</span></div>
+  <div><b>04</b><span>Format dates, numbers and text inside expressions, and pin test data so you build without calling APIs again.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Three orders, one name</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu reading three phone messages that all say Hello Mrs Adebayo.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">
+          <rect x="170" y="30" width="130" height="36" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="182" y="52">Hello Mrs Adebayo…</text>
+          <rect x="170" y="76" width="130" height="36" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="182" y="98">Hello Mrs Adebayo…</text>
+          <rect x="170" y="122" width="130" height="36" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="2.5"/><text x="182" y="144">Hello Mrs Adebayo…</text>
+        </g>
+        <use href="#tolu" x="15" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Wednesday</b>Tolu's new workflow writes delivery messages for tomorrow's three orders. All three greet Mrs Adebayo.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Mr Okafor on the phone looking confused.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="50" width="70" height="110" rx="12" fill="var(--ink)"/><rect x="48" y="62" width="54" height="80" rx="4" fill="var(--sky)"/>
+        <text x="75" y="106" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="20" fill="#fff">?</text>
+        <rect x="130" y="56" width="170" height="70" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="215" y="84" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">"Who is Mrs Adebayo,</text>
+        <text x="215" y="102" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">and why is her order ₦34,000?"</text>
+      </svg>
+      <div class="cap"><b>Mr Okafor</b>The one message that was sent went to the wrong person. Worse: it showed another customer's order.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo pointing at a conveyor belt carrying three separate boxes labelled item 0, item 1 and item 2.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="120" width="160" height="12" rx="6" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" text-anchor="middle" fill="#13233A">
+          <rect x="156" y="80" width="46" height="38" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="179" y="103">item 0</text>
+          <rect x="207" y="80" width="46" height="38" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="230" y="103">item 1</text>
+          <rect x="258" y="80" width="46" height="38" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="281" y="103">item 2</text>
+        </g>
+        <use href="#nodo" x="10" y="45" width="135" height="135"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"Every node passes a list of items. Each item must stay matched to its own customer all the way down the line."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a sign reading .first().">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="60" width="130" height="56" rx="10" fill="var(--glitch)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="235" y="95" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="16" fill="#fff">.first()</text>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I swapped one word in the expression. Now every item looks at the first customer. Find me."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 30 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Items: n8n's unit of data</h3>
+    <p>Between nodes, n8n always passes a <b>list of items</b>. Each item is one record (one order, one row, one email) and holds its fields under <code>json</code>. Most nodes <b>run once for each item</b> they receive, and they keep track of which input item each output came from. n8n calls this <b>item linking</b> (or paired items).</p>
+    <figure class="fig"><svg viewBox="0 0 640 210" role="img" aria-label="The Orders node outputs three items. The Find customer node runs once for each and outputs three paired items. Build message runs three times, each time seeing one customer item and able to reach back to its paired order.">
+      <defs><marker id="it1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" text-anchor="middle">
+        <rect x="10" y="12" width="150" height="34" rx="10" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="34" fill="#fff">Orders</text>
+        <rect x="245" y="12" width="150" height="34" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="320" y="34" fill="#fff">Find customer</text>
+        <rect x="480" y="12" width="150" height="34" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="555" y="34" fill="#fff">Build message</text>
+      </g>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">
+        <rect x="20" y="62" width="130" height="36" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="30" y="84">0 · HL-0071 · C-014</text>
+        <rect x="20" y="108" width="130" height="36" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="30" y="130">1 · HL-0072 · C-022</text>
+        <rect x="20" y="154" width="130" height="36" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="30" y="176">2 · HL-0073 · C-009</text>
+        <rect x="255" y="62" width="130" height="36" rx="8" fill="#9FD3F7" stroke="var(--ink)" stroke-width="1.5"/><text x="265" y="84">0 · Mrs Adebayo</text>
+        <rect x="255" y="108" width="130" height="36" rx="8" fill="#9FD3F7" stroke="var(--ink)" stroke-width="1.5"/><text x="265" y="130">1 · Mr Okafor</text>
+        <rect x="255" y="154" width="130" height="36" rx="8" fill="#9FD3F7" stroke="var(--ink)" stroke-width="1.5"/><text x="265" y="176">2 · Iya Basira</text>
+        <rect x="490" y="62" width="130" height="36" rx="8" fill="#C9BBFF" stroke="var(--ink)" stroke-width="1.5"/><text x="500" y="84">0 · msg to Adebayo</text>
+        <rect x="490" y="108" width="130" height="36" rx="8" fill="#C9BBFF" stroke="var(--ink)" stroke-width="1.5"/><text x="500" y="130">1 · msg to Okafor</text>
+        <rect x="490" y="154" width="130" height="36" rx="8" fill="#C9BBFF" stroke="var(--ink)" stroke-width="1.5"/><text x="500" y="176">2 · msg to Basira</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2"><path d="M152 80 H251" marker-end="url(#it1)"/><path d="M152 126 H251" marker-end="url(#it1)"/><path d="M152 172 H251" marker-end="url(#it1)"/><path d="M387 80 H486" marker-end="url(#it1)"/><path d="M387 126 H486" marker-end="url(#it1)"/><path d="M387 172 H486" marker-end="url(#it1)"/></g>
+    </svg><figcaption>Three items in, three runs, three items out, each still linked to its own order. That link is what <code>$('Orders').item</code> follows.</figcaption></figure>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> Items are my bundles under another name. The big difference: in n8n, items don't cost anything extra. The whole run is one execution.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Expressions and <code>$json</code></h3>
+    <p>An expression is JavaScript inside <code>{{ }}</code>, in a field switched to <b>Expression</b> mode. The most used variable is <code>$json</code>: <b>the current item's data from the node directly before this one</b>.</p>
+<pre class="codebox"><span class="k">{{ $json.name }}</span>                    <span class="c">→ Mrs Adebayo</span>
+<span class="k">{{ $json.address.area }}</span>            <span class="c">→ nested field: Bodija</span>
+<span class="k">{{ $json.items[0].sku }}</span>            <span class="c">→ first entry in a list</span>
+<span class="k">{{ $json["delivery date"] }}</span>       <span class="c">→ field names with spaces need brackets</span>
+<span class="k">Hi {{ $json.name }}, thanks!</span>       <span class="c">→ text and expressions mix freely</span></pre>
+    <p>You rarely type these by hand. <b>Drag a field from the Input panel</b> into a parameter and n8n writes the expression. The preview under the field shows the result for the current item. Read it every time.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Reaching back: <code>$('Node')</code></h3>
+    <p><code>$json</code> only sees the node directly before. To use data from further back, name the node:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Expression</th><th>Gives you</th><th>Use it when</th></tr></thead>
+      <tbody>
+        <tr><td><code>$('Orders').item.json.total</code></td><td>The Orders item <b>linked to the current item</b></td><td>Almost always. Each message gets its own order.</td></tr>
+        <tr><td><code>$('Orders').first().json.total</code></td><td>The <b>first</b> Orders item, for every item</td><td>Only when there's one shared value, such as a settings row</td></tr>
+        <tr><td><code>$('Orders').last().json.total</code></td><td>The last Orders item</td><td>Rarely; for example, the newest row</td></tr>
+        <tr><td><code>$('Orders').all()</code></td><td>Every Orders item as a list</td><td>Totals and summaries, e.g. <code>.all().length</code></td></tr>
+        <tr><td><code>$input.item.json</code></td><td>Same as <code>$json</code></td><td>When you want to be explicit</td></tr>
+        <tr><td><code>$itemIndex</code></td><td>The current item's position (0, 1, 2…)</td><td>Numbering and debugging</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Try it.</b> The node "Build message" is running. Its input comes from "Find customer". Edit the template and watch all three items.</p>
+    <div class="xsim" data-expr='{"input":"Find customer","nodes":{"Orders":[{"order_id":"HL-0071","customer_id":"C-014","items":"2 crates tomatoes, 1 bag tatashe","total":34000,"delivery_date":"2026-10-06"},{"order_id":"HL-0072","customer_id":"C-022","items":"1 bag onions","total":4000,"delivery_date":"2026-10-06"},{"order_id":"HL-0073","customer_id":"C-009","items":"3 bunches ugu, 1 crate tomatoes","total":21000,"delivery_date":"2026-10-07"}],"Find customer":[{"customer_id":"C-014","name":"Mrs Adebayo","phone":"+2348031234567","area":"Bodija"},{"customer_id":"C-022","name":"Mr Okafor","phone":"+2348059876543","area":"Ring Road"},{"customer_id":"C-009","name":"Iya Basira","phone":"+2348022223344","area":"Mokola"}]},"expect":[["Mrs Adebayo","HL-0071"],["Mr Okafor","HL-0072"],["Iya Basira","HL-0073"]]}'>
+      <div class="xnodes">
+        <div><b>Orders</b> (3 items)<pre>0 · HL-0071 · C-014 · ₦34,000
+1 · HL-0072 · C-022 · ₦4,000
+2 · HL-0073 · C-009 · ₦21,000
+fields: order_id, customer_id, items, total, delivery_date</pre></div>
+        <div><b>Find customer</b> (3 items · the input)<pre>0 · Mrs Adebayo · Bodija
+1 · Mr Okafor · Ring Road
+2 · Iya Basira · Mokola
+fields: customer_id, name, phone, area</pre></div>
+      </div>
+      <label class="crit" for="xs-3-2">Message template</label>
+      <textarea id="xs-3-2" spellcheck="false">Hello {{ $('Find customer').first().json.name }}, your Harvest Lane order {{ $('Orders').item.json.order_id }} (₦{{ $('Orders').item.json.total.toLocaleString() }}) arrives on {{ $('Orders').item.json.delivery_date }} in {{ $json.area }}.</textarea>
+      <div class="btns"><button type="button" class="btn ghost" data-xtpl="xt-glitch">Glitch's version</button><button type="button" class="btn ghost" data-xtpl="xt-fix">The fix</button><button type="button" class="btn ghost" data-xtpl="xt-traps">Three more traps</button></div>
+      <div class="xout" aria-live="polite"></div>
+      <p style="font-size:.84rem;color:var(--muted)">A teaching simulator: it understands the reference patterns in this card plus <code>.toUpperCase()</code>, <code>.toLowerCase()</code>, <code>.trim()</code> and <code>.toLocaleString()</code>. Real n8n accepts any JavaScript expression.</p>
+    </div>
+    <pre id="xt-glitch" hidden>Hello {{ $('Find customer').first().json.name }}, your Harvest Lane order {{ $('Orders').item.json.order_id }} (₦{{ $('Orders').item.json.total.toLocaleString() }}) arrives on {{ $('Orders').item.json.delivery_date }} in {{ $json.area }}.</pre>
+    <pre id="xt-fix" hidden>Hello {{ $json.name }}, your Harvest Lane order {{ $('Orders').item.json.order_id }} (₦{{ $('Orders').item.json.total.toLocaleString() }}) arrives on {{ $('Orders').item.json.delivery_date }} in {{ $json.area }}.</pre>
+    <pre id="xt-traps" hidden>Hello {{ $json.Name }}, order {{ $('Google Sheets').item.json.order_id }} for {{ $('Orders').item.json }}.</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Formatting dates, numbers and text</h3>
+    <p>Expressions are JavaScript, so ordinary string and number methods work. For dates, n8n includes the <b>Luxon</b> library: <code>$now</code> and <code>$today</code> are Luxon dates, and <code>DateTime</code> turns text into one.</p>
+<pre class="codebox"><span class="c">// Dates (with GENERIC_TIMEZONE = Africa/Lagos)</span>
+<span class="k">{{ $now.toFormat('cccc d LLLL') }}</span>                         <span class="c">→ Monday 5 October</span>
+<span class="k">{{ DateTime.fromISO($json.delivery_date).toFormat('ccc d LLL') }}</span> <span class="c">→ Tue 6 Oct</span>
+<span class="k">{{ $today.plus({ days: 1 }).toISODate() }}</span>                 <span class="c">→ 2026-10-06 (tomorrow)</span>
+
+<span class="c">// Numbers</span>
+<span class="k">{{ $json.total.toLocaleString('en-NG') }}</span>                   <span class="c">→ 34,000</span>
+<span class="k">{{ Math.round($json.total * 0.075) }}</span>                      <span class="c">→ 2550 (7.5% VAT)</span>
+
+<span class="c">// Text and decisions</span>
+<span class="k">{{ $json.name.split(' ')[1] }}</span>                             <span class="c">→ Adebayo</span>
+<span class="k">{{ $json.phone.replace('+234', '0') }}</span>                    <span class="c">→ 08031234567</span>
+<span class="k">{{ $json.total &gt;= 30000 ? 'Free delivery' : 'Delivery ₦1,500' }}</span>
+<span class="k">{{ $json.notes || 'No notes' }}</span>                            <span class="c">→ fallback when empty (|| also catches "")</span></pre>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> If an expression grows longer than one line, it belongs in a Code node (3.5). Expressions are for small, readable transformations.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Pin test data</h3>
+    <p>Every time you click Execute, n8n calls the real APIs again: slow, sometimes costly, and the data changes under you. <b>Pinning</b> freezes a node's output. Click the pin icon in a node's Output panel and n8n reuses that output instead of running the node again. You can also edit pinned data to create test cases, such as a customer with no phone number.</p>
+    <div class="vocab">
+      <div><b>Pinned data is for building</b>n8n uses pinned data only in manual runs from the editor. Published, automatic runs always use real data.</div>
+      <div><b>Edit to test edge cases</b>Add an item with a missing field or a huge total, and check that every expression downstream copes.</div>
+      <div><b>Unpin when the shape changes</b>If you add a column to the sheet, stale pinned data won't have it, and you'll chase a bug that isn't there.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/build/work-with-data/transform-data/expression-reference" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: expression reference</b><small>Skim: $json, $('Node'), $input, $now, and the built-in functions.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/build/work-with-data/reference-data/link-data-items/item-linking-errors" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: item linking errors</b><small>Read: what "paired item data unavailable" means, before you meet it.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+expressions+items+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n expressions and items tutorials</b><small>Pick a recent one (2025 or later) so the editor matches yours.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: a WhatsApp-ready message for every order</h2></div>
+  <div class="prose"><p><b>The goal.</b> Each evening, Tolu wants a ready-to-send WhatsApp message for every order delivering tomorrow, with the customer's name, order number, items, total and delivery day, plus a one-tap link that opens WhatsApp with the message filled in. Order data lives in the <b>Orders</b> sheet; names and phones live in <b>Customers</b>. Sending automatically comes later (Boss 3); for now the messages go into an <b>Outbox</b> sheet.</p></div>
+
+  <figure class="fig"><svg viewBox="0 0 640 120" role="img" aria-label="Manual trigger, then Orders (get tomorrow's rows), then Find customer (one lookup per order), then Build message, then Outbox (append rows).">
+    <defs><marker id="it2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+    <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+      <rect x="5" y="25" width="100" height="56" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="55" y="50" fill="#fff">Trigger</text>
+      <rect x="135" y="25" width="110" height="56" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="190" y="50" fill="#13233A">Orders</text>
+      <rect x="275" y="25" width="110" height="56" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="330" y="50" fill="#13233A">Find customer</text>
+      <rect x="415" y="25" width="110" height="56" rx="12" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="470" y="50" fill="#fff">Build message</text>
+      <rect x="555" y="25" width="80" height="56" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="595" y="50" fill="#13233A">Outbox</text>
+    </g>
+    <g font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">
+      <text x="55" y="68" fill="#fff">manual / 18:00</text><text x="190" y="68" fill="#13233A">3 items</text><text x="330" y="68" fill="#13233A">runs 3×</text><text x="470" y="68" fill="#fff">3 items</text><text x="595" y="68" fill="#13233A">3 rows</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2"><path d="M106 53 H131" marker-end="url(#it2)"/><path d="M246 53 H271" marker-end="url(#it2)"/><path d="M386 53 H411" marker-end="url(#it2)"/><path d="M526 53 H551" marker-end="url(#it2)"/></g>
+  </svg></figure>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Get tomorrow's orders</h4>
+      <p>Start with a <b>Manual Trigger</b> (swap in a Schedule Trigger at 18:00 once it works). Add <b>Google Sheets · Get Row(s)</b>, rename the node <b>Orders</b>, and add a filter: column <code>delivery_date</code> equals</p>
+<pre class="codebox">{{ $today.plus({ days: 1 }).toISODate() }}</pre>
+      <p>Execute the step. With three orders for tomorrow, the Output says <b>3 items</b>. Now <b>pin</b> this output. From here on you build without touching the sheet.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Look up each customer</h4>
+      <p>Add another <b>Get Row(s)</b> on the Customers sheet and rename it <b>Find customer</b>. Filter: <code>customer_id</code> equals <code>{{ $json.customer_id }}</code> (drag it from the Input panel). Execute: the node runs <b>once per order</b> and outputs three items, each linked to its order. Pin this too.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Rename nodes before you reference them.</b> Expressions use node names, so "Orders" beats "Google Sheets1". n8n updates references when you rename a node in the editor, but expressions you paste in from elsewhere won't know the new name.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Build the message with Edit Fields</h4>
+      <p>Add <b>Edit Fields (Set)</b>, rename it <b>Build message</b>, and add three fields. Its input is Find customer, so <code>$json</code> is the customer; the order is reached through <code>$('Orders').item</code>:</p>
+<pre class="codebox"><span class="k">order_id</span>  {{ $('Orders').item.json.order_id }}
+<span class="k">phone</span>     {{ $json.phone }}
+<span class="k">message</span>   Hello {{ $json.name }} 👋
+          Your Harvest Lane order {{ $('Orders').item.json.order_id }} is confirmed:
+          {{ $('Orders').item.json.items }}
+          Total: ₦{{ $('Orders').item.json.total.toLocaleString('en-NG') }}
+          Delivery: {{ DateTime.fromISO($('Orders').item.json.delivery_date).toFormat('cccc d LLL') }}, {{ $json.area }}.
+          Reply 1 to confirm or 2 to change.</pre>
+      <p>Check the preview under the field, then use the arrows in the Input panel to step through items 0, 1 and 2: each preview must show a different customer <b>and</b> their own order.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the one-tap WhatsApp link</h4>
+      <p>Add a fourth field, <code>wa_link</code>. WhatsApp's click-to-chat links need the number without the plus sign, and the text URL-encoded:</p>
+<pre class="codebox">https://wa.me/{{ $json.phone.replace('+', '') }}?text={{ encodeURIComponent($('Orders').item.json.order_id + ' ' + 'delivery confirmed') }}</pre>
+      <p>To put the <b>full</b> message in the link, you'd want to reuse the <code>message</code> field, but fields in the same Edit Fields node can't see each other. Add a second Edit Fields node after this one (with <b>Include Other Input Fields</b> on) and set <code>wa_link</code> there, using <code>{{ encodeURIComponent($json.message) }}</code> as the text.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write to the Outbox and test the edge cases</h4>
+      <p>Add <b>Google Sheets · Append Row</b> on an Outbox sheet with columns <code>order_id · phone · message · wa_link</code>, mapped automatically. Then edit the pinned Orders data to add a fourth order whose <code>customer_id</code> doesn't exist, and run again. Find customer returns nothing for that item, so it silently disappears. Fix it: in Find customer's <b>Settings</b>, turn on <b>Always Output Data</b>, and in Build message use <code>{{ $json.name ?? 'Customer' }}</code>. Then Tolu sees the order and can fix the customer record.</p>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>execution for the whole evening run</span></div>
+        <div class="stat"><b>4</b><span>orders, 4 messages, 0 mix-ups</span></div>
+        <div class="stat"><b>0</b><span>API calls while building, thanks to pinning</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li><code>.item</code> keeps every message matched to its own order through item linking.</li><li>Clear node names make expressions readable months later.</li><li>Pinned data makes testing fast and repeatable, and lets you invent edge cases.</li><li>Stepping through every item in the preview catches mix-ups before customers do.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Using <code>.first()</code> where you meant <code>.item</code>.</li><li>Checking only item 0 in the preview.</li><li>Field names in the wrong case: <code>Name</code> isn't <code>name</code>.</li><li>Forgetting that a lookup with no result drops the item.</li><li>Leaving stale pinned data after changing the sheet's columns.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Five broken outboxes. Use the simulator in Card 3 to test your theories.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>All three messages greet Mrs Adebayo, but each shows the correct order number.</td></tr>
+        <tr><td>B</td><td>An expression copied from a YouTube tutorial fails with <code>Referenced node "Google Sheets" doesn't exist</code>.</td></tr>
+        <tr><td>C</td><td>The message says <code>for [Object: {"order_id":"HL-0071",…}]</code>.</td></tr>
+        <tr><td>D</td><td>Tolu added tomorrow's new orders to the sheet, clicked Execute workflow, and the Outbox still shows yesterday's three.</td></tr>
+        <tr><td>E</td><td>Four orders go in, three messages come out. No error anywhere.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the name uses <code>$('Find customer').first()</code>, which is always item 0. Use <code>$json.name</code> (or <code>$('Find customer').item</code>). The order number used <code>.item</code>, which is why it was right.</li>
+        <li><b>B:</b> the expression names a node that isn't in this workflow. Change it to your node's name, <code>$('Orders')</code>.</li>
+        <li><b>C:</b> the expression returns a whole object, <code>$('Orders').item.json</code>. Add the field you need: <code>.json.items</code>.</li>
+        <li><b>D:</b> Orders still has pinned data from yesterday, and manual runs use it. Unpin it (or re-execute that node), then pin the fresh output.</li>
+        <li><b>E:</b> one order's <code>customer_id</code> has no match, so Find customer outputs nothing for it and the item disappears. Turn on Always Output Data and handle the empty customer, or flag the order for Tolu.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Build on pinned data</h4>
+    <ul><li>Build the solved workflow. Pin Orders and Find customer after their first run.</li><li>Edit the pinned data to add two edge cases: a customer with no <code>area</code>, and an order with a total of 250,000.</li><li>Run the workflow five times without either Sheets node calling Google.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every message in the Outbox has the right name, order and formatted total, including the edge cases.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Five formatting expressions</h4>
+    <ul><li>Write and test expressions that produce: tomorrow's date as "Tuesday 6 October"; a total as "₦34,000"; 7.5% VAT rounded to the nearest naira; a phone number in local format (080…); and "Free delivery" for orders of ₦30,000 or more.</li><li>Paste each expression and its output for two different items into your log.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All five give correct results for both items, and none uses <code>.first()</code>.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Three sources, one message</h4>
+    <ul><li>Add a third sheet, <b>Riders</b> (area, rider_name, rider_phone), and a node that finds the rider for each customer's area.</li><li>Extend the message so it includes data from three different earlier nodes: the order, the customer and the rider ("Your rider is Musa, 0803…").</li><li>Make it survive a missing rider: the message should say "Rider to be assigned" instead of breaking.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All items are correct with five test orders across at least three areas, including one area with no rider. You can explain which expression reads from which node.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. A Google Sheets node outputs 4 items into a node that sends an email. How many emails?</p><div class="opts">
+      <button type="button" data-opt="a">1</button><button type="button" data-opt="b">It depends on the plan</button><button type="button" data-opt="c">4</button><button type="button" data-opt="d">0 until you add a loop</button></div>
+      <p class="fb" hidden data-why="Most nodes run once for each item they receive."></p></div>
+    <div class="q" data-ans="a"><p>2. In a node whose input comes from "Find customer", what is <code>$json</code>?</p><div class="opts">
+      <button type="button" data-opt="a">The current item from Find customer</button><button type="button" data-opt="b">The first item of the trigger</button><button type="button" data-opt="c">All items from every node</button><button type="button" data-opt="d">The workflow's settings</button></div>
+      <p class="fb" hidden data-why="$json is the current item's data from the node directly before."></p></div>
+    <div class="q" data-ans="d"><p>3. Every message shows the same customer. Which expression is the likely culprit?</p><div class="opts">
+      <button type="button" data-opt="a">{{ $json.name }}</button><button type="button" data-opt="b">{{ $('Find customer').item.json.name }}</button><button type="button" data-opt="c">{{ $input.item.json.name }}</button><button type="button" data-opt="d">{{ $('Find customer').first().json.name }}</button></div>
+      <p class="fb" hidden data-why=".first() returns item 0 every time. .item follows the link to the matching item."></p></div>
+    <div class="q" data-ans="b"><p>4. Does a published workflow use pinned data when its schedule fires?</p><div class="opts">
+      <button type="button" data-opt="a">Yes, always</button><button type="button" data-opt="b">No, pinned data is only used in manual runs</button><button type="button" data-opt="c">Only on n8n Cloud</button><button type="button" data-opt="d">Only for the trigger node</button></div>
+      <p class="fb" hidden data-why="Pinning is a building tool. Automatic runs always fetch real data."></p></div>
+    <div class="q" data-ans="c"><p>5. Which expression turns "2026-10-06" into "Tuesday 6 Oct"?</p><div class="opts">
+      <button type="button" data-opt="a">{{ $json.delivery_date.format('Tuesday') }}</button><button type="button" data-opt="b">{{ $now.toFormat('cccc d LLL') }}</button><button type="button" data-opt="c">{{ DateTime.fromISO($json.delivery_date).toFormat('cccc d LLL') }}</button><button type="button" data-opt="d">{{ Date($json.delivery_date) }}</button></div>
+      <p class="fb" hidden data-why="DateTime.fromISO parses the text; toFormat with cccc d LLL formats it. $now would give today, not the delivery date."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-2">AUTOMANCY LOG · Lesson 3.2 · Items & Expressions
+Date:
+Workflow name and node names:
+Items in → items out at each node:
+Pinned nodes and edge cases I added:
+My five formatting expressions and their outputs:
+A bug I caught by stepping through items:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Data travels as a list of items; most nodes run once per item.</li>
+      <li><code>$json</code> is the current item from the node directly before.</li>
+      <li><code>$('Node').item</code> follows the item link back; <code>.first()</code> is item 0 for everyone.</li>
+      <li>Name nodes clearly before you reference them.</li>
+      <li>Format with JavaScript and Luxon; move long logic to a Code node.</li>
+      <li>Pin data to build fast; unpin when the data's shape changes.</li>
+      <li>Step through every item in the preview, not just the first.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://docs.n8n.io/build/work-with-data/pin-and-mock-data" target="_blank" rel="noopener">n8n Docs: pin and mock data</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/work-with-data/transform-data/expression-reference" target="_blank" rel="noopener">n8n Docs: expression reference</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/work-with-data/reference-data/link-data-items/item-linking-errors" target="_blank" rel="noopener">n8n Docs: item linking errors</a></li>
+    <li><span class="kind">Text</span><a href="https://moment.github.io/luxon/#/formatting" target="_blank" rel="noopener">Luxon: formatting tokens (cccc, LLL, yyyy…)</a></li>
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: Foundations program with certificates</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+expressions+tutorial" target="_blank" rel="noopener">YouTube: n8n expressions tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand three learners an "order card" each and three others a "customer card". Pair them up. Then ask the room to address the messages using only "the first customer card": everyone gets the same name, and the bug is never forgotten. Finish with the simulator projected on screen, letting the group fix Glitch's version live.</p>
+  </div>
+</section>
+
+</article>
+</template>

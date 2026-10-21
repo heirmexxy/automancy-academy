@@ -1,0 +1,112 @@
+{
+ "name": "HL · Tool · Supplier spend lookup (read-only)",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+    "sheetId": "Invoice_Lines",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "5000"
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Search Invoice_Lines"
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "builtin:BasicAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 1
+   },
+   "mapper": {
+    "invoice_number": "{{1.`0`}}",
+    "supplier": "{{1.`1`}}",
+    "line_total": "{{1.`6`}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Array aggregator · matching lines"
+    }
+   },
+   "filter": {
+    "name": "Matches the question",
+    "conditions": [
+     [
+      {
+       "a": "{{lower(1.`1`)}}",
+       "b": "{{lower(ifempty(var.input.supplier; emptystring))}}",
+       "o": "text:contain"
+      },
+      {
+       "a": "{{lower(1.`3`)}}",
+       "b": "{{lower(ifempty(var.input.product; emptystring))}}",
+       "o": "text:contain"
+      },
+      {
+       "a": "{{1.`2`}}",
+       "b": "{{ifempty(var.input.date_from; \"2000-01-01\")}}",
+       "o": "text:greaterorequal"
+      },
+      {
+       "a": "{{1.`2`}}",
+       "b": "{{ifempty(var.input.date_to; \"2100-12-31\")}}",
+       "o": "text:lessorequal"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 3,
+   "module": "scenario-service:ReturnData",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "total_ngn": "{{sum(map(2.array; \"line_total\"))}}",
+    "line_count": "{{length(2.array)}}",
+    "invoices": "{{join(distinct(map(2.array; \"invoice_number\")); \", \")}}",
+    "suppliers": "{{join(distinct(map(2.array; \"supplier\")); \", \")}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0,
+     "name": "Return output"
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

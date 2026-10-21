@@ -1,0 +1,992 @@
+{
+  "name": "Inbox · Receive",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Inbox · Receive (Lesson 5.7)\nEvery adapter calls this with { channel, thread_id, from_value, from_type, text, received_at, raw_id }.\n1. Normalise (phones +234..., emails lowercase).\n2. Resolve the identity: an existing identity with that exact value -> that customer; none -> a new customer with an UNVERIFIED identity.\n3. A phone or email typed in the text that matches ANOTHER customer's verified identity -> a link suggestion, never a merge; needs_verification = true.\n4. Upsert the conversation (same open order -> same conversation, whichever channel) and save the message once (raw_id).\n5. Label, then priority, owner and response target in code.\n6. The agent answers with the whole picture (get_customer_context) on reply_channel only; no order or payment details if needs_verification. Refunds and credits need Tolu's approval and are written to decisions.\n7. Inbox · Send replies through the right door; other open threads get one short note.\n\nCredentials: Postgres (Supabase); OpenAI (both model nodes); Telegram.\nPlaceholders: YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID, YOUR_SEND_WORKFLOW_ID, YOUR_CONTEXT_WORKFLOW_ID.",
+        "height": 560,
+        "width": 700
+      },
+      "id": "640be4eb-b735-400c-8877-4f326209f698",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Supabase tables\n-- Run once in Supabase\ncreate table customers (id bigserial primary key, display_name text,\n  segment text, consent_marketing boolean default false,\n  created_at timestamptz default now());\ncreate table identities (id bigserial primary key,\n  customer_id bigint references customers(id),\n  type text, value text, verified boolean default false,\n  source text, added_at timestamptz default now());\ncreate index on identities (type, value);\ncreate table conversations (id bigserial primary key,\n  customer_id bigint references customers(id), channel text,\n  thread_id text, status text default 'open', priority int,\n  assigned_to text, sla_due_at timestamptz,\n  last_customer_msg_at timestamptz, order_ref text,\n  reply_channel text, needs_verification boolean default false,\n  pinged_80 boolean default false, escalated boolean default false);\ncreate table messages (id bigserial primary key,\n  conversation_id bigint references conversations(id),\n  direction text, channel text, thread_id text, text text,\n  at timestamptz default now(), sent_by text, raw_id text unique);\ncreate table decisions (id bigserial primary key,\n  customer_id bigint references customers(id), type text,\n  value text, decided_by text, at timestamptz default now());\ncreate table link_suggestions (id bigserial primary key,\n  customer_id bigint, suggested_customer_id bigint,\n  evidence text, status text default 'open',\n  created_at timestamptz default now());\n\nCreate a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "height": 760,
+        "width": 700
+      },
+      "id": "0d0bb9ef-caf7-46ee-8459-d18c93bd4791",
+      "name": "Tables",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -20
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "791ba603-b10c-412f-806b-69431351c6f5",
+      "name": "When called by an adapter",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node: normalise, then look up\nconst v = $json.from_type === 'phone'\n  ? '+234' + $json.from_value.replace(/\\D/g,'').replace(/^(234|0)/,'')\n  : $json.from_value.trim().toLowerCase();\nreturn { ...$json, from_value: v };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "f6c2e8e8-2838-40c1-b464-63eef717a616",
+      "name": "Normalise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select customer_id, verified from identities where type = $1 and value = $2 order by verified desc, added_at asc limit 1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.from_type, $json.from_value ] }}"
+        }
+      },
+      "id": "48af810b-488e-402c-8bea-fdcadbe331f8",
+      "name": "Find identity",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ef8a77f7-a867-46e3-b56b-e7c1cf4889da",
+              "leftValue": "={{ $json.customer_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e917f4a9-107b-498a-93d5-e331e676cdfd",
+      "name": "Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with c as (insert into customers (display_name) values ($1) returning id),\n     i as (insert into identities (customer_id, type, value, verified, source)\n           select id, $2, $3, false, $4 from c)\nselect id as customer_id, false as verified from c;",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalise').item.json.from_value, $('Normalise').item.json.from_type, $('Normalise').item.json.from_value, 'first message on ' + $('Normalise').item.json.channel ] }}"
+        }
+      },
+      "id": "6aacae03-3be2-4ea0-84d9-603549910c3f",
+      "name": "New customer + unverified identity",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "873f9f76-8d9c-4602-be06-8b498fca13a0",
+              "name": "customer_id",
+              "value": "={{ $json.customer_id }}",
+              "type": "number"
+            },
+            {
+              "id": "953018a7-f3cb-43d7-a08d-461c21197a16",
+              "name": "identity_verified",
+              "value": "={{ $json.verified }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cab59289-925f-4e78-9103-1318117c94fa",
+      "name": "Customer",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Normalise').item.json;\nconst phone = (m.text.match(/(\\+?234|\\b0)[789][01]\\d[\\s-]?\\d{3}[\\s-]?\\d{4}/) || [])[0];\nconst email = (m.text.match(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/) || [])[0];\nconst typed = phone ? '+234' + phone.replace(/\\D/g, '').replace(/^(234|0)/, '') : email ? email.toLowerCase() : '';\nreturn { customer_id: $json.customer_id, typed_value: typed };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "70edf97c-a79a-4d2c-a617-1f1b19669c90",
+      "name": "Typed phone or email?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select customer_id as other_customer_id from identities where verified and value = $1 and customer_id <> $2 limit 1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.typed_value || '__none__', $json.customer_id ] }}"
+        }
+      },
+      "id": "596f24a3-900f-4322-ab6f-af20882ba611",
+      "name": "Belongs to another customer?",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "f2d4ceb5-c46a-426f-809a-184db85e02a6",
+              "leftValue": "={{ $json.other_customer_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8488c705-038a-42d7-b68f-4c83b8cd3c6c",
+      "name": "Other customer matched?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into link_suggestions (customer_id, suggested_customer_id, evidence)\nvalues ($1, $2, $3)\nreturning suggested_customer_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Customer').item.json.customer_id, $json.other_customer_id, 'typed ' + $('Typed phone or email?').item.json.typed_value + ' on ' + $('Normalise').item.json.channel ] }}"
+        }
+      },
+      "id": "2a44e4e1-16ee-40b8-b71c-e3483ec04621",
+      "name": "Create link suggestion",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Normalise').item.json;\nconst c = $('Customer').item.json;\nconst order = (m.text.match(/\\bHL-\\d+\\b/i) || [''])[0].toUpperCase();\nreturn { ...m, customer_id: c.customer_id, identity_verified: c.identity_verified === true,\n  needs_verification: !!$json.suggested_customer_id || c.identity_verified !== true, order_ref: order };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "9e9e8160-9e2e-4ca5-8dbd-c8f896f5a57e",
+      "name": "Message context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "with existing as (\n  select id from conversations\n  where customer_id = $1 and status = 'open'\n    and ($2 = '' or order_ref = $2 or order_ref is null)\n  order by last_customer_msg_at desc limit 1\n), ins as (\n  insert into conversations (customer_id, channel, thread_id, status, order_ref, last_customer_msg_at, reply_channel, needs_verification)\n  select $1, $3, $4, 'open', nullif($2, ''), $5, $3, $6\n  where not exists (select 1 from existing)\n  returning id, needs_verification\n), upd as (\n  update conversations\n  set last_customer_msg_at = $5, reply_channel = $3, channel = $3, thread_id = $4,\n      order_ref = coalesce(order_ref, nullif($2, '')), needs_verification = needs_verification or $6\n  where id in (select id from existing)\n  returning id, needs_verification\n)\nselect id as conversation_id, needs_verification from ins\nunion all\nselect id, needs_verification from upd;",
+        "options": {
+          "queryReplacement": "={{ [ $json.customer_id, $json.order_ref, $json.channel, $json.thread_id, $json.received_at, $json.needs_verification ] }}"
+        }
+      },
+      "id": "481262c6-7384-411c-ac26-5f480d1bfd87",
+      "name": "Upsert conversation",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2420,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into messages (conversation_id, direction, channel, thread_id, text, at, sent_by, raw_id)\nvalues ($1, 'in', $2, $3, $4, $5, 'customer', $6)\non conflict (raw_id) do nothing\nreturning conversation_id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.conversation_id, $('Message context').item.json.channel, $('Message context').item.json.thread_id, $('Message context').item.json.text, $('Message context').item.json.received_at, $('Message context').item.json.raw_id ] }}"
+        }
+      },
+      "id": "8705aadf-2bc4-4205-86dc-2c304a8b2e21",
+      "name": "Save message (once)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Message context').item.json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sentiment\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"positive\",\n        \"neutral\",\n        \"negative\",\n        \"mixed\"\n      ]\n    },\n    \"topic\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"quality\",\n        \"late delivery\",\n        \"price\",\n        \"refund\",\n        \"food safety\",\n        \"hours\",\n        \"other\"\n      ]\n    },\n    \"urgent\": {\n      \"type\": \"boolean\",\n      \"description\": \"needs a person today\"\n    },\n    \"intent\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"praise\",\n        \"complaint\",\n        \"question\",\n        \"lead\",\n        \"spam\"\n      ]\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"sentiment\",\n    \"topic\",\n    \"urgent\",\n    \"intent\",\n    \"confidence\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You label customer comments about Harvest Lane, a fresh-produce delivery business in Ibadan. Comments may be in Nigerian English, Pidgin, Yoruba, slang or emoji. Return sentiment, topic, urgent (needs a person today), intent and confidence (0 to 1, your honest estimate).\n\nExamples:\n1. \"Una tomatoes fresh well well, I go order again\" -> positive, quality, praise, urgent false\n2. \"Price don cost o\" -> neutral, price, complaint, urgent false (about price, not anger)\n3. \"This bread is sick 🔥\" -> positive, quality, praise, urgent false (sick = amazing)\n4. \"deadly jollof, we go come back\" -> positive, quality, praise, urgent false (deadly = excellent)\n5. \"Great, another 'fresh' delivery of soft tomatoes 🙄\" -> negative, quality, complaint, urgent false (sarcasm)\n6. \"Half the onions were rotten and nobody is picking my calls\" -> negative, quality, complaint, urgent true\n7. \"My son was sick after eating your ugu\" -> negative, food safety, complaint, urgent true\n8. \"What time do you open on Sundays?\" -> neutral, hours, question, urgent false\n9. \"Do you supply restaurants weekly? We need about 20 crates\" -> positive, other, lead, urgent false\n10. \"Delivery late again. Third time this month.\" -> negative, late delivery, complaint, urgent false\n11. \"Veggies dey fresh but the rider was rude\" -> mixed, other, complaint, urgent false\n12. \"I paid since Monday, nothing came. I want my money back\" -> negative, refund, complaint, urgent true\n13. \"Earn N50k daily!!! Click the link in my bio\" -> neutral, other, spam, urgent false"
+        }
+      },
+      "id": "8510c96e-abfb-4e7b-a50c-23dbb788aaf4",
+      "name": "Label",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        2860,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "4df0225b-72ec-41be-95e0-c004974de6c4",
+      "name": "OpenAI Chat Model (labeller)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        2860,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Priority: safety or legal -> complaint or refund -> order problem -> buying question -> general question -> praise.\nconst m = $('Message context').item.json;\nconst conv = $('Upsert conversation').item.json;\nconst l = $json.output;\nconst legal = /lawyer|police|court|sue/i.test(m.text);\nlet priority, assigned_to, minutes;\nif (l.topic === 'food safety' || legal) { priority = 1; assigned_to = 'Tolu'; minutes = 60; }\nelse if (l.intent === 'complaint' || l.topic === 'refund') { priority = 2; assigned_to = 'Tolu'; minutes = 60; }\nelse if (m.order_ref || l.topic === 'late delivery') { priority = 3; assigned_to = 'Bisi'; minutes = 15; }\nelse if (l.intent === 'lead') { priority = 4; assigned_to = 'Tolu'; minutes = 60; }\nelse if (l.intent === 'question') { priority = 5; assigned_to = 'agent'; minutes = 5; }\nelse { priority = 6; assigned_to = 'agent'; minutes = 5; }\n// Allowed reply on the channel (5.1 and 5.5 rules). The customer just wrote, so the window is open now.\nconst sinceCustomer = (Date.now() - new Date(m.received_at)) / 36e5;\nconst allowed_reply = m.channel === 'email' ? true : sinceCustomer <= 24;\nreturn { ...m, conversation_id: conv.conversation_id, needs_verification: conv.needs_verification === true || m.needs_verification,\n  intent: l.intent, topic: l.topic, urgent: l.urgent, priority, assigned_to,\n  sla_due_at: new Date(new Date(m.received_at).getTime() + minutes * 6e4).toISOString(), allowed_reply };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "e1bd883f-deee-492d-9918-6364a8e93ead",
+      "name": "Priority, owner, target",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update conversations set priority = $1, assigned_to = $2, sla_due_at = $3, pinged_80 = false, escalated = false where id = $4;",
+        "options": {
+          "queryReplacement": "={{ [ $json.priority, $json.assigned_to, $json.sla_due_at, $json.conversation_id ] }}"
+        }
+      },
+      "id": "f29102aa-1af2-4ac5-b93c-8936fbcbb468",
+      "name": "Save priority and owner",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=reply_channel: {{ $('Priority, owner, target').item.json.channel }}\nneeds_verification: {{ $('Priority, owner, target').item.json.needs_verification }}\nallowed_reply: {{ $('Priority, owner, target').item.json.allowed_reply }}\nintent: {{ $('Priority, owner, target').item.json.intent }} · priority {{ $('Priority, owner, target').item.json.priority }} · owner {{ $('Priority, owner, target').item.json.assigned_to }}\n\nNew message:\n{{ $('Priority, owner, target').item.json.text }}",
+        "options": {
+          "systemMessage": "You are Sage Desk, Harvest Lane's assistant. Always call get_customer_context first and read the whole timeline and the decisions table before writing, so you never contradict an earlier answer on any channel.\nReply only on reply_channel, in its style: email = full sentences, greeting, signature 'Harvest Lane'; whatsapp = short, friendly, one message; instagram/facebook = short and warm.\nIf needs_verification is true, don't share order or payment details; ask them to confirm with the code we send to the number or email on their order.\nRefunds, credits and exceptions: never promise them. If one may be due, fill decision_request (type refund|credit|exception, value, reason) and say Tolu is reviewing it. Only decisions already in the decisions table are facts.\nIf the owner is Tolu or Bisi, acknowledge and say who will follow up and when.\nReturn JSON: { reply_text, decision_request }. decision_request is null when none is needed."
+        },
+        "hasOutputParser": true
+      },
+      "id": "d3615202-fb33-44fc-bf4b-f820fec54a94",
+      "name": "Sage Desk agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "48591bac-ba66-4651-8cba-ce7381f4b078",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_customer_context",
+        "description": "Returns this customer's timeline across all channels, open orders and decisions (refunds, credits, exceptions). Call it before every reply.",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_CONTEXT_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "source": "database",
+        "fields": {
+          "values": [
+            {
+              "name": "customer_id",
+              "stringValue": "={{ $('Priority, owner, target').item.json.customer_id }}"
+            }
+          ]
+        }
+      },
+      "id": "dfb5ca59-e306-41e7-95fd-05d5be7bf405",
+      "name": "get_customer_context",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3740,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"reply_text\": {\n      \"type\": \"string\"\n    },\n    \"decision_request\": {\n      \"type\": [\n        \"object\",\n        \"null\"\n      ],\n      \"properties\": {\n        \"type\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"refund\",\n            \"credit\",\n            \"exception\"\n          ]\n        },\n        \"value\": {\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  },\n  \"required\": [\n    \"reply_text\",\n    \"decision_request\"\n  ]\n}"
+      },
+      "id": "87fbf91d-6f0a-41dc-bf34-c8b6d851ed98",
+      "name": "Reply format",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        3960,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "73d7eb6a-03bd-48ec-8fed-f4fc359eafcc",
+              "leftValue": "={{ $json.output.decision_request?.type }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9633b1f9-db83-42b9-8c19-fa6f4984e21e",
+      "name": "Decision needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=Decision needed ({{ $json.output.decision_request.type }}: {{ $json.output.decision_request.value }}) for customer {{ $('Priority, owner, target').item.json.customer_id }} on {{ $('Priority, owner, target').item.json.channel }}.\nReason: {{ $json.output.decision_request.reason }}\nCustomer said: \"{{ $('Priority, owner, target').item.json.text }}\"\nAgent's reply (sent either way): {{ $json.output.reply_text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {}
+      },
+      "id": "ea71e4d3-c3a0-4d16-8ab6-7efd28767535",
+      "name": "Tolu approves decision?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3960,
+        -144
+      ],
+      "webhookId": "c176aab6-d2dd-415c-84da-85456a8e3e78"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a5ad44e0-8321-4e1c-955f-b5617de43f9e",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7ef5e8b5-b93d-4e3a-bdcb-51df764ef2a9",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into decisions (customer_id, type, value, decided_by) values ($1, $2, $3, 'Tolu') returning type, value;",
+        "options": {
+          "queryReplacement": "={{ [ $('Priority, owner, target').item.json.customer_id, $('Decision needed?').item.json.output.decision_request.type, $('Decision needed?').item.json.output.decision_request.value ] }}"
+        }
+      },
+      "id": "7135b335-235f-4bc9-a0b5-cc1baa07e1be",
+      "name": "Write decision",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4400,
+        -234
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Priority, owner, target').item.json;\nconst out = $('Sage Desk agent').item.json.output;\nlet text = out.reply_text;\nlet assigned = m.assigned_to;\nlet decided = null;\ntry { decided = $('Write decision').item.json; } catch (e) { decided = null; }\nif (decided && decided.type) text += `\\n\\nUpdate: Tolu has approved your ${decided.type} (${decided.value}).`;\nelse if (out.decision_request && out.decision_request.type) assigned = 'Tolu';\nreturn { conversation_id: m.conversation_id, customer_id: m.customer_id, channel: m.channel, thread_id: m.thread_id,\n  reply_to_message_id: m.raw_id, last_customer_msg_at: m.received_at, text, sent_by: 'agent', assigned_to: assigned };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "974d3fe5-cd04-429d-802f-815ae227a403",
+      "name": "Reply plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": "YOUR_SEND_WORKFLOW_ID",
+        "options": {}
+      },
+      "id": "7ded6ee7-fafc-4f14-931a-0e1f9d511e5e",
+      "name": "Inbox · Send (reply)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4840,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select distinct on (m.channel, m.thread_id) m.channel, m.thread_id, m.raw_id as reply_to_message_id, m.at as last_customer_msg_at\nfrom messages m\nwhere m.conversation_id = $1 and m.direction = 'in' and m.channel <> $2\n  and m.at > now() - interval '2 days'\n  and not exists (select 1 from messages o where o.conversation_id = m.conversation_id and o.channel = m.channel\n                  and o.thread_id = m.thread_id and o.direction = 'out' and o.at > m.at)\norder by m.channel, m.thread_id, m.at desc;",
+        "options": {
+          "queryReplacement": "={{ [ $('Reply plan').item.json.conversation_id, $('Reply plan').item.json.channel ] }}"
+        }
+      },
+      "id": "57ce29d3-29bd-44fe-963e-1b65db225ccb",
+      "name": "Other open threads",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        5060,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Reply plan').first().json;\nconst name = { whatsapp: 'WhatsApp', email: 'email', instagram: 'Instagram', facebook: 'Messenger' }[p.channel] || p.channel;\nreturn $input.all().filter(i => i.json.channel).map(i => ({ json: { ...i.json, conversation_id: p.conversation_id,\n  text: `We've replied on ${name} so everything's in one place.`, sent_by: 'agent' } }));\n",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "e70d385f-597b-4758-837e-d0a6e0998a16",
+      "name": "Short note",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": "YOUR_SEND_WORKFLOW_ID",
+        "options": {}
+      },
+      "id": "39daaa32-0255-4eac-a69e-fa888ee99031",
+      "name": "Inbox · Send (notes)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        5500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Sage: a wrong merge is worse than a missed one\nMerge only on a verified identifier. A number typed in a DM only creates a link suggestion for a person to check; same name never links anything.\n\nA new handle on a new channel gets its own customer until a verified identifier links them.",
+        "height": 220,
+        "width": 420
+      },
+      "id": "a555e6b7-c917-47ca-b7d3-e59cbcd71f1f",
+      "name": "Note 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        -460
+      ]
+    }
+  ],
+  "connections": {
+    "When called by an adapter": {
+      "main": [
+        [
+          {
+            "node": "Normalise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise": {
+      "main": [
+        [
+          {
+            "node": "Find identity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find identity": {
+      "main": [
+        [
+          {
+            "node": "Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found?": {
+      "main": [
+        [
+          {
+            "node": "Customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "New customer + unverified identity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New customer + unverified identity": {
+      "main": [
+        [
+          {
+            "node": "Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer": {
+      "main": [
+        [
+          {
+            "node": "Typed phone or email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Typed phone or email?": {
+      "main": [
+        [
+          {
+            "node": "Belongs to another customer?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Belongs to another customer?": {
+      "main": [
+        [
+          {
+            "node": "Other customer matched?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Other customer matched?": {
+      "main": [
+        [
+          {
+            "node": "Create link suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create link suggestion": {
+      "main": [
+        [
+          {
+            "node": "Message context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message context": {
+      "main": [
+        [
+          {
+            "node": "Upsert conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert conversation": {
+      "main": [
+        [
+          {
+            "node": "Save message (once)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save message (once)": {
+      "main": [
+        [
+          {
+            "node": "Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label": {
+      "main": [
+        [
+          {
+            "node": "Priority, owner, target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priority, owner, target": {
+      "main": [
+        [
+          {
+            "node": "Save priority and owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save priority and owner": {
+      "main": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sage Desk agent": {
+      "main": [
+        [
+          {
+            "node": "Decision needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (labeller)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Label",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_customer_context": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply format": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision needed?": {
+      "main": [
+        [
+          {
+            "node": "Tolu approves decision?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tolu approves decision?": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Write decision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write decision": {
+      "main": [
+        [
+          {
+            "node": "Reply plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply plan": {
+      "main": [
+        [
+          {
+            "node": "Inbox · Send (reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbox · Send (reply)": {
+      "main": [
+        [
+          {
+            "node": "Other open threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Other open threads": {
+      "main": [
+        [
+          {
+            "node": "Short note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Short note": {
+      "main": [
+        [
+          {
+            "node": "Inbox · Send (notes)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When called by an adapter": [
+      {
+        "json": {
+          "channel": "whatsapp",
+          "thread_id": "2348000000000",
+          "from_value": "0800 000 0000",
+          "from_type": "phone",
+          "text": "Good morning, where is my order HL-0412? It was meant to come by 9.",
+          "received_at": "2026-10-07T09:20:00.000Z",
+          "raw_id": "test_wamid_1"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,349 @@
+<template data-mod="2.1" id="tpl-2-1">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.1</span>
+    <h1>Scenarios, Modules &amp; Bundles</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Weave</span><span class="pill">Tools: Make (free plan), Google Sheets, Gmail</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#weave"/></svg>
+</header>
+<p class="lede">Welcome to the Weave Workshop. Make draws your automation as a map of bubbles, and shows you every piece of data flowing through them. Once you can read that map and count what it costs, you can build almost anything here.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Build and run a scenario, and read its bubbles and bundles.</span></div>
+  <div><b>02</b><span>Name Make's module types and translate Zapier terms into Make terms.</span></div>
+  <div><b>03</b><span>Predict credit use, including the hidden cost of polling.</span></div>
+  <div><b>04</b><span>Choose a schedule that fits both the business and the plan.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Eight arms, one map</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu arrives at a workshop door with a sign saying The Weave Workshop.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="30" width="120" height="150" rx="6" fill="var(--volt)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="230" y="70" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">THE WEAVE</text>
+        <text x="230" y="88" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">WORKSHOP</text>
+        <circle cx="270" cy="120" r="5" fill="#13233A"/>
+        <use href="#tolu" x="20" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday</b>Tolu arrives with the December maths from 1.6: 12,000 Zapier tasks a month for the order line.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave drawing a map of connected circles with tentacles.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2.5"><line x1="180" y1="95" x2="230" y2="60"/><line x1="180" y1="95" x2="230" y2="130"/><line x1="230" y1="60" x2="285" y2="60"/></g>
+        <g stroke="var(--ink)" stroke-width="2.5"><circle cx="180" cy="95" r="20" fill="var(--glitch)" opacity=".9"/><circle cx="230" cy="60" r="20" fill="var(--volt)"/><circle cx="230" cy="130" r="20" fill="var(--sky)"/><circle cx="285" cy="60" r="20" fill="var(--sun)"/></g>
+        <use href="#weave" x="10" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Weave</b>"In my workshop, every step is a bubble, and you can watch the data travel between them."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A counter ticking up while nothing arrives, with Glitch watching.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="50" width="130" height="70" rx="10" fill="var(--ink)"/>
+        <text x="235" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--paper)">credits used</text>
+        <text x="235" y="106" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="22" fill="var(--glitch)">2,880</text>
+        <text x="235" y="140" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">new orders found: 0</text>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Check for new rows every 15 minutes, day and night. Every check costs a credit, even when nothing's there."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt handing Weave a dictionary labelled Zapier to Make.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="120" y="70" width="80" height="60" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="160" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A">ZAPIER</text>
+        <text x="160" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A">→ MAKE</text>
+        <use href="#bolt" x="0" y="50" width="120" height="120"/>
+        <use href="#weave" x="200" y="50" width="120" height="120"/>
+      </svg>
+      <div class="cap"><b>Handover</b>Bolt passes Weave a phrasebook. Everything you learned on Spark Street still applies, with new names.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Scenarios, modules and bundles</h3>
+    <p>In Make, an automation is a <b>scenario</b>. Each step is a <b>module</b>, drawn as a bubble. Each piece of data that travels through is a <b>bundle</b>: one row, one email, one order. The key rule: <b>a module runs once for every bundle that reaches it</b>.</p>
+    <figure class="fig"><svg viewBox="0 0 620 170" role="img" aria-label="A trigger bubble outputs three bundles, one for each new row; the next module runs three times, once per bundle.">
+      <defs><marker id="j1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <circle cx="80" cy="85" r="46" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/><text x="80" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">Sheets</text><text x="80" y="98" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Watch rows</text>
+      <text x="80" y="152" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">1 credit (the check)</text>
+      <path d="M128 85 H440" stroke="var(--line)" stroke-width="3" stroke-dasharray="4 6"/>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A" text-anchor="middle">
+        <rect x="170" y="68" width="70" height="34" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="205" y="89">bundle 1</text>
+        <rect x="260" y="68" width="70" height="34" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="295" y="89">bundle 2</text>
+        <rect x="350" y="68" width="70" height="34" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="385" y="89">bundle 3</text>
+      </g>
+      <path d="M440 85 H486" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#j1)"/>
+      <circle cx="536" cy="85" r="46" fill="var(--glitch)" opacity=".9" stroke="var(--ink)" stroke-width="2.5"/><text x="536" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">Gmail</text><text x="536" y="98" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">Send email</text>
+      <text x="536" y="152" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">runs 3× = 3 credits</text>
+    </svg><figcaption>Three new rows become three bundles, so the email module runs three times. Total: 4 credits. To send one email about all three, you'll combine bundles with an aggregator (Module 2.4).</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Module types</h3>
+    <div class="vocab">
+      <div><b>Trigger</b>Starts the scenario. <i>Polling</i> triggers check on a schedule; <i>instant</i> triggers (webhooks) run the moment data arrives.</div>
+      <div><b>Action</b>Creates, updates, sends or deletes: add a row, send an email.</div>
+      <div><b>Search</b>Finds records and can return many bundles: search rows where area = Bodija.</div>
+      <div><b>Iterator and aggregator</b>Split a list into bundles, or combine bundles into one (2.4).</div>
+      <div><b>Flow control</b>Router (branches), filters on the links between bubbles, repeater and more (2.3).</div>
+      <div><b>Universal / HTTP</b>Talk to any API directly, like Webhooks by Zapier (2.5).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Credits: what Make counts</h3>
+    <p>Make bills in <b>credits</b>. Each module action uses one credit per bundle it processes. According to Make's help centre, <b>filters and routers are free</b> (some third-party guides say otherwise, so confirm with a run's credit count in History), and <b>a polling trigger uses one credit for every check, even when it finds no new data</b>. The Free plan, as of Oct 2026, includes 1,000 credits a month, 2 active scenarios, 1 data store, and a shortest schedule of 15 minutes.</p>
+    <div class="tokcalc" data-credits>
+      <h4>Try it: how many credits will a scenario use?</h4>
+      <div class="row">
+        <label>Check every (minutes)<input id="cr-interval" data-c="interval" type="number" value="15" min="1"></label>
+        <label>Hours a day it's switched on<input id="cr-hours" data-c="hours" type="number" value="24" min="0" max="24"></label>
+        <label>Bundles a day (e.g. new orders)<input id="cr-bundles" data-c="bundles" type="number" value="10" min="0"></label>
+        <label>Modules per bundle, after the trigger<input id="cr-modules" data-c="modules" type="number" value="1" min="0"></label>
+      </div>
+      <label class="check"><input id="cr-instant" data-c="instant" type="checkbox"> Use an instant (webhook) trigger instead of polling</label>
+      <div class="stats">
+        <div class="stat"><b data-o="trig">–</b><span>credits a month just for checking</span></div>
+        <div class="stat"><b data-o="work">–</b><span>credits a month doing the work</span></div>
+        <div class="stat"><b data-o="total">–</b><span data-o="verdict">–</span></div>
+      </div>
+      <p style="font-size:.84rem;color:var(--muted)">A simplified estimate over 30 days. Check your scenario's history for real numbers; plan details change, so confirm current limits on Make's pricing page.</p>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> Try it: checking every 15 minutes, all day, burns 2,880 credits a month before a single order arrives. Run 7 a.m. to 9 p.m. every hour instead, or use an instant trigger, and the checking cost almost disappears.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Zapier → Make phrasebook</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>On Spark Street (Zapier)</th><th>In the Workshop (Make)</th></tr></thead>
+      <tbody>
+        <tr><td>Zap</td><td>Scenario</td></tr>
+        <tr><td>Step</td><td>Module (bubble)</td></tr>
+        <tr><td>One run's data</td><td>Bundles (a run can carry many)</td></tr>
+        <tr><td>Task (per successful action)</td><td>Credit (per module action, per bundle, plus polling checks)</td></tr>
+        <tr><td>Formatter</td><td>Functions inside any field (2.2), free of credits</td></tr>
+        <tr><td>Filter, Paths</td><td>Filters on links, Router (2.3), free of credits</td></tr>
+        <tr><td>Webhooks by Zapier</td><td>Webhooks app and HTTP module (2.5)</td></tr>
+        <tr><td>Zap history</td><td>Scenario history, with the bubble inspector</td></tr>
+        <tr><td>Publish / turn on</td><td>Switch scheduling ON (make the scenario active)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Run once, then read the bubbles</h3>
+    <div class="vocab">
+      <div><b>Run once</b>Runs the scenario right now, once, so you can test.</div>
+      <div><b>The bubble number</b>After a run, each module shows a small count: how many bundles it processed.</div>
+      <div><b>The inspector</b>Click that count to see each bundle's input and output, field by field. It's the Zap-history detail you know, for every step at once.</div>
+      <div><b>Module numbers</b>Modules are numbered (1, 2, 3…). When you map, fields are labelled by module number, e.g. <code>1. Customer name</code>. Mapping from the wrong number is a classic bug.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy · Foundation, Course 1: "Setting up my first scenario" (free)</b><small>Look for: the scenario editor, apps and modules, and running once.</small></span></a>
+    <a class="wcard" href="https://academy-content.make.com/courses/make-foundation-operations-credits/02-credit-consumption-in-make/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy: credit consumption in Make</b><small>Read: how credits are counted per module and per bundle.</small></span></a>
+    <a class="wcard" href="https://help.make.com/how-features-use-credits" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Help: how features use credits</b><small>Look for: which modules are free, and what a polling check costs.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: new-order alerts, rebuilt in Make, costed</h2></div>
+  <div class="prose"><p><b>The goal.</b> Rebuild 1.1's Silver mission in Make: when a new row lands in the Orders sheet, email Tolu. Then read the bundles, count the credits, and set a schedule that fits the free plan.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Create the scenario and add the trigger</h4>
+      <p>Create a free Make account and a new scenario. Click the big plus, choose <b>Google Sheets · Watch New Rows</b>, and connect the business Google account (0.6). Pick the spreadsheet and the Orders sheet, and confirm the header row is row 1 (0.4). Set <b>Limit</b> (the most rows taken per run) to 10.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Choose where to start</h4>
+      <p>Make asks where the trigger should start. Choose <b>From now on</b> (or equivalent). If you choose "all", the first run treats every old order as new and emails you about each one.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the email module and map by module number</h4>
+      <p>Add <b>Gmail · Send an Email</b> (or the Email app). To: your address. Subject: <code>New order · </code> then map <code>1. customer_name</code> and <code>1. total</code> from the mapping panel. The "1." tells you the value comes from module 1.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Run once with three test rows</h4>
+      <p>Add three rows to Orders. Click <b>Run once</b>. The Sheets bubble shows 3 (three bundles) and the Gmail bubble shows 3 (it ran three times). Click each count to inspect a bundle's data. You'll get three emails.</p>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>credit for the trigger check</span></div>
+        <div class="stat"><b>3</b><span>credits for three emails</span></div>
+        <div class="stat"><b>4</b><span>credits for this run</span></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Choose a schedule with the calculator</h4>
+      <p>Harvest Lane gets about 10 orders a day, all between 7 a.m. and 9 p.m. Try the calculator above:</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0">
+        <thead><tr><th>Schedule</th><th class="n">Checking</th><th class="n">Work</th><th class="n">Total / month</th></tr></thead>
+        <tbody>
+          <tr><td>Every 15 min, 24 hours</td><td class="n">2,880</td><td class="n">300</td><td class="n">3,180</td></tr>
+          <tr><td>Every 15 min, 14 hours</td><td class="n">1,680</td><td class="n">300</td><td class="n">1,980</td></tr>
+          <tr><td>Every 60 min, 14 hours</td><td class="n">420</td><td class="n">300</td><td class="n">720 ✓</td></tr>
+        </tbody>
+      </table></div>
+      <p>Hourly during business hours fits the free plan. Set it in the scenario's schedule settings (use the advanced options to limit the hours), then switch scheduling <b>ON</b>. For truly instant alerts, you'll use a webhook trigger in 2.5.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Name it and check the history</h4>
+      <p>Rename the scenario <b>HL · New order → email Tolu</b>. After the next scheduled run, open the scenario's History and inspect the run: bundles, credits and data, all in one place.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><p><b>Compared with Zapier:</b> the same alert in 1.1 used one task per order and no cost for checking. Here each order costs one credit, but every check costs one too. Make wins when there's lots of work per run; for "rare event, check often", instant triggers matter even more in Make.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Running once with test rows shows exactly how bundles flow.</li><li>"From now on" avoids a flood of old rows.</li><li>The schedule is chosen with numbers, not guessed.</li><li>Clear names and module numbers keep mapping readable.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Polling every 15 minutes all night for daytime orders.</li><li>Expecting one email when three bundles arrive.</li><li>Starting from "all rows" on a sheet with history.</li><li>Forgetting that the Free plan allows only two active scenarios.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My first week in Make. Five surprises. Explain them.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The first run sent 480 emails, one for every order since January.</td></tr>
+        <tr><td>B</td><td>The free credits ran out on day 10, though only 60 orders came in.</td></tr>
+        <tr><td>C</td><td>Tolu wanted one summary of the morning's orders and got 12 separate emails.</td></tr>
+        <tr><td>D</td><td>A third scenario won't switch on.</td></tr>
+        <tr><td>E</td><td>Every email says "New order · Tomatoes", never the customer's name.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the trigger started from "all" rows, not "from now on".</li>
+        <li><b>B:</b> polling every 15 minutes, 24 hours a day: about 96 credits a day for checking alone.</li>
+        <li><b>C:</b> the email module runs once per bundle. Combining bundles needs an aggregator (2.4).</li>
+        <li><b>D:</b> the Free plan allows two active scenarios.</li>
+        <li><b>E:</b> the product field was mapped where the name should be. Check the field names and module numbers in the mapping panel.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Your first scenario, fully inspected</h4>
+    <ul><li>Build the solved scenario. Add three test rows and run once.</li><li>Open the inspector on both bubbles and write down, for bundle 2, three input and three output values.</li><li>Record the credits used by the run.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You can explain why the run used 4 credits, pointing at the bubbles.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Rebuild a Zap and compare costs</h4>
+    <ul><li>Pick one of your Zaps from Track 1 with at least three steps and rebuild it as a Make scenario.</li><li>Run both with the same five test items.</li><li>Compare: Zapier tasks used vs. Make credits used, and how long each took to build.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both produce identical results, and you've written a three-line comparison with real numbers from Zap history and scenario history.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A December credit budget</h4>
+    <ul><li>List the five Harvest Lane automations from the Boss 0 blueprint.</li><li>For each, estimate bundles per day and modules per bundle at December volume, and choose a trigger type and schedule.</li><li>Total the credits with the calculator, then choose the smallest Make plan that covers it (from the current pricing page) and note the monthly cost.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every automation has a justified schedule, the total fits a named plan, and you've identified which one should become an instant trigger to save the most credits.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. A trigger outputs 5 bundles. How many times does the next module run?</p><div class="opts">
+      <button type="button" data-opt="a">Once</button><button type="button" data-opt="b">Twice</button><button type="button" data-opt="c">5 times</button><button type="button" data-opt="d">It depends on the schedule</button></div>
+      <p class="fb" hidden data-why="A module runs once for every bundle that reaches it."></p></div>
+    <div class="q" data-ans="b"><p>2. A polling trigger checks and finds no new rows. Does it use a credit?</p><div class="opts">
+      <button type="button" data-opt="a">No, only work counts</button><button type="button" data-opt="b">Yes, one credit per check</button><button type="button" data-opt="c">Only on paid plans</button><button type="button" data-opt="d">Only at night</button></div>
+      <p class="fb" hidden data-why="Every check uses one credit, even with nothing new. Schedules matter."></p></div>
+    <div class="q" data-ans="a"><p>3. Which of these uses no credits?</p><div class="opts">
+      <button type="button" data-opt="a">A router and the filters on its routes</button><button type="button" data-opt="b">A Gmail send</button><button type="button" data-opt="c">A Google Sheets search</button><button type="button" data-opt="d">A polling check</button></div>
+      <p class="fb" hidden data-why="Per Make's help centre, filters and routers have no credit cost."></p></div>
+    <div class="q" data-ans="d"><p>4. In the mapping panel, what does "3. total" mean?</p><div class="opts">
+      <button type="button" data-opt="a">The third total in the sheet</button><button type="button" data-opt="b">Total multiplied by 3</button><button type="button" data-opt="c">The total from 3 runs ago</button><button type="button" data-opt="d">The total field output by module number 3</button></div>
+      <p class="fb" hidden data-why="Make labels mapped values with the number of the module they came from."></p></div>
+    <div class="q" data-ans="c"><p>5. Orders arrive 7 a.m.–9 p.m. Which schedule best fits the free plan?</p><div class="opts">
+      <button type="button" data-opt="a">Every 15 minutes, 24 hours</button><button type="button" data-opt="b">Every minute, business hours</button><button type="button" data-opt="c">Every hour, 7 a.m.–9 p.m.</button><button type="button" data-opt="d">Every 15 minutes, weekends only</button></div>
+      <p class="fb" hidden data-why="About 420 checking credits a month plus the work: comfortably under 1,000."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-1">AUTOMANCY LOG · Lesson 2.1 · Scenarios, Modules & Bundles
+Date:
+Scenario name and modules:
+Test run: bundles per bubble:        credits used:
+Schedule chosen and monthly credit estimate:
+Zapier vs. Make comparison (tasks vs. credits):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Scenario = modules (bubbles); data travels as bundles.</li>
+      <li>Each module runs once per bundle that reaches it.</li>
+      <li>Credits: one per module action per bundle; polling checks cost one each; filters and routers are free.</li>
+      <li>Choose schedules with numbers; prefer instant triggers for rare events.</li>
+      <li>Run once, then read the bubbles and the inspector.</li>
+      <li>Watch module numbers when mapping.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy: Foundation path (free, Credly badge)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: scenarios, modules and credits</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/how-features-use-credits" target="_blank" rel="noopener">Make Help: how features use credits</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+tutorial+for+beginners" target="_blank" rel="noopener">YouTube: Make.com tutorials for beginners</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Put three sticky notes (bundles) on the whiteboard and walk them physically through drawn bubbles, adding a coin per module visit. Then reveal that each "check" also costs a coin. Learners who get this physically rarely overspend credits later.</p>
+  </div>
+</section>
+
+</article>
+</template>

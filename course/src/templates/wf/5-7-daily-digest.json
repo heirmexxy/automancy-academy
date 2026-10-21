@@ -1,0 +1,103 @@
+{
+ "name": "HL · One inbox · daily digest",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · One inbox: daily digest (Lesson 5.7)\n18:00 every day: conversations by channel, median response time, missed targets and open hand-overs, in one Telegram message.\n\nCredentials: Postgres (Supabase); Telegram.\nPlaceholders: YOUR_TELEGRAM_CHAT_ID.",
+    "height": 240,
+    "width": 480
+   },
+   "id": "30fa22c5-1f60-4d4a-86f3-ea8816ef87e8",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 18 * * *"
+      }
+     ]
+    }
+   },
+   "id": "9e8472bc-c332-4725-bb3a-1b5a8d3a67f2",
+   "name": "Daily 18:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "with inbound as (\n  select m.conversation_id, m.channel, m.at,\n         (select min(o.at) from messages o where o.conversation_id = m.conversation_id and o.direction = 'out' and o.at >= m.at) as answered_at\n  from messages m where m.direction = 'in' and m.at >= date_trunc('day', now())\n)\nselect\n  (select json_object_agg(channel, n) from (select channel, count(distinct conversation_id) n from inbound group by channel) x) as by_channel,\n  (select round(percentile_cont(0.5) within group (order by extract(epoch from (answered_at - at)) / 60)::numeric, 1) from inbound where answered_at is not null) as median_minutes,\n  (select count(*) from conversations where sla_due_at >= date_trunc('day', now()) and escalated) as missed_targets,\n  (select count(*) from conversations where status = 'open' and assigned_to in ('Tolu', 'Bisi')) as open_handovers;",
+    "options": {}
+   },
+   "id": "3f702685-10bc-4f47-be5c-ab454f11823a",
+   "name": "Today's numbers",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=One inbox · today\nConversations by channel: {{ JSON.stringify($json.by_channel || {}) }}\nMedian response time: {{ $json.median_minutes ?? '-' }} min\nMissed targets: {{ $json.missed_targets }}\nOpen hand-overs: {{ $json.open_handovers }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "de43bbc1-f28f-445b-a610-eca5d6e549c2",
+   "name": "Digest",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    440,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Daily 18:00": {
+   "main": [
+    [
+     {
+      "node": "Today's numbers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Today's numbers": {
+   "main": [
+    [
+     {
+      "node": "Digest",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

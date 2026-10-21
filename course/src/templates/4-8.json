@@ -1,0 +1,26 @@
+{
+  "id": "4.8",
+  "items": [],
+  "note": "The 4.8 build is a Python agent using the Anthropic SDK in code, not an n8n workflow; the full agent.py is in PART 4 · Solved problem, step \"Write agent.py\".",
+  "walk": {
+    "title": "Build it: a terminal agent with two tools",
+    "sample": "You: How much is tatashe today? · You: Where is HL-0042?",
+    "steps": [
+      {"at": "1", "say": "We start with a project folder and a virtual environment, so this project's packages stay separate from everything else.", "show": ["mkdir harvest-agent && cd harvest-agent", "python3 -m venv .venv && source .venv/bin/activate", "pip install anthropic"]},
+      {"at": "1", "say": "Create the API key in the Claude Console, set a monthly spend limit first, then put the key in the environment. Never type it into the code.", "show": ["export ANTHROPIC_API_KEY=\"sk-ant-…\"", "Console: monthly spend limit set"]},
+      {"at": "2", "say": "In agent.py, the client reads the key from the environment by itself. Sample prices and one order live in the file for now.", "show": ["client = anthropic.Anthropic()", "PRICES = {\"tomato\": …, \"tatashe\": …, \"onion\": …}", "ORDERS = {\"HL-0042\": …}"]},
+      {"at": "2", "say": "The tools are plain Python functions that return small dictionaries. If a product isn't found, get_price says so and offers suggestions, so the model never has to guess.", "show": ["def get_price(product) → found, name, unit, price, stock", "def get_order_status(order_id) → found, status, rider, eta"]},
+      {"at": "2", "say": "Each tool is described to the model with a name, a description and an input schema, the same rules as in n8n. Both tools only read. There's no tool to change an order.", "show": ["\"name\": \"get_price\"", "\"Use before giving any price.\"", "\"order_id\": format HL-0000, e.g. HL-0042"]},
+      {"at": "2", "say": "The system message says: only state prices and order details from your tools, and if a tool errors, apologise and say Tolu will follow up.", "show": ["Only state prices and order details that come from your tools.", "Never invent data."]},
+      {"at": "2", "say": "Here's the loop. Send the messages, and if the model asks for a tool, append its request first, then send back each result with the matching tool use ID.", "show": ["resp = client.messages.create(…, tools=TOOLS, messages=…)", "if resp.stop_reason != \"tool_use\": return the text", "tool_result with tool_use_id = block.id"], "data": "messages list grows each turn"},
+      {"at": "2", "say": "A tool that fails doesn't crash the program. The error goes back to the model as a message marked is_error, so the agent can apologise.", "show": ["except Exception as e:", "\"content\": f\"Tool error: {e}\", \"is_error\": True"]},
+      {"at": "2", "say": "And the hard stop: at most six turns, just like Max Iterations in n8n. If it runs out, the customer gets a polite fallback.", "show": ["def ask(question, max_turns=6)", "return \"Sorry, I couldn't finish that. Tolu will follow up…\""]},
+      {"at": "3", "say": "Run it and ask about tatashe. The arrow line in the terminal is your trace: you can see exactly which tool was called, with what input.", "show": ["python agent.py", "→ get_price({'product': 'tatashe'})"], "data": "Tatashe pepper · ₦9,000 · big bag · 6 in stock"},
+      {"at": "3", "say": "Then ask where HL-0042 is. Your wording will differ, but the tool call and the facts should match.", "show": ["→ get_order_status({'order_id': 'HL-0042'})"], "data": "Out for delivery · Musa · before 2 p.m."},
+      {"at": "4", "say": "Now prove the safety nets. Make get_price raise a connection error: the agent apologises and the program keeps running.", "show": ["raise ConnectionError(\"price sheet unavailable\")"], "data": "apology · 0 crashes"},
+      {"at": "4", "say": "Ask, do you have yam? The tool returns found false with suggestions, and the agent asks instead of inventing.", "show": ["get_price → found: False, suggestions: [...]"], "data": "1 question back"},
+      {"at": "4", "say": "Finally set max turns to one and ask a two-part question. You get the polite fallback, not an endless loop.", "show": ["ask(question, max_turns=1)"], "data": "fallback reply"}
+    ],
+    "end": "About sixty lines, two read-only tools, no crashes when a tool fails, and a loop that always ends."
+  }
+}

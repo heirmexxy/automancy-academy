@@ -1,0 +1,38 @@
+{
+ "id": "5.3",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: 30 public comments from Harvest Lane's Facebook and Instagram pages, labelled by you, then by an AI with the Card 2 schema.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Comment</th><th>You</th><th>AI</th></tr></thead><tbody><tr><td>3</td><td>Una tomatoes fresh well well, I go order again</td><td>positive, quality, praise</td><td>neutral (0.55)</td></tr><tr><td>7</td><td>This bread is sick (fire emoji)</td><td>positive, quality, praise</td><td>negative (0.62)</td></tr><tr><td>11</td><td>Great, another 'fresh' delivery of soft tomatoes (eye-roll emoji)</td><td>negative, quality, complaint</td><td>positive (0.58)</td></tr><tr><td>14</td><td>Price don cost o but quality still dey</td><td>mixed, price</td><td>negative (0.66)</td></tr><tr><td>19</td><td>Ordered at 9, still waiting at 2pm</td><td>negative, late delivery, urgent</td><td>negative (0.94)</td></tr></tbody></table></div><p><b>Agreement on 30</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Label</th><th>Agree</th><th>Rate</th></tr></thead><tbody><tr><td>Sentiment</td><td>23 / 30</td><td>77%</td></tr><tr><td>Topic</td><td>26 / 30</td><td>87%</td></tr><tr><td>Urgent</td><td>30 / 30</td><td>100%</td></tr><tr><td>Intent</td><td>25 / 30</td><td>83%</td></tr></tbody></table></div><p><b>Three kinds the AI gets wrong most</b></p><ol><li>Pidgin praise read as neutral (3 cases).</li><li>Slang compliments (\"sick\", \"deadly\") read as negative (2).</li><li>Sarcasm with an eye-roll emoji read as positive (2).</li></ol><p>Next step: add one example of each to the prompt and re-run the same 30.</p>",
+   "mistakes": [
+    "Letting the AI label first, then copying its labels as their own.",
+    "Labelling sentiment only, without topic, urgency and intent.",
+    "Reporting one overall percentage without looking at which comments were wrong.",
+    "Collecting commenters' names and profiles along with the text."
+   ],
+   "pass": "Thirty real comments with the learner's own labels and the AI's labels side by side, an agreement figure per label, and three named kinds of comment the AI gets wrong, each with an example.",
+   "redo": "Send it back if there are fewer than 30 comments, no agreement is measured, the error kinds are vague ('sometimes wrong'), or personal data is stored."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane's listening post for the Facebook Page plus Talkwalker Alerts (RSS), in n8n.</p><ol><li>Schedule Trigger every 15 minutes.</li><li>Facebook Graph API node: recent Page posts with comments (message, created time, comment ID). RSS Read: the Talkwalker feed.</li><li>Edit Fields into one shape: <code>source</code>, <code>item_id</code>, <code>link</code>, <code>text</code>, <code>posted_at</code>.</li><li>Remove Duplicates against item_ids already in the Mentions sheet.</li><li>Information Extractor (small model): sentiment, topic, urgent, intent, confidence; 12 local examples in the system message.</li><li>Code · alert rules:<pre class=\"codebox\">const t = $json;\nconst hard = t.topic === 'food safety' || /threat|police|lawyer|sick after/i.test(t.text);\nconst soft = t.sentiment === 'negative' &amp;&amp; t.confidence &gt;= 0.8\n  &amp;&amp; ['refund','late delivery'].includes(t.topic);\nreturn { ...t, alert: hard || soft, level: hard ? 'now' : soft ? 'today' : 'report' };</pre></li><li>Switch on level: now → Telegram to Tolu with text and link, then set <code>alerted</code> = true; today → 6 p.m. summary; report → sheet only.</li></ol><p><b>Planted tests</b> (posted from a test account)</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Comment</th><th>Expected</th><th>Result</th></tr></thead><tbody><tr><td>My son was sick after the eggs (AI 0.55)</td><td>now</td><td>Alert after 11 min</td></tr><tr><td>I want a refund, half the onions were rotten</td><td>today</td><td>6 p.m. summary</td></tr><tr><td>This bread is sick (fire emoji)</td><td>no alert</td><td>No alert</td></tr><tr><td>Una tomatoes fresh well well</td><td>no alert</td><td>No alert</td></tr><tr><td>Same food-safety comment, next run</td><td>skipped</td><td>Duplicate removed</td></tr></tbody></table></div>",
+   "mistakes": [
+    "Alerting on every negative label, so slang praise wakes the owner.",
+    "No duplicate check by item_id, so one comment alerts on every run.",
+    "Putting food safety behind a confidence threshold instead of a hard rule.",
+    "Testing only with clean English comments."
+   ],
+   "pass": "Executions show the planted food-safety comment alerting within 15 minutes, the same comment skipped on the next run, and slang praise producing no alert, across one page and one other source.",
+   "redo": "Send it back if the urgent case alerts late or not at all, any comment alerts twice, slang praise alerts, or only one source is connected."
+  },
+  "g": {
+   "answer": "<p>Worked example: Nkem's Kitchen, a fictional restaurant in Enugu, four weeks of listening on Facebook, Instagram and Google review emails, with a Monday report each week.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Week</th><th>Mentions</th><th>Spam removed</th><th>Positive</th><th>Late-delivery negatives</th><th>Urgent (answered in 2 h)</th></tr></thead><tbody><tr><td>1</td><td>96</td><td>7</td><td>58%</td><td>11</td><td>2 / 2</td></tr><tr><td>2</td><td>104</td><td>4</td><td>61%</td><td>9</td><td>1 / 1</td></tr><tr><td>3</td><td>118</td><td>9</td><td>67%</td><td>5</td><td>1 / 1</td></tr><tr><td>4</td><td>121</td><td>5</td><td>70%</td><td>3</td><td>0</td></tr></tbody></table></div><p><b>Fixes from the reports</b></p><ol><li>Week 1: late evening deliveries (11 mentions: \"food came cold at 9pm\"). Owner acted: second rider on Friday and Saturday evenings from week 2.</li><li>Week 2: Sunday hours unclear (4). Owner pinned the hours; mentions fell to 1.</li><li>Week 3: small portions of rice (3). Owner chose not to change; noted.</li></ol><p><b>Result</b>: negative mentions about late delivery fell from 11 to 3 after the second rider. Other things changed too (fewer orders in week 4 because of rain), so this shows a trend, not proof.</p><p>Agreement on the 50-comment reference set: 76% before, 85% after adding Igbo-English and Pidgin examples; no urgent case missed.</p><p>A monthly housekeeping job deletes raw comment text older than 90 days, keeping only labels and counts, and no commenter profiles are stored.</p><p>Submit: the four Monday reports, this trend table, the owner's note on what they changed, and the reference-set scores.</p>",
+   "mistakes": [
+    "Letting the AI calculate the weekly numbers instead of code.",
+    "Counting spam as customers in the sentiment figures.",
+    "Claiming the fix caused the drop without mentioning other changes.",
+    "Running the reports but never showing them to the owner."
+   ],
+   "pass": "Four Monday reports, a week-by-week trend table, evidence the owner acted on at least one fix, and the count of negative mentions about that topic before and after.",
+   "redo": "Send it back if fewer than four weeks ran, the owner did not act on any fix, or there is no before-and-after count for the fixed topic."
+  }
+ }
+}

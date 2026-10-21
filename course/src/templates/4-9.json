@@ -1,0 +1,54 @@
+{
+  "id": "4.9",
+  "items": [
+    {
+      "file": "4-9-sage-desk-agent.json",
+      "name": "Sage Desk (4.9, eval-ready)",
+      "what": "Your support agent with a Telegram entry and an evaluation entry; Check if evaluating returns test answers (with tool calls) to the harness instead of messaging customers.",
+      "setup": [
+        "Import SUB · Get price (4.2) first and run HL · Load policies (4.4).",
+        "Select your Telegram API credential in Telegram Trigger and Send reply.",
+        "Select your OpenAI credential in Chat model and Embeddings OpenAI, and replace YOUR_MODEL.",
+        "Select your Supabase credential in search_policies.",
+        "In get_price, replace YOUR_GET_PRICE_WORKFLOW_ID by choosing SUB · Get price from the list.",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Pin {\"question\": \"How much is tatashe?\"} on When Executed by Another Workflow and execute: Return to harness outputs the answer and intermediateSteps containing a get_price call, and nothing is sent on Telegram."
+    },
+    {
+      "file": "4-9-eval-harness.json",
+      "name": "HL · Sage Desk evaluation (4.9)",
+      "what": "Evaluation harness: runs every SageDesk_Tests case through Sage Desk, scores it in code (plus an AI judge for tone cases), writes results back and logs one metrics row per run with the release rule.",
+      "setup": [
+        "Create SageDesk_Tests with columns id, question, category, critical, must_include, must_not_include, expected_tool, forbidden_tool, chat_id, answer, tools_called, pass, notes, and add your 25 cases (use | between alternatives in must_include).",
+        "Create SageDesk_Runs with columns run_at, version, cases, passed, accuracy_pct, critical_failed, release_ok, tokens.",
+        "Select your Google Sheets OAuth2 credential in Read SageDesk_Tests, Write outputs, Read results and Log run, and replace YOUR_SHEET_ID in all four.",
+        "In Run Sage Desk, replace YOUR_SAGE_DESK_WORKFLOW_ID by choosing Sage Desk (4.9, eval-ready) from the list.",
+        "Select your OpenAI credential in Judge model and replace YOUR_JUDGE_MODEL (ideally a different model from the agent).",
+        "In Run settings, set version (e.g. v1) and previous_accuracy_pct (0 for the first run)."
+      ],
+      "test": "Click Execute workflow. Every row in SageDesk_Tests gets answer, tools_called and pass; SageDesk_Runs gets one row. Case 8 (\"Delivery came 3 hours late. Refund for the goods?\") passes only if the answer contains \"delivery fee\", not \"full refund\", and search_policies was called. Edit the prompt, change version to v2, run again and compare the two rows.",
+      "walk": {
+        "title": "Build it: an eval harness for Sage Desk",
+        "sample": "SageDesk_Tests · 25 cases, 9 critical · case 8: \"Delivery came 3 hours late. Refund for the goods?\"",
+        "steps": [
+          {"at": null, "say": "First, Sage Desk gets a second door for tests. A Check if evaluating node sends test answers back to the harness and real ones to Telegram, so a test run never messages a customer.", "show": ["Sage Desk (4.9, eval-ready)", "Check if evaluating: true → Return to harness", "Return intermediate steps: on"]},
+          {"at": "Run evaluation", "say": "The harness starts with a manual trigger. You run it whenever you change the prompt, the model or a tool.", "show": ["Manual Trigger · Execute workflow"]},
+          {"at": "Run settings", "say": "Label this run, and give it the previous run's accuracy, so the release rule has something to compare with.", "show": ["version: YOUR_VERSION_LABEL, e.g. v1", "previous_accuracy_pct: 0 for the first run"], "data": "v1 · previous 0"},
+          {"at": "Read SageDesk_Tests", "say": "The test set lives in a sheet: question, category, critical, what the answer must and must not include, and which tool must or must not be called.", "show": ["Sheet: SageDesk_Tests", "must_include · must_not_include", "expected_tool · forbidden_tool · critical"], "data": "25 cases · 9 critical"},
+          {"at": "Loop Over Items", "say": "We take the cases one at a time, the way n8n's Evaluation Trigger would.", "show": ["Loop Over Items", "done → Read results · loop → Case input"], "data": "case 8 of 25"},
+          {"at": "Case input", "say": "Each case is shaped like a real message, with a flag saying this is a test. Real refunds and real messages must never happen here.", "show": ["question: {{ $json.question }}", "chat_id: {{ $json.chat_id || 'eval' }}", "is_eval: true"]},
+          {"at": "Run Sage Desk", "say": "Now the real agent answers the case, the same agent customers talk to, waiting for each answer before moving on.", "show": ["Execute Workflow: Sage Desk (4.9, eval-ready)", "Mode: each · Wait for sub-workflow: on"], "data": "answer + intermediateSteps"},
+          {"at": "Score case", "say": "Code scores it, because code is cheap and consistent. The answer must include what it should, avoid what it shouldn't, and the right tools must appear in the trace.", "show": ["has(must_include) && hasNot(must_not_include)", "tools.includes(expected_tool)", "!tools.includes(forbidden_tool)"], "data": "case 8: delivery fee ✓ · search_policies ✓"},
+          {"at": "Score case", "say": "The tool check catches right answer, wrong reason. If the agent says delivery fee but never called search_policies, it still fails.", "show": ["expected_tool: search_policies", "forbidden_tool: issue_refund"], "data": "pass: true"},
+          {"at": "AI judge (tone)", "say": "Only tone cases go to an AI judge, with a strict yes or no rubric. Check it against answers you've scored by hand before you trust it.", "show": ["Tone case? category === 'tone'", "warm and polite · under 80 words · no blaming", "Judge verdict: tone_ok, reason"]},
+          {"at": "Judge model", "say": "The judge runs at temperature zero, ideally on a different model from the agent. A student shouldn't mark their own exam.", "show": ["Model: YOUR_JUDGE_MODEL", "Temperature: 0"]},
+          {"at": "Write outputs", "say": "Every result goes back into the test sheet next to its case: the answer, the tools called, and pass or fail.", "show": ["Update SageDesk_Tests, match on id", "answer · tools_called · pass · notes"], "data": "25 rows filled"},
+          {"at": "Run metrics", "say": "Here's the release rule. Every critical case must pass, and accuracy mustn't drop. A better average can't outvote a critical failure.", "show": ["critical_failed: ids of failing critical cases", "release_ok: no critical fails && accuracy ≥ previous"], "data": "v1 · critical_failed: none · release_ok: yes"},
+          {"at": "Log run", "say": "One row per run goes into SageDesk_Runs. Change the prompt, set version to v2, run again, and compare the two rows side by side.", "show": ["Sheet: SageDesk_Runs", "run_at · version · accuracy_pct · critical_failed · release_ok"], "data": "1 row per run"}
+        ],
+        "end": "Twenty-five cases in about three minutes, and nothing ships with a critical regression."
+      }
+    }
+  ]
+}

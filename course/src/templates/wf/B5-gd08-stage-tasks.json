@@ -1,0 +1,415 @@
+{
+  "name": "GD·08 CRM · follow-ups on stage changes",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·08 Follow-ups on stage changes (Boss 5 · D6b, 5.9 Card 4)\nEvery 15 min (the schedule alternative to the HubSpot Trigger): deals modified recently → \"first time at this stage?\" (crm_stage_seen, unique deal+stage) → the Card 4 task for that stage:\n- Tasting booked → task the day before next_step_date\n- Proposal sent → \"Follow up\" in 3 days\n- Won → onboarding task; contacts' lifecycle → Customer\n- Lost → \"add a lost reason\" if missing; \"current supplier\" → check in again in 6 months\nIt only creates tasks and updates contact lifecycle, NEVER the deal stage, so it can't trigger itself. Each stage change runs once.\n\nTable: crm_stage_seen(deal_id text, stage text, seen_at, primary key (deal_id, stage)).\n**Credentials:** HubSpot App Token, Postgres.\n**Replace:** YOUR_STAGE_TASTING_BOOKED, YOUR_STAGE_PROPOSAL_SENT (stage IDs; won/lost use closedwon/closedlost or your IDs).",
+        "height": 440,
+        "width": 440
+      },
+      "id": "52e72122-c648-423c-987d-78734aa81381",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "b53e037f-c573-4d29-9afa-027f3863bdec",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [{ propertyName: 'hs_lastmodifieddate', operator: 'GTE', value: String(Date.now() - 20 * 60000) }] }],\n  properties: ['dealname', 'dealstage', 'hubspot_owner_id', 'next_step_date', 'lost_reason'],\n  limit: 100\n}) }}",
+        "options": {}
+      },
+      "id": "f658f73b-0ea3-4c7c-a3e1-7d6650c3278b",
+      "name": "Recently changed deals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "id": "90273f38-7145-4e2b-8261-898552c44b13",
+      "name": "One per deal",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO crm_stage_seen (deal_id, stage, seen_at) VALUES ($1, $2, now())\nON CONFLICT (deal_id, stage) DO NOTHING\nRETURNING deal_id, stage;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, $json.properties.dealstage ] }}"
+        }
+      },
+      "id": "5bc37ddb-6a0a-4b7e-af2c-2e44e627c64c",
+      "name": "First time at this stage?",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "94dd589a-0480-481b-97b4-feffc46a09b0",
+              "leftValue": "={{ $json.deal_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cbde0601-fadd-4a83-88c7-7532f21a05bb",
+      "name": "New stage only",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Card 4. Stage IDs: replace with yours.\nconst STAGE = { tasting: 'YOUR_STAGE_TASTING_BOOKED', proposal: 'YOUR_STAGE_PROPOSAL_SENT', won: 'closedwon', lost: 'closedlost' };\nconst d = $('One per deal').item.json;\nconst p = d.properties;\nconst at = (days, hour = 9) => { const t = new Date(); t.setDate(t.getDate() + days); t.setHours(hour, 0, 0, 0); return t.toISOString(); };\nlet task = null, won = false;\nif (p.dealstage === STAGE.tasting) {\n  const day = p.next_step_date ? new Date(p.next_step_date) : null;\n  if (day) day.setDate(day.getDate() - 1);\n  task = { subject: 'Prepare tasting crate and confirm: ' + p.dealname, due: day ? day.toISOString() : at(1) };\n} else if (p.dealstage === STAGE.proposal) {\n  task = { subject: 'Follow up on proposal: ' + p.dealname, due: at(3) };\n} else if (p.dealstage === STAGE.won) {\n  task = { subject: 'Start onboarding (6.2) and welcome series: ' + p.dealname, due: at(0, 17) }; won = true;\n} else if (p.dealstage === STAGE.lost) {\n  if (!p.lost_reason) task = { subject: 'Add a lost reason: ' + p.dealname, due: at(0, 17) };\n  else if (/current supplier/i.test(p.lost_reason)) task = { subject: 'Check in again (lost to current supplier): ' + p.dealname, due: at(182) };\n}\nreturn { json: { deal_id: d.id, stage: p.dealstage, owner: p.hubspot_owner_id || 'YOUR_HUBSPOT_OWNER_ID', task, won } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "26226a0d-537f-423b-bda6-6d6420cbb78e",
+      "name": "Task for this stage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cd1e758e-c7b9-4d31-88c3-230d55356f6b",
+              "leftValue": "={{ $json.task ? 'yes' : '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a6ec547d-bc27-4e1c-913b-4cea2900ef2b",
+      "name": "Has a task",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $json.task.due, hs_task_subject: $json.task.subject, hs_task_status: 'NOT_STARTED', hubspot_owner_id: $json.owner }, associations: [{ to: { id: $json.deal_id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 }] }] }) }}",
+        "options": {}
+      },
+      "id": "9c726bfe-866f-49d0-99b7-076934fa15ed",
+      "name": "Create task on deal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, event, detail) VALUES ('GD·08', 'crm_task', $1::jsonb) RETURNING 1;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify({ deal: $('Task for this stage').item.json.deal_id, stage: $('Task for this stage').item.json.stage, task: $('Task for this stage').item.json.task.subject }) ] }}"
+        }
+      },
+      "id": "7852fd83-3808-4e4d-908b-48fd5b9242a1",
+      "name": "Log task",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "99963769-b690-4801-847e-3905b3de67eb",
+              "leftValue": "={{ $('Task for this stage').item.json.won }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "d35ea080-f3d2-4e29-ba7d-c9f7437bd06c",
+      "name": "Won?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.hubapi.com/crm/v4/objects/deals/{{ $('Task for this stage').item.json.deal_id }}/associations/contacts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "id": "de229f01-4d7d-48d6-bed9-4c7cbf1f5a23",
+      "name": "Deal's contacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/batch/update",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: ($json.results || []).map(r => ({ id: String(r.toObjectId), properties: { lifecyclestage: 'customer' } })) }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "243c7b8a-4b43-4894-b56a-fe8a759bb657",
+      "name": "Lifecycle → Customer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -90
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Recently changed deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recently changed deals": {
+      "main": [
+        [
+          {
+            "node": "One per deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One per deal": {
+      "main": [
+        [
+          {
+            "node": "First time at this stage?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "First time at this stage?": {
+      "main": [
+        [
+          {
+            "node": "New stage only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New stage only": {
+      "main": [
+        [
+          {
+            "node": "Task for this stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task for this stage": {
+      "main": [
+        [
+          {
+            "node": "Has a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has a task": {
+      "main": [
+        [
+          {
+            "node": "Create task on deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task on deal": {
+      "main": [
+        [
+          {
+            "node": "Log task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log task": {
+      "main": [
+        [
+          {
+            "node": "Won?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Won?": {
+      "main": [
+        [
+          {
+            "node": "Deal's contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deal's contacts": {
+      "main": [
+        [
+          {
+            "node": "Lifecycle → Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

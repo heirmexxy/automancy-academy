@@ -1,0 +1,169 @@
+{
+  "id": "2.5",
+  "items": [
+    {
+      "file": "2-5-paystack-payments.json",
+      "kind": "make",
+      "name": "HL · Paystack payments → Paid, once",
+      "what": "Paystack's charge.success webhook is answered at once, duplicates stop at a data store check, the payment is verified with Paystack's own API, the amount is compared in kobo, and only then is the order marked Paid with one receipt; a wrong amount emails Tolu instead.",
+      "setup": [
+        "Use Paystack TEST mode and your TEST secret key only. No real money moves.",
+        "Data store: create processed_payments with a data structure of order_id (text), amount_kobo (number), processed_at (date). Select it in \"Seen this reference?\" and \"Remember the payment\". The record key is the payment reference.",
+        "Webhook: in \"Paystack webhook\" click Add, name it HL Paystack, copy the URL into Paystack → Settings → API Keys & Webhooks → Test Webhook URL. Click \"Redetermine data structure\" and POST the lesson's sample charge.success JSON from Hoppscotch once so Make learns the fields.",
+        "Keychain: in \"Verify with Paystack\" (HTTP · Make an API Key Auth request) add a keychain: key = Bearer sk_test_… , placement = Header, name = Authorization. Never type the key into a header field.",
+        "Connections: open each Google Sheets and Gmail module and choose your Harvest Lane business Google connection (0.6), then pick the spreadsheet (replace YOUR_SHEET_ID) and tab. Gmail sends from the business account; replace tolu@harvestlane.example with Tolu's address.",
+        "Column letters: the blueprint assumes Orders = A order_id, B customer_id, C customer_name, D delivery_date, E fee, F status, G items_total, H total (0.4), I phone_clean, J first_name, K delivery_day, L receipt_text (2.2), M paid_at, N channel, O area, P email, Q delivery_window. If yours differ, open each Google Sheets module after import and re-pick the columns.",
+        "Optional second layer (Going further): in the webhook's advanced settings turn on \"Get request headers\" and compare x-paystack-signature with an HMAC-SHA512 of the raw body (sha512(body; ; key) in Make) in a filter right after \"Reply 200 ok\".",
+        "Turn the scenario on (it runs instantly when Paystack calls)."
+      ],
+      "test": "Run the five tests from the lesson's table: a real test-card payment marks the order Paid, sends one receipt and adds one processed_payments record; resending the same webhook stops at \"Not processed before\"; a made-up reference POSTed from Hoppscotch stops at \"Paystack says success\"; a test payment below the order total emails Tolu and leaves the order unpaid; event transfer.success stops at \"charge.success only\".",
+      "build": [
+        "1 · Webhooks › Custom webhook \"Paystack webhook\": new hook HL Paystack; data structure learned from the sample charge.success JSON (event, data.reference, data.amount, data.currency, data.status, data.customer.email, data.metadata.order_id).",
+        "2 · Webhooks › Webhook response \"Reply 200 ok\": Status 200, Body ok.",
+        "Filter on 2→3 \"charge.success only\": {{1.event}} Text operators: Equal to charge.success.",
+        "3 · Data store › Check the existence of a record \"Seen this reference?\": data store processed_payments; Key {{1.data.reference}}.",
+        "Filter on 3→4 \"Not processed before\": Exists (from 3) Boolean operators: Equal to false.",
+        "4 · HTTP › Make an API Key Auth request \"Verify with Paystack\": keychain Authorization: Bearer sk_test_… (Header); URL https://api.paystack.co/transaction/verify/{{1.data.reference}}; Method GET; Parse response Yes; Evaluate all states as errors No (so a fake reference reaches the filter instead of erroring).",
+        "Filter on 4→5 \"Paystack says success\": {{4.data.data.status}} Text operators: Equal to success.",
+        "5 · Google Sheets › Search Rows \"Find the order\": Orders; filter order_id (A) Equal to {{1.data.metadata.order_id}}; Limit 1.",
+        "6 · Router \"Amount check\" with two routes.",
+        "Route 1 · filter on 6→7 \"Amount matches (kobo)\": {{4.data.data.amount}} Numeric operators: Equal to {{5.total * 100}} (2650000 = 26500 × 100).",
+        "7 · Google Sheets › Update a Row \"Mark order Paid\": Orders; Row number {{5.__ROW_NUMBER__}}; status = Paid; paid_at = {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}; leave other columns empty.",
+        "8 · Data store › Add/replace a record \"Remember the payment\": processed_payments; Key {{1.data.reference}}; Overwrite Yes; order_id {{1.data.metadata.order_id}}, amount_kobo {{4.data.data.amount}}, processed_at {{now}}.",
+        "9 · Gmail › Send an email \"Send one receipt\": To {{1.data.customer.email}}; Subject Payment received · {{5.order_id}}; Content {{5.receipt_text}} (the 2.2 receipt) + \"Payment received: ₦{{formatNumber(4.data.data.amount / 100; 0; \".\"; \",\")}} (ref {{1.data.reference}}). Thank you!\".",
+        "Route 2 · filter on 6→10 \"Amount wrong (kobo)\": {{4.data.data.amount}} Numeric operators: Not equal to {{5.total * 100}}.",
+        "10 · Gmail › Send an email \"Alert Tolu: wrong amount\": To tolu@harvestlane.example; Subject Partial or wrong payment for {{5.order_id}}; body states the paid amount, the order total and the reference, and that the order was not marked Paid."
+      ],
+      "walk": {
+        "title": "Build it: payments that confirm themselves, safely",
+        "sample": "Paystack test charge.success · reference HL-0061-a1 · amount 2,650,000 kobo · order HL-0061 · ₦26,500",
+        "steps": [
+          {
+            "at": null,
+            "say": "Everything here runs in Paystack test mode with test keys. No real money moves. First, create a data store called processed_payments, keyed by the payment reference.",
+            "show": [
+              "Paystack: TEST mode · sk_test_ only",
+              "Data store: processed_payments",
+              "Fields: order_id, amount_kobo, processed_at"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "The trigger is a custom webhook. Paste its address into Paystack's test webhook setting, and post the sample once so Make learns the fields.",
+            "show": [
+              "Webhooks › Custom webhook: HL Paystack",
+              "Redetermine data structure"
+            ],
+            "data": "event charge.success · ref HL-0061-a1"
+          },
+          {
+            "at": "2",
+            "say": "Reply straight away with a two hundred and ok. A fast reply stops Paystack retrying and piling up duplicates.",
+            "show": [
+              "Webhooks › Webhook response",
+              "Status: 200 · Body: ok"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "On the next link, a filter lets only successful charges through. Any other event, like a transfer, stops here.",
+            "show": [
+              "Filter: charge.success only",
+              "{{1.event}} Equal to charge.success"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Now the memory. Check whether we've already handled this reference.",
+            "show": [
+              "Data store › Check the existence of a record",
+              "Key: {{1.data.reference}}"
+            ],
+            "data": "exists: false"
+          },
+          {
+            "at": "4",
+            "say": "Continue only if it's new. A duplicate webhook stops here, before any work or a second receipt.",
+            "show": [
+              "Filter: Not processed before",
+              "{{3.exists}} Equal to false"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Never trust the webhook body. We phone Paystack's verify endpoint with the reference. The secret key lives in a keychain, never typed into a header field.",
+            "show": [
+              "HTTP › Make an API Key Auth request · GET",
+              "…/transaction/verify/{{1.data.reference}}",
+              "Keychain: Authorization: Bearer sk_test_…",
+              "Parse response: Yes"
+            ],
+            "data": "data.status: success"
+          },
+          {
+            "at": "5",
+            "say": "Only Paystack's own answer decides. A fake payment someone posted has no successful transaction, so it stops at this filter.",
+            "show": [
+              "Filter: Paystack says success",
+              "{{4.data.data.status}} Equal to success"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "Find the order in the sheet using the order ID we put in the payment's metadata.",
+            "show": [
+              "Google Sheets › Search Rows · Orders",
+              "order_id = {{1.data.metadata.order_id}} · Limit 1"
+            ],
+            "data": "HL-0061 · total 26500"
+          },
+          {
+            "at": "6",
+            "say": "A router checks the amount. Paystack counts in kobo, so the order total times a hundred must match exactly.",
+            "show": [
+              "Router: Amount check",
+              "{{4.data.data.amount}} = order total × 100",
+              "2650000 = 26500 × 100 ✓"
+            ]
+          },
+          {
+            "at": "7",
+            "say": "On the matching route, mark the order Paid with the time.",
+            "show": [
+              "Update a Row · status: Paid",
+              "paid_at: {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}"
+            ],
+            "data": "HL-0061 → Paid"
+          },
+          {
+            "at": "8",
+            "say": "Then remember the payment in the data store, so if the same webhook ever arrives again, it's harmless.",
+            "show": [
+              "Data store › Add/replace a record",
+              "Key: {{1.data.reference}} · Overwrite: Yes"
+            ],
+            "data": "1 record"
+          },
+          {
+            "at": "9",
+            "say": "And send exactly one receipt, reusing the readable receipt text from 2.2.",
+            "show": [
+              "Gmail › To: {{1.data.customer.email}}",
+              "Payment received: ₦{{formatNumber(4.data.data.amount / 100; …)}}"
+            ],
+            "data": "1 receipt"
+          },
+          {
+            "at": "10",
+            "say": "If the amount is wrong, the other route emails Tolu instead, and the order is not marked Paid.",
+            "show": [
+              "Filter: Amount wrong (kobo)",
+              "Subject: Partial or wrong payment for {{5.`0`}}"
+            ]
+          }
+        ],
+        "end": "Run all five tests: a real test payment, a duplicate, a fake, a wrong amount and another event, and check each stops exactly where it should."
+      }
+    }
+  ]
+}

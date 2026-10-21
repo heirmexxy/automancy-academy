@@ -1,0 +1,143 @@
+{
+  "name": "SUB · Today summary",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Today summary\nLesson 4.6. Read-only tool for the MCP server. No input. Returns today's order count, revenue in naira, pending orders and low-stock items (stock under 5).\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID (2 nodes).",
+        "height": 280,
+        "width": 380
+      },
+      "id": "0fa3d57c-1629-42d2-ab5a-ff66e3dbeab0",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "dd6e37bf-9494-4763-8304-c77b69b2acfb",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "64be8278-c5e5-4ea4-a08e-530003803170",
+      "name": "Read Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Price_List",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "6561b605-e9cf-469e-9c16-9e4665109519",
+      "name": "Read Price_List",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Today's numbers, Lagos time. Read-only.\nconst today = $now.setZone('Africa/Lagos').toISODate();\nconst orders = $('Read Orders').all().map(i => i.json).filter(o => String(o.created_at).startsWith(today));\nconst paid = orders.filter(o => ['Paid', 'Delivered', 'Out for delivery'].includes(o.status));\nconst lowStock = $('Read Price_List').all().map(i => i.json)\n  .filter(p => p.active !== 'no' && Number(p.stock) < 5)\n  .map(p => `${p.name} (${p.stock} ${p.unit} left)`);\nreturn [{ json: { date: today, orders: orders.length,\n  revenue_naira: paid.reduce((s, o) => s + Number(o.total || 0), 0),\n  pending: orders.filter(o => o.status === 'Pending').length,\n  low_stock_count: lowStock.length, low_stock: lowStock } }];"
+      },
+      "id": "d5b6cd18-0d6c-4dba-a464-1a955182d9b4",
+      "name": "Count today",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Read Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders": {
+      "main": [
+        [
+          {
+            "node": "Read Price_List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Price_List": {
+      "main": [
+        [
+          {
+            "node": "Count today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

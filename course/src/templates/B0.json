@@ -1,0 +1,20 @@
+{"id": "B0", "items": [], "walk": {
+  "title": "Your mission: the blueprint for the order flood",
+  "sample": "Harvest Lane in December · 130 orders a day · Grand Palm Hotel daily order by 7 a.m. · ₦60,000 tool budget",
+  "steps": [
+    {"at": null, "say": "Orders are about to nearly triple, and a hotel wants produce by seven every morning. Before anything is built, you'll draw the blueprint, in seven deliverables across three phases.", "show": ["45 → 130 orders a day", "Open one Glitch curveball per phase"]},
+    {"at": "1", "say": "Phase one starts with swimlane maps: a normal customer order and the hotel's daily cycle, each drawn as it is today and as it will be with automation.", "show": ["Lanes: Customer or Hotel · Automation", "Tolu/Admin · Rider"]},
+    {"at": "1", "say": "In the future maps, the automation lane does the copying and checking. People keep judgment and approvals. And decide where the chef's six a.m. phone call enters.", "show": ["Curveball 1: the 6 a.m. phone call"], "data": "4 maps"},
+    {"at": "2", "say": "Now score every step at December volume. Rescale first: one hundred and thirty a day, six days, is seven hundred and eighty orders a week.", "show": ["130 × 6 = 780 orders a week", "Priority = runs × min × error ÷ difficulty"]},
+    {"at": "2", "say": "Don't let the Friday invoice hide. It runs once a week, but it's three hours with a high error cost. Pick three to five automations, check dependencies, and estimate the hours and naira saved.", "show": ["Hotel invoice: 1/wk · 180 min · High ×2"], "data": "top 3–5 + ROI"},
+    {"at": "3", "say": "Phase two: extend the four-table model from Module 0.4 for the hotel. You'll probably need standing orders, order changes and invoices, each with its own ID format.", "show": ["Standing_Orders · Order_Changes · Invoices", "How does an order know its invoice?"]},
+    {"at": "3", "say": "Then write one complete hotel order as valid JSON. Curveball two tests your prices: old orders keep old prices, the hotel keeps its contract price, everyone else pays the new one.", "show": ["One hotel order as JSON", "Curveball 2: tomatoes up 30%"]},
+    {"at": "4", "say": "The integration inventory is one row per system: what triggers it, polling or webhook, how it signs in, test or live key, and where the secret lives.", "show": ["Form · WhatsApp · Gmail · Sheets", "Paystack · AI provider · weather · rider alerts"]},
+    {"at": "4", "say": "Keep Paystack on test keys while you plan, and remember every secret has exactly one home, the platform's credential store.", "show": ["Key type: test → live", "Secret lives in: platform credential"]},
+    {"at": "5", "say": "Phase three: specify one AI step. Write the prompt with a null rule and an example, build a ten-message test set, and record your measured score.", "show": ["Prompt + 10 tests + score", "Checks after the AI"]},
+    {"at": "5", "say": "Estimate the monthly cost. About seventy per cent of orders come by WhatsApp, so the AI runs around two thousand four hundred times a month.", "show": ["≈ 91 calls a day ≈ 2,400 a month", "Use the cost estimator from 0.5"]},
+    {"at": "6", "say": "The security plan: an access register for every tool and person, the policy updated for the new admin, four riders and the hotel, and an incident card.", "show": ["Register · December policy · incident card", "Curveball 3: a rider's stolen phone"]},
+    {"at": "7", "say": "Finally, the one page Tolu will actually read: what gets automated and in what order, what stays human, hours saved, cost against the sixty thousand naira budget, and the main risks.", "show": ["Fits one page", "Tolu approves every hotel invoice", "Cost vs. ₦60,000 a month"], "data": "win at 80 of 100"}
+  ],
+  "end": "Seven deliverables, three curveballs, one blueprint. Score yourself against the rubric, then compare with the reference."
+}}

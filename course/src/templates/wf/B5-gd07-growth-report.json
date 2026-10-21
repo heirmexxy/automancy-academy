@@ -1,0 +1,396 @@
+{
+  "name": "GD·07 Growth report",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·07 Growth report (Boss 5 · D7)\nMondays 08:00, last 7 days. SQL and CODE calculate every number; the AI writes ONE recommendation from the numbers it's given.\n- New leads by source; new customers by first-touch source (restaurants vs households)\n- Lead → first order conversion by source (leads from the last 90 days)\n- Median first reply per channel, complaints separately\n- Cost per lead and per new customer by channel: API usage + AI tokens (events), fixed plans (fixed_costs, prorated 7/30) + Tolu's approval time (approval_time events × tolu_hourly_ngn)\n- Open pipeline value by stage and the weighted forecast, from HubSpot (stage win chance × amount)\n- Email complaints and unsubscribes, rule breaches\nIf the week has no events at all, Tolu gets an alarm instead of a report of zeros.\n\nTables: leads, customers (first_touch_source, segment), orders, conversations, inbox, events, fixed_costs(channel, item, monthly_ngn, active), settings (tolu_hourly_ngn).\n**Credentials:** Postgres, HubSpot App Token, OpenAI, Telegram, Gmail.\n**Replace:** YOUR_PIPELINE_ID (or leave 'default'), YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID, tolu@harvestlane.example.",
+        "height": 500,
+        "width": 460
+      },
+      "id": "4cef622f-74ed-4cae-81d1-529e43e3e72e",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -432
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "23f15a1d-d372-4cbd-a23e-095b4433201b",
+      "name": "Monday 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH p AS (SELECT now() - interval '7 days' AS since),\nfirst_orders AS (\n  SELECT customer_id, min(paid_at) AS first_paid FROM orders WHERE paid_at IS NOT NULL GROUP BY customer_id\n),\nleads_week AS (\n  SELECT coalesce(source, 'unknown') AS source, count(*) AS n FROM leads, p WHERE created_at >= p.since GROUP BY 1\n),\nnew_customers AS (\n  SELECT coalesce(c.first_touch_source, 'unknown') AS source, coalesce(c.segment, 'household') AS segment, count(*) AS n\n  FROM first_orders f JOIN customers c USING (customer_id), p\n  WHERE f.first_paid >= p.since GROUP BY 1, 2\n),\nconversion AS (\n  SELECT coalesce(l.source, 'unknown') AS source, count(*) AS leads,\n         count(*) FILTER (WHERE f.first_paid >= l.created_at) AS converted\n  FROM leads l LEFT JOIN first_orders f ON f.customer_id = l.customer_id\n  WHERE l.created_at >= now() - interval '90 days' GROUP BY 1\n),\nreplies AS (\n  SELECT last_channel AS channel, coalesce(kind, 'question') AS kind,\n         round(percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM first_reply_at - opened_at) / 60)::numeric, 1) AS median_min\n  FROM conversations, p WHERE opened_at >= p.since AND first_reply_at IS NOT NULL GROUP BY 1, 2\n  UNION ALL\n  SELECT platform, 'comment',\n         round(percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM responded_at - received_at) / 60)::numeric, 1)\n  FROM inbox, p WHERE received_at >= p.since AND responded_at IS NOT NULL GROUP BY 1, 2\n),\ncosts AS (\n  SELECT coalesce(channel, 'shared') AS channel, round(sum(ngn)) AS ngn FROM (\n    SELECT detail->>'channel' AS channel, (detail->>'cost_ngn')::numeric AS ngn\n      FROM events, p WHERE event IN ('api_usage', 'ai_usage') AND at >= p.since\n    UNION ALL\n    SELECT channel, monthly_ngn * 7 / 30.0 FROM fixed_costs WHERE active\n    UNION ALL\n    SELECT detail->>'channel', (detail->>'minutes')::numeric / 60 * coalesce((SELECT value::numeric FROM settings WHERE key = 'tolu_hourly_ngn'), 0)\n      FROM events, p WHERE event = 'approval_time' AND at >= p.since\n  ) x GROUP BY 1\n),\nemail AS (\n  SELECT coalesce(sum((detail->>'delivered')::int), 0) AS delivered, coalesce(sum((detail->>'complaints')::int), 0) AS complaints,\n         coalesce(sum((detail->>'unsubscribes')::int), 0) AS unsubscribes\n  FROM events, p WHERE event = 'campaign_stats' AND at >= p.since\n)\nSELECT\n  (SELECT coalesce(json_object_agg(source, n), '{}'::json) FROM leads_week) AS leads_by_source,\n  (SELECT coalesce(json_agg(new_customers), '[]'::json) FROM new_customers) AS new_customers,\n  (SELECT coalesce(json_agg(conversion), '[]'::json) FROM conversion) AS conversion,\n  (SELECT coalesce(json_agg(replies), '[]'::json) FROM replies) AS replies,\n  (SELECT coalesce(json_object_agg(channel, ngn), '{}'::json) FROM costs) AS costs,\n  (SELECT row_to_json(email) FROM email) AS email,\n  (SELECT count(*) FROM conversations, p WHERE kind = 'complaint' AND opened_at >= p.since) AS complaints_inbox,\n  (SELECT count(*) FROM events, p WHERE event = 'unsubscribed' AND at >= p.since) AS unsubscribes_all,\n  (SELECT count(*) FROM events, p WHERE event = 'rule_breach' AND at >= p.since) AS rule_breaches,\n  (SELECT count(*) FROM events, p WHERE at >= p.since) AS events_week;",
+        "options": {}
+      },
+      "id": "90b0724c-06cf-477b-8ecf-9717d1d3d516",
+      "name": "Funnel, replies and costs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.hubapi.com/crm/v3/pipelines/deals",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "id": "149003f3-39ed-47c2-8778-a3a1ed0128cf",
+      "name": "HubSpot: deal stages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [{ propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' }] }],\n  properties: ['dealname', 'amount', 'dealstage', 'pipeline', 'weekly_value_ngn'],\n  limit: 200\n}) }}",
+        "options": {}
+      },
+      "id": "0e302955-a87f-4ea6-a484-faea8c185224",
+      "name": "HubSpot: open deals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code calculates every number in the report.\nconst n = $('Funnel, replies and costs').first().json;\nconst pipes = $('HubSpot: deal stages').first().json.results || [];\nconst pipe = pipes.find(p => p.id === 'YOUR_PIPELINE_ID') || pipes.find(p => p.id === 'default') || pipes[0] || { stages: [] };\nconst stage = Object.fromEntries((pipe.stages || []).map(s => [s.id, { label: s.label, p: Number(s.metadata?.probability ?? 0), order: s.displayOrder }]));\nconst deals = ($('HubSpot: open deals').first().json.results || []).filter(d => stage[d.properties.dealstage]);\nconst byStage = {};\nlet weighted = 0, openValue = 0;\nfor (const d of deals) {\n  const s = stage[d.properties.dealstage];\n  const amt = Number(d.properties.amount || 0);\n  byStage[s.label] = byStage[s.label] || { order: s.order, count: 0, value: 0 };\n  byStage[s.label].count++; byStage[s.label].value += amt;\n  openValue += amt; weighted += amt * s.p;\n}\nconst leads = n.leads_by_source || {};\nconst cust = {}; let restaurants = 0, households = 0;\nfor (const r of n.new_customers || []) {\n  cust[r.source] = (cust[r.source] || 0) + Number(r.n);\n  if (['restaurant', 'hotel', 'caterer'].includes(r.segment)) restaurants += Number(r.n); else households += Number(r.n);\n}\nconst totalCust = restaurants + households;\nconst totalLeads = Object.values(leads).reduce((a, b) => a + Number(b), 0);\nconst costs = n.costs || {};\nconst totalCost = Object.values(costs).reduce((a, b) => a + Number(b), 0);\nconst channels = [...new Set([...Object.keys(leads), ...Object.keys(cust), ...Object.keys(costs)])].filter(c => c !== 'shared' && c !== 'unknown');\nconst perChannel = channels.map(ch => ({\n  channel: ch, leads: Number(leads[ch] || 0), customers: Number(cust[ch] || 0), cost_ngn: Number(costs[ch] || 0),\n  cost_per_lead: leads[ch] ? Math.round(Number(costs[ch] || 0) / leads[ch]) : null,\n  cost_per_customer: cust[ch] ? Math.round(Number(costs[ch] || 0) / cust[ch]) : null\n}));\nconst conversion = (n.conversion || []).filter(c => Number(c.leads) >= 1).map(c => ({ source: c.source, pct: Math.round(100 * c.converted / c.leads), leads: Number(c.leads) }));\nconst replies = (n.replies || []).filter(r => r.kind !== 'complaint').map(r => ({ channel: r.channel, min: Number(r.median_min) }));\nconst complaintReply = (n.replies || []).filter(r => r.kind === 'complaint').map(r => Number(r.median_min));\nconst e = n.email || {};\nreturn [{ json: {\n  data_ok: Number(n.events_week) > 0 && (totalLeads > 0 || totalCust > 0),\n  new_customers: totalCust, restaurants, households, by_first_touch: cust, leads_by_source: leads, total_leads: totalLeads,\n  conversion, replies, complaint_reply_min: complaintReply.length ? Math.max(...complaintReply) : null,\n  per_channel: perChannel, total_cost_ngn: Math.round(totalCost), overall_cost_per_customer: totalCust ? Math.round(totalCost / totalCust) : null,\n  pipeline: Object.entries(byStage).sort((a, b) => a[1].order - b[1].order).map(([label, v]) => ({ stage: label, deals: v.count, value_ngn: Math.round(v.value) })),\n  open_pipeline_ngn: Math.round(openValue), weighted_forecast_ngn: Math.round(weighted),\n  complaint_rate_pct: e.delivered ? +(100 * e.complaints / e.delivered).toFixed(2) : 0,\n  unsubscribe_rate_pct: e.delivered ? +(100 * e.unsubscribes / e.delivered).toFixed(1) : 0,\n  complaints_inbox: Number(n.complaints_inbox), unsubscribes_all: Number(n.unsubscribes_all), rule_breaches: Number(n.rule_breaches)\n} }];"
+      },
+      "id": "752ab695-9e5a-4504-916c-6442be0eef39",
+      "name": "Compute report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "4eb607bb-da51-4de1-9c65-7e36bb86517e",
+              "leftValue": "={{ $json.data_ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "537104d2-2eef-4eec-95b9-5514f1b3556e",
+      "name": "Numbers look real?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚫 Growth report NOT sent: no leads, customers or events found for the last 7 days. That's an alarm: check the events table and the engines (watchdog, error workflow).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "355ec56d-2620-46ce-af52-a8af269caa01",
+      "name": "Alarm, not a report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Numbers for the last 7 days (do not change or recalculate them):\n{{ JSON.stringify($json) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You advise Tolu, owner of Harvest Lane (fresh-produce delivery, Ibadan). Write ONE recommendation in one or two sentences: where to move time or money between channels next week. Back it with numbers exactly as given (quote them). Do not invent or calculate new numbers. If the numbers are too small to judge, say so and suggest what to measure."
+            }
+          ]
+        }
+      },
+      "id": "6d042c36-d198-4156-b637-4755a0311b39",
+      "name": "One recommendation",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        1320,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "966f4cf1-03a9-453d-8792-dd0aa744c975",
+      "name": "Recommendation model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        54
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Compute report').first().json;\nconst naira = x => x === null || x === undefined ? 'n/a' : '₦' + Math.round(x).toLocaleString('en-NG');\nconst cap = s => String(s).charAt(0).toUpperCase() + String(s).slice(1);\nconst sorted = Object.entries(r.by_first_touch).sort((a, b) => b[1] - a[1]);\nconst lines = [\n  `📈 Harvest Lane · growth · week to ${$now.setZone('Africa/Lagos').toFormat('d LLL')}`,\n  `New customers: ${r.new_customers} (restaurants ${r.restaurants} · households ${r.households})`,\n  `By first touch: ${sorted.map(([k, v]) => `${cap(k)} ${v}`).join(' · ') || 'none'}`,\n  `New leads: ${r.total_leads} (${Object.entries(r.leads_by_source).map(([k, v]) => `${k} ${v}`).join(' · ') || 'none'})`,\n  `Lead → first order (90 days): ${r.conversion.map(c => `${c.source} ${c.pct}%`).join(' · ') || 'n/a'}`,\n  `Median first reply: ${r.replies.map(x => `${cap(x.channel)} ${x.min} min`).join(' · ') || 'n/a'}${r.complaint_reply_min !== null ? ` · complaints ${r.complaint_reply_min} min (person)` : ''}`,\n  `Cost per lead: ${r.per_channel.filter(c => c.cost_per_lead !== null).map(c => `${c.channel} ${naira(c.cost_per_lead)}`).join(' · ') || 'n/a'}`,\n  `Cost per new customer: ${r.per_channel.filter(c => c.cost_per_customer !== null).map(c => `${c.channel} ${naira(c.cost_per_customer)}`).join(' · ') || 'n/a'} · overall ${naira(r.overall_cost_per_customer)}`,\n  `Pipeline: ${r.pipeline.map(s => `${s.stage} ${s.deals} (${naira(s.value_ngn)})`).join(' · ') || 'no open deals'}`,\n  `Open pipeline ${naira(r.open_pipeline_ngn)} · weighted forecast ${naira(r.weighted_forecast_ngn)}`,\n  `Complaints ${r.complaint_rate_pct}% · unsubscribes ${r.unsubscribe_rate_pct}% · inbox complaints ${r.complaints_inbox} · ${r.rule_breaches ? r.rule_breaches + ' rule breach(es) ⚠️' : 'no rule breaches'}`,\n  `Recommendation: ${String($input.first().json.text || '').trim()}`\n];\nreturn [{ json: { text: lines.join('\\n') } }];"
+      },
+      "id": "374a2506-4e27-41ee-8e59-929a22211bbb",
+      "name": "Assemble report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a595277c-c3e9-42d8-b0a4-bca94fe0b12e",
+      "name": "Telegram to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "tolu@harvestlane.example",
+        "subject": "=Growth report: week to {{ $now.toFormat('d LLL') }}",
+        "emailType": "text",
+        "message": "={{ $('Assemble report').item.json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d36fea41-70da-4d7d-88fd-cbcd7c8d0fd5",
+      "name": "Email to Tolu",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1980,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, event, detail) VALUES ('GD·07', 'success', $1::jsonb) RETURNING 1;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($('Compute report').item.json) ] }}"
+        }
+      },
+      "id": "0d591a00-7e4e-426c-9f40-6f0fb50a0cca",
+      "name": "Log success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        -108
+      ]
+    }
+  ],
+  "connections": {
+    "Monday 08:00": {
+      "main": [
+        [
+          {
+            "node": "Funnel, replies and costs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Funnel, replies and costs": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: deal stages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: deal stages": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: open deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: open deals": {
+      "main": [
+        [
+          {
+            "node": "Compute report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute report": {
+      "main": [
+        [
+          {
+            "node": "Numbers look real?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Numbers look real?": {
+      "main": [
+        [
+          {
+            "node": "One recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alarm, not a report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recommendation model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "One recommendation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One recommendation": {
+      "main": [
+        [
+          {
+            "node": "Assemble report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble report": {
+      "main": [
+        [
+          {
+            "node": "Telegram to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Email to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

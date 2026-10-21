@@ -1,0 +1,333 @@
+<template data-mod="1.1" id="tpl-1-1">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.1</span>
+    <h1>Your First Zap</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt</span><span class="pill">Tools: Zapier (free), Gmail, Google Drive</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Welcome to Spark Street. Everything so far was thinking and planning; today you build an automation that runs by itself, 24 hours a day, while you do something else. It takes about 20 minutes once you know the moves.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Build a Zap from trigger to action, and publish it.</span></div>
+  <div><b>02</b><span>Map fields: combine fixed text with data from earlier steps.</span></div>
+  <div><b>03</b><span>Tell instant triggers from polling ones, and count tasks.</span></div>
+  <div><b>04</b><span>Use Zap history to see exactly what happened on every run.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Where's the tomato invoice?</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An accountant on the phone asking for October's supplier invoices.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="156" height="70" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M184 88 L172 106 L206 88" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="164" y="46" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">Accountant: I need every</text>
+        <text x="164" y="66" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">supplier invoice by Friday.</text>
+        <use href="#tolu" x="20" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tuesday</b>Month-end. The accountant wants all of October's supplier invoices.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An inbox with 2,300 emails and a search bar.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="20" width="240" height="150" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="56" y="34" width="208" height="22" rx="11" fill="var(--paper2)"/><text x="68" y="50" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">search: invoice</text>
+        <g fill="var(--line)"><rect x="56" y="68" width="208" height="12" rx="3"/><rect x="56" y="88" width="190" height="12" rx="3"/><rect x="56" y="108" width="200" height="12" rx="3"/><rect x="56" y="128" width="170" height="12" rx="3"/></g>
+        <text x="160" y="160" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--glitch)">2,318 emails</text>
+      </svg>
+      <div class="cap"><b>Two hours later</b>Tolu has found 19 of 25. Three are in WhatsApp. One was deleted.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch hiding an invoice PDF behind its back.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="200" y="60" width="60" height="78" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5" transform="rotate(12 230 99)"/>
+        <text x="230" y="104" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--glitch)" transform="rotate(12 230 99)">PDF</text>
+        <use href="#glitch" x="40" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Invoices hide beautifully in a busy inbox."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt opening a door labelled Spark Street.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="30" width="110" height="150" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="225" y="70" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">SPARK</text>
+        <text x="225" y="88" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">STREET</text>
+        <circle cx="258" cy="120" r="5" fill="#13233A"/>
+        <use href="#bolt" x="20" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Bolt</b>"Every invoice that ever lands should file itself. Let's build your first Zap."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 15 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>A Zap is a trigger plus actions</h3>
+    <p>Zapier's name for a workflow is a <b>Zap</b>. It's the trigger → action → outcome shape from Module 0.1, built from cards in the Zap editor. Each card needs four choices: the <b>app</b>, the <b>event</b>, the <b>account</b> to connect, and the <b>fields</b> to fill in.</p>
+    <figure class="fig"><svg viewBox="0 0 620 230" role="img" aria-label="Sketch of the Zap editor: a trigger card for Gmail New Attachment, and an action card for Google Drive Upload File, joined by a line, with a Publish button.">
+      <rect x="0" y="0" width="620" height="230" rx="12" fill="var(--paper)"/>
+      <rect x="470" y="12" width="130" height="30" rx="15" fill="var(--spark)"/><text x="535" y="32" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="#fff">Publish</text>
+      <text x="20" y="32" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)">HL · Invoices → Drive</text>
+      <rect x="150" y="56" width="320" height="64" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="164" y="70" width="36" height="36" rx="8" fill="var(--glitch)" opacity=".85"/><text x="182" y="94" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#fff">M</text>
+      <text x="214" y="84" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">1. TRIGGER</text>
+      <text x="214" y="104" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">Gmail · New Attachment</text>
+      <line x1="310" y1="120" x2="310" y2="142" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="150" y="142" width="320" height="64" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="164" y="156" width="36" height="36" rx="8" fill="var(--volt)"/><text x="182" y="180" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">D</text>
+      <text x="214" y="170" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">2. ACTION</text>
+      <text x="214" y="190" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">Google Drive · Upload File</text>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)"><text x="486" y="84">app + event</text><text x="486" y="100">account</text><text x="486" y="116">fields · test</text></g>
+      <path d="M470 88 H482" stroke="var(--muted)"/>
+    </svg><figcaption>A simplified view of the Zap editor. Zapier updates its screens often, so buttons may move, but these four choices never change.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Instant or polling: when does your Zap wake up?</h3>
+    <p>Remember polling and webhooks from 0.2. Zapier labels triggers that use webhooks as <b>Instant</b>: they run within seconds. Other triggers, including Gmail's, <b>poll</b>: Zapier checks for new items on a timer. On the free plan that timer is 15 minutes; paid plans check more often.</p>
+    <div class="analogy"><b>What that means for Tolu:</b> an invoice arriving at 10:02 might be filed at 10:15. For invoices that's fine. For a customer waiting on an order confirmation, you'd want an instant trigger (Modules 1.4 and 2.5).</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Field mapping: fixed text plus data pills</h3>
+    <p>When you fill in an action's fields, you can type fixed text, insert data from earlier steps, or mix both. Inserted data appears as a small labelled chip, often called a <b>pill</b>. At run time, each pill is replaced with that run's real value.</p>
+    <div class="urlparts" aria-label="A file name built from pills and fixed text">
+      <span style="--pc:#FFD37A"><i>Pill · From Name</i>Farmgate Supplies</span><span style="--pc:#D4DDE3"><i>Text</i> - </span><span style="--pc:#FFD37A"><i>Pill · Subject</i>Invoice 0192</span><span style="--pc:#D4DDE3"><i>Text</i> - </span><span style="--pc:#FFD37A"><i>Pill · Attachment Name</i>inv_0192.pdf</span>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Every pill is a path into the trigger's JSON from Module 0.3. Zapier just gives the paths friendly names. Watch the type too: a <i>file</i> pill carries the actual file, while a name or link pill is only text.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Tasks: what Zapier counts and charges</h3>
+    <p>A <b>task</b> is one action that runs successfully. Checking for new data doesn't count, failed actions don't count, and Zapier's built-in tools (such as Filter, Formatter, Paths and Delay) don't use tasks either.</p>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Free plan, as of Oct 2026</th><th>What it means here</th></tr></thead>
+      <tbody>
+        <tr><td>100 tasks a month</td><td>25 invoices a month = 25 tasks. Plenty of room.</td></tr>
+        <tr><td>Two-step Zaps (one trigger, one action)</td><td>Today's Zap fits exactly. Multi-step Zaps need a paid plan or a trial.</td></tr>
+        <tr><td>15 minutes between checks</td><td>Invoices file within a quarter of an hour.</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.88rem;color:var(--muted)">Plans change. Check zapier.com/pricing before you advise a client; new accounts often start with a trial of paid features.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Draft, publish, and Zap history</h3>
+    <div class="vocab">
+      <div><b>Test</b>Runs one step once with sample data, so you can check the result before going live.</div>
+      <div><b>Publish</b>Turns the Zap on. Until then, nothing runs by itself, however perfect your tests.</div>
+      <div><b>Edits</b>Changes to a published Zap stay in draft until you publish again.</div>
+      <div><b>Zap history</b>A log of every run, showing its status plus the exact data in and out of each step. Your first stop when something looks wrong.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://learn.zapier.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Academy · AI Builder Path: "Building Basic Zaps" (≈35 min, free)</b><small>Watch the first half now. Look for: triggers, actions, field mapping, and publishing.</small></span></a>
+    <a class="wcard" href="https://zapier.com/blog/save-gmail-emails-to-google-drive/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier guide: save Gmail attachments to Google Drive</b><small>Read before the guided build. It's the official version of what you'll do next.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Zapier+tutorial+for+beginners+first+zap" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Any recent "Zapier for beginners" walkthrough</b><small>Pick one from the last year, since the editor changes. Look for Zap history.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: supplier invoices file themselves</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every attachment in an email labelled <b>Invoices</b> is saved to a Google Drive folder called <b>Supplier invoices</b>, with a file name that says who it's from and what it is. Build it in the business Google account from Module 0.6, not your personal one.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Prepare Gmail: a label that fills itself</h4>
+      <p>In Gmail, create a label called <b>Invoices</b>. Then create a filter (Settings → Filters and blocked addresses → Create a new filter) that matches your suppliers' addresses and "has attachment", and applies the Invoices label. Now Gmail does the sorting and Zapier only has to watch one label.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Fix the input first</b> (Module 0.1). A tidy label is easier and cheaper than asking an automation, or an AI, to guess which emails are invoices.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Create the Zap and set the trigger</h4>
+      <p>In Zapier, create a new Zap. For the trigger choose app <b>Gmail</b> and event <b>New Attachment</b>. Connect the business Gmail account, and read the permission screen before allowing (0.6). In the trigger's options:</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Field</th><th>Set to</th><th>Why</th></tr></thead><tbody>
+        <tr><td>Label/Mailbox</td><td>Invoices</td><td>Only watch the label your filter fills.</td></tr>
+        <tr><td>Search String</td><td><code>-in:sent</code></td><td>Ignore attachments you sent yourself.</td></tr>
+      </tbody></table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test the trigger with a real email</h4>
+      <p>Email yourself a small PDF from another address, and make sure it lands in the Invoices label. Click <b>Test trigger</b>. Zapier finds the email and shows its fields: From Name, Subject, Date, the attachment file, and more. Pick that record to use as sample data for the next step.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the action and map the fields</h4>
+      <p>Add an action: app <b>Google Drive</b>, event <b>Upload File</b>. Connect the same business account. Then:</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Field</th><th>Set to</th></tr></thead><tbody>
+        <tr><td>Drive</td><td>My Google Drive</td></tr>
+        <tr><td>Folder</td><td>Harvest Lane → Supplier invoices (create it first)</td></tr>
+        <tr><td>File</td><td>The <b>attachment file</b> pill from step 1 (not the attachment's name or link)</td></tr>
+        <tr><td>File name</td><td>From Name pill + " - " + Subject pill + " - " + Attachment name pill</td></tr>
+      </tbody></table></div>
+      <p style="font-size:.9rem;color:var(--muted)">Zapier sometimes renames fields. If a label doesn't match, choose the closest option; for the File field, pick the entry marked as a file.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test, name, publish</h4>
+      <p>Click <b>Test step</b>, then open Drive: the PDF should be in Supplier invoices with the new name. Rename the Zap to <b>HL · Invoices → Drive</b> (a naming habit that pays off at 30 Zaps) and click <b>Publish</b>.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Prove it works live, then read the history</h4>
+      <p>Send another test invoice. Within about 15 minutes on the free plan it appears in Drive with no clicks from you. Open <b>Zap history</b>, click the run, and look at the data that went into and out of each step. This is how you'll debug everything from now on.</p>
+      <div class="stats">
+        <div class="stat"><b>2</b><span>steps, fits the free plan</span></div>
+        <div class="stat"><b>≈25</b><span>tasks a month for Tolu's volume</span></div>
+        <div class="stat"><b>0 min</b><span>of Tolu's time per invoice from now on</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Gmail's filter does the sorting, so the Zap stays simple.</li><li>A consistent file name makes month-end a search, not a hunt.</li><li>Testing with a real email gives real sample data to map.</li><li>Zap history lets you verify every future run.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Mapping the attachment <i>name</i> into the File field (you get a text file).</li><li>Forgetting to publish after a successful test.</li><li>Connecting a personal account "just to try".</li><li>Watching the whole inbox instead of one label.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I built the same Zap for a friend's shop. Here are four complaints from the owner. Match each to its cause.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What the owner sees</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Drive fills with tiny text files that contain a web link, not the PDFs.</td></tr>
+        <tr><td>B</td><td>Quotes the owner <i>sent</i> to customers are being saved as supplier invoices.</td></tr>
+        <tr><td>C</td><td>Every file is called "attachment", so they overwrite each other's meaning.</td></tr>
+        <tr><td>D</td><td>The test worked perfectly on Monday; by Thursday not one new invoice has been saved, and Zap history is empty.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the File field was mapped to a text pill (the attachment's name or link) instead of the file itself.</li>
+        <li><b>B:</b> the Search String <code>-in:sent</code> was removed, and the Zap watches all mail instead of the Invoices label.</li>
+        <li><b>C:</b> the file name is fixed text. Build it from pills: sender, subject, attachment name.</li>
+        <li><b>D:</b> the Zap was tested but never published (or was turned off). No runs means Zap history stays empty.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Form orders land in the sheet</h4>
+    <ul><li>Make a short Google Form: name, phone, product, quantity, delivery date.</li><li>Build a Zap: <b>Google Forms · New Form Response</b> → <b>Google Sheets · Create Spreadsheet Row</b> into the Orders table from 0.4 (a copy is fine).</li><li>Map each form answer to the right column. Submit three test orders.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Three rows appear with every value in the right column, and Zap history shows three successful runs.</li></ul>
+    <details class="reveal"><summary>Troubleshooting</summary><div><ul><li><b>Columns don't appear in the Zap:</b> the sheet needs its header row in row 1 (rule 1 from 0.4). Refresh the fields after fixing it.</li><li><b>Phone loses its zero:</b> format the phone column as plain text in Sheets (0.4).</li></ul></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A new order alerts Tolu</h4>
+    <ul><li>Build a second Zap: <b>Google Sheets · New Spreadsheet Row</b> in Orders → <b>Gmail · Send Email</b> to yourself.</li><li>Make the subject combine three pills with text, e.g. <code>New order · Mrs Adebayo · 2026-10-06</code>.</li><li>In the body, list every field of the order on its own line.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Submitting the Bronze form sends you the email automatically. You've just chained two Zaps: the form fills the sheet, and the sheet sends the alert.</li></ul>
+    <details class="reveal"><summary>Why chaining works (and its limit)</summary><div><p>Two two-step Zaps connected through a sheet let you do multi-step work on the free plan, at the cost of a delay (the sheet trigger polls) and two tasks per order. In 1.2 you'll build it as one multi-step Zap instead.</p></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Your own first automation</h4>
+    <ul><li>Pick the top-scoring task from your Module 0.1 Silver mission, or another task that fits a two-step Zap.</li><li>Draw its map, build it, test it with three real items, publish it, and let it run for a week.</li><li>After a week, check Zap history: count runs, failures and tasks used, and estimate time saved.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>It has run live at least five times, and you've written up runs, tasks and minutes saved in your log.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. On the free plan, how quickly will a polling Gmail trigger notice a new email?</p><div class="opts">
+      <button type="button" data-opt="a">Instantly</button><button type="button" data-opt="b">Within about 15 minutes</button><button type="button" data-opt="c">Once a day</button><button type="button" data-opt="d">Only when you open Zapier</button></div>
+      <p class="fb" hidden data-why="Polling triggers check on a timer; the free plan checks every 15 minutes."></p></div>
+    <div class="q" data-ans="c"><p>2. Which of these uses a task?</p><div class="opts">
+      <button type="button" data-opt="a">Zapier checking Gmail for new mail</button><button type="button" data-opt="b">An action that fails</button><button type="button" data-opt="c">Successfully uploading a file to Drive</button><button type="button" data-opt="d">A Filter step</button></div>
+      <p class="fb" hidden data-why="A task is a successful action. Polling, failures and built-in tools like Filter don't count."></p></div>
+    <div class="q" data-ans="a"><p>3. Drive fills with small text files containing a link. What went wrong?</p><div class="opts">
+      <button type="button" data-opt="a">A text pill was mapped into the File field</button><button type="button" data-opt="b">The Zap isn't published</button><button type="button" data-opt="c">The label is wrong</button><button type="button" data-opt="d">Drive is full</button></div>
+      <p class="fb" hidden data-why="The File field needs the file pill. A name or link pill is just text, so Zapier saves it as a text file."></p></div>
+    <div class="q" data-ans="d"><p>4. Your Zap tested perfectly yesterday, but nothing has run since. What's the first thing to check?</p><div class="opts">
+      <button type="button" data-opt="a">Delete and rebuild the Zap</button><button type="button" data-opt="b">Upgrade your plan</button><button type="button" data-opt="c">Change the file name</button><button type="button" data-opt="d">Whether the Zap is published and on</button></div>
+      <p class="fb" hidden data-why="Testing doesn't turn a Zap on. Publishing does."></p></div>
+    <div class="q" data-ans="b"><p>5. Where do you see the exact data that went in and out of each step on a past run?</p><div class="opts">
+      <button type="button" data-opt="a">In Gmail</button><button type="button" data-opt="b">Zap history</button><button type="button" data-opt="c">The Zap's name</button><button type="button" data-opt="d">Google Drive's activity panel</button></div>
+      <p class="fb" hidden data-why="Zap history logs every run with its status and data. It's your debugger."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-1">AUTOMANCY LOG · Lesson 1.1 · Your First Zap
+Date:
+Zap name:
+Trigger (app · event · key options):
+Action (app · event · key fields):
+Pills I combined in one field:
+Test result:
+Live runs so far / failures / tasks used:
+Time saved per week (estimate):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-1-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Every Zap card needs an app, an event, an account and fields.</li>
+      <li>Instant triggers use webhooks; polling ones check on a timer (15 minutes on free).</li>
+      <li>Fields mix fixed text with pills; check the pill's type (file vs. text).</li>
+      <li>A task is one successful action; built-in tools and failures don't count.</li>
+      <li>Test, then publish. Nothing runs until you publish.</li>
+      <li>Zap history is your debugger.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/" target="_blank" rel="noopener">Zapier Academy: AI Builder Path (Jumpstart and Building Basic Zaps)</a></li>
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/path/zapier-basics-from-a-to-zap" target="_blank" rel="noopener">Zapier: Basics from A to Zap</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8495933589645-How-to-get-started-with-Gmail-on-Zapier" target="_blank" rel="noopener">Zapier Help: getting started with Gmail</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8495919107853-Common-Problems-with-Gmail-on-Zapier" target="_blank" rel="noopener">Zapier Help: common problems with Gmail</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+tutorial+for+beginners" target="_blank" rel="noopener">YouTube: Zapier tutorial for beginners</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Before class, ask everyone to create a free Zapier account and a business-style Gmail they can experiment with. Build the invoice Zap live with the room following along, pausing after each test. Many learners map the wrong pill into the File field; let it happen, then use the Glitch hunt to explain why. End by opening Zap history together.</p>
+  </div>
+</section>
+
+</article>
+</template>

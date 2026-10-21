@@ -1,0 +1,270 @@
+{
+ "name": "HL · Social inbox · X mentions",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Social inbox: X mentions (Lesson 5.5)\nEvery 15 minutes, within a monthly read budget (every read is charged): fetch new mentions since the last one stored, log how many were read, and pass them to SUB · Social inbox: handle.\n\nCredentials: Header Auth \"X bearer token\" (Name Authorization, Value Bearer + your X app bearer token); Postgres (your Supabase database).\nPlaceholders: YOUR_X_USER_ID, YOUR_HANDLE_WORKFLOW_ID. Monthly read budget: 1000 in Under budget? (change it to your plan).",
+    "height": 300,
+    "width": 500
+   },
+   "id": "8a5dc674-63e4-4e7c-8745-fcd406f76508",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -320
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 15
+      }
+     ]
+    }
+   },
+   "id": "87e33072-24f2-4a89-a7a3-784a083435d5",
+   "name": "Every 15 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select coalesce(sum(units), 0)::int as used from api_budget where api = 'x_read' and at >= date_trunc('month', now());",
+    "options": {}
+   },
+   "id": "80c8b8f1-a936-4a81-9621-25d5a84b39cb",
+   "name": "X reads this month",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "5a7c6046-32cb-4372-b900-caf2d75fb6d8",
+       "leftValue": "={{ $json.used }}",
+       "rightValue": 1000,
+       "operator": {
+        "type": "number",
+        "operation": "lt"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "b981f3d4-f5d3-4d40-a914-6d701cb8ebf6",
+   "name": "Under budget?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "bc7489fe-54f9-40ef-bf7a-5889ce12a235",
+   "name": "Budget reached: skip",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    660,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select item_id from inbox where platform = 'x' order by received_at desc limit 1;",
+    "options": {}
+   },
+   "id": "68dd5390-86dc-439f-9b79-4058989388c5",
+   "name": "Last mention stored",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    -54
+   ],
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://api.x.com/2/users/YOUR_X_USER_ID/mentions?max_results=20&tweet.fields=created_at,author_id,conversation_id&expansions=author_id&user.fields=username{{ $json.item_id ? '&since_id=' + $json.item_id : '' }}",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "options": {}
+   },
+   "id": "86c88b92-5b3b-4c00-b00a-802f83770728",
+   "name": "X mentions",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "insert into api_budget (api, units) values ('x_read', $1);",
+    "options": {
+     "queryReplacement": "={{ [ $json.meta?.result_count || 0 ] }}"
+    }
+   },
+   "id": "1f181c47-cdaa-49ed-9b1e-2189b27c3e72",
+   "name": "Log reads",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    1100,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const res = $('X mentions').first().json;\nconst users = Object.fromEntries((res.includes?.users || []).map(u => [u.id, u.username]));\nreturn (res.data || []).map(t => ({ json: {\n  platform: 'x', kind: 'mention', item_id: t.id, thread_id: t.conversation_id, author_handle: users[t.author_id] || t.author_id,\n  text: t.text, source_link: `https://x.com/i/web/status/${t.id}`, received_at: t.created_at, last_customer_msg_at: t.created_at } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "274140e5-32a7-42fe-8a28-79bb489067a2",
+   "name": "One shape",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_HANDLE_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "32273635-99b8-48c0-86ac-e990b63f8d42",
+   "name": "SUB · Social inbox · handle",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    1540,
+    -54
+   ]
+  }
+ ],
+ "connections": {
+  "Every 15 minutes": {
+   "main": [
+    [
+     {
+      "node": "X reads this month",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "X reads this month": {
+   "main": [
+    [
+     {
+      "node": "Under budget?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Under budget?": {
+   "main": [
+    [
+     {
+      "node": "Last mention stored",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Budget reached: skip",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Last mention stored": {
+   "main": [
+    [
+     {
+      "node": "X mentions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "X mentions": {
+   "main": [
+    [
+     {
+      "node": "Log reads",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Log reads": {
+   "main": [
+    [
+     {
+      "node": "One shape",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One shape": {
+   "main": [
+    [
+     {
+      "node": "SUB · Social inbox · handle",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

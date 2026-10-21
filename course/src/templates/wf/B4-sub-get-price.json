@@ -1,0 +1,134 @@
+{
+  "name": "SUB · Get price (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Get price\nLesson Boss 4 (from 4.2). The get_price tool: input product (string), one product per call. Reads Price_List, matches by aliases (Boss 3 matching) and returns ONE small item:\n- found: {\"found\": true, \"name\", \"unit\", \"price\", \"stock\"}\n- not found: {\"found\": false, \"suggestions\": [...]}\n- sheet down: {\"error\": \"Price list unavailable, try again later\"}\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID.\nPrice_List columns: sku, name, unit, price, stock, aliases, active.\n\nTest it alone (pin an input of {\"product\": \"tomato\"}): try tomato, big tatashe, pepper, yam.",
+        "height": 440,
+        "width": 420
+      },
+      "id": "7a292ce4-d4cb-4a50-85a6-eddfd3ffa6d3",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1086ec49-3131-4331-92a8-25a8044b5585",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Price_List",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "b0fbf869-626f-4e42-9f94-b2f520d082a6",
+      "name": "Price_List",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input from the agent: one product, as the customer wrote it.\nconst trig = $('When Executed by Another Workflow').first().json;\nconst s = String(trig.product ?? trig.query ?? '').toLowerCase().trim();\nconst products = $('Price_List').all().map(i => i.json).filter(p => p.active !== 'no');\n\n// Boss 3 matching: a product matches when one of its aliases appears in the words.\nconst hits = products.filter(p =>\n  String(p.aliases).toLowerCase().split(',').map(a => a.trim()).some(a => a && s.includes(a)));\n\nif (hits.length === 1) {\n  const p = hits[0];\n  return [{ json: { found: true, name: p.name, unit: p.unit, price: Number(p.price), stock: Number(p.stock) } }];\n}\n\n// Not found (or ambiguous): never return nothing. Suggest products that share a word.\n// Words that mean more than one product (e.g. \"pepper\") are listed here on purpose.\nconst GROUPS = { pepper: ['Tatashe pepper', 'Rodo'] };\nconst words = s.split(/\\s+/).filter(x => x.length >= 3);\nlet suggestions = hits.map(p => p.name);\nfor (const w of words) {\n  if (GROUPS[w]) suggestions.push(...GROUPS[w]);\n  for (const p of products) {\n    if (String(p.name).toLowerCase().includes(w)) suggestions.push(p.name);\n  }\n}\nsuggestions = [...new Set(suggestions)].slice(0, 4);\nreturn [{ json: { found: false, suggestions } }];"
+      },
+      "id": "2d8bbedb-14a2-47d5-8016-a67519874a70",
+      "name": "Match product",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2f6d456-d8ae-412d-a380-3d9398743623",
+              "name": "error",
+              "value": "Price list unavailable, try again later",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e6a69f68-c03e-48f2-81c2-954abcd849cf",
+      "name": "Return error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Price_List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price_List": {
+      "main": [
+        [
+          {
+            "node": "Match product",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "4.2",
+  "items": [
+    {
+      "file": "4-2-sub-get-price.json",
+      "name": "SUB · Get price",
+      "what": "Sub-workflow behind get_price: matches one product by aliases in Price_List and returns a small found / not-found-with-suggestions / error result.",
+      "setup": [
+        "Make sure your sheet has a Price_List tab with columns sku, name, unit, price, stock, aliases, active (the Boss 3 sheet).",
+        "Create (or reuse) a Google Sheets OAuth2 credential and select it in Price_List.",
+        "Replace YOUR_SHEET_ID in Price_List with your sheet's ID.",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Pin test data on the trigger such as {\"product\": \"big tatashe\"} and execute: you should get found: true, Tatashe pepper, 9000. Then try \"pepper\" (found: false with Tatashe pepper and Rodo as suggestions) and \"yam\" (found: false)."
+    },
+    {
+      "file": "4-2-quote-agent.json",
+      "name": "HL · Quote agent (4.2)",
+      "what": "The 4.1 agent with get_price and a calculator added, plus the lesson's price, arithmetic and delivery rules in the system message.",
+      "setup": [
+        "Import SUB · Get price and SUB · Get FAQ (4.1) first and save them.",
+        "Create an OpenAI credential and select it in Chat model. Replace YOUR_MODEL with the model you use.",
+        "In get_price, replace YOUR_GET_PRICE_WORKFLOW_ID by choosing SUB · Get price from the list.",
+        "In get_faq, replace YOUR_GET_FAQ_WORKFLOW_ID by choosing SUB · Get FAQ from the list.",
+        "Open Settings → Error workflow and choose HL · Error alerts."
+      ],
+      "test": "In the chat, ask \"How much for 3 crates of tomatoes and 2 bags of tatashe delivered to Bodija?\": the log should show two get_price calls and one calculator call, and the answer should be ₦55,500 with free delivery. Then ask \"2 baskets of pepper\": it should ask whether you mean rodo or tatashe.",
+      "walk": {
+        "title": "Build it: exact quotes, every time",
+        "sample": "Chat: How much for 3 crates of tomatoes and 2 bags of tatashe delivered to Bodija?",
+        "steps": [
+          {"at": null, "say": "We take the 4.1 FAQ agent and give it two new tools: one to look up prices, one to do the sums. SUB Get price is already built and tested on its own.", "show": ["Import SUB · Get price and SUB · Get FAQ first"]},
+          {"at": "When chat message received", "say": "Same chat trigger as before, so you can test quotes right inside the editor.", "show": ["Chat Trigger", "Response Mode: When Last Node Finishes"], "data": "chatInput: How much for 3 crates…"},
+          {"at": "Quote agent", "say": "The agent keeps all the 4.1 rules. We add new ones: call get_price for every product before giving any number, and always use the calculator for totals.", "show": ["Prices: always call get_price for every product", "Arithmetic: always use the calculator for totals"]},
+          {"at": "Quote agent", "say": "The delivery rule is written out once: one thousand five hundred naira, free from thirty thousand. And if a product isn't found, the agent must ask which one they mean.", "show": ["Delivery: ₦1,500, free when goods total ≥ ₦30,000", "If get_price returns found: false, ask, using suggestions", "Max Iterations: 5"]},
+          {"at": "Chat model", "say": "The brain is unchanged. It reads every tool's name and description on each call and picks what to do next.", "show": ["OpenAI Chat Model", "Model: YOUR_MODEL"]},
+          {"at": "get_faq", "say": "get_faq stays, for hours, delivery days and payment questions. It still reads the FAQ sheet and nothing else.", "show": ["Workflow: SUB · Get FAQ"]},
+          {"at": "get_price", "say": "Now the price tool, a Call n8n Workflow tool pointing at SUB Get price. Your tested matching code does the lookup, so the agent can't invent a price even if it tries.", "show": ["Call n8n Workflow tool", "Name: get_price", "Workflow: SUB · Get price"]},
+          {"at": "get_price", "say": "The description says what it does, when to use it, what comes back, and what it's not for. That's the note the model chooses from.", "show": ["Use this … before giving any number.", "Returns found, name, unit, price in naira and stock.", "Don't use it for delivery fees."]},
+          {"at": "get_price", "say": "One input, product, described with examples. One product per call keeps each result small and clear.", "show": ["Input schema: product (string, required)", "one product per call, e.g. tatashe, ugu, ata rodo"], "data": "found: true · Tomatoes · crate · 12500"},
+          {"at": "calculator", "say": "Models are bad at sums, so money goes to the calculator. This template uses a small code tool that only accepts numbers and plus, minus, times, divide.", "show": ["Name: calculator", "Input: 3*12500 + 2*9000"], "data": "55500"},
+          {"at": "Error reply", "say": "If anything breaks, the error output still replies to the customer, and the error workflow tells Tolu.", "show": ["On Error: Continue (using error output)", "Settings → Error workflow: HL · Error alerts"]},
+          {"at": "Quote agent", "say": "Ask the Bodija question and read the trace. You want two get_price calls, one calculator call, and fifty five thousand five hundred naira with free delivery.", "show": ["get_price × 2 → calculator × 1", "37,500 + 18,000 = ₦55,500 · delivery free"], "data": "₦55,500 · free delivery"},
+          {"at": "Quote agent", "say": "Then try two baskets of pepper. Pepper is ambiguous, so the tool returns suggestions and the agent asks: rodo or tatashe?", "show": ["found: false", "suggestions: Tatashe pepper, Rodo"], "data": "1 question back"}
+        ],
+        "end": "Two lookups, one sum, zero naira difference from the price list: that's a quote you can trust."
+      }
+    }
+  ]
+}

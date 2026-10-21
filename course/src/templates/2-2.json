@@ -1,0 +1,131 @@
+{
+  "id": "2.2",
+  "items": [
+    {
+      "file": "2-2-readable-receipt.json",
+      "kind": "make",
+      "name": "HL · Readable receipt",
+      "what": "The 2.2 solved problem: for each new Orders row, one Google Sheets · Update a Row fills phone_clean (+234 format), first_name, delivery_day (next day, never a Sunday) and a readable receipt_text, all with functions inside the fields. 2 credits per order however many functions it uses. It reproduces the lesson's \"Hi Mrs!\" title bug on purpose; fixing it is the Silver mission.",
+      "build": [
+        "1 · Google Sheets › Watch New Rows: business Google connection; Spreadsheet = Harvest Lane; Sheet = Orders; Table contains headers = Yes; Limit = 10; start From now on.",
+        "2 · Google Sheets › Update a Row: same spreadsheet; Sheet = Orders; Row number = 1. Row number (the trigger's row number); leave A–N empty so the original columns are untouched, and fill only:",
+        "   phone_clean (column O) = {{if(substring(replace(1.phone; /[^0-9]/g; emptystring); 0; 1) = \"0\"; \"+234\" + substring(replace(1.phone; /[^0-9]/g; emptystring); 1; 20); \"+\" + replace(1.phone; /[^0-9]/g; emptystring))}}",
+        "   first_name (column P) = {{startcase(lower(get(split(trim(1.customer_name); \" \"); 1)))}}",
+        "   delivery_day (column Q) = {{if(formatDate(addDays(1.created_at; 1); \"d\") = \"0\"; formatDate(addDays(1.created_at; 2); \"dddd D MMM\"); formatDate(addDays(1.created_at; 1); \"dddd D MMM\"))}}",
+        "   receipt_text (column R) = Hi {{startcase(lower(get(split(trim(1.customer_name); \" \"); 1)))}}! Order {{1.order_id}} received. [new line] Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}} [new line] Delivery: {{if(formatDate(addDays(1.created_at; 1); \"d\") = \"0\"; formatDate(addDays(1.created_at; 2); \"dddd D MMM\"); formatDate(addDays(1.created_at; 1); \"dddd D MMM\"))}}, {{ifempty(1.delivery_window; \"time to be confirmed\")}}. [new line] Thank you for choosing Harvest Lane.",
+        "Arguments are separated by semicolons; emptystring is Make's keyword for \"\"; substring counts from 0, get() from 1; MM is month, mm is minutes, d is the weekday number (0 = Sunday).",
+        "Optional title fix (Silver mission): inside first_name, wrap trim(1.customer_name) as replace(trim(1.customer_name); /^(mr|mrs|miss|dr|chief)\\.?\\s+/i; emptystring) before split()."
+      ],
+      "setup": [
+        "In Make, set your organisation and profile time zone to Africa/Lagos before running anything with dates (2.2).",
+        "Orders tab layout the blueprints assume (row 1 = headers): A order_id, B created_at, C customer_id, D customer_name, E delivery_date, F delivery_fee, G status, H items_total, I total (the 0.4 columns), then J phone, K channel, L delivery_window, M customer_email, N payment_link. If your columns differ, open each Google Sheets module after import and re-pick the columns; the build list names every field.",
+        "Add four new headers to Orders: O phone_clean, P first_name, Q delivery_day, R receipt_text. The automation fills them in.",
+        "In Make: Scenarios → Create a new scenario → the three-dot menu at the bottom → Import Blueprint → choose this file.",
+        "Connect Google Sheets in module 1 and module 2 with the business Google account, pick the spreadsheet and the Orders tab in both, and choose From now on in module 1.",
+        "In module 2, check Row number is mapped to the trigger's row number and that the four formulas sit in columns O–R. Re-drop any field that shows empty after import.",
+        "Schedule it like 2.1 (hourly, 07:00–21:00), or keep it switched off and use Run once while you practise."
+      ],
+      "test": "Add a Saturday order (created_at on a Saturday) for \"  mrs ADEBAYO \", phone 0803 123 4567, total 26500, delivery_window afternoon, and Run once. The row gets phone_clean +2348031234567, delivery_day Monday 12 Oct style (never Sunday) and the receipt \"Hi Mrs! Order HL-0061 received. Total: ₦26,500. Delivery: Monday …, afternoon.\" Add a Friday order and one with a blank delivery_window (it says \"time to be confirmed\"). Each order costs 2 credits: the trigger and the one Update module.",
+      "walk": {
+        "title": "Build it: a receipt customers can actually read",
+        "sample": "Saturday order HL-0061 · \"  mrs ADEBAYO \" · 0803 123 4567 · total 26500 · afternoon",
+        "steps": [
+          {
+            "at": null,
+            "say": "Before anything with dates, set your Make time zone to Africa slash Lagos, or delivery days come out a day off.",
+            "show": [
+              "Organisation and profile time zone: Africa/Lagos"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "Same trigger as 2.1: Watch New Rows on the Orders tab, starting from now on.",
+            "show": [
+              "Google Sheets › Watch New Rows",
+              "Sheet: Orders · Limit: 10",
+              "Start: From now on"
+            ],
+            "data": "1 bundle · mrs ADEBAYO · 26500"
+          },
+          {
+            "at": "2",
+            "say": "We add just one more module, Update a Row, and point it at the trigger's own row number, so we write back to the same order.",
+            "show": [
+              "Google Sheets › Update a Row",
+              "Row number: {{1.`__ROW_NUMBER__`}}"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "We leave the original columns empty so nothing gets overwritten. Only the four new columns, O to R, get filled.",
+            "show": [
+              "Columns A–N: left empty",
+              "O phone_clean · P first_name",
+              "Q delivery_day · R receipt_text"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "For the phone, strip everything that isn't a digit, then swap a leading zero for plus two three four. One format, so one customer never becomes three.",
+            "show": [
+              "replace(1.phone; /[^0-9]/g; emptystring)",
+              "starts with \"0\" → \"+234\" + the rest"
+            ],
+            "data": "+2348031234567"
+          },
+          {
+            "at": "2",
+            "say": "For the first name: trim, split on the space, take item one, then tidy the case. Remember, get counts from one in Make.",
+            "show": [
+              "startcase(lower(get(split(trim(1.customer_name); \" \"); 1)))"
+            ],
+            "data": "Mrs"
+          },
+          {
+            "at": "2",
+            "say": "Delivery is the next day, unless that's a Sunday, when it moves to Monday. The little d token gives the weekday number, and zero means Sunday.",
+            "show": [
+              "if(formatDate(addDays(1.created_at; 1); \"d\") = \"0\"; …)",
+              "format: \"dddd D MMM\""
+            ],
+            "data": "Monday 12 Oct"
+          },
+          {
+            "at": "2",
+            "say": "The receipt mixes plain text with formulas. The naira sign and commas are for people only; the total column keeps a plain number you can sum.",
+            "show": [
+              "Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}",
+              "{{ifempty(1.delivery_window; \"time to be confirmed\")}}"
+            ],
+            "data": "Total: ₦26,500"
+          },
+          {
+            "at": "2",
+            "say": "Watch the separators: Make uses semicolons between arguments, and emptystring for an empty value. Commas make the formula invalid.",
+            "show": [
+              "if(a; b; c), not if(a, b, c)",
+              "MM = month · mm = minutes"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Run once with a Saturday order. Notice the receipt says Hi Mrs. That's the title bug, and realistic test names are how you catch it before customers do.",
+            "show": [
+              "Fix: replace(…; /^(mr|mrs|miss|dr|chief)\\.?\\s+/i; emptystring)"
+            ],
+            "data": "Hi Mrs! Order HL-0061 received."
+          },
+          {
+            "at": "2",
+            "say": "Count the credits: the trigger and one update, two credits per order, however many functions you used.",
+            "show": [
+              "2 credits per order"
+            ],
+            "data": "functions cost nothing"
+          }
+        ],
+        "end": "Run it with a Saturday order, a Friday order and a blank delivery window, and check no receipt ever names a Sunday."
+      }
+    }
+  ]
+}

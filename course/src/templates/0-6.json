@@ -1,0 +1,18 @@
+{"id": "0.6", "items": [], "walk": {
+  "title": "Solve it: the leaked key, and closing every open door",
+  "sample": "Leaked AI key sk-live-8f2a… · a former rider who can still edit Orders · Harvest Lane's tools",
+  "steps": [
+    {"at": null, "say": "Tolu's AI key is public and being used. In the first ten minutes, Nodo revokes it and pastes a new one into the single credential the automations use. Revoke first, investigate after.", "show": ["First 10 min: revoke → replace", "Deleting the screenshot is not enough"]},
+    {"at": "1", "say": "Then we find every other open door with an access register: one sheet listing every tool, who or what has access, at what level, and where its secret lives.", "show": ["tool · account_used · person_or_app", "access_level · secret_stored_in · 2fa", "last_reviewed"]},
+    {"at": "1", "say": "We build it with the rules from Module 0.4: one header row, one row per access. That makes it easy to filter by person when someone leaves.", "show": ["One row = one person or app on one tool"]},
+    {"at": "1", "say": "Every tool runs through one business account, not Tolu's personal one. Tolu owns the Orders sheet, with two-factor on.", "show": ["Google Sheets · Orders · ops@harvestlane", "Tolu · Owner · 2fa TRUE"]},
+    {"at": "1", "say": "The former rider is gone. Riders now only see a separate today's deliveries file, as viewers, with no customer data in it. That's least privilege.", "show": ["Rider team · Viewer", "Separate \"Today's deliveries\" file"]},
+    {"at": "1", "say": "The new AI key lives only in the Zapier connection, with a ten dollar monthly cap, so the next leak is a small problem instead of a four hundred dollar one.", "show": ["AI provider · Zapier connection", "API key, $10 monthly cap", "Stored in: Zapier connection only"]},
+    {"at": "1", "say": "Paystack is still being built, so Make holds the test secret key in its keychain. Only Tolu switches anything to live.", "show": ["Paystack · Make scenario", "Test secret key · Make keychain"], "data": "4 rows · reviewed 2026-10-09"},
+    {"at": "2", "say": "Now the one-page policy, short enough that staff actually read it. First, keys and passwords: keys live only in the platform or the password manager, never in chats, sheets or AI tools.", "show": ["1. Keys only in platform or password manager", "2. Never in chats, sheets, docs, AI, screenshots", "3. Build with test keys"]},
+    {"at": "2", "say": "Every provider gets a spending cap and an alert, and two-factor is on for email, automation tools, AI providers and banking.", "show": ["4. Monthly cap and alert on every provider", "5. 2FA everywhere"]},
+    {"at": "2", "say": "Access goes to named people at the lowest level, and leavers lose it the same day. Customer data is collected only for orders, and only needed fields go to AI.", "show": ["6–8. Named people, same-day removal, quarterly review", "9–12. Minimum data, stated purpose, 7-day replies"]},
+    {"at": "2", "say": "And the five words to remember if something leaks: revoke, replace, check usage, tell Tolu, fix the cause.", "show": ["Revoke first → replace → check usage", "→ tell Tolu → fix the cause"]}
+  ],
+  "end": "One register, one page of rules: the next leak becomes a ten-minute fix instead of a four hundred dollar bill."
+}}

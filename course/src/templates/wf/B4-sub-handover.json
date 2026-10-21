@@ -1,0 +1,475 @@
+{
+  "name": "SUB · Hand-over to Tolu (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Hand-over to Tolu\nBoss 4, D6. The handover_to_tolu tool. Inputs from the agent: wants, tried, suggested, issue_key; from the trigger: chat_id, customer_name, is_eval.\n1. Builds the three-line summary and the reply time (within 30 minutes in working hours, otherwise by 9 a.m.).\n2. Marks the session handed_over in Handovers, which pauses the agent for that customer until Tolu sets status to released.\n3. Storm rule (curveball 3): more than five hand-overs for the same issue in 30 minutes → one group summary to Tolu, then silence for that issue.\n\n**Credentials:** Google Sheets OAuth2; Telegram API.\n**Replace:** YOUR_SHEET_ID (2 nodes); YOUR_TOLU_CHAT_ID (2 nodes).\nHandovers columns: session, status, issue_key, summary, at.",
+        "height": 500,
+        "width": 460
+      },
+      "id": "7ee8b13f-e81b-47d1-96d0-23e22fd4457b",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e2566565-9c05-4925-8f65-c409290a3f2e",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Handovers",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "10bc02e9-85a0-49d9-835c-a760ff8f8538",
+      "name": "Recent hand-overs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Who, what, what's been tried; reply time by the hour; storm grouping (curveball 3).\nconst t = $('When Executed by Another Workflow').first().json;\nconst now = $now.setZone('Africa/Lagos');\nconst working = now.weekday <= 6 && now.hour >= 8 && now.hour < 18;\nconst when = working ? 'within 30 minutes' : (now.hour < 8 ? 'by 9 a.m. today' : 'by 9 a.m. tomorrow');\nconst issue = String(t.issue_key || 'other').toLowerCase().trim();\nconst since = now.minus({ minutes: 30 }).toISO();\n// Hand-overs for the same issue in the last 30 minutes, including this one.\nconst recent = $('Recent hand-overs').all().map(i => i.json)\n  .filter(r => r.issue_key === issue && Date.parse(String(r.at)) >= Date.parse(since) && r.session !== `tg-${t.chat_id}`).length + 1;\nconst mode = recent <= 5 ? 'individual' : recent === 6 ? 'group_summary' : 'grouped_silent';\nconst summary = `🙋 Hand-over · ${t.customer_name || 'Customer'} (tg-${t.chat_id}) · ${now.toFormat('HH:mm')}\\n` +\n  `Wants: ${t.wants}\\nTried: ${t.tried}\\nSuggested: ${t.suggested || 'reply ' + when}`;\nconst group = `🌧 ${recent} customers in 30 min, all \"${issue}\". Individual alerts paused for this issue. ` +\n  `Open the Handovers sheet, then approve one honest status message for them all.`;\nreturn [{ json: { session: `tg-${t.chat_id}`, issue_key: issue, summary, group, mode, when,\n  is_eval: String(t.is_eval) === 'true',\n  customer_message: `I've passed this to Tolu with all the details. She'll reply ${when}.` } }];"
+      },
+      "id": "5d320ccd-6f58-4f9c-8144-f2768f3c15b6",
+      "name": "Summary and timing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "bf8a75b3-7ecc-4ee8-ae56-ba304d53ba54",
+              "leftValue": "={{ $json.is_eval }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c02ff548-c0e8-4477-8b80-a53ac4062f8d",
+      "name": "Evaluation run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Handovers",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session": "={{ $json.session }}",
+            "status": "handed_over",
+            "issue_key": "={{ $json.issue_key }}",
+            "summary": "={{ $json.summary }}",
+            "at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "session"
+          ],
+          "schema": [
+            {
+              "id": "session",
+              "displayName": "session",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue_key",
+              "displayName": "issue_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "at",
+              "displayName": "at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "de4bdf44-f5da-49d7-8a98-19adc2b25f7a",
+      "name": "Mark handed over",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        100
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "ccb3ecdb-a883-4b32-9b44-f3607fbcb30c",
+                    "leftValue": "={{ $('Summary and timing').item.json.mode }}",
+                    "rightValue": "individual",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "individual"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "fdb0b2d4-853c-46ee-b1e5-ab2ae616f764",
+                    "leftValue": "={{ $('Summary and timing').item.json.mode }}",
+                    "rightValue": "group_summary",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "group_summary"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "1a196185-e3fd-47dd-abdc-6aa99365738b",
+                    "leftValue": "={{ $('Summary and timing').item.json.mode }}",
+                    "rightValue": "grouped_silent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "grouped_silent"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "965e80f0-561c-499b-9599-90587d90acf0",
+      "name": "Alert mode",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TOLU_CHAT_ID",
+        "text": "={{ $('Summary and timing').item.json.summary }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "75b1a261-3983-47f5-8c42-ce8758221d45",
+      "name": "Send summary to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TOLU_CHAT_ID",
+        "text": "={{ $('Summary and timing').item.json.group }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "15f76efb-9073-47d6-af32-f56ea334fc48",
+      "name": "Send group summary to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1878c27e-3061-49b7-9b41-cdef770be9c3",
+              "name": "handed_over",
+              "value": "true",
+              "type": "boolean"
+            },
+            {
+              "id": "53d85941-f7ff-4129-837c-5f402a626700",
+              "name": "customer_message",
+              "value": "={{ $('Summary and timing').item.json.customer_message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5924ded8-c141-46ca-9972-5b3abd91c96d",
+      "name": "Return to agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1560,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Releasing a customer\nTolu sets status to released in the Handovers sheet when she's done, and Sage Desk replies to that customer again.\n\nEvaluation runs skip the sheet and Telegram, so tests never wake Tolu.",
+        "height": 200,
+        "width": 320
+      },
+      "id": "ea9df41a-862a-4483-a1ba-aa1030f6a5fe",
+      "name": "Sticky Note 10",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Recent hand-overs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent hand-overs": {
+      "main": [
+        [
+          {
+            "node": "Summary and timing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary and timing": {
+      "main": [
+        [
+          {
+            "node": "Evaluation run?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation run?": {
+      "main": [
+        [
+          {
+            "node": "Return to agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark handed over",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark handed over": {
+      "main": [
+        [
+          {
+            "node": "Alert mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert mode": {
+      "main": [
+        [
+          {
+            "node": "Send summary to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send group summary to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send summary to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Return to agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send group summary to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Return to agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

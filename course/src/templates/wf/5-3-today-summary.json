@@ -1,0 +1,205 @@
+{
+ "name": "HL · Listening post · 18:00 summary",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Listening post: 18:00 summary (Lesson 5.3)\nItems with level today (negative, confidence 0.8 or more, refund or late delivery) are sent to Tolu in one message at 6 p.m., then marked alerted.\n\nCredentials: Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 240,
+    "width": 460
+   },
+   "id": "9f33421d-f74a-4769-9c11-6f583802bf50",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -520,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 18 * * *"
+      }
+     ]
+    }
+   },
+   "id": "5dbbd76f-4fa3-41bc-a4c5-0abc236fcffb",
+   "name": "Daily 18:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "76b8cd37-5240-4531-86b1-6fc0433425c7",
+   "name": "Read Mentions",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const rows = $input.all().map(i => i.json).filter(r => r.level === 'today' && r.alerted !== 'yes');\nif (!rows.length) return [];\nconst lines = rows.map((r, i) => `${i + 1}. [${r.topic}] ${r.source}: \"${String(r.text).slice(0, 160)}\" ${r.link}`);\nreturn [{ json: { count: rows.length, summary: `Harvest Lane: ${rows.length} item(s) to handle today\\n\\n` + lines.join('\\n'), ids: rows.map(r => r.item_id) } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "952ee570-81fa-4b22-bbf4-21fc832c3668",
+   "name": "Today's items",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $json.summary }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "103cf635-2afc-40e8-89e5-a5313888091d",
+   "name": "Send summary",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "return $('Today\\'s items').first().json.ids.map(id => ({ json: { item_id: id, alerted: 'yes' } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "5472fec2-b377-442c-a655-288353c2c646",
+   "name": "One item per ID",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "item_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "e0c36f09-79b5-41a2-af30-6ed78312ab54",
+   "name": "Mark alerted",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Daily 18:00": {
+   "main": [
+    [
+     {
+      "node": "Read Mentions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Mentions": {
+   "main": [
+    [
+     {
+      "node": "Today's items",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Today's items": {
+   "main": [
+    [
+     {
+      "node": "Send summary",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Send summary": {
+   "main": [
+    [
+     {
+      "node": "One item per ID",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item per ID": {
+   "main": [
+    [
+     {
+      "node": "Mark alerted",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

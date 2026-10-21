@@ -1,0 +1,104 @@
+{
+  "name": "SUB · Top sellers",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Top sellers\nLesson 4.7. Researcher tool get_top_sellers: units sold per product over the last 7 days, top 5, from Orders.\n\n**Credential:** Google Sheets OAuth2. **Replace:** YOUR_SHEET_ID.",
+        "height": 240,
+        "width": 380
+      },
+      "id": "8d1cc2f3-2c13-4095-9ade-0d10ddddd772",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "430890bd-b8c0-4357-95d4-2e84d3e3f746",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "d76d5023-9a6b-483b-9a5f-ebda7d93b021",
+      "name": "Read Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Top sellers over the last 7 days, from Orders.\nconst since = $now.setZone('Africa/Lagos').minus({ days: 7 }).toISO();\nconst qty = {};\nfor (const o of $input.all().map(i => i.json)) {\n  if (!o.created_at || String(o.created_at) < since) continue;\n  let lines = [];\n  try { lines = JSON.parse(o.items_json); } catch (e) { continue; }\n  for (const l of lines) qty[l.name] = (qty[l.name] || 0) + Number(l.qty || 0);\n}\nconst top = Object.entries(qty).sort((a, b) => b[1] - a[1]).slice(0, 5)\n  .map(([product, units]) => ({ product, units_sold: units, source: 'Harvest Lane Orders, last 7 days' }));\nreturn [{ json: { top_sellers: top } }];"
+      },
+      "id": "123ef825-e2a8-43ee-b058-fe1528e52cec",
+      "name": "Top 5 this week",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Read Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Orders": {
+      "main": [
+        [
+          {
+            "node": "Top 5 this week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

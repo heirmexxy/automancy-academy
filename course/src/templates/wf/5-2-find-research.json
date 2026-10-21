@@ -1,0 +1,1006 @@
+{
+ "name": "HL · Prospects · find, research, score, draft",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Prospects: find, research, score, draft (Lesson 5.2)\nGoogle Places Text Search (one call per area) -> read each website -> extract facts -> verify the quote in code -> score in code from the ICP sheet -> AI draft -> lint in code -> Prospects sheet (status drafted). Nothing is sent here.\n\nSheets (YOUR_SHEET_ID):\n- ICP: rule, points (rating_4 20, reviews_100 20, delivery 25, office_lunch 15, in_zone 20)\n- Prospects: place_id, status, fit_score, reasons, fact, fact_source, draft, subject, business_email, approved_at, sent_at, followup_sent_at, reply_type\n- Manual list: place_id, reason, date\nNo copied Google data: only the place ID is stored.\n\nCredentials: Header Auth \"Google Places key\" (Name X-Goog-Api-Key, Value your key) on Places Text Search; Google Sheets; OpenAI on both model nodes.\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL.\nSet a budget alert in Google Cloud before the first run.",
+    "height": 520,
+    "width": 540
+   },
+   "id": "fe80e436-a8e7-46cd-a9e1-f6d3cd31776a",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -600,
+    -420
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "a4e71851-5763-44ae-aa6a-5f768807de72",
+   "name": "Run prospect search",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "ICP",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "d4b2707f-66b2-4e57-ab59-92a3fec08069",
+   "name": "Read ICP",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "af5c5cd4-cecf-4b17-ac27-b9fd0409b092",
+   "name": "Read Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    440,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "2a4d69d9-b62f-4fe9-82e7-82855eb7a676",
+       "name": "areas",
+       "value": "={{ ['Bodija', 'Mokola', 'Ring Road', 'Akobo', 'Dugbe'] }}",
+       "type": "array"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "40e291a7-41ba-4c4b-82ee-9044b3228c05",
+   "name": "Areas",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "fieldToSplitOut": "areas",
+    "options": {}
+   },
+   "id": "56d95f42-b3bf-438b-8f88-f39bceaa5e4d",
+   "name": "One item per area",
+   "type": "n8n-nodes-base.splitOut",
+   "typeVersion": 1,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://places.googleapis.com/v1/places:searchText",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "X-Goog-FieldMask",
+       "value": "places.id,places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ textQuery: 'restaurants in ' + $json.areas + ', Ibadan', pageSize: 20 }) }}",
+    "options": {}
+   },
+   "id": "9a9ae0ea-8aa8-4837-bcdb-eb01939d4453",
+   "name": "Places Text Search",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "fieldToSplitOut": "places",
+    "options": {}
+   },
+   "id": "8f1bff30-447d-48e9-a034-a5311b04db4f",
+   "name": "One item per place",
+   "type": "n8n-nodes-base.splitOut",
+   "typeVersion": 1,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Only places with a website (the only allowed contact source) that we have not researched before.\nconst known = new Set($('Read Prospects').all().map(r => r.json.place_id).filter(Boolean));\nconst seen = new Set();\nconst out = [];\nfor (const item of $input.all()) {\n  const p = item.json;\n  if (!p.id || !p.websiteUri || known.has(p.id) || seen.has(p.id)) continue;\n  seen.add(p.id);\n  // Places content is used in memory for this run only; only place_id is written to the sheet.\n  out.push({ json: { place_id: p.id, name: p.displayName?.text || '', rating: p.rating || 0,\n    userRatingCount: p.userRatingCount || 0, websiteUri: p.websiteUri, formattedAddress: p.formattedAddress || '' } });\n}\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "53882397-92c6-471c-a02e-f6893af809d7",
+   "name": "New places with a website",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1540,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "batchSize": 1,
+    "options": {}
+   },
+   "id": "f86e2b6a-1f51-484e-977c-4a3e4461fc36",
+   "name": "One business at a time",
+   "type": "n8n-nodes-base.splitInBatches",
+   "typeVersion": 3,
+   "position": [
+    1760,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "3a225483-96f0-46eb-b700-7e7788201854",
+   "name": "Done: drafts wait for approval",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1980,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "={{ $json.websiteUri }}",
+    "options": {
+     "response": {
+      "response": {
+       "responseFormat": "text"
+      }
+     },
+     "timeout": 15000
+    }
+   },
+   "id": "da4c4784-7309-439e-8e28-0aa999180298",
+   "name": "Get home page",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1980,
+    90
+   ],
+   "onError": "continueRegularOutput"
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "={{ new URL('/menu', $('One business at a time').item.json.websiteUri).href }}",
+    "options": {
+     "response": {
+      "response": {
+       "responseFormat": "text"
+      }
+     },
+     "timeout": 15000
+    }
+   },
+   "id": "d97f43db-99b3-4459-b10a-af549f6386c3",
+   "name": "Get menu page",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2200,
+    90
+   ],
+   "onError": "continueRegularOutput"
+  },
+  {
+   "parameters": {
+    "jsCode": "// Stands in for n8n's HTML node: turn the home and menu pages into plain text.\nconst strip = (h) => String(h || '')\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')\n  .replace(/\\s+/g, ' ').trim();\nconst home = strip($('Get home page').item.json.data);\nconst menu = strip($json.data);\nreturn { ...$('One business at a time').item.json, text: (home + ' ' + menu).trim() };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "8b45f54a-a506-4fa8-afbc-e1e1a962002c",
+   "name": "HTML",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2420,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "text": "={{ $json.text.slice(0, 12000) }}",
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"offers_delivery\": {\n      \"type\": \"boolean\"\n    },\n    \"office_lunch\": {\n      \"type\": \"boolean\"\n    },\n    \"business_email\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ],\n      \"description\": \"only an address published on the site\"\n    },\n    \"fact\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ],\n      \"description\": \"one specific, recent, true detail\"\n    },\n    \"fact_quote\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ],\n      \"description\": \"the exact words from the page\"\n    }\n  },\n  \"required\": [\n    \"offers_delivery\",\n    \"office_lunch\",\n    \"business_email\",\n    \"fact\",\n    \"fact_quote\"\n  ]\n}",
+    "options": {
+     "systemPromptTemplate": "You read a restaurant's own website text. Extract only what the page says. business_email must be an address published on the page, otherwise null. fact is one specific, recent, true detail about the business; fact_quote is the exact words from the page that prove it, copied character for character. If there is no such detail, return null for both. Never guess."
+    }
+   },
+   "id": "1c14d0e8-0723-4841-a7f0-12f9f89c051f",
+   "name": "Extract facts",
+   "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+   "typeVersion": 1,
+   "position": [
+    2640,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "96c175c1-3ee9-4fdf-a370-603b80a98ff9",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    2640,
+    288
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "return { ...$('HTML').item.json, ...$json.output, fact_source: $('HTML').item.json.websiteUri };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "229fbb66-ba5a-4c70-92bc-8344a56db0e5",
+   "name": "Facts",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2860,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const page = $('HTML').item.json.text.toLowerCase();\nconst q = ($json.fact_quote || '').toLowerCase().trim();\nconst verified = q.length > 12 && page.includes(q);\nreturn { ...$json, fact: verified ? $json.fact : null, fact_verified: verified };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "8cc9209b-d2ef-4ff8-a697-286dc442ddfc",
+   "name": "Verify fact",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    3080,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Same input, same score, every time. Points come from the ICP sheet (rule, points).\nconst icp = Object.fromEntries($('Read ICP').all().map(r => [String(r.json.rule).trim(), Number(r.json.points) || 0]));\nconst ZONE = ['bodija', 'mokola', 'ring road', 'akobo', 'dugbe'];\nconst p = $json;\nlet score = 0;\nconst reasons = [];\nconst add = (rule, ok, why) => { if (ok) { score += icp[rule] || 0; reasons.push(why); } };\nadd('rating_4', p.rating >= 4.0, `rating ${p.rating}`);\nadd('reviews_100', p.userRatingCount >= 100, `${p.userRatingCount} reviews`);\nadd('delivery', p.offers_delivery === true, 'offers delivery');\nadd('office_lunch', p.office_lunch === true, 'office lunches');\nconst inZone = ZONE.some(z => (p.formattedAddress || '').toLowerCase().includes(z));\nadd('in_zone', inZone, 'in delivery zone');\n// Disqualifiers rule a lead out whatever the score.\nlet route = 'draft';\nif (!inZone) route = 'skip';\nelse if (!p.business_email) route = 'manual';   // contact form or a call instead\nelse if (score < 60) route = 'skip';\nreturn { ...p, fit_score: score, reasons: reasons.join('; '), route };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "8a6a1034-03ce-4e43-a639-9d4ffc15c1f7",
+   "name": "Score (ICP)",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    3300,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "9da1fa2e-0b80-4a75-9194-bd878d373bc4",
+          "leftValue": "={{ $json.route }}",
+          "rightValue": "draft",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "draft"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "db5682f1-10a5-43d6-ab51-04e443c6707a",
+          "leftValue": "={{ $json.route }}",
+          "rightValue": "manual",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "manual"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "1147f78a-49f5-496e-84e9-650257c0babf",
+          "leftValue": "={{ $json.route }}",
+          "rightValue": "skip",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "skip"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "ef338a98-4417-4305-8015-9fef9a8bf9b1",
+   "name": "Route",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    3520,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Business: {{ $json.name }}\nVerified fact (may be empty): {{ $json.fact || '' }}\nArea: {{ $json.formattedAddress }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "Write the body of a short outreach email using exactly this template. Fill only [business] and [fact]. Change nothing else.\n\nHi [business] team,\n\nI saw that you [fact].\n\nHarvest Lane delivers farm-fresh tomatoes, peppers and greens to kitchens every morning, priced weekly with no minimum order. Would a free sample crate next Tuesday be useful?\n\nIf the verified fact is empty, replace the line 'I saw that you [fact].' with one general line about busy kitchens in their area. Never invent a detail, compliment, branch, award or number. Do not add a signature or an opt-out line. Return only the email body."
+      }
+     ]
+    }
+   },
+   "id": "1928fed6-f68d-408f-8b3b-6a3e3de6f402",
+   "name": "Draft email",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    3740,
+    -36
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "78649995-f906-4604-999b-1ade7f54d247",
+   "name": "OpenAI Chat Model (draft)",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    3740,
+    162
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Code enforces what the AI can't be trusted with. It appends identity and opt-out itself.\nconst p = $('Score (ICP)').item.json;\nconst body = String($json.text || '').trim();\nconst problems = [];\nconst words = body.split(/\\s+/).filter(Boolean).length;\nif (words > 120) problems.push(`too long (${words} words)`);\nif ((body.match(/\\?/g) || []).length !== 1) problems.push('must ask exactly one question');\nconst spam = ['guarantee', 'act now', '100%', 'winner', 'urgent', 'cheapest', 'risk-free', '!!!', 'FREE'];\nfor (const s of spam) { if (s === 'FREE' ? body.includes('FREE') : body.toLowerCase().includes(s)) problems.push(`spam word: ${s}`); }\nif (/\\[(business|fact)\\]/i.test(body)) problems.push('unfilled placeholder');\nif (!p.fact && /i saw that you/i.test(body)) problems.push('personal line without a verified fact');\nconst draft = body + '\\n\\nTolu Adebayo\\nHarvest Lane, Bodija, Ibadan\\n\\nNot interested? Reply STOP and we will never email you again.';\nreturn {\n  place_id: p.place_id,\n  status: problems.length ? 'needs_edit' : 'drafted',\n  fit_score: p.fit_score,\n  reasons: p.reasons + (problems.length ? ' | lint: ' + problems.join(', ') : ''),\n  fact: p.fact || '',\n  fact_source: p.fact ? p.fact_source : '',\n  subject: `Fresh produce for ${p.name}, delivered every morning`,\n  draft,\n  business_email: String(p.business_email).trim().toLowerCase(),\n};\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "b2cebcfa-a0e5-4a3b-adc4-7e7cb8ca3e67",
+   "name": "Lint draft",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    3960,
+    -36
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "appendOrUpdate",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "place_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "9a4755f4-309f-4eb8-ac3c-060157310b75",
+   "name": "Save draft to Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    4180,
+    -36
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Manual list",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "place_id": "={{ $json.place_id }}",
+      "reason": "no published business email: use the contact form or call",
+      "date": "={{ $now.toISODate() }}"
+     },
+     "matchingColumns": [],
+     "schema": [
+      {
+       "id": "place_id",
+       "displayName": "place_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "reason",
+       "displayName": "reason",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "date",
+       "displayName": "date",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "20ecd83a-8162-4a03-a071-c415202bb26c",
+   "name": "Add to Manual list",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    3740,
+    324
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "appendOrUpdate",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "place_id": "={{ $json.place_id }}",
+      "status": "not_a_fit",
+      "fit_score": "={{ $json.fit_score }}",
+      "reasons": "={{ $json.reasons }}"
+     },
+     "matchingColumns": [
+      "place_id"
+     ],
+     "schema": [
+      {
+       "id": "place_id",
+       "displayName": "place_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "status",
+       "displayName": "status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "fit_score",
+       "displayName": "fit_score",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "reasons",
+       "displayName": "reasons",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "2f5f0525-b21b-4883-a169-4cbd0b3c1a04",
+   "name": "Mark not a fit",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    3740,
+    503
+   ]
+  },
+  {
+   "parameters": {
+    "amount": 2,
+    "unit": "seconds"
+   },
+   "id": "9ecddd3c-daf4-4c9a-8471-74fb8c9e853c",
+   "name": "Wait 2 seconds",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    4400,
+    180
+   ],
+   "webhookId": "8019eca1-b0fc-4537-b2cf-7a444b5f4868"
+  },
+  {
+   "parameters": {
+    "content": "## Field mask = price\nAsk only for the fields you need. Rating, review count and website sit in a higher-priced field group than the ID alone: check which group this mask triggers on Google's pricing page. Never use *.",
+    "height": 200,
+    "width": 360
+   },
+   "id": "8838971b-7289-49a9-8803-84846ea40442",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    1000,
+    -420
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## The most important node\nVerify fact keeps a fact only if its exact quote appears in the page text. No verified fact -> the draft uses a general line, never an invented one.",
+    "height": 180,
+    "width": 360
+   },
+   "id": "48d55a0d-af06-4e55-a26a-ed2c8832e407",
+   "name": "Note 3",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    2900,
+    -200
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Menu page\nGet menu page guesses /menu. If a site uses another address (for example /our-menu), change the URL. Both page fetches continue on error, so a missing page doesn't stop the run.",
+    "height": 200,
+    "width": 360
+   },
+   "id": "bee7d6b0-264c-49c4-8a4b-a3fcc91e4601",
+   "name": "Note 4",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    2050,
+    400
+   ]
+  }
+ ],
+ "connections": {
+  "Run prospect search": {
+   "main": [
+    [
+     {
+      "node": "Read ICP",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read ICP": {
+   "main": [
+    [
+     {
+      "node": "Read Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Prospects": {
+   "main": [
+    [
+     {
+      "node": "Areas",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Areas": {
+   "main": [
+    [
+     {
+      "node": "One item per area",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item per area": {
+   "main": [
+    [
+     {
+      "node": "Places Text Search",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Places Text Search": {
+   "main": [
+    [
+     {
+      "node": "One item per place",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item per place": {
+   "main": [
+    [
+     {
+      "node": "New places with a website",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "New places with a website": {
+   "main": [
+    [
+     {
+      "node": "One business at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One business at a time": {
+   "main": [
+    [
+     {
+      "node": "Done: drafts wait for approval",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Get home page",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get home page": {
+   "main": [
+    [
+     {
+      "node": "Get menu page",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get menu page": {
+   "main": [
+    [
+     {
+      "node": "HTML",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "HTML": {
+   "main": [
+    [
+     {
+      "node": "Extract facts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Extract facts": {
+   "main": [
+    [
+     {
+      "node": "Facts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Facts": {
+   "main": [
+    [
+     {
+      "node": "Verify fact",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Verify fact": {
+   "main": [
+    [
+     {
+      "node": "Score (ICP)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Score (ICP)": {
+   "main": [
+    [
+     {
+      "node": "Route",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Extract facts",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Route": {
+   "main": [
+    [
+     {
+      "node": "Draft email",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Add to Manual list",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Mark not a fit",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model (draft)": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Draft email",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Draft email": {
+   "main": [
+    [
+     {
+      "node": "Lint draft",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Lint draft": {
+   "main": [
+    [
+     {
+      "node": "Save draft to Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Save draft to Prospects": {
+   "main": [
+    [
+     {
+      "node": "Wait 2 seconds",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Add to Manual list": {
+   "main": [
+    [
+     {
+      "node": "Wait 2 seconds",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark not a fit": {
+   "main": [
+    [
+     {
+      "node": "Wait 2 seconds",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Wait 2 seconds": {
+   "main": [
+    [
+     {
+      "node": "One business at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,118 @@
+{
+  "id": "3.5",
+  "items": [
+    {
+      "file": "3-5-customers-from-orders.json",
+      "name": "HL · Customers from orders",
+      "what": "Turns every order row into one row per real customer (phone normalised to +234, latest name, order count, lifetime value, first and last order, rank) with a single Code node, sending rows with no phone to a Fix list.",
+      "setup": [
+        "Create one Google Sheet with tabs Orders (order_id, name, phone, total, date as YYYY-MM-DD), Fix list (order_id, name, phone, total, date) and Customers (phone, name, orders, lifetime_value, first_order, last_order, rank). Test data only.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" and select it in Orders, Fix list and Customers.",
+        "Replace YOUR_SHEET_ID in all three Google Sheets nodes with your sheet's ID.",
+        "Orders has the lesson's 12 sample rows pinned (with fake phone numbers). Keep them for the first run; unpin Orders to read your own sheet.",
+        "When it works, replace the Manual Trigger with a nightly Schedule Trigger and publish."
+      ],
+      "test": "Click Execute workflow with the pinned rows: IF sends 11 rows to Code and the Walk-in customer to Fix list; Code outputs 6 items ranked by lifetime_value, with Chef Tunde (+2348000000004) first on 164,000 from 3 orders and Mrs Adebayo merged into one customer with 3 orders and 73,500. The Customers sheet gets 6 rows; a second run updates them instead of adding more.",
+      "walk": {
+        "title": "Build it: one row per customer, ranked by value",
+        "sample": "12 sample order rows · messy names and phone formats · one Walk-in with no phone",
+        "steps": [
+          {
+            "at": "Manual Trigger",
+            "say": "We start with a Manual Trigger while we build. Later it becomes a nightly schedule.",
+            "show": [
+              "Manual Trigger (later: nightly Schedule Trigger)"
+            ]
+          },
+          {
+            "at": "Orders",
+            "say": "Read every order from the Orders tab and pin the output, so each test uses the same twelve rows.",
+            "show": [
+              "Google Sheets › Get Row(s) · Sheet: Orders",
+              "Output: pinned (12 sample rows)"
+            ],
+            "data": "12 items"
+          },
+          {
+            "at": "IF phone",
+            "say": "Code that silently skips data is a trap. So an IF in front checks for a phone number first.",
+            "show": [
+              "{{ $json.phone }} · String · is not empty"
+            ],
+            "data": "true 11 · false 1"
+          },
+          {
+            "at": "Fix list",
+            "say": "Rows with no phone go to the Fix list, so nothing disappears without a trace.",
+            "show": [
+              "Append Row · Sheet: Fix list"
+            ],
+            "data": "1 row · Walk-in"
+          },
+          {
+            "at": "Code",
+            "say": "One Code node replaces about ten. We compare items with each other, so the mode is Run Once for All Items.",
+            "show": [
+              "Language: JavaScript",
+              "Mode: Run Once for All Items",
+              "Read: $input.all()"
+            ]
+          },
+          {
+            "at": "Code",
+            "say": "First, one phone format for everyone. Keep the digits, then turn a leading zero or two three four into plus two three four. Otherwise one customer looks like three.",
+            "show": [
+              "String(p ?? '').replace(/\\D/g, '')",
+              "startsWith('0') → '+234' + d.slice(1)",
+              "startsWith('234') → '+' + d"
+            ],
+            "data": "0803 123 4567 → +2348031234567"
+          },
+          {
+            "at": "Code",
+            "say": "Then group by the clean phone, counting orders and adding totals. Totals can arrive as text, so we convert each one to a number first.",
+            "show": [
+              "byPhone[phone] ??= { phone, name, orders: 0, … }",
+              "c.lifetime_value += Number(o.total) || 0"
+            ]
+          },
+          {
+            "at": "Code",
+            "say": "ISO dates compare correctly as text, so first and last order need no library. The latest order also gives us the latest name.",
+            "show": [
+              "if (o.date < c.first_order) …",
+              "if (o.date > c.last_order) { … c.name = … }"
+            ]
+          },
+          {
+            "at": "Code",
+            "say": "Finally, sort by value, add a rank, and return a list of objects, each wrapped in json. That return shape is the one rule the Code node is strict about.",
+            "show": [
+              ".sort((a, b) => b.lifetime_value - a.lifetime_value)",
+              ".map((c, i) => ({ json: { ...c, rank: i + 1 } }))"
+            ],
+            "data": "6 items · Chef Tunde first · 164,000"
+          },
+          {
+            "at": "Customers",
+            "say": "Save to Customers with Append or Update, matching on phone, so tomorrow's run updates the same rows.",
+            "show": [
+              "Google Sheets › Append or Update Row",
+              "Sheet: Customers · Match on: phone"
+            ],
+            "data": "6 rows"
+          },
+          {
+            "at": "Customers",
+            "say": "Now the top ten customers is simply the first ten by rank, and every later workflow, including the agents in Track 4, can read this sheet.",
+            "show": [
+              "phone, name, orders, lifetime_value",
+              "first_order, last_order, rank"
+            ]
+          }
+        ],
+        "end": "Execute it with the twelve pinned rows and check you get six customers, Chef Tunde first, and one Walk-in row on the Fix list."
+      }
+    }
+  ]
+}

@@ -1,0 +1,582 @@
+{
+  "name": "GD·01 Find · sort replies",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·01 Replies (Boss 5 · D3)\nGmail Trigger on the outreach inbox. STOP is caught by a rule first (no AI needed); then a Text Classifier: interested, not now, stop, out of office, bounce, other.\nSTOP and bounces → suppression (all channels, forever). Interested → GD·08 CRM upsert + Telegram to Tolu with the booking link.\n\n**Credentials:** Gmail (outreach mailbox), Postgres, OpenAI, Telegram.\n**Replace:** YOUR_GD08_WORKFLOW_ID, YOUR_BOOKING_LINK, YOUR_TELEGRAM_CHAT_ID, YOUR_MODEL.",
+        "height": 300,
+        "width": 400
+      },
+      "id": "d7e40a4c-e88c-41b1-a065-c2b9a408ba96",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        },
+        "options": {}
+      },
+      "id": "68b39179-617e-46f8-910e-fdaaba6b459b",
+      "name": "Outreach inbox",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $json;\nconst from = String(j.from?.value?.[0]?.address || j.from?.text || j.From || '').toLowerCase().replace(/.*</, '').replace(/>.*/, '').trim();\nconst text = String(j.text || j.textPlain || j.snippet || '').split(/\\nOn .+ wrote:/)[0].trim().slice(0, 3000);\nconst subject = String(j.subject || j.Subject || '');\nconst bounce = /mailer-daemon|postmaster/.test(from) || /undeliverable|delivery status notification|address not found/i.test(subject);\nconst failedTo = bounce ? ((text.match(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g) || []).find(e => !/mailer-daemon|postmaster/.test(e)) || '') : '';\nreturn { json: { from: bounce ? failedTo.toLowerCase() : from, subject, text, threadId: j.threadId,\n  stop: /^\\s*(stop|unsubscribe|remove me|no more emails)\\b/i.test(text), bounce } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "a7a03f03-6154-453c-8241-e83e15784f6c",
+      "name": "Read reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT lead_id, company, email FROM leads WHERE lower(email) = $1 ORDER BY created_at DESC LIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.from ] }}"
+        }
+      },
+      "id": "8b496556-51b5-4a2c-904a-0ea7d6f99e6c",
+      "name": "Find lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "0784d7f2-d0df-4d99-83e5-54b4e78abf2f",
+              "leftValue": "={{ $json.lead_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "fa9b2395-1de4-405c-813b-fcd2f2178866",
+      "name": "Our prospect?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "eab22528-ed9b-4402-be3f-d87973f327f4",
+      "name": "Not a prospect: ignore",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e59c6050-9c43-4809-82ba-7469c1d60771",
+              "leftValue": "={{ $('Read reply').item.json.stop }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "f6169967-6c19-4f5e-a9a6-982138d5fba7",
+              "leftValue": "={{ $('Read reply').item.json.bounce }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2fc4f3bd-3041-4c82-b136-44a11c4ade87",
+      "name": "STOP or bounce by rule?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Read reply').item.json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "interested",
+              "description": "Wants a tasting, prices, a call or a meeting."
+            },
+            {
+              "category": "not now",
+              "description": "Polite no for now, maybe later, already has a supplier."
+            },
+            {
+              "category": "stop",
+              "description": "Asks not to be contacted again in any words."
+            },
+            {
+              "category": "out of office",
+              "description": "Automatic away or out-of-office reply."
+            },
+            {
+              "category": "bounce",
+              "description": "Delivery failure notice."
+            },
+            {
+              "category": "other",
+              "description": "Anything else."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e4e1b14-149f-404c-aa26-cf5b87e9a2e7",
+      "name": "Classify reply",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "6e965002-7957-4733-a16a-79207f36fcd9",
+      "name": "Classifier model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH s AS (\n  INSERT INTO suppression (value, channel, reason, at) VALUES (lower($2), 'all', $3, now())\n  ON CONFLICT (value) DO UPDATE SET reason = EXCLUDED.reason RETURNING value\n), u AS (UPDATE leads SET status = 'suppressed', reply_type = $3 WHERE lead_id = $1 RETURNING lead_id)\nINSERT INTO events (workflow, lead_id, event, detail) SELECT 'GD·01', lead_id, 'suppressed', jsonb_build_object('reason', $3) FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Find lead').item.json.lead_id, $('Find lead').item.json.email, $('Read reply').item.json.bounce ? 'bounce' : 'stop' ] }}"
+        }
+      },
+      "id": "6710c4a8-5b72-43f2-8980-f42d16b43494",
+      "name": "Suppress forever",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE leads SET reply_type = 'interested', status = 'replied' WHERE lead_id = $1 RETURNING lead_id)\nINSERT INTO events (workflow, lead_id, event, detail) SELECT 'GD·01', lead_id, 'reply', jsonb_build_object('type', 'interested', 'channel', 'outreach') FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Find lead').item.json.lead_id ] }}"
+        }
+      },
+      "id": "2c375fbd-d1bd-4b3e-b9d6-7bf6523da7b0",
+      "name": "Save: interested",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE leads SET reply_type = 'not now', status = 'replied' WHERE lead_id = $1 RETURNING lead_id)\nINSERT INTO events (workflow, lead_id, event, detail) SELECT 'GD·01', lead_id, 'reply', jsonb_build_object('type', 'not now', 'channel', 'outreach') FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Find lead').item.json.lead_id ] }}"
+        }
+      },
+      "id": "d81311aa-56db-4c7f-9f24-4a539d44f10a",
+      "name": "Save: not now",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        36
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE leads SET reply_type = 'out of office', status = 'replied' WHERE lead_id = $1 RETURNING lead_id)\nINSERT INTO events (workflow, lead_id, event, detail) SELECT 'GD·01', lead_id, 'reply', jsonb_build_object('type', 'out of office', 'channel', 'outreach') FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Find lead').item.json.lead_id ] }}"
+        }
+      },
+      "id": "213add16-4386-4c42-bec9-e39a4473e619",
+      "name": "Save: out of office",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE leads SET reply_type = 'other', status = 'replied' WHERE lead_id = $1 RETURNING lead_id)\nINSERT INTO events (workflow, lead_id, event, detail) SELECT 'GD·01', lead_id, 'reply', jsonb_build_object('type', 'other', 'channel', 'outreach') FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Find lead').item.json.lead_id ] }}"
+        }
+      },
+      "id": "28fc386c-12d3-479b-9aa4-c8393137bfd2",
+      "name": "Save: other",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        324
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "YOUR_GD08_WORKFLOW_ID",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "43af8807-6e30-4b7e-97bb-1d8273da0c8f",
+      "name": "CRM upsert (GD·08)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e327a2eb-de0f-4455-8b5a-e6e775297073",
+              "name": "lead_id",
+              "value": "={{ $('Find lead').item.json.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "34253a5c-34c8-4d47-9b2e-119be8b8683a",
+              "name": "company",
+              "value": "={{ $('Find lead').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "b0ca105c-3bf4-44ca-ace0-59b55cf03385",
+              "name": "email",
+              "value": "={{ $('Find lead').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "893161ed-8ab6-4385-bf55-4de25c46d107",
+              "name": "lead_source",
+              "value": "outreach",
+              "type": "string"
+            },
+            {
+              "id": "80774608-2ee1-4d6a-aede-bf5fe3f4914c",
+              "name": "consent",
+              "value": "unknown",
+              "type": "string"
+            },
+            {
+              "id": "ddbeb78f-2362-4963-8abb-0e45b07e35bb",
+              "name": "intent",
+              "value": "buying",
+              "type": "string"
+            },
+            {
+              "id": "69489488-7d8e-4ad7-96ec-5e4edff6ea6f",
+              "name": "asked_price_or_tasting",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "d873de54-12ef-4f05-8fc8-7a50cdfde208",
+              "name": "delivery_zone",
+              "value": "in",
+              "type": "string"
+            },
+            {
+              "id": "414c5844-8f6d-46dc-aba5-08c46f5f8eac",
+              "name": "business_type",
+              "value": "restaurant",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e04373da-0de0-412b-809d-038f98b1bad4",
+      "name": "Lead fields for CRM",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🔥 {{ $('Find lead').item.json.company }} replied: interested\n\"{{ $('Read reply').item.json.text.slice(0, 300) }}\"\nReply from the outreach inbox with your booking link: YOUR_BOOKING_LINK",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "869b5952-e954-4684-8cb3-9e1877911da5",
+      "name": "Tell Tolu: interested",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        -108
+      ]
+    }
+  ],
+  "connections": {
+    "Outreach inbox": {
+      "main": [
+        [
+          {
+            "node": "Read reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read reply": {
+      "main": [
+        [
+          {
+            "node": "Find lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find lead": {
+      "main": [
+        [
+          {
+            "node": "Our prospect?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Our prospect?": {
+      "main": [
+        [
+          {
+            "node": "STOP or bounce by rule?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not a prospect: ignore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STOP or bounce by rule?": {
+      "main": [
+        [
+          {
+            "node": "Suppress forever",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify reply",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify reply": {
+      "main": [
+        [
+          {
+            "node": "Save: interested",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save: not now",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Suppress forever",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save: out of office",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Suppress forever",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save: other",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save: interested": {
+      "main": [
+        [
+          {
+            "node": "Lead fields for CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead fields for CRM": {
+      "main": [
+        [
+          {
+            "node": "CRM upsert (GD·08)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM upsert (GD·08)": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu: interested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

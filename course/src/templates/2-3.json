@@ -1,0 +1,153 @@
+{
+  "id": "2.3",
+  "items": [
+    {
+      "file": "2-3-8pm-tomorrow-run.json",
+      "kind": "make",
+      "name": "HL · 8 p.m. tomorrow run",
+      "what": "The 2.3 solved problem: every evening at 20:00, Search Rows finds tomorrow's orders, a Not cancelled filter drops cancelled ones, and a router with additive routes puts deliverable orders on the rider list, emails unpaid customers a payment reminder, alerts Tolu on Telegram about orders over ₦50,000, and logs anything that matched nothing to Needs checking. The six test rows cost 8 credits.",
+      "build": [
+        "1 · Google Sheets › Search Rows: business Google connection; Spreadsheet = Harvest Lane; Sheet = Orders; Table contains headers = Yes; Filter = delivery_date (column E) Equal to {{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}; Limit = 100.",
+        "Filter on 1→2, label Not cancelled: status · Text operators: Not equal to (case insensitive) · Cancelled.",
+        "2 · Flow control › Router with four routes, in this order:",
+        "Filter on 2→3, label Rider list · Paid or standing: status Equal to (case insensitive) Paid, OR (new OR group) channel Equal to (case insensitive) standing.",
+        "3 · Google Sheets › Add a Row: Sheet = Deliveries; A delivery_date = {{1.delivery_date}}; B order_id = {{1.order_id}}; C customer_name = {{1.customer_name}}; D phone = {{1.phone}}; E delivery_window = {{1.delivery_window}}; F total = {{1.total}}; G status = {{1.status}}; H channel = {{1.channel}}.",
+        "Filter on 2→4, label Reminder · New and not standing: status Equal to (case insensitive) New AND channel Not equal to (case insensitive) standing.",
+        "4 · Gmail › Send an Email: To = {{1.customer_email}}; Subject = Harvest Lane · please pay for order {{1.order_id}}; Content = Hi {{1.customer_name}}, your Harvest Lane order {{1.order_id}} is due for delivery tomorrow. Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}. Please pay here so we can put it on the rider list: {{1.payment_link}}. Thank you!",
+        "Filter on 2→5, label Big order · total > 50000: total · Numeric operators: Greater than · 50000 (numeric, not text).",
+        "5 · Telegram Bot › Send a Text Message or a Reply: Chat ID = YOUR_TELEGRAM_CHAT_ID (Tolu's chat); Text = Big order tomorrow: {{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}} · status {{1.status}} · channel {{1.channel}}. (Or use Gmail › Send an Email to Tolu instead.)",
+        "Route 4 → 6, label Fallback · Needs checking: right-click the link and tick Fallback route. The blueprint also carries the equivalent explicit rule: status Not equal to Paid AND channel Not equal to standing AND status Not equal to New AND total Less than or equal to 50000 (all text operators case insensitive).",
+        "6 · Google Sheets › Add a Row: Sheet = Needs checking; A noted_at = {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}; B order_id = {{1.order_id}}; C customer_name = {{1.customer_name}}; D status = {{1.status}}; E channel = {{1.channel}}; F total = {{1.total}}; G reason = Matched no route.",
+        "Scenario settings › Schedule: Every day at 20:00. Scheduling ON. Scenario name: HL · 8 p.m. tomorrow run."
+      ],
+      "setup": [
+        "In Make, set your organisation and profile time zone to Africa/Lagos before running anything with dates (2.2).",
+        "Orders tab layout the blueprints assume (row 1 = headers): A order_id, B created_at, C customer_id, D customer_name, E delivery_date, F delivery_fee, G status, H items_total, I total (the 0.4 columns), then J phone, K channel, L delivery_window, M customer_email, N payment_link. If your columns differ, open each Google Sheets module after import and re-pick the columns; the build list names every field.",
+        "Add two tabs: Deliveries (delivery_date, order_id, customer_name, phone, delivery_window, total, status, channel) and Needs checking (noted_at, order_id, customer_name, status, channel, total, reason). Make status a dropdown (Paid, New, Cancelled, On hold) as in 0.4.",
+        "Create a Telegram bot with BotFather, send it a message from Tolu's account, and put that chat's ID where the blueprint says YOUR_TELEGRAM_CHAT_ID. Never paste the bot token anywhere except Make's connection screen.",
+        "In Make: Scenarios → Create a new scenario → the three-dot menu at the bottom → Import Blueprint → choose this file.",
+        "Create connections: Google Sheets (modules 1, 3, 6) and Gmail (module 4) with the business Google account; Telegram Bot (module 5) with the bot token.",
+        "Open module 1 and confirm the filter column is delivery_date. Open the link into route 6 and set it as the Fallback route.",
+        "Schedule: every day at 20:00, then switch scheduling ON."
+      ],
+      "test": "Put the six truth-table rows in Orders with tomorrow's date: T1 Paid/whatsapp/26500, T2 New/form/13500, T3 New/whatsapp/82000, T4 New/standing/95000, T5 On hold/form/9000, T6 Cancelled/whatsapp/40000. Run once. Expected bubble counts: Deliveries 2 (T1, T4), Reminder 2 (T2, T3), Alert 2 (T3, T4), Needs checking 1 (T5); T6 stops at the Not cancelled filter and nothing appears twice on Deliveries. Credits: 1 search + 7 actions = 8.",
+      "walk": {
+        "title": "Build it: the 8 p.m. tomorrow run",
+        "sample": "Six orders for tomorrow · T1 Paid 26,500 · T2 New 13,500 · T3 New 82,000 · T4 standing 95,000 · T5 On hold · T6 Cancelled",
+        "steps": [
+          {
+            "at": "1",
+            "say": "We start with a search, not a watch. Search Rows finds every order whose delivery date is tomorrow, one bundle per order.",
+            "show": [
+              "Google Sheets › Search Rows · Sheet: Orders",
+              "delivery_date = {{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}",
+              "Limit: 100"
+            ],
+            "data": "6 bundles · T1 to T6"
+          },
+          {
+            "at": "1",
+            "say": "It runs once a day at eight in the evening. One search a night is far cheaper than polling every fifteen minutes.",
+            "show": [
+              "Schedule: every day at 20:00"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "On the link before the router we drop cancelled orders. Filters cost nothing, and junk stops here before any work is done.",
+            "show": [
+              "Filter label: Not cancelled",
+              "status · Not equal to (case insensitive) · Cancelled"
+            ],
+            "data": "5 bundles · T6 stopped"
+          },
+          {
+            "at": "2",
+            "say": "Now the router. Write each route's rule in words first. These routes are additive: one order can take two routes when it needs two jobs.",
+            "show": [
+              "Flow control › Router · 4 routes",
+              "1 Rider list · 2 Reminder · 3 Big order · Fallback"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Route one, the rider list: every order that will be delivered. Paid, or a standing customer, so it's an OR group.",
+            "show": [
+              "status = Paid (case insensitive)",
+              "OR channel = standing"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Those orders become a row on the Deliveries tab, with what the rider needs: name, phone and delivery window.",
+            "show": [
+              "Google Sheets › Add a Row · Sheet: Deliveries",
+              "order_id, customer_name, phone, delivery_window, total"
+            ],
+            "data": "2 rows · T1, T4"
+          },
+          {
+            "at": "4",
+            "say": "Route two, reminders: new orders that aren't standing customers. Both conditions must be true, so they sit in one AND group.",
+            "show": [
+              "status = New AND channel ≠ standing"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "The customer gets a polite email with their total and the payment link, so they can pay before the riders go out.",
+            "show": [
+              "Gmail › Send an Email · To: {{1.customer_email}}",
+              "Subject: Harvest Lane · please pay for order {{1.order_id}}"
+            ],
+            "data": "2 emails · T2, T3"
+          },
+          {
+            "at": "5",
+            "say": "Route three alerts Tolu about any order over fifty thousand naira. Use the numeric operator here. A text comparison would let a nine thousand naira order through.",
+            "show": [
+              "total · Numeric: Greater than · 50000"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "The alert goes to Tolu on Telegram. The bot token lives only in Make's connection screen, never in a message or a sheet.",
+            "show": [
+              "Telegram Bot › Send a Text Message",
+              "Chat ID: YOUR_TELEGRAM_CHAT_ID",
+              "Big order tomorrow: {{1.order_id}} · …"
+            ],
+            "data": "2 alerts · T3, T4"
+          },
+          {
+            "at": "6",
+            "say": "The last route is the fallback. Mark it as fallback, and anything that matched no rule lands in Needs checking instead of vanishing.",
+            "show": [
+              "Fallback route ✓",
+              "Add a Row · Sheet: Needs checking",
+              "reason: Matched no route"
+            ],
+            "data": "1 row · T5 On hold"
+          },
+          {
+            "at": "2",
+            "say": "Remember, routes never merge back. Anything every order needs, like a log, belongs before the router.",
+            "show": [
+              "Shared step → before the router"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Run once with the six test rows and read the counts: two, two, two and one. That's one credit for the search and seven for the work. The filter and router are free.",
+            "show": [
+              "Deliveries 2 · Reminder 2 · Alert 2 · Needs checking 1",
+              "8 credits"
+            ],
+            "data": "nothing twice on the rider list"
+          }
+        ],
+        "end": "Load the six truth-table rows with tomorrow's date, run once, and check every bubble count against the expected routes."
+      }
+    }
+  ]
+}

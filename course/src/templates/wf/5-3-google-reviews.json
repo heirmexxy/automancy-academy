@@ -1,0 +1,104 @@
+{
+ "name": "HL · Listening post · Google review emails",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Listening post: Google review emails (Lesson 5.3)\nUntil you have Google Business Profile API access, review notification emails feed the same label-and-alert sub-workflow.\n\nCredentials: Gmail (the inbox that receives Google Business Profile notifications).\nPlaceholders: YOUR_LABEL_WORKFLOW_ID. Adjust the Gmail search to match your notification emails.",
+    "height": 260,
+    "width": 460
+   },
+   "id": "bd2415ef-c2cb-4854-8c57-b7362e294e5b",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -520,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "pollTimes": {
+     "item": [
+      {
+       "mode": "everyMinute"
+      }
+     ]
+    },
+    "simple": false,
+    "filters": {
+     "q": "from:businessprofile-noreply@google.com review"
+    },
+    "options": {}
+   },
+   "id": "fac64799-232f-4938-85e6-899054a7b9d7",
+   "name": "Gmail Trigger",
+   "type": "n8n-nodes-base.gmailTrigger",
+   "typeVersion": 1.1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const text = String($json.text || '').replace(/\\s+/g, ' ').trim();\nconst link = (text.match(/https:\\/\\/\\S*google\\S*/) || [''])[0];\nreturn { source: 'google', item_id: $json.id, link, posted_at: $json.date, text: text.slice(0, 1500) };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "38a9a48f-c8da-495b-a0c7-b28d0f3ed4aa",
+   "name": "One shape",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_LABEL_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "578bd8d2-290f-4c95-b4c5-de4a55ec0ad0",
+   "name": "SUB · label and alert",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Gmail Trigger": {
+   "main": [
+    [
+     {
+      "node": "One shape",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One shape": {
+   "main": [
+    [
+     {
+      "node": "SUB · label and alert",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

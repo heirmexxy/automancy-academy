@@ -1,0 +1,38 @@
+{
+  "id": "3.1",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's morning weather log, running on Tolu's laptop.</p>\n<ol>\n<li><b>Start n8n.</b> With Africa/Lagos chosen and the volume ticked in Card 3, the commands are:\n<pre class=\"codebox\">docker volume create n8n_data\n\ndocker run -it --name n8n -p 5678:5678 \\\n  -e GENERIC_TIMEZONE=\"Africa/Lagos\" -e TZ=\"Africa/Lagos\" \\\n  -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true -e N8N_RUNNERS_ENABLED=true \\\n  -v n8n_data:/home/node/.n8n \\\n  n8nio/n8n</pre></li>\n<li><b>Build</b> HL · Morning weather → Sheet: Schedule Trigger (Days, every 1, 6am, minute 30) → HTTP Request (GET, the Open-Meteo URL for 7.38, 3.94) → Edit Fields (date, max_temp_c, rain_chance, rain_mm, advice, all in Expression mode with <code>[0]</code>) → Google Sheets · Append Row, Map Automatically, into HL Weather.</li>\n<li><b>Test, then publish.</b> Execute workflow, check the row, then Save and Publish.</li>\n<li><b>Restart test.</b> Stop the container, start it again (<code>docker start -a n8n</code>), log in: the workflow and the Google credential are still listed.</li>\n</ol>\n<p><b>Evidence:</b> a screenshot of Executions showing a run at 06:30 that you didn't start, and the HL Weather row for that date, for example <code>2026-10-05 | 30.4 | 78 | 5.3 | Rain likely: pack tarpaulins, start deliveries early</code>. Log your volume name (n8n_data) and \"data survived restart: yes\".</p>",
+      "mistakes": [
+        "Running the container without <code>-v n8n_data:/home/node/.n8n</code>, so the restart test wipes the owner account and workflow.",
+        "Leaving the timezone unset, so the 06:30 run lands at about 11:30 or 12:30 Lagos time.",
+        "Clicking Save and Execute workflow but never Publish, so Executions only ever shows manual runs.",
+        "Letting the laptop sleep or closing Docker Desktop overnight, then concluding the schedule is broken."
+      ],
+      "pass": "Executions shows a run at about 06:30 that the learner didn't start, the HL Weather sheet has that date's row with numbers (not [30.4] or {{ }} text), and the log says the workflow and credential survived a container restart.",
+      "redo": "Send it back if the only runs are manual tests, the run time is off by hours, or there is no proof of the restart test."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's \"Become a supply partner\" form, rebuilt in n8n as <b>HL · Partner form → Leads</b>.</p>\n<ol>\n<li><b>Form Trigger.</b> Title \"Become a Harvest Lane supply partner\". Four required fields: Name (text), Phone (text), Business type (dropdown: hotel, restaurant, caterer, school, other), Message (textarea). The trigger names each output field after its label, so check the Output panel for the exact keys.</li>\n<li><b>Edit Fields · Clean lead</b> (all values in Expression mode):\n<pre class=\"codebox\">name           {{ $json.Name.trim() }}\nphone          {{ '+234' + $json.Phone.replace(/\\D/g, '').replace(/^234/, '').replace(/^0/, '') }}\nbusiness_type  {{ $json[\"Business type\"] }}\nmessage        {{ $json.Message }}\nreceived_at    {{ $now.toFormat('yyyy-MM-dd HH:mm') }}</pre>\nThe phone line strips every non-digit, then any leading 234 or 0, then adds +234 once.</li>\n<li><b>Google Sheets · Append Row</b> on a copy of the Leads sheet (never the live one), headers matching the five field names, Map Automatically.</li>\n</ol>\n<div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Phone typed</th><th>Stored</th></tr></thead><tbody>\n<tr><td>08031234567</td><td>+2348031234567</td></tr>\n<tr><td>0803 123 4567</td><td>+2348031234567</td></tr>\n<tr><td>+234 803-123-4567</td><td>+2348031234567</td></tr>\n<tr><td>2348031234567</td><td>+2348031234567</td></tr>\n<tr><td>(0803) 123.4567</td><td>+2348031234567</td></tr>\n</tbody></table></div>\n<p>Use made-up names and numbers for all five test leads.</p>\n<p><b>Cost note for the log:</b> n8n counts 5 executions for 5 leads, however many nodes (and unlimited when self-hosted). A Zapier version with a Formatter step and a Sheets step uses 2 tasks per lead, so 10 tasks. Count the action steps in your own Boss 1 Zap and multiply by 5.</p>",
+      "mistakes": [
+        "Using a messy-phone rule that only handles a leading 0, so +234 or 234 numbers come out as +234234… .",
+        "Writing the expression with the field in Fixed mode, so the sheet stores the literal {{ }} text.",
+        "Testing on the live Leads sheet or with real customers' numbers instead of a copy and made-up data.",
+        "Giving the Zapier comparison as a guess, without counting the action steps in the Zap."
+      ],
+      "pass": "Five rows in the Leads copy, every phone in +234XXXXXXXXXX form (including the messy one), a received_at on each, and a written line comparing n8n executions with Zapier tasks based on a stated step count.",
+      "redo": "Send it back if any phone is double-prefixed or unchanged, if a field holds expression text, or if real personal data was used."
+    },
+    "g": {
+      "answer": "<p>Worked example: a learner imports a seven-node \"daily RSS digest to email\" template (free services only) and adapts it for Harvest Lane's morning food-price news.</p>\n<p><b>Node-by-node notes (the part a beginner must be able to follow):</b></p>\n<div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Node</th><th>In</th><th>Does</th><th>Out</th></tr></thead><tbody>\n<tr><td>Schedule Trigger</td><td>Nothing</td><td>Starts the run every day at 07:00</td><td>1 item with the time</td></tr>\n<tr><td>RSS Read</td><td>The trigger item</td><td>Fetches the news feed</td><td>About 20 items, one per article</td></tr>\n<tr><td>Filter</td><td>20 articles</td><td>Keeps articles from the last 24 hours</td><td>About 6 items</td></tr>\n<tr><td>Edit Fields</td><td>6 articles</td><td>Keeps title, link, date</td><td>6 tidy items</td></tr>\n<tr><td>Limit</td><td>6 items</td><td>Keeps the first 5</td><td>5 items</td></tr>\n<tr><td>Aggregate</td><td>5 items</td><td>Joins them into one list</td><td>1 item</td></tr>\n<tr><td>Send Email</td><td>1 item</td><td>Emails the list to Tolu</td><td>1 sent email</td></tr>\n</tbody></table></div>\n<p><b>The change:</b> the template had no timezone and a hard-coded recipient. Fix: set the workflow timezone to Africa/Lagos in workflow settings, and move the recipient into an Edit Fields \"Settings\" node at the start so it is changed in one place.</p>\n<p><b>Test evidence:</b> before the fix, the schedule used n8n's default timezone (America/New_York), so a 07:00 trigger would fire at about 12:00 in Lagos; after it, Executions shows the run at 07:00 and one email arrives in Tolu's test inbox.</p>\n<p><b>Submit:</b> the exported workflow JSON (no keys pasted in fields), your notes table, and before/after screenshots of the changed setting and the test execution.</p>",
+      "mistakes": [
+        "Choosing a template that needs a paid API key, then skipping the nodes that fail.",
+        "Writing notes that repeat the node name (\"the Filter node filters\") instead of what goes in and comes out.",
+        "Making the change but not running it again, so there is no before/after evidence.",
+        "Sharing an export with a key typed into a node field instead of stored in a credential."
+      ],
+      "pass": "A template of six or more nodes runs on test data, every node has an in/does/out sentence a beginner could follow, and one Harvest Lane change is shown with a passing test execution.",
+      "redo": "Send it back if notes skip nodes, the change is untested, or the export contains a pasted key."
+    }
+  }
+}

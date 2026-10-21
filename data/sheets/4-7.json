@@ -1,0 +1,40 @@
+{
+  "id": "4.7",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's front desk with two specialists.</p><ul><li><b>AI Agent · Front desk</b>: small model, Max Iterations 4, no tools except two <b>AI Agent Tool</b> sub-nodes. System message: <i>\"You route customer messages. Use orders_agent for prices, totals, delivery dates and order status. Use policy_agent for refunds, cancellations, substitutions and business accounts. Never answer policy questions yourself. Pass the customer's message on unchanged and return the specialist's answer.\"</i></li><li><b>orders_agent</b>: description \"Answers questions about prices, quotes, delivery dates and order status.\" Tools: <code>get_price</code>, calculator, <code>check_delivery_date</code> (4.2).</li><li><b>policy_agent</b>: description \"Answers questions about what a customer is entitled to under Harvest Lane's policies.\" Tool: <code>search_policies</code> (4.4) with the grounding rules.</li></ul><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Message</th><th>Expected</th><th>Trace</th></tr></thead><tbody><tr><td>How much for 3 crates of tomatoes?</td><td>orders</td><td>orders</td></tr><tr><td>Can you deliver to Jericho on Saturday?</td><td>orders</td><td>orders</td></tr><tr><td>Where is HL-0042?</td><td>orders</td><td>orders</td></tr><tr><td>Is delivery free on ₦35,000?</td><td>orders</td><td>orders</td></tr><tr><td>Price of 2 bags of tatashe?</td><td>orders</td><td>orders</td></tr><tr><td>Half my eggs were broken</td><td>policy</td><td>policy</td></tr><tr><td>Can I cancel at 8 p.m.?</td><td>policy</td><td>policy</td></tr><tr><td>You swapped my tatashe without asking</td><td>policy</td><td>policy</td></tr><tr><td>Hotel on weekly plan, when do we pay?</td><td>policy</td><td>policy</td></tr><tr><td>Late delivery, can I get money back?</td><td>policy</td><td>orders (wrong)</td></tr></tbody></table></div><p>9 of 10. Fix: add \"late delivery refunds\" to policy_agent's description.</p>",
+      "mistakes": [
+        "Giving the front desk its own lookup tools, so it answers directly instead of routing.",
+        "Specialist descriptions that overlap (both mention \"delivery\"), so routing is a coin toss.",
+        "Judging routing from the final reply instead of the execution trace.",
+        "No Max Iterations on the specialists, only on the front desk."
+      ],
+      "pass": "Ten messages (five per specialist) with trace screenshots showing at least nine routed correctly, and no policy answer coming from the front desk itself.",
+      "redo": "Send it back if routing is judged without traces, fewer than nine are correct, or the front desk answers any policy question on its own."
+    },
+    "s": {
+      "answer": "<p>Worked example: a reviewer on the 4.4 policy answers.</p><p><b>AI Agent · Reviewer</b>: careful model, no tools except reading the retrieved passages passed in. Structured Output Parser schema: <code>{ \"approved\": boolean, \"issues\": [string] }</code>. Checklist:</p><ol><li>Every claim appears in the retrieved passages.</li><li>Money rules are quoted exactly.</li><li>A section is named, or the answer honestly says \"not sure\".</li><li>No refund is promised.</li><li>Under 80 words.</li></ol><p>Flow: policy agent → reviewer → <b>IF</b> approved → send. Otherwise → policy agent once more with the issues → send, and if still not approved, send the safe fallback \"I'll ask Tolu and get back to you\" and alert Tolu.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th></th><th>Without reviewer</th><th>With reviewer</th></tr></thead><tbody><tr><td>Errors in 10 cases</td><td>3</td><td>1</td></tr><tr><td>Kinds of error</td><td>2 paraphrased money rules, 1 unsure answer stated as fact</td><td>1 paraphrase the reviewer missed</td></tr><tr><td>Model calls per case (average)</td><td>3</td><td>4.6</td></tr><tr><td>Tokens per case (average)</td><td>5,200</td><td>8,900</td></tr><tr><td>Reply time (average)</td><td>6 s</td><td>11 s</td></tr></tbody></table></div><p>The reviewer caught the two paraphrased refund rules and the \"stated as fact\" case; it missed one paraphrase about cancellation charges because the passage wording was close. That miss is now a new test case.</p><p><b>Decision: keep</b>, because policy answers involve money and two of three errors were refund wording. Review again after a month: if the reviewer rarely rejects, replace it with a code check for quoted sentences.</p>",
+      "mistakes": [
+        "A reviewer brief like \"check it's good\" with no checklist.",
+        "A free-text verdict, so the IF node can't read <code>approved</code> reliably.",
+        "Running the \"with\" and \"without\" cases on different questions.",
+        "Leaving out cost and time, so the decision rests on errors alone.",
+        "No exit after the one allowed revision, so a rejected answer still has nowhere to go."
+      ],
+      "pass": "A reviewer with a written checklist and a structured verdict, capped at one revision, and a log comparing the same 10 cases with and without it on errors and extra cost per case, ending in a stated keep-or-remove decision.",
+      "redo": "Send it back if there's no cap, the verdict isn't structured, the comparison uses different cases, or the cost difference is missing."
+    },
+    "g": {
+      "answer": "<p>Worked example: a fictional pharmacy in Ibadan wants a weekly \"best supplier price\" report across four distributors' price lists.</p><p><b>Team (orchestrator–workers):</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Role</th><th>Model</th><th>Tools</th><th>Cap</th></tr></thead><tbody><tr><td>Lead</td><td>Mid</td><td>4 worker agents as tools</td><td>Max Iterations 6</td></tr><tr><td>Worker ×4 (one per distributor)</td><td>Small</td><td>Read that distributor's emailed price list</td><td>Max Iterations 4</td></tr><tr><td>Writer</td><td>Strong</td><td>None</td><td>1 call</td></tr><tr><td>Editor</td><td>Careful</td><td>None</td><td>1 revision round, then the owner</td></tr></tbody></table></div><p><b>Hand-offs:</b> worker → lead: <code>{ distributor, items: [{ product, pack, price, date, source }] }</code>; lead → writer: <code>{ week, best: [{ product, distributor, price, next_best }] }</code>; editor → writer: <code>{ approved, issues }</code>. Code node checks every price has a source and recomputes \"cheapest\".</p><p><b>Human checkpoints:</b> the report is a Gmail draft; the owner places orders herself.</p><p><b>Cost (Card 4, placeholder $3 per million tokens):</b> team ≈ 24 calls × 6,000 tokens = 144,000 tokens ≈ $0.43 per run, about $1.73 a month. Single agent ≈ 10 calls × 8,000 = 80,000 tokens ≈ $0.24 per run.</p><p><b>Single-agent alternative:</b> one agent with the four price-list tools and the same output schema, plus the same code check.</p><p><b>Recommendation: single agent plus code check.</b> The four lists are small and share one format, so parallel workers add cost without new quality, and the code check (not an editor) catches the errors that matter: wrong prices. Revisit if distributors grow past ten.</p><p><b>Submit:</b> the one-page design, both cost estimates with inputs shown, and the recommendation.</p>",
+      "mistakes": [
+        "Recommending the team by default without comparing it to a single agent.",
+        "Hand-offs described in words (\"passes the findings\") instead of schemas.",
+        "A review loop or lead agent with no cap.",
+        "A cost estimate with no inputs shown, or a provider price presented as fact.",
+        "No human checkpoint before anything leaves the system."
+      ],
+      "pass": "A one-page design with roles, models, tools, a schema for every hand-off, a cap on every loop, a human checkpoint, a cost estimate with its inputs, and a single-agent alternative with a recommendation argued from cost and quality.",
+      "redo": "Send it back if any hand-off lacks a schema, any loop lacks a cap, the single-agent option is missing, or the recommendation ignores cost."
+    }
+  }
+}

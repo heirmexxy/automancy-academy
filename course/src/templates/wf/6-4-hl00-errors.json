@@ -1,0 +1,421 @@
+{
+  "name": "HL·00 Errors",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·00 Errors (lesson 6.4, layer 1)\nOne alert channel for every platform.\n- **Error Trigger**: set this workflow as Settings → Error workflow on EVERY n8n workflow (HL·01–HL·12).\n- **Webhook /hl-errors**: Make (error-handler route) and Zapier (final webhook step or error notification) POST {workflow, step, message, url, order_id} with header x-hl-secret.\nAlert: workflow, node, order_id, execution link. Logged to events.\n\n**Credentials:** Telegram, Postgres (Supabase).\n**Environment:** HL_EDGE_SECRET (same value in Make and Zapier), N8N_BLOCK_ENV_ACCESS_IN_NODE=false.\n**Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 400,
+        "width": 400
+      },
+      "id": "f7d3119e-a6c1-43e4-97ca-aabc1ccd59c0",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "76bd2bb2-13c8-4fb8-a677-43be9a90bd03",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d6a8bb5b-6c1d-43b8-af9a-765ace537a94",
+              "name": "workflow",
+              "value": "={{ $json.workflow?.name ?? 'Unknown workflow' }}",
+              "type": "string"
+            },
+            {
+              "id": "9ca9d0c4-a3db-4605-b4e4-377c5499fde2",
+              "name": "node",
+              "value": "={{ $json.execution?.lastNodeExecuted ?? 'trigger' }}",
+              "type": "string"
+            },
+            {
+              "id": "3a6e8b98-35e8-423f-a6f9-a14ca029ef00",
+              "name": "message",
+              "value": "={{ $json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No message' }}",
+              "type": "string"
+            },
+            {
+              "id": "981f7e16-d162-486d-840b-caee16e7a7af",
+              "name": "url",
+              "value": "={{ $json.execution?.url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "0718c5de-e1e3-4eda-9177-e0adb51ace65",
+              "name": "time",
+              "value": "={{ $now.toFormat('ccc d LLL, HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "21bfde14-1671-4dd5-80f1-cdf61a077cc6",
+              "name": "platform",
+              "value": "n8n",
+              "type": "string"
+            },
+            {
+              "id": "2854e93f-2bf6-4b46-811d-d52ec10e27e5",
+              "name": "order_id",
+              "value": "={{ (($json.execution?.error?.message ?? '') + ' ' + ($json.execution?.error?.description ?? '')).match(/HL-\\d{3,}/)?.[0] ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "652b893e-62fb-4c7a-a014-e9c222e55048",
+      "name": "Format",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hl-errors",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0913298e-c181-4bdd-9695-3f01593ec482",
+      "name": "Make / Zapier errors",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        360
+      ],
+      "webhookId": "02a456e9-13f7-4579-9efe-81d96c32692a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "7f7baeb2-fc9c-47d3-8cb4-88dacb8e4488",
+              "leftValue": "={{ $json.headers['x-hl-secret'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "={{ $env.HL_EDGE_SECRET }}"
+            },
+            {
+              "id": "2c29f3e8-8e41-4cb9-9695-e085815b6c3c",
+              "leftValue": "={{ $env.HL_EDGE_SECRET ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e6a87947-a9c4-43f5-8128-cc66f367e19d",
+      "name": "Secret valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        220,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "unauthorised",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "3749172a-297f-4171-b6ad-4fe8e6e40d7f",
+      "name": "Reject 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "46f96562-5295-4323-a9f2-8a5eba4c4cf6",
+      "name": "Accept 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2edade64-6a24-4a0f-8b46-add09de51df6",
+              "name": "workflow",
+              "value": "={{ $('Make / Zapier errors').item.json.body.workflow ?? 'Unknown (Make/Zapier)' }}",
+              "type": "string"
+            },
+            {
+              "id": "fa417029-f1f6-43c9-8e95-d4422e4ab104",
+              "name": "node",
+              "value": "={{ $('Make / Zapier errors').item.json.body.step ?? 'unknown step' }}",
+              "type": "string"
+            },
+            {
+              "id": "30c4bfac-c653-4758-9c55-751fdf9a93e6",
+              "name": "message",
+              "value": "={{ $('Make / Zapier errors').item.json.body.message ?? 'No message' }}",
+              "type": "string"
+            },
+            {
+              "id": "eceb0794-e6e2-4399-810d-ec8048861891",
+              "name": "url",
+              "value": "={{ $('Make / Zapier errors').item.json.body.url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f304e382-5fba-49cf-9d08-06fb2c43c220",
+              "name": "time",
+              "value": "={{ $now.toFormat('ccc d LLL, HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "124946bc-4ee9-4a1c-83ae-1db4a81b0dc0",
+              "name": "platform",
+              "value": "={{ $('Make / Zapier errors').item.json.body.platform ?? 'Make/Zapier' }}",
+              "type": "string"
+            },
+            {
+              "id": "2613bfdd-6b27-4b56-988a-028ddd8af216",
+              "name": "order_id",
+              "value": "={{ $('Make / Zapier errors').item.json.body.order_id ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f1db49a-e736-4f19-aa3c-3ebfe79eb2c0",
+      "name": "Format edge error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT order_id FROM events\nWHERE workflow = $1 AND order_id IS NOT NULL AND at > now() - interval '15 minutes'\nORDER BY at DESC LIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.workflow.split(' ')[0] ] }}"
+        }
+      },
+      "id": "64563a23-0233-490e-84d1-633484329c83",
+      "name": "Last order_id in that workflow",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚨 {{ $('Merge alert').item.json.workflow }} failed ({{ $('Merge alert').item.json.platform }})\nNode: {{ $('Merge alert').item.json.node }}\nOrder: {{ $('Merge alert').item.json.order_id || $json.order_id || 'none' }}\nError: {{ $('Merge alert').item.json.message }}\nWhen: {{ $('Merge alert').item.json.time }}\nOpen: {{ $('Merge alert').item.json.url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "31be343a-6862-45f0-b1cf-fb03669a9ab7",
+      "name": "Alert Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f67615c5-c527-4249-a74e-6700353fd2e8",
+      "name": "Merge alert",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        770,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·00', $1, 'error', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ $('Merge alert').item.json.order_id || $('Last order_id in that workflow').item.json.order_id || null, JSON.stringify({ workflow: $('Merge alert').item.json.workflow, node: $('Merge alert').item.json.node, platform: $('Merge alert').item.json.platform, message: $('Merge alert').item.json.message, url: $('Merge alert').item.json.url }) ] }}"
+        }
+      },
+      "id": "86feabfd-0175-4f00-bba5-dd34e0f5b49b",
+      "name": "Log error event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Merge alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make / Zapier errors": {
+      "main": [
+        [
+          {
+            "node": "Secret valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Secret valid?": {
+      "main": [
+        [
+          {
+            "node": "Accept 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept 200": {
+      "main": [
+        [
+          {
+            "node": "Format edge error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format edge error": {
+      "main": [
+        [
+          {
+            "node": "Merge alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge alert": {
+      "main": [
+        [
+          {
+            "node": "Last order_id in that workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last order_id in that workflow": {
+      "main": [
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log error event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

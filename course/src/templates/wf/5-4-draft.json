@@ -1,0 +1,689 @@
+{
+ "name": "HL · Posting week · draft",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Posting week: draft (Lesson 5.4)\nFridays 14:00: read next week's Calendar rows, the brand voice, the price list and last week's results. For each idea the AI writes one version per platform (structured output). A Code node checks each version against the platform rules and banned phrases. Failures go back to the AI once, then to Tolu marked needs_edit.\n\nSheets (YOUR_SHEET_ID):\n- Calendar: date, time, pillar, idea, product, platforms (comma list), media_file (public URL), status\n- Posts: post_key, calendar_id, platform, pillar, product, caption, alt_text, media_file, scheduled_at, uses_price, price_used, problems, status, approved_by, post_id, published_at, reach, engagement, clicks\n- Brand voice: rules (one cell; add a line Banned: phrase; phrase)\n- Price list: product, price, stock\n\nCredentials: Google Sheets; OpenAI.\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL.",
+    "height": 460,
+    "width": 560
+   },
+   "id": "d1fca1e2-33b1-4daa-bab4-269cc182bf83",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    -400
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 14 * * 5"
+      }
+     ]
+    }
+   },
+   "id": "75016b7d-63a3-4bc3-87a4-3df6ba8c72ce",
+   "name": "Fridays 14:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Calendar",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "b56ac364-78bc-464d-b9b7-d33b9f5b720c",
+   "name": "Read Calendar",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Brand voice",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "52458fcd-8eaf-403a-a293-fa97a1ef4eac",
+   "name": "Read Brand voice",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    440,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Price list",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "dcd4bfc6-c4c5-4e89-a28f-b3cff39bd88c",
+   "name": "Read Price list",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    660,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "9ee9a356-dec3-49d1-9d1a-e9641b53be85",
+   "name": "Read Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const DAY = 864e5;\nconst now = new Date();\nconst monday = new Date(now); monday.setHours(0, 0, 0, 0);\nmonday.setDate(monday.getDate() + ((8 - monday.getDay()) % 7 || 7));\nconst sunday = new Date(monday.getTime() + 7 * DAY);\nconst voice = String($('Read Brand voice').first().json.rules || '');\nconst bannedLine = (voice.match(/Banned:(.*)/i) || [, ''])[1];\nconst banned = ['cheapest in ibadan', 'cures', 'guaranteed', ...bannedLine.split(';')].map(s => s.trim().toLowerCase()).filter(Boolean);\nconst prices = $('Read Price list').all().map(i => i.json);\nconst top = $('Read Posts').all().map(i => i.json)\n  .filter(p => p.published_at && new Date(p.published_at) > new Date(now - 7 * DAY))\n  .sort((a, b) => (Number(b.reach) || 0) - (Number(a.reach) || 0)).slice(0, 3)\n  .map(p => `${p.platform} · ${p.pillar} · reach ${p.reach}: ${String(p.caption).slice(0, 120)}`);\nreturn $('Read Calendar').all().map(i => i.json)\n  .filter(r => r.status !== 'drafted' && new Date(r.date) >= monday && new Date(r.date) < sunday)\n  .map(r => {\n    const product = prices.find(p => r.product && String(p.product).toLowerCase() === String(r.product).toLowerCase());\n    return { json: { calendar_id: String(r.row_number), date: r.date, time: r.time, pillar: r.pillar, idea: r.idea,\n      product: r.product || '', price: product ? product.price : '', stock: product ? product.stock : '',\n      platforms: String(r.platforms).split(',').map(s => s.trim().toLowerCase()).filter(Boolean),\n      media_file: r.media_file || '', brand_voice: voice, banned_phrases: banned, top_posts: top } };\n  });\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "b12a148e-13d3-484b-928a-1dd715ba1646",
+   "name": "Next week's briefs",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "batchSize": 1,
+    "options": {}
+   },
+   "id": "2f5a2676-ef5c-4f3c-a445-b62e75ebe824",
+   "name": "One calendar item at a time",
+   "type": "n8n-nodes-base.splitInBatches",
+   "typeVersion": 3,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "91966ee3-9989-4b04-8fd7-95e482c6a24a",
+   "name": "Drafts ready for Tolu",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1540,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Idea: {{ $json.idea }}\nPillar: {{ $json.pillar }}\nPlatforms: {{ $json.platforms.join(', ') }}\nMedia: {{ $json.media_file || 'none' }}\nProduct: {{ $json.product || 'none' }} · price today: {{ $json.price ? 'N' + $json.price : 'none' }} · stock: {{ $json.stock || '-' }}\nLast week's top posts:\n{{ $json.top_posts.join('\\n') }}\n\nBrand voice:\n{{ $json.brand_voice }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "You are Harvest Lane's social media writer. Write one version of the idea for each listed platform, in that platform's shape: Instagram visual and warm; Facebook friendly with one call to action; LinkedIn for restaurants and hotels; X very short; TikTok a hook for a short video; WhatsApp only a short weekly-offer line. Follow the brand voice. Use a price only if one is given, written with the naira sign exactly as given, and set uses_price true. Never invent prices, discounts, stock, health claims or customers. Few hashtags. Always write alt text describing the real photo or video."
+      }
+     ]
+    }
+   },
+   "id": "270ba656-eb3f-4bba-b4dd-e9123bb5bcd7",
+   "name": "Draft versions",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    1540,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "59c0519c-0482-403c-8aba-1508997c84de",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    1540,
+    288
+   ]
+  },
+  {
+   "parameters": {
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"versions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"platform\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"facebook\",\n              \"instagram\",\n              \"linkedin\",\n              \"x\",\n              \"tiktok\",\n              \"whatsapp\"\n            ]\n          },\n          \"caption\": {\n            \"type\": \"string\"\n          },\n          \"hashtags\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"alt_text\": {\n            \"type\": \"string\"\n          },\n          \"uses_price\": {\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"platform\",\n          \"caption\",\n          \"hashtags\",\n          \"alt_text\",\n          \"uses_price\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"versions\"\n  ]\n}"
+   },
+   "id": "b2fd1f97-fb89-48ad-9013-c208cef5f472",
+   "name": "Versions format",
+   "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+   "typeVersion": 1.2,
+   "position": [
+    1760,
+    288
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Card 3 checks plus the brand voice's banned phrases. Code decides; the AI only drafts.\nconst brief = $('One calendar item at a time').item.json;\nconst versions = ($json.output && $json.output.versions) || [];\nconst RULES = {\n  facebook:  { max: 2000, tags: 3, media: false },\n  instagram: { max: 2200, tags: 5, media: true },   // no text-only posts\n  linkedin:  { max: 3000, tags: 3, media: false },\n  x:         { max: 280,  tags: 2, media: false },\n  tiktok:    { max: 2200, tags: 5, video: true },\n  whatsapp:  { max: 1024, tags: 0, media: false },\n};\nconst banned = brief.banned_phrases;\nconst hour = Number(String(brief.time || '').slice(0, 2));\nconst isVideo = /\\.(mp4|mov)$/i.test(brief.media_file || '');\nconst checked = versions.filter(v => brief.platforms.includes(v.platform)).map(v => {\n  const r = RULES[v.platform] || { max: 2000, tags: 3 };\n  const full = v.caption + (v.hashtags.length ? '\\n' + v.hashtags.map(h => '#' + h.replace(/^#/, '')).join(' ') : '');\n  const problems = [];\n  if (full.length > r.max) problems.push(`too long for ${v.platform} (${full.length}/${r.max})`);\n  if (v.hashtags.length > r.tags) problems.push(`too many hashtags (${v.hashtags.length}/${r.tags})`);\n  if (r.media && !brief.media_file) problems.push('Instagram needs a photo or video');\n  if (r.video && !isVideo) problems.push('TikTok needs a video');\n  if (v.platform === 'whatsapp' && brief.pillar !== 'Offers and dates') problems.push('WhatsApp is only for the weekly offer');\n  if (!(hour >= 6 && hour <= 21)) problems.push(`posting time ${brief.time} is when nobody is online`);\n  for (const b of banned) if (b && full.toLowerCase().includes(b)) problems.push(`banned phrase: ${b}`);\n  const amounts = full.match(/₦\\s?[\\d,]+/g) || [];\n  if (v.uses_price) {\n    if (!brief.price) problems.push('uses a price but the product has no price in the sheet');\n    else if (!amounts.length || amounts.some(a => a.replace(/[^\\d]/g, '') !== String(brief.price).replace(/[^\\d]/g, ''))) problems.push(`price must be ₦${brief.price} from the price list`);\n  } else if (amounts.length) problems.push('mentions a price but uses_price is false');\n  if (!v.alt_text) problems.push('missing alt text');\n  return { ...v, full_caption: full, problems };\n});\nconst missing = brief.platforms.filter(p => !checked.some(v => v.platform === p));\nreturn { brief, versions: checked, missing, all_pass: !missing.length && checked.every(v => !v.problems.length) };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "506afd07-213a-4903-8f97-d7e8678b3990",
+   "name": "Platform checks",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1760,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "b302dc5e-a98d-49dd-8fb6-43fa99bf34e4",
+       "leftValue": "={{ $json.all_pass }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c9226853-a650-4f74-a7b4-09d0a860ebf9",
+   "name": "All versions pass?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1980,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Your versions failed these checks:\n{{ $json.versions.filter(v => v.problems.length).map(v => v.platform + ': ' + v.problems.join('; ')).join('\\n') }}\n{{ $json.missing.length ? 'Missing platforms: ' + $json.missing.join(', ') : '' }}\n\nOriginal brief:\nIdea: {{ $json.brief.idea }}\nPlatforms: {{ $json.brief.platforms.join(', ') }}\nMedia: {{ $json.brief.media_file || 'none' }}\nPrice today: {{ $json.brief.price ? 'N' + $json.brief.price : 'none' }}\n\nBrand voice:\n{{ $json.brief.brand_voice }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "Rewrite every version so that it passes all the checks listed. Keep the same rules: one version per listed platform, prices only as given, no invented claims, alt text always."
+      }
+     ]
+    }
+   },
+   "id": "67650a88-0e75-4086-86ed-d8d0a00b1e20",
+   "name": "Redraft once",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    2200,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "e5396058-f1f7-4bb6-b8cd-2bccefa48162",
+   "name": "OpenAI Chat Model (redraft)",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    2200,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"versions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"platform\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"facebook\",\n              \"instagram\",\n              \"linkedin\",\n              \"x\",\n              \"tiktok\",\n              \"whatsapp\"\n            ]\n          },\n          \"caption\": {\n            \"type\": \"string\"\n          },\n          \"hashtags\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"alt_text\": {\n            \"type\": \"string\"\n          },\n          \"uses_price\": {\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"platform\",\n          \"caption\",\n          \"hashtags\",\n          \"alt_text\",\n          \"uses_price\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"versions\"\n  ]\n}"
+   },
+   "id": "d9354a27-1313-4f95-9c76-e2830b1e05e7",
+   "name": "Versions format (redraft)",
+   "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+   "typeVersion": 1.2,
+   "position": [
+    2420,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Card 3 checks plus the brand voice's banned phrases. Code decides; the AI only drafts.\nconst brief = $('One calendar item at a time').item.json;\nconst versions = ($json.output && $json.output.versions) || [];\nconst RULES = {\n  facebook:  { max: 2000, tags: 3, media: false },\n  instagram: { max: 2200, tags: 5, media: true },   // no text-only posts\n  linkedin:  { max: 3000, tags: 3, media: false },\n  x:         { max: 280,  tags: 2, media: false },\n  tiktok:    { max: 2200, tags: 5, video: true },\n  whatsapp:  { max: 1024, tags: 0, media: false },\n};\nconst banned = brief.banned_phrases;\nconst hour = Number(String(brief.time || '').slice(0, 2));\nconst isVideo = /\\.(mp4|mov)$/i.test(brief.media_file || '');\nconst checked = versions.filter(v => brief.platforms.includes(v.platform)).map(v => {\n  const r = RULES[v.platform] || { max: 2000, tags: 3 };\n  const full = v.caption + (v.hashtags.length ? '\\n' + v.hashtags.map(h => '#' + h.replace(/^#/, '')).join(' ') : '');\n  const problems = [];\n  if (full.length > r.max) problems.push(`too long for ${v.platform} (${full.length}/${r.max})`);\n  if (v.hashtags.length > r.tags) problems.push(`too many hashtags (${v.hashtags.length}/${r.tags})`);\n  if (r.media && !brief.media_file) problems.push('Instagram needs a photo or video');\n  if (r.video && !isVideo) problems.push('TikTok needs a video');\n  if (v.platform === 'whatsapp' && brief.pillar !== 'Offers and dates') problems.push('WhatsApp is only for the weekly offer');\n  if (!(hour >= 6 && hour <= 21)) problems.push(`posting time ${brief.time} is when nobody is online`);\n  for (const b of banned) if (b && full.toLowerCase().includes(b)) problems.push(`banned phrase: ${b}`);\n  const amounts = full.match(/₦\\s?[\\d,]+/g) || [];\n  if (v.uses_price) {\n    if (!brief.price) problems.push('uses a price but the product has no price in the sheet');\n    else if (!amounts.length || amounts.some(a => a.replace(/[^\\d]/g, '') !== String(brief.price).replace(/[^\\d]/g, ''))) problems.push(`price must be ₦${brief.price} from the price list`);\n  } else if (amounts.length) problems.push('mentions a price but uses_price is false');\n  if (!v.alt_text) problems.push('missing alt text');\n  return { ...v, full_caption: full, problems };\n});\nconst missing = brief.platforms.filter(p => !checked.some(v => v.platform === p));\nreturn { brief, versions: checked, missing, all_pass: !missing.length && checked.every(v => !v.problems.length) };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "e1d98cda-8ba3-4b79-82fd-43849d6eb9a8",
+   "name": "Platform checks (second try)",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2420,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const out = [];\nfor (const item of $input.all()) {\n  const { brief, versions } = item.json;\n  for (const v of versions) {\n    out.push({ json: {\n      post_key: `${brief.calendar_id}-${v.platform}`, calendar_id: brief.calendar_id, platform: v.platform,\n      pillar: brief.pillar, product: brief.product, caption: v.full_caption, alt_text: v.alt_text,\n      media_file: brief.media_file, scheduled_at: `${brief.date} ${brief.time}`,\n      uses_price: v.uses_price, price_used: v.uses_price ? brief.price : '',\n      problems: v.problems.join('; '), status: v.problems.length ? 'needs_edit' : 'awaiting_approval',\n    } });\n  }\n}\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "5654eae4-08b6-4e48-adc6-086edda03cb7",
+   "name": "Rows for Posts",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2640,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "appendOrUpdate",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "post_key"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "63fa2968-7d21-4f0c-af27-010c575e792a",
+   "name": "Save to Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    2860,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Calendar",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "row_number": "={{ $('One calendar item at a time').first().json.calendar_id }}",
+      "status": "drafted"
+     },
+     "matchingColumns": [
+      "row_number"
+     ],
+     "schema": [
+      {
+       "id": "row_number",
+       "displayName": "row_number",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "status",
+       "displayName": "status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "16c9baec-ccd9-44a9-ab2d-52e81dcd0561",
+   "name": "Mark calendar drafted",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    3080,
+    90
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "content": "## Second try\nPlatform checks (second try) runs the same code. Anything still failing is saved as needs_edit with its problems, so Tolu sees why.\n\nMark calendar drafted: if your sheet has no row_number column to match on, add a calendar_id column instead and match on that.",
+    "height": 200,
+    "width": 380
+   },
+   "id": "819d9438-4fe8-4229-82f3-51623d908a15",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    2200,
+    520
+   ]
+  }
+ ],
+ "connections": {
+  "Fridays 14:00": {
+   "main": [
+    [
+     {
+      "node": "Read Calendar",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Calendar": {
+   "main": [
+    [
+     {
+      "node": "Read Brand voice",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Brand voice": {
+   "main": [
+    [
+     {
+      "node": "Read Price list",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Price list": {
+   "main": [
+    [
+     {
+      "node": "Read Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Posts": {
+   "main": [
+    [
+     {
+      "node": "Next week's briefs",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Next week's briefs": {
+   "main": [
+    [
+     {
+      "node": "One calendar item at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One calendar item at a time": {
+   "main": [
+    [
+     {
+      "node": "Drafts ready for Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Draft versions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Draft versions": {
+   "main": [
+    [
+     {
+      "node": "Platform checks",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Platform checks": {
+   "main": [
+    [
+     {
+      "node": "All versions pass?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "All versions pass?": {
+   "main": [
+    [
+     {
+      "node": "Rows for Posts",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Redraft once",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Redraft once": {
+   "main": [
+    [
+     {
+      "node": "Platform checks (second try)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Platform checks (second try)": {
+   "main": [
+    [
+     {
+      "node": "Rows for Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Rows for Posts": {
+   "main": [
+    [
+     {
+      "node": "Save to Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Save to Posts": {
+   "main": [
+    [
+     {
+      "node": "Mark calendar drafted",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark calendar drafted": {
+   "main": [
+    [
+     {
+      "node": "One calendar item at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Draft versions",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Versions format": {
+   "ai_outputParser": [
+    [
+     {
+      "node": "Draft versions",
+      "type": "ai_outputParser",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model (redraft)": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Redraft once",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Versions format (redraft)": {
+   "ai_outputParser": [
+    [
+     {
+      "node": "Redraft once",
+      "type": "ai_outputParser",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

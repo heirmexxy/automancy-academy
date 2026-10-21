@@ -1,0 +1,828 @@
+{
+ "name": "HL · Weekly newsletter",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Weekly newsletter (Lesson 5.6)\nThursday 10:00: read the price list, what's in season, one approved customer story and the approved offers. The AI drafts { subject_options[3], preview_text, sections[] }. Code blocks any price or discount that isn't in the sheets. Tolu picks a subject and approves on Telegram. Then Brevo creates the campaign (links tagged utm_source=email) and sends it at 17:00, unless email_paused is on.\n\nTEST MODE: Config sends to YOUR_BREVO_TEST_LIST_ID until you switch test_mode off.\n\nSheets (YOUR_SHEET_ID): Price list (product, price), In season (item, note), Customer stories (story, approved), Approved offers (offer), Settings (setting, value: email_paused).\nCredentials: Google Sheets; OpenAI; Telegram; Header Auth \"Brevo API key\" (Name api-key, Value your Brevo API key).\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID, YOUR_BREVO_LIST_ID, YOUR_BREVO_TEST_LIST_ID, YOUR_ORDER_LINK.\nMailchimp instead: Mailchimp node, replicate last week's campaign, update content, Send.",
+    "height": 460,
+    "width": 580
+   },
+   "id": "f3636433-1ab4-483f-905f-b104f1b4cf61",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -640,
+    -460
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 10 * * 4"
+      }
+     ]
+    }
+   },
+   "id": "eaaa7bd9-9ce5-497f-87a2-52d8f5eff080",
+   "name": "Thursdays 10:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "b316808f-7a60-4b35-81a2-409869743f09",
+       "name": "test_mode",
+       "value": true,
+       "type": "boolean"
+      },
+      {
+       "id": "16508089-c117-4bb7-93cb-8e776a7cf21c",
+       "name": "list_id",
+       "value": "YOUR_BREVO_LIST_ID",
+       "type": "string"
+      },
+      {
+       "id": "3f0ab3bd-eacd-403c-ba22-c705d313e5db",
+       "name": "test_list_id",
+       "value": "YOUR_BREVO_TEST_LIST_ID",
+       "type": "string"
+      },
+      {
+       "id": "a1c7fbc4-1dc3-4999-97bb-c41e3a5c30b0",
+       "name": "order_link",
+       "value": "YOUR_ORDER_LINK",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "3213e9b2-0ff9-47ca-a41b-1376b482d29d",
+   "name": "Config",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Price list",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "cc41f6b1-a7fb-4009-b7cd-e1b452aa444e",
+   "name": "Read Price list",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    440,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "In season",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "5db9426c-ad81-4d9c-ba24-774f7eebf624",
+   "name": "Read In season",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    660,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Customer stories",
+     "mode": "name"
+    },
+    "filtersUI": {
+     "values": [
+      {
+       "lookupColumn": "approved",
+       "lookupValue": "yes"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "1ed8e7a6-06bc-421f-990f-5be968beb364",
+   "name": "Read Customer stories",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Approved offers",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "09424d3b-c0f8-4a26-89a7-8b013457320c",
+   "name": "Read Approved offers",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const rows = (n) => $(n).all().map(i => i.json).filter(r => Object.keys(r).length);\nconst prices = rows('Read Price list');\nreturn [{ json: {\n  prices: prices.map(p => `${p.product}: ₦${p.price}`),\n  season: rows('Read In season').map(s => `${s.item}${s.note ? ' (' + s.note + ')' : ''}`),\n  story: (rows('Read Customer stories')[0] || {}).story || '',\n  offers: rows('Read Approved offers').map(o => o.offer),\n} }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "d60afeef-3ca3-4ee0-896b-be35699459c1",
+   "name": "Facts",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Prices this week:\n{{ $json.prices.join('\\n') }}\n\nIn season:\n{{ $json.season.join('\\n') }}\n\nApproved customer story:\n{{ $json.story || 'none this week' }}\n\nApproved offers (the only offers allowed):\n{{ $json.offers.join('\\n') || 'none' }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "You write Harvest Lane's weekly newsletter for customers who asked for weekly prices and offers. Sections: what's in season, this week's prices, one kitchen tip, one customer story (only the approved one). Use only the prices and offers given, written exactly as given. Never invent a discount, offer, promise or claim. Warm, short, plain English. Return subject_options (exactly 3, under 50 characters), preview_text, and sections (heading, body)."
+      }
+     ]
+    }
+   },
+   "id": "1098f769-0775-407e-aea6-94a5fe626868",
+   "name": "Draft newsletter",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    1540,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "e30fc406-e21a-42d8-ade5-ce85c0eb034d",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    1540,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject_options\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"minItems\": 3,\n      \"maxItems\": 3\n    },\n    \"preview_text\": {\n      \"type\": \"string\"\n    },\n    \"sections\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"heading\": {\n            \"type\": \"string\"\n          },\n          \"body\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"heading\",\n          \"body\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"subject_options\",\n    \"preview_text\",\n    \"sections\"\n  ]\n}"
+   },
+   "id": "a04c8605-0f99-41f2-959b-4d162c8e9b67",
+   "name": "Newsletter format",
+   "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+   "typeVersion": 1.2,
+   "position": [
+    1760,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Blocks any price, discount or offer that isn't in the sheets.\nconst f = $('Facts').first().json;\nconst o = $json.output;\nconst text = [...o.subject_options, o.preview_text, ...o.sections.map(s => s.heading + ' ' + s.body)].join('\\n');\nconst allowedAmounts = new Set(f.prices.map(p => (p.match(/₦\\s?([\\d,]+)/) || [, ''])[1].replace(/,/g, '')).filter(Boolean));\nconst offersText = f.offers.join(' ').toLowerCase();\nconst problems = [];\nfor (const a of text.match(/₦\\s?[\\d,]+/g) || []) {\n  const n = a.replace(/[^\\d]/g, '');\n  if (!allowedAmounts.has(n) && !offersText.includes(n)) problems.push(`price ${a} is not in the price list`);\n}\nfor (const p of text.match(/\\d+\\s?%/g) || []) if (!offersText.includes(p.replace(/\\s/g, ''))) problems.push(`discount ${p} is not an approved offer`);\nif (/\\b(discount|% off|buy one get one|free delivery)\\b/i.test(text) && !f.offers.length) problems.push('mentions an offer but no offer is approved');\nreturn [{ json: { ...o, problems, passes: problems.length === 0 } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "47891bd6-5e29-4201-bce4-411d85919db7",
+   "name": "Check prices and offers",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1760,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "78a2c33a-82db-4057-a856-4bdff1c812f1",
+       "leftValue": "={{ $json.passes }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "86d5726b-93a8-4772-9e95-6ef34daeb2ea",
+   "name": "Passes?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1980,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Newsletter draft blocked: {{ $json.problems.join('; ') }}. Fix the sheets or run again.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "a9b1456c-d5c9-48d9-8da6-f3a60996a0ba",
+   "name": "Blocked: tell Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2200,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "sendAndWait",
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "message": "=Newsletter draft for this week\n\nSubjects:\n1. {{ $json.subject_options[0] }}\n2. {{ $json.subject_options[1] }}\n3. {{ $json.subject_options[2] }}\nPreview: {{ $json.preview_text }}\n\n{{ $json.sections.map(s => s.heading.toUpperCase() + '\\n' + s.body).join('\\n\\n') }}",
+    "responseType": "customForm",
+    "formFields": {
+     "values": [
+      {
+       "fieldLabel": "Subject",
+       "fieldType": "dropdown",
+       "fieldOptions": {
+        "values": [
+         {
+          "option": "1"
+         },
+         {
+          "option": "2"
+         },
+         {
+          "option": "3"
+         }
+        ]
+       },
+       "requiredField": true
+      },
+      {
+       "fieldLabel": "Decision",
+       "fieldType": "dropdown",
+       "fieldOptions": {
+        "values": [
+         {
+          "option": "Approve"
+         },
+         {
+          "option": "Reject"
+         }
+        ]
+       },
+       "requiredField": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "9a70512c-bca6-4097-8d70-480b8de28d19",
+   "name": "Tolu picks and approves",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2200,
+    -54
+   ],
+   "webhookId": "005bfba2-a4c7-4353-810d-ab8311821ffd"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "167b28a3-24be-47ec-873f-78faa983b999",
+       "leftValue": "={{ ($json.data || $json).Decision }}",
+       "rightValue": "Approve",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c3570510-86e5-4bcd-b265-eaf7d4c40fcc",
+   "name": "Approved?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    2420,
+    -54
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "a5d03c4c-f4c5-4b7f-8876-5ff9449343c7",
+   "name": "Rejected: nothing sent",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    2640,
+    108
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const d = $('Check prices and offers').first().json;\nconst cfg = $('Config').first().json;\nconst choice = Number(($json.data || $json).Subject || 1) - 1;\nconst week = 'week' + Math.ceil((((new Date() - new Date(new Date().getFullYear(), 0, 1)) / 864e5) + 1) / 7);\nconst link = `${cfg.order_link}${cfg.order_link.includes('?') ? '&' : '?'}utm_source=email&utm_medium=newsletter&utm_campaign=${week}`;\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\n/g, '<br>');\nconst unsubscribe = '{' + '{ unsubscribe }' + '}'; // Brevo's unsubscribe tag, built in pieces\nconst html = `<html><body style=\"font-family:Arial,sans-serif;max-width:600px;margin:auto\">\n${d.sections.map(s => `<h2>${esc(s.heading)}</h2><p>${esc(s.body)}</p>`).join('\\n')}\n<p><a href=\"${link}\">Order for tomorrow morning</a></p>\n<p style=\"font-size:12px;color:#666\">Harvest Lane, Bodija, Ibadan. You get this because you ticked \"Send me weekly prices and offers\".\n<a href=\"${unsubscribe}\">Unsubscribe</a> in one tap.</p></body></html>`;\nreturn [{ json: { name: `Newsletter ${week}`, subject: d.subject_options[choice], preview_text: d.preview_text, html,\n  list_id: Number(cfg.test_mode ? cfg.test_list_id : cfg.list_id) } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "ed4e93ce-d4d9-4a83-9426-d2e0fe3ce1f3",
+   "name": "Build email HTML",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2640,
+    -108
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.brevo.com/v3/emailCampaigns",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ name: $json.name, subject: $json.subject, previewText: $json.preview_text, sender: { name: 'Harvest Lane', email: 'news@mail.harvestlane.example' }, htmlContent: $json.html, recipients: { listIds: [ $json.list_id ] } }) }}",
+    "options": {}
+   },
+   "id": "cb4f070a-7067-4470-baa1-58fcfde88b1f",
+   "name": "Brevo · create campaign",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2860,
+    -108
+   ]
+  },
+  {
+   "parameters": {
+    "resume": "specificTime",
+    "dateTime": "={{ $today.plus({ hours: 17 }).toISO() }}"
+   },
+   "id": "1aff92e3-1140-4441-b1a4-6928f706713d",
+   "name": "Wait until 17:00",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    3080,
+    -108
+   ],
+   "webhookId": "be3e1e4f-e42e-455c-a533-673bbfa83363"
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Settings",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "ce939c77-538e-4165-8871-84ce0806b1bf",
+   "name": "Read Settings",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    3300,
+    -108
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "3a79feb6-31ef-4c37-8851-7eb13eeeda97",
+       "leftValue": "={{ $input.all().some(i => i.json.setting === 'email_paused' && String(i.json.value).toLowerCase() === 'true') }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "a8d099b9-6637-4d91-b025-5e6f778d1599",
+   "name": "Email paused?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    3520,
+    -108
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "Newsletter NOT sent: email_paused is on (complaints passed 0.1% or Tolu paused it). Check frequency and relevance first.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "8e8a26ab-61bc-4e13-b4e6-5469a8bcac6e",
+   "name": "Paused: tell Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    3740,
+    36
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "=https://api.brevo.com/v3/emailCampaigns/{{ $('Brevo · create campaign').first().json.id }}/sendNow",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "options": {}
+   },
+   "id": "c59c1a76-a57e-4363-be7b-c5813e97e26b",
+   "name": "Brevo · send now",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    3740,
+    -216
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Newsletter sent: {{ $('Build email HTML').first().json.subject }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "abeec618-2f09-4da2-9a16-c56d9965603e",
+   "name": "Sent: tell Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    3960,
+    -216
+   ]
+  }
+ ],
+ "connections": {
+  "Thursdays 10:00": {
+   "main": [
+    [
+     {
+      "node": "Config",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Config": {
+   "main": [
+    [
+     {
+      "node": "Read Price list",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Price list": {
+   "main": [
+    [
+     {
+      "node": "Read In season",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read In season": {
+   "main": [
+    [
+     {
+      "node": "Read Customer stories",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Customer stories": {
+   "main": [
+    [
+     {
+      "node": "Read Approved offers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Approved offers": {
+   "main": [
+    [
+     {
+      "node": "Facts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Facts": {
+   "main": [
+    [
+     {
+      "node": "Draft newsletter",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Draft newsletter": {
+   "main": [
+    [
+     {
+      "node": "Check prices and offers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Check prices and offers": {
+   "main": [
+    [
+     {
+      "node": "Passes?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Draft newsletter",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Newsletter format": {
+   "ai_outputParser": [
+    [
+     {
+      "node": "Draft newsletter",
+      "type": "ai_outputParser",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Passes?": {
+   "main": [
+    [
+     {
+      "node": "Tolu picks and approves",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Blocked: tell Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Tolu picks and approves": {
+   "main": [
+    [
+     {
+      "node": "Approved?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Approved?": {
+   "main": [
+    [
+     {
+      "node": "Build email HTML",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Rejected: nothing sent",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Build email HTML": {
+   "main": [
+    [
+     {
+      "node": "Brevo · create campaign",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Brevo · create campaign": {
+   "main": [
+    [
+     {
+      "node": "Wait until 17:00",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Wait until 17:00": {
+   "main": [
+    [
+     {
+      "node": "Read Settings",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Settings": {
+   "main": [
+    [
+     {
+      "node": "Email paused?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Email paused?": {
+   "main": [
+    [
+     {
+      "node": "Paused: tell Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Brevo · send now",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Brevo · send now": {
+   "main": [
+    [
+     {
+      "node": "Sent: tell Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

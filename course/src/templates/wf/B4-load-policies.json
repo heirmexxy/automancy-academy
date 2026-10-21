@@ -1,0 +1,269 @@
+{
+  "name": "HL · Load policies (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Load policies (B4)\nBoss 4, D1 + curveball 1. One workflow, so the old version can't be forgotten:\n1. Delete the old chunks for this source (Postgres).\n2. Download the policy (a Google Doc exported as text, headings as ## lines).\n3. Split into sections in code, then insert with metadata source, section and version.\nAfter every load, re-run the evaluation harness (add a case for the new rule, e.g. must_include \"10%\").\n\n**Credentials:** Postgres (Supabase DB); Google Drive OAuth2; Supabase; OpenAI (embeddings).\n**Replace:** YOUR_POLICY_DOC_ID; YOUR_POLICY_VERSION (e.g. 2026-11-01) in Default Data Loader; policies.txt if you use a different source name (2 places).",
+        "height": 440,
+        "width": 460
+      },
+      "id": "6c1fbc29-c229-435d-9ea7-f8fe736737c3",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "433a69c8-d268-4146-9131-327d79947fa1",
+      "name": "Load policies",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM documents WHERE metadata->>'source' = 'policies.txt';",
+        "options": {}
+      },
+      "id": "22e23dc4-2a55-4303-9f06-99dda1a2ffcf",
+      "name": "Delete old version",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/drive/v3/files/YOUR_POLICY_DOC_ID/export",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mimeType",
+              "value": "text/plain"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "c39ce050-cf3b-46da-9f7b-717a97fe0fa0",
+      "name": "Download policy text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// One item per policy section, so every chunk carries its section name in metadata.\nconst text = String($input.first().json.data ?? $input.first().json ?? '');\nconst parts = text.split(/\\n(?=##\\s)/).map(s => s.trim()).filter(Boolean);\nreturn parts.map(p => {\n  const [head, ...rest] = p.split('\\n');\n  return { json: { section: head.replace(/^#+\\s*/, '').trim(), text: p } };\n});"
+      },
+      "id": "1b9a7fbd-7ad4-4bd2-ae4a-31f777952fdf",
+      "name": "Split into sections",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "0e57eafe-dd3d-4127-b1e1-aa3fbadea9ad",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        900,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "0a352b4f-444e-4ac7-8077-e311b333992f",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "json",
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "policies.txt"
+              },
+              {
+                "name": "section",
+                "value": "={{ $json.section }}"
+              },
+              {
+                "name": "version",
+                "value": "YOUR_POLICY_VERSION"
+              }
+            ]
+          }
+        }
+      },
+      "id": "437af52d-9598-4d44-8778-3e35a74e38c6",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        980,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 80,
+        "options": {}
+      },
+      "id": "cfb9f48b-8306-41c3-a4ab-a5bb6eddec3f",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        980,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Load policies": {
+      "main": [
+        [
+          {
+            "node": "Delete old version",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete old version": {
+      "main": [
+        [
+          {
+            "node": "Download policy text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download policy text": {
+      "main": [
+        [
+          {
+            "node": "Split into sections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into sections": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

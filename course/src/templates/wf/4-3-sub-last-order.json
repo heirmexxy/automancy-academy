@@ -1,0 +1,112 @@
+{
+  "name": "SUB · Last order",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Last order\nLesson 4.3. The get_last_order tool: input chat_id (mapped from the Telegram Trigger by the agent workflow, never from the model). Reads Orders where chat_id matches, newest first, and returns the latest order's items and date, or {\"found\": false}.\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID.\nOrders columns: order_id, chat_id, items_json, subtotal, delivery_fee, total, delivery_date, area, status, created_at.",
+        "height": 380,
+        "width": 380
+      },
+      "id": "38524774-0ebd-4696-873f-1d6e8cfcbd56",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a65cc50d-e23d-42cc-86e4-e9e9e42740e6",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "chat_id",
+              "lookupValue": "={{ $('When Executed by Another Workflow').first().json.chat_id }}"
+            }
+          ]
+        }
+      },
+      "id": "bddca9ca-2f4c-42ba-89cd-d8c20478fa59",
+      "name": "Orders for this chat",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Long-term memory: this customer's newest order, from the Orders sheet.\nconst chatId = String($('When Executed by Another Workflow').first().json.chat_id ?? '');\nconst rows = $input.all().map(i => i.json)\n  .filter(r => r.order_id && String(r.chat_id) === chatId)\n  .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));\nif (!chatId || !rows.length) return [{ json: { found: false } }];\nconst o = rows[0];\nlet items;\ntry { items = JSON.parse(o.items_json).map(l => ({ product: l.name, qty: l.qty, unit: l.unit })); }\ncatch (e) { items = o.items_json; }\nreturn [{ json: { found: true, order_id: o.order_id, items, date: o.delivery_date || o.created_at } }];"
+      },
+      "id": "690b6cd5-9f6c-4380-99f3-f4d0b43c37c0",
+      "name": "Latest order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Orders for this chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders for this chat": {
+      "main": [
+        [
+          {
+            "node": "Latest order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

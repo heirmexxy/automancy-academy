@@ -1,0 +1,19 @@
+{"id": "0.4", "items": [], "walk": {
+  "title": "Solve it: rebuild Harvest Lane's order sheet",
+  "sample": "Tolu's Orders_final_2 tab · order HL-0043 for Mrs Adebayo · two Mrs Ades",
+  "steps": [
+    {"at": null, "say": "This is Tolu's real order tab. It was built for Tolu's eyes, so it breaks every automation. We'll rebuild it so machines, and Tolu, can trust it.", "show": ["Tab: Orders_final_2", "Two customers both called Mrs Ade"]},
+    {"at": "1", "say": "Go rule by rule. There's a title above the headers, several products crammed into one cell, and an amount column mixing text and numbers.", "show": ["Rule 1: title row above headers", "Rule 2: \"2 tomato, 1 tatashe\" in one cell", "Rule 3: ₦35,500 next to 13500"]},
+    {"at": "1", "say": "There's a total row and a blank row inside the data, VIP shown only by colour, and no IDs, so the two Mrs Ades are the same person to a machine.", "show": ["Rule 4: TOTAL row + blank row", "Rule 6: yellow means VIP", "Rule 7: no IDs"], "data": "phones lost zeros · 4 spellings of paid"},
+    {"at": "2", "say": "Everything with its own identity gets its own tab: customers, products, orders, and the items inside each order.", "show": ["Customers · Products", "Orders · Order_Items"], "data": "4 linked tables"},
+    {"at": "2", "say": "Each tab has an ID in column A, and the many side stores the ID of the one side. Orders point to a customer; items point to an order and a product.", "show": ["Orders.customer_id → Customers", "Order_Items.order_id → Orders", "Order_Items.sku → Products"]},
+    {"at": "3", "say": "Now formulas, in row two, filled down. The customer's name is looked up by ID, with a clear message if it's not found.", "show": ["=XLOOKUP(C2, Customers!A:A, Customers!B:B, \"Unknown customer\")"]},
+    {"at": "3", "say": "The order total is calculated, never typed: add up the line totals that belong to this order, then the delivery fee.", "show": ["items_total: =SUMIFS(Order_Items!F:F, Order_Items!A:A, A2)", "total: =H2 + F2", "line_total: =D2 * E2"]},
+    {"at": "3", "say": "Notice the unit price is stored on each item, not looked up. Prices change, and last month's orders must still show what the customer actually paid.", "show": ["Order_Items.unit_price: typed in once"]},
+    {"at": "4", "say": "Load order HL-0043: one Orders row and two item rows. The total should match our hand calculation from Module 0.3.", "show": ["HL-0043 · CUST-0007 · fee 1500 · Paid"], "data": "items_total 34000 · total 35500"},
+    {"at": "5", "say": "Now the Mrs Ade test. Look up order HL-0045 by name and you might get the wrong lady. Look it up by customer ID and it's always the one in Mokola.", "show": ["HL-0045 → CUST-0015 (Mokola)", "HL-0044 → CUST-0012"], "data": "by ID: right address every time"},
+    {"at": "6", "say": "Finally, lock the inputs. Status becomes a dropdown that rejects anything else, because a machine sees Paid and paid as different words.", "show": ["Data validation → Dropdown, 5 statuses", "Reject the input"]},
+    {"at": "6", "say": "Phones become plain text so the zero survives, yes or no fields become checkboxes, and the formula columns are protected so nobody types over them.", "show": ["phone: Format → Number → Plain text", "is_vip, active: Insert → Checkbox", "Protect formula columns"]}
+  ],
+  "end": "One table per job, IDs for every link, totals that calculate themselves: that's a sheet every automation in this course can read and write."
+}}

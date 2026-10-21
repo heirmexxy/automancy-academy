@@ -1,0 +1,19 @@
+{"id": "0.5", "items": [], "walk": {
+  "title": "Solve it: a prompt that turns any order into clean JSON",
+  "sample": "10 test messages in English, Pidgin and Yoruba · e.g. \"abeg bring 3 bag onion come Bodija tomorrow morning\"",
+  "steps": [
+    {"at": null, "say": "Customers still type orders in English, Pidgin and Yoruba. We'll write a prompt that turns them into clean JSON, and prove it with a test, not a hope.", "show": ["Goal: 10 out of 10 on the test set", "Tool: any free chat app"]},
+    {"at": "1", "say": "Build the exam before the student. Ten messages, normal and tricky, each with the right answer written down first.", "show": ["#2 Pidgin, \"tomorrow\", phone with spaces", "#5 \"Same as last week pls\"", "#10 a price question, not an order"], "data": "10 messages · 10 expected answers"},
+    {"at": "2", "say": "Version one is the obvious one-line prompt. It looks fine on message one, but on the full set only four answers are usable.", "show": ["Extract the order from this customer message as JSON."], "data": "4/10"},
+    {"at": "2", "say": "Look at why. Markdown fences break the parser, an address and quantity were invented, and ugwu became pepper.", "show": ["Fences around JSON → parser fails", "Message 3: invented qty and address", "Message 7: \"Saturday\" kept as text"]},
+    {"at": "3", "say": "Version two adds a role, the SKU catalogue, only JSON, null when something isn't stated, and ISO dates from today's date.", "show": ["Only catalogue SKUs", "Not stated → null", "Unmatched products → \"unmatched\""], "data": "8/10"},
+    {"at": "3", "say": "Two still fail, because customers say rodo and the red one, and the catalogue only knew scotch bonnet.", "show": ["Message 4: \"rodo\" unmatched", "Message 9: guessed rodo for \"the red one\""]},
+    {"at": "4", "say": "Version three teaches the model our world: the local names customers really use, and one worked example in Pidgin.", "show": ["PEP-ROF-L rodo / ata rodo / scotch bonnet", "PEP-TATASHE-L \"the red one\"", "EXAMPLE: \"abeg 2 bag alubosa, Friday…\""]},
+    {"at": "4", "say": "It also gets a needs confirmation flag. Anything uncertain, or not an order at all, is marked for a human to check.", "show": ["\"needs_confirmation\": boolean", "Today is {{today}} (Africa/Lagos)"], "data": "10/10"},
+    {"at": "5", "say": "Compare the three versions side by side. Each one fixed the failures the last one revealed, and you can see it in the score.", "show": ["v1 4/10 · v2 8/10 · v3 10/10"]},
+    {"at": "5", "say": "Check the hard ones. Message ten is a price question, so items is empty and it's flagged for Tolu.", "show": ["\"items\": []", "\"needs_confirmation\": true"], "data": "no invented order"},
+    {"at": "6", "say": "Notice what the AI is not allowed to do: no prices and no totals. The sheet from Module 0.4 does the maths with formulas.", "show": ["AI: read and structure", "Sheet: prices and totals"]},
+    {"at": "6", "say": "And a rules step checks every answer: does it parse, are the SKUs real, is every quantity above zero? Anything that fails goes to Tolu, not the sheet.", "show": ["Parses? SKUs in catalogue? qty > 0?", "Fail or needs_confirmation → Tolu"]}
+  ],
+  "end": "Tested on ten messages, scored, and improved until it passed: that's a prompt you can put inside an automation."
+}}

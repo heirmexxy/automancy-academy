@@ -1,0 +1,127 @@
+{
+ "name": "HL · 6 p.m. daily summary",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "mode": "select",
+    "spreadsheetId": "YOUR_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "filter": [
+     [
+      {
+       "a": "B",
+       "b": "{{formatDate(now; \"YYYY-MM-DD\")}}",
+       "o": "text:contain"
+      }
+     ]
+    ],
+    "sortOrder": "asc",
+    "limit": 500
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "util:NumericAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 1,
+    "function": "SUM"
+   },
+   "mapper": {
+    "value": "{{1.total}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 3,
+   "module": "util:NumericAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 1,
+    "function": "COUNT"
+   },
+   "mapper": {
+    "value": "{{1.order_id}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 4,
+   "module": "util:TextAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 1,
+    "rowSeparator": "\n"
+   },
+   "mapper": {
+    "value": "{{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 900,
+     "y": 0
+    }
+   }
+  },
+  {
+   "id": 5,
+   "module": "google-email:ActionSendEmail",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "to": [
+     "tolu@harvestlane.example"
+    ],
+    "subject": "Today: {{3.result}} orders · ₦{{formatNumber(2.result; 0; \".\"; \",\")}}",
+    "bodyType": "rawHtml",
+    "content": "Today: {{3.result}} orders · ₦{{formatNumber(2.result; 0; \".\"; \",\")}}<br><br>{{replace(4.text; newline; \"<br>\")}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 1200,
+     "y": 0
+    }
+   }
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

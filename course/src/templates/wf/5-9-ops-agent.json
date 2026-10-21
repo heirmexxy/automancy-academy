@@ -1,0 +1,671 @@
+{
+  "name": "CRM · Ops Agent (weekly health check)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## CRM · Ops Agent (Lesson 5.9)\nEvery Monday at 07:00. An AI Agent with READ-ONLY tools (search companies, contacts, deals and activities; get the pipeline and properties; get last quarter's won and lost deals) plus ONE write tool, propose_change, which only adds a row to the Supabase crm_proposals table.\nThe agent proposes; Tolu approves or rejects each proposal on Telegram; a SEPARATE executor workflow applies approved rows from a fixed allow-list. It can read anything but change nothing.\n\nCredentials: Header Auth \"HubSpot read-only\" (Name Authorization, Value Bearer + the token of a SECOND private app, \"n8n CRM Ops (read-only)\", with read scopes only) on every HubSpot tool; OpenAI; Postgres (Supabase); Telegram.\nPlaceholders: YOUR_MODEL, YOUR_PROPOSE_CHANGE_WORKFLOW_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 400,
+        "width": 700
+      },
+      "id": "df900e9f-9b37-4934-829c-0db374413fad",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Supabase tables\n-- Run once in Supabase\ncreate table crm_proposals (\n  id bigserial primary key, created_at timestamptz default now(),\n  action text, target_ids jsonb, details jsonb, evidence text,\n  expected_effect text, reversible boolean,\n  status text default 'proposed', -- proposed | approved | rejected | executed | blocked | failed\n  decided_by text, decided_at timestamptz,\n  before_values jsonb, result text, executed_at timestamptz);\ncreate table score_weights (id bigserial primary key,\n  name text, value numeric, evidence text, at timestamptz default now());\nalter table customers add column if not exists crm_contact_id text;\nalter table customers add column if not exists crm_deal_id text;\n\nCreate a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "height": 460,
+        "width": 700
+      },
+      "id": "e4a5d04c-9de1-4625-8323-5b1c3ffba1d6",
+      "name": "Tables",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "1691cc4b-f777-49ab-9d20-31afcc97f4c2",
+      "name": "Mondays 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select action, target_ids, details, expected_effect, result, executed_at from crm_proposals where status = 'executed' and executed_at > now() - interval '8 days';",
+        "options": {}
+      },
+      "id": "dcff9199-1379-43ca-92fd-832120b4e5ab",
+      "name": "Last week's changes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json).filter(r => r.action);\nreturn [{ json: { last_week: rows.length ? rows.map(r => `${r.action}: ${JSON.stringify(r.details)} -> ${r.result} (expected: ${r.expected_effect})`).join('\\n') : 'No changes were executed last week.' } }];\n",
+        "mode": "runOnceForAllItems"
+      },
+      "id": "c6dbdbe8-8d07-4ece-a669-38cd7aa4aa44",
+      "name": "What changed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Run this Monday's CRM health check. Today is {{ $now.toISODate() }}.\n\nChanges executed last week:\n{{ $json.last_week }}",
+        "options": {
+          "systemMessage": "Find problems in data, pipeline, score and adoption. Propose only actions on the allowed list, each with evidence. Never propose deleting, changing a stage, messaging customers or changing permissions.\n\nAllowed list (propose_change action): merge_companies (same verified domain), bulk_update_property (clean dropdown values in bulk), create_task (for a deal's owner), require_field (make a field required at a stage), score_weight (a new weight, tested on last quarter first).\nCheck: Data - duplicate companies and contacts, empty required fields, values outside the dropdowns (IG, insta). Pipeline - deals stuck past 14 days in a stage, deals with no owner or next step, stages nobody uses. Score - did last quarter's buyers score 65 or more? If not, the score needs re-calibrating. Adoption - who logged activity this week, and whose deals have none.\nYou can read everything and change nothing. Every proposal needs target_ids, details, evidence (counts and record IDs) and expected_effect.\nStart with what last week's approved changes achieved, then end with a five-line health report: Data, Pipeline, Score, Adoption, Proposals made."
+        }
+      },
+      "id": "91240abb-8138-4287-ac67-362a1ed47705",
+      "name": "CRM Ops Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "6fba09c9-f992-4560-8ea5-ae0af12ff269",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Search HubSpot companies.",
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"filterGroups\": {filterGroups}, \"properties\": {properties}, \"limit\": 100 }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "filterGroups",
+              "description": "HubSpot search filterGroups array, for example [ { \"filters\": [ { \"propertyName\": \"domain\", \"operator\": \"HAS_PROPERTY\" } ] } ]; use [] for all",
+              "type": "json"
+            },
+            {
+              "name": "properties",
+              "description": "array of property names to return",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1ad14d2-48c9-44eb-83be-bec386730240",
+      "name": "search_companies",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Search HubSpot contacts.",
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"filterGroups\": {filterGroups}, \"properties\": {properties}, \"limit\": 100 }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "filterGroups",
+              "description": "HubSpot search filterGroups array, for example [ { \"filters\": [ { \"propertyName\": \"domain\", \"operator\": \"HAS_PROPERTY\" } ] } ]; use [] for all",
+              "type": "json"
+            },
+            {
+              "name": "properties",
+              "description": "array of property names to return",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "974d99ff-acf4-4e44-8acf-859319375622",
+      "name": "search_contacts",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        638,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Search HubSpot deals (open and closed).",
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"filterGroups\": {filterGroups}, \"properties\": {properties}, \"limit\": 100 }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "filterGroups",
+              "description": "HubSpot search filterGroups array, for example [ { \"filters\": [ { \"propertyName\": \"domain\", \"operator\": \"HAS_PROPERTY\" } ] } ]; use [] for all",
+              "type": "json"
+            },
+            {
+              "name": "properties",
+              "description": "array of property names to return",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6269ff1e-5fbc-4068-9895-8e4d2c6cbfa2",
+      "name": "search_deals",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        836,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Search logged activities (objectType notes, calls, meetings, emails or tasks), for example by hs_createdate and hubspot_owner_id.",
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/{objectType}/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"filterGroups\": {filterGroups}, \"properties\": {properties}, \"limit\": 100 }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "objectType",
+              "description": "notes, calls, meetings, emails or tasks",
+              "type": "string"
+            },
+            {
+              "name": "filterGroups",
+              "description": "HubSpot search filterGroups array, for example [ { \"filters\": [ { \"propertyName\": \"domain\", \"operator\": \"HAS_PROPERTY\" } ] } ]; use [] for all",
+              "type": "json"
+            },
+            {
+              "name": "properties",
+              "description": "array of property names to return",
+              "type": "json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1775a0fa-1c66-40d9-aab3-fc31d7cf63bb",
+      "name": "search_activities",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1034,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. The deal pipeline with its stages and win chances.",
+        "method": "GET",
+        "url": "https://api.hubapi.com/crm/v3/pipelines/deals",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "8b1379f3-812a-40e0-a80d-1bf9dcddbe65",
+      "name": "get_pipeline",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Property definitions (including dropdown options) for an object type.",
+        "method": "GET",
+        "url": "https://api.hubapi.com/crm/v3/properties/{objectType}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "objectType",
+              "description": "contacts, companies or deals",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a5fa4e4b-3921-40f4-a1d8-ec02cddf46f0",
+      "name": "get_properties",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1430,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Read-only. Won and lost deals closed since a date (milliseconds), for checking the score against real outcomes.",
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"filterGroups\": [ { \"filters\": [ { \"propertyName\": \"hs_is_closed\", \"operator\": \"EQ\", \"value\": \"true\" }, { \"propertyName\": \"closedate\", \"operator\": \"GTE\", \"value\": \"{since}\" } ] } ], \"properties\": [\"dealname\", \"hs_is_closed_won\", \"lost_reason\", \"closedate\"], \"limit\": 100 }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "since",
+              "description": "start of last quarter as milliseconds since 1970",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1d32c29-f916-4840-8056-878f776609de",
+      "name": "get_last_quarter_closed_deals",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1628,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "name": "propose_change",
+        "description": "The ONLY way to suggest a change. Adds a proposal for Tolu to approve; it changes nothing in HubSpot. action must be one of merge_companies, bulk_update_property, create_task, require_field, score_weight.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_PROPOSE_CHANGE_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"action\": {\n      \"type\": \"string\",\n      \"description\": \"merge_companies | bulk_update_property | create_task | require_field | score_weight\"\n    },\n    \"target_ids\": {\n      \"type\": \"string\",\n      \"description\": \"JSON array of HubSpot record IDs this affects\"\n    },\n    \"details\": {\n      \"type\": \"string\",\n      \"description\": \"JSON object: for merge_companies { primary_id, merge_id, domain }; bulk_update_property { object_type, property, from_values, to_value }; create_task { deal_id, subject, owner_id }; require_field { stage, property }; score_weight { name, value, tested_on }\"\n    },\n    \"evidence\": {\n      \"type\": \"string\",\n      \"description\": \"what you found: counts, record IDs, examples\"\n    },\n    \"expected_effect\": {\n      \"type\": \"string\",\n      \"description\": \"what will improve\"\n    },\n    \"reversible\": {\n      \"type\": \"boolean\",\n      \"description\": \"true if the change can be undone\"\n    }\n  },\n  \"required\": [\n    \"action\",\n    \"target_ids\",\n    \"details\",\n    \"evidence\",\n    \"expected_effect\",\n    \"reversible\"\n  ]\n}"
+      },
+      "id": "2640d9ae-e0c9-4a08-9b1d-d11c78ae8dd1",
+      "name": "propose_change",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1826,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=CRM health check\n\n{{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "eb9d4cb5-7ac9-4dd5-b57b-f506d9b66ca7",
+      "name": "Health report to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select id, action, target_ids, details, evidence, expected_effect, reversible from crm_proposals where status = 'proposed' and created_at > now() - interval '3 hours' order by id;",
+        "options": {}
+      },
+      "id": "b72d9ca2-3251-4df6-b76c-1f1a3aa48653",
+      "name": "This run's proposals",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "7558bf2c-4361-4e38-be30-bae822a1ca52",
+      "name": "One proposal at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3728d81f-76a6-43ba-ae8e-c47cb882b8a7",
+      "name": "All decided",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=Proposal #{{ $json.id }}: {{ $json.action }}\nTargets: {{ JSON.stringify($json.target_ids) }}\nDetails: {{ JSON.stringify($json.details) }}\nEvidence: {{ $json.evidence }}\nExpected: {{ $json.expected_effect }}\nReversible: {{ $json.reversible ? 'yes' : 'NO' }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {}
+      },
+      "id": "8f798145-620f-4aeb-b61d-b2171de7064b",
+      "name": "Approve or reject",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        90
+      ],
+      "webhookId": "00b4581d-f2f9-45fa-acca-c7972c316bda"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update crm_proposals set status = $1, decided_by = 'Tolu', decided_at = now() where id = $2 and status = 'proposed';",
+        "options": {
+          "queryReplacement": "={{ [ $json.data.approved ? 'approved' : 'rejected', $('One proposal at a time').item.json.id ] }}"
+        }
+      },
+      "id": "779e5579-e475-4eef-b9f4-278e1cb2eaae",
+      "name": "Record decision",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1760,
+        90
+      ]
+    }
+  ],
+  "connections": {
+    "search_companies": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_contacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_deals": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_activities": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_pipeline": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_properties": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_last_quarter_closed_deals": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "propose_change": {
+      "ai_tool": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mondays 07:00": {
+      "main": [
+        [
+          {
+            "node": "Last week's changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last week's changes": {
+      "main": [
+        [
+          {
+            "node": "What changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "What changed": {
+      "main": [
+        [
+          {
+            "node": "CRM Ops Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Ops Agent": {
+      "main": [
+        [
+          {
+            "node": "Health report to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health report to Tolu": {
+      "main": [
+        [
+          {
+            "node": "This run's proposals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "This run's proposals": {
+      "main": [
+        [
+          {
+            "node": "One proposal at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One proposal at a time": {
+      "main": [
+        [
+          {
+            "node": "All decided",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approve or reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve or reject": {
+      "main": [
+        [
+          {
+            "node": "Record decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record decision": {
+      "main": [
+        [
+          {
+            "node": "One proposal at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

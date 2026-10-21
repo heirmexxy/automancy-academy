@@ -1,0 +1,319 @@
+{
+ "name": "HL · WhatsApp adapter",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · WhatsApp adapter (Lesson 5.1)\nWhatsApp Cloud API test number -> filter -> normalise -> shared brain -> reply.\n\nCredentials:\n- WhatsApp OAuth (Meta app ID + app secret) on the WhatsApp Trigger.\n- WhatsApp API (access token + business account ID) on both WhatsApp send nodes. Use a permanent system user token, not the temporary dashboard token.\n- Telegram on Forward to Tolu.\n\nPlaceholders: YOUR_PHONE_NUMBER_ID, YOUR_TELEGRAM_CHAT_ID, YOUR_BRAIN_WORKFLOW_ID (the ID of SUB · Sage Desk brain).\n\nOne webhook per Meta app: test with a separate Meta app and number, never on the live webhook during business hours. Publish (activate) so Meta registers the production URL.",
+    "height": 420,
+    "width": 460
+   },
+   "id": "0c8981a0-c7bb-45f2-872f-51349121b6fa",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -520,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "updates": [
+     "messages"
+    ],
+    "options": {}
+   },
+   "id": "6f489e52-4504-4950-a02f-7e923f65e122",
+   "name": "WhatsApp Trigger",
+   "type": "n8n-nodes-base.whatsAppTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "7f6a1dd3-45e0-4c60-9108-9554a3781eb9"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "36171253-f599-4836-8b97-b9ae9413176a",
+       "leftValue": "={{ $json.messages?.[0]?.type }}",
+       "rightValue": "text",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "3e9c1ed7-4f31-4b10-87f4-9030fff2fa21",
+   "name": "Text message?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "02a6574b-8c54-4475-a86d-79a119b715d7",
+       "name": "channel",
+       "value": "whatsapp",
+       "type": "string"
+      },
+      {
+       "id": "58eebf6c-fb29-4892-9ebd-f22925d9b54f",
+       "name": "user_id",
+       "value": "=wa-{{ $json.messages[0].from }}",
+       "type": "string"
+      },
+      {
+       "id": "98cf4f1e-b988-485b-85c9-b34535da43c5",
+       "name": "text",
+       "value": "={{ $json.messages[0].text.body }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "fe6046df-7533-4960-ac36-0cad0859131d",
+   "name": "Edit Fields",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    440,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_BRAIN_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "c269e6f2-7101-4493-9964-1d06ece7e5f2",
+   "name": "SUB · Sage Desk brain",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "send",
+    "phoneNumberId": "YOUR_PHONE_NUMBER_ID",
+    "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+    "textBody": "={{ $json.reply }}",
+    "additionalFields": {}
+   },
+   "id": "4ccd6c99-d8c4-48d0-81f1-e08b8ea2cffe",
+   "name": "Send reply",
+   "type": "n8n-nodes-base.whatsApp",
+   "typeVersion": 1,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "19ac83f8-080a-4b9b-8e79-8015c4bd9bd6",
+       "leftValue": "={{ $json.messages?.[0]?.from }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "exists",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "be2570fd-fd63-4860-9239-a5e2fc91564f",
+   "name": "Customer message (not text)?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "send",
+    "phoneNumberId": "YOUR_PHONE_NUMBER_ID",
+    "recipientPhoneNumber": "={{ $json.messages[0].from }}",
+    "textBody": "Thank you! Please type your message so we can help you quickly. Tolu will also see what you sent.",
+    "additionalFields": {}
+   },
+   "id": "9e754f3f-18d8-476c-9278-f78bd51b2f31",
+   "name": "Please type your message",
+   "type": "n8n-nodes-base.whatsApp",
+   "typeVersion": 1,
+   "position": [
+    660,
+    125
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=WhatsApp non-text message ({{ $('WhatsApp Trigger').item.json.messages[0].type }}) from wa-{{ $('WhatsApp Trigger').item.json.messages[0].from }}. Open WhatsApp Manager to see it.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "3edeb0c6-da54-4f66-9b3d-033942f6d253",
+   "name": "Forward to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    125
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "6f097585-5a9c-4a67-a01c-d65e765d626b",
+   "name": "Receipt: ignore",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    660,
+    306
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Copy the exact paths\nRun one test message and check the trigger's output. Sent, delivered and read receipts arrive on the same webhook (in statuses, with no messages), so they go to Receipt: ignore and never reach the brain.",
+    "height": 200,
+    "width": 360
+   },
+   "id": "c35c09a9-6bb9-482e-828f-f8e6ee48e2d0",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    440,
+    -420
+   ]
+  }
+ ],
+ "connections": {
+  "WhatsApp Trigger": {
+   "main": [
+    [
+     {
+      "node": "Text message?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Text message?": {
+   "main": [
+    [
+     {
+      "node": "Edit Fields",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Customer message (not text)?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Edit Fields": {
+   "main": [
+    [
+     {
+      "node": "SUB · Sage Desk brain",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "SUB · Sage Desk brain": {
+   "main": [
+    [
+     {
+      "node": "Send reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Customer message (not text)?": {
+   "main": [
+    [
+     {
+      "node": "Please type your message",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Receipt: ignore",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Please type your message": {
+   "main": [
+    [
+     {
+      "node": "Forward to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

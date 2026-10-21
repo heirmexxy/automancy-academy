@@ -1,0 +1,541 @@
+{
+ "name": "HL · Supplier invoices → books, checked",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-drive:watchFilesInAFolder",
+   "version": 1,
+   "parameters": {
+    "select": "map",
+    "folderId": "YOUR_SUPPLIER_INVOICES_FOLDER_ID",
+    "types": [
+     "file"
+    ],
+    "limit": 5
+   },
+   "mapper": {},
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Watch Supplier invoices"
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "google-drive:getAFile",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "select": "map",
+    "file": "{{1.id}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Download a File"
+    }
+   }
+  },
+  {
+   "id": 3,
+   "module": "openai-gpt-3:CreateCompletion",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "select": "chat",
+    "model": "YOUR_MODEL",
+    "max_tokens": "2000",
+    "temperature": "0",
+    "response_format": "json_object",
+    "n_completions": "1",
+    "messages": [
+     {
+      "role": "system",
+      "content": "You extract supplier invoices for Harvest Lane, a produce business in\nNigeria. Read the attached invoice (it may be a PDF, a photo or handwritten).\nReturn ONLY JSON in exactly this shape:\n{ \"supplier\": string, \"invoice_number\": string|null,\n  \"invoice_date\": \"YYYY-MM-DD\"|null, \"currency\": \"NGN\",\n  \"lines\": [ { \"description\": string, \"qty\": number,\n               \"unit_price\": number, \"line_total\": number } ],\n  \"subtotal\": number|null, \"vat\": number|null, \"total\": number|null,\n  \"unreadable_parts\": [string] }\nRules: numbers without ₦ or commas. If a value is unclear or missing,\nuse null and describe it in unreadable_parts. Never guess a number."
+     },
+     {
+      "role": "user",
+      "content": "Invoice file: {{1.name}} (attached)."
+     }
+    ]
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0,
+     "name": "Read invoice (AI)"
+    }
+   },
+   "onerror": [
+    {
+     "id": 30,
+     "module": "google-email:ActionSendEmail",
+     "version": 4,
+     "parameters": {},
+     "mapper": {
+      "to": [
+       "tolu@harvestlane.example"
+      ],
+      "subject": "Invoice reader failed · {{1.name}}",
+      "bodyType": "rawHtml",
+      "contentType": "text",
+      "content": "{{error.type}}: {{error.message}}\nFile: {{1.webViewLink}}\nMake will retry twice; check incomplete executions if this repeats."
+     },
+     "metadata": {
+      "designer": {
+       "x": 600,
+       "y": 250,
+       "name": "Alert Tolu (AI step)"
+      }
+     }
+    },
+    {
+     "id": 31,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 2,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 900,
+       "y": 250,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "module": "json:ParseJSON",
+   "version": 1,
+   "parameters": {
+    "type": null
+   },
+   "mapper": {
+    "json": "{{3.result}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 900,
+     "y": 0,
+     "name": "Parse JSON"
+    }
+   }
+  },
+  {
+   "id": 40,
+   "module": "builtin:BasicRouter",
+   "version": 1,
+   "parameters": {},
+   "mapper": null,
+   "metadata": {
+    "designer": {
+     "x": 1200,
+     "y": 0,
+     "name": "Any lines?"
+    }
+   },
+   "routes": [
+    {
+     "flow": [
+      {
+       "id": 5,
+       "module": "builtin:BasicFeeder",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "array": "{{4.lines}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 1500,
+         "y": -150,
+         "name": "Iterator · lines"
+        }
+       },
+       "filter": {
+        "name": "Has lines",
+        "conditions": [
+         [
+          {
+           "a": "{{length(4.lines)}}",
+           "b": "0",
+           "o": "number:greater"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "id": 6,
+       "module": "util:SetVariable2",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "name": "line_problem",
+        "scope": "roundtrip",
+        "value": "{{if(abs(5.qty * 5.unit_price - 5.line_total) > 1; 5.description + \": \" + 5.qty + \" x \" + 5.unit_price + \" is not \" + 5.line_total; emptystring)}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 1800,
+         "y": -150,
+         "name": "Line check"
+        }
+       }
+      },
+      {
+       "id": 7,
+       "module": "builtin:BasicAggregator",
+       "version": 1,
+       "parameters": {
+        "feeder": 5
+       },
+       "mapper": {
+        "line_total": "{{5.line_total}}",
+        "line_problem": "{{6.line_problem}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 2100,
+         "y": -150,
+         "name": "Array aggregator · lines"
+        }
+       }
+      },
+      {
+       "id": 8,
+       "module": "util:SetVariables",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "variables": [
+         {
+          "name": "lines_sum",
+          "value": "{{sum(map(7.array; \"line_total\"))}}"
+         },
+         {
+          "name": "bad_lines",
+          "value": "{{join(remove(map(7.array; \"line_problem\"); emptystring); \"; \")}}"
+         }
+        ],
+        "scope": "roundtrip"
+       },
+       "metadata": {
+        "designer": {
+         "x": 2400,
+         "y": -150,
+         "name": "Sum and bad lines"
+        }
+       }
+      },
+      {
+       "id": 9,
+       "module": "util:SetVariables",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "variables": [
+         {
+          "name": "review_reasons",
+          "value": "{{if(length(8.bad_lines) > 0; \"Line maths: \" + 8.bad_lines + \". \"; emptystring)}}{{if(abs(8.lines_sum - ifempty(4.subtotal; 0)) > 1; \"Lines add up to \" + 8.lines_sum + \" but subtotal is \" + ifempty(4.subtotal; \"missing\") + \". \"; emptystring)}}{{if(abs(ifempty(4.subtotal; 0) + ifempty(4.vat; 0) - ifempty(4.total; 0)) > 1; \"Subtotal + VAT does not equal total. \"; emptystring)}}{{if(ifempty(4.invoice_number; emptystring) = emptystring; \"No invoice number. \"; emptystring)}}{{if(length(4.unreadable_parts) > 0; \"Unreadable: \" + join(4.unreadable_parts; \", \") + \". \"; emptystring)}}"
+         }
+        ],
+        "scope": "roundtrip"
+       },
+       "metadata": {
+        "designer": {
+         "x": 2700,
+         "y": -150,
+         "name": "Verdict"
+        }
+       }
+      },
+      {
+       "id": 10,
+       "module": "builtin:BasicRouter",
+       "version": 1,
+       "parameters": {},
+       "mapper": null,
+       "metadata": {
+        "designer": {
+         "x": 3000,
+         "y": -150,
+         "name": "Save or review"
+        }
+       },
+       "routes": [
+        {
+         "flow": [
+          {
+           "id": 11,
+           "module": "google-sheets:addRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Supplier_Invoices",
+            "includesHeaders": true,
+            "insertUnformatted": false,
+            "valueInputOption": "USER_ENTERED",
+            "insertDataOption": "INSERT_ROWS",
+            "values": {
+             "0": "{{4.supplier}}",
+             "1": "{{4.invoice_number}}",
+             "2": "{{4.invoice_date}}",
+             "3": "{{4.subtotal}}",
+             "4": "{{4.vat}}",
+             "5": "{{4.total}}",
+             "6": "{{1.webViewLink}}",
+             "7": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+             "8": "{{if(ifempty(4.vat; 0) > 0 & abs(4.vat - 4.subtotal * 0.075) > 1; \"VAT isn't 7.5%\"; emptystring)}}"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 3300,
+             "y": -300,
+             "name": "Add to Supplier_Invoices"
+            }
+           },
+           "filter": {
+            "name": "Auto-save",
+            "conditions": [
+             [
+              {
+               "a": "{{length(trim(9.review_reasons))}}",
+               "b": "0",
+               "o": "number:equal"
+              }
+             ]
+            ]
+           }
+          },
+          {
+           "id": 12,
+           "module": "builtin:BasicFeeder",
+           "version": 1,
+           "parameters": {},
+           "mapper": {
+            "array": "{{4.lines}}"
+           },
+           "metadata": {
+            "designer": {
+             "x": 3600,
+             "y": -300,
+             "name": "Iterator · lines to save"
+            }
+           }
+          },
+          {
+           "id": 13,
+           "module": "google-sheets:addRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Invoice_Lines",
+            "includesHeaders": true,
+            "insertUnformatted": false,
+            "valueInputOption": "USER_ENTERED",
+            "insertDataOption": "INSERT_ROWS",
+            "values": {
+             "0": "{{4.invoice_number}}",
+             "1": "{{4.supplier}}",
+             "2": "{{4.invoice_date}}",
+             "3": "{{12.description}}",
+             "4": "{{12.qty}}",
+             "5": "{{12.unit_price}}",
+             "6": "{{12.line_total}}"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 3900,
+             "y": -300,
+             "name": "Add to Invoice_Lines"
+            }
+           }
+          }
+         ]
+        },
+        {
+         "flow": [
+          {
+           "id": 14,
+           "module": "google-sheets:addRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Needs_Review",
+            "includesHeaders": true,
+            "insertUnformatted": false,
+            "valueInputOption": "USER_ENTERED",
+            "insertDataOption": "INSERT_ROWS",
+            "values": {
+             "0": "{{1.name}}",
+             "1": "{{4.supplier}}",
+             "2": "{{4.invoice_number}}",
+             "3": "{{4.total}}",
+             "4": "{{9.review_reasons}}",
+             "5": "{{1.webViewLink}}",
+             "6": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+             "7": "New"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 3300,
+             "y": 0,
+             "name": "Add to Needs_Review"
+            }
+           },
+           "filter": {
+            "name": "Fallback · Review",
+            "conditions": [
+             [
+              {
+               "a": "{{length(trim(9.review_reasons))}}",
+               "b": "0",
+               "o": "number:greater"
+              }
+             ]
+            ]
+           }
+          },
+          {
+           "id": 15,
+           "module": "google-email:ActionSendEmail",
+           "version": 4,
+           "parameters": {},
+           "mapper": {
+            "to": [
+             "tolu@harvestlane.example"
+            ],
+            "subject": "Invoice needs a look · {{4.supplier}}",
+            "bodyType": "rawHtml",
+            "contentType": "text",
+            "content": "{{4.supplier}} {{ifempty(4.invoice_number; \"(no number)\")}} wasn't saved automatically.\nReasons: {{9.review_reasons}}\nFile: {{1.webViewLink}}\nIt's in Needs_Review."
+           },
+           "metadata": {
+            "designer": {
+             "x": 3600,
+             "y": 0,
+             "name": "Email Tolu (review)"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 16,
+       "module": "google-sheets:addRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+        "sheetId": "Needs_Review",
+        "includesHeaders": true,
+        "insertUnformatted": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertDataOption": "INSERT_ROWS",
+        "values": {
+         "0": "{{1.name}}",
+         "1": "{{4.supplier}}",
+         "2": "{{4.invoice_number}}",
+         "3": "{{4.total}}",
+         "4": "No line items could be read. {{join(4.unreadable_parts; \", \")}}",
+         "5": "{{1.webViewLink}}",
+         "6": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+         "7": "New"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 1500,
+         "y": 200,
+         "name": "Needs_Review (no lines)"
+        }
+       },
+       "filter": {
+        "name": "No lines",
+        "conditions": [
+         [
+          {
+           "a": "{{length(4.lines)}}",
+           "b": "0",
+           "o": "number:equal"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "id": 17,
+       "module": "google-email:ActionSendEmail",
+       "version": 4,
+       "parameters": {},
+       "mapper": {
+        "to": [
+         "tolu@harvestlane.example"
+        ],
+        "subject": "Invoice needs a look · {{1.name}}",
+        "bodyType": "rawHtml",
+        "contentType": "text",
+        "content": "No line items could be read from {{1.name}}.\nFile: {{1.webViewLink}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 1800,
+         "y": 200,
+         "name": "Email Tolu (no lines)"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": true,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

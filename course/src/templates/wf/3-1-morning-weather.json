@@ -1,0 +1,191 @@
+{
+  "name": "HL · Morning weather → Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Morning weather → Sheet (Lesson 3.1)\nEvery day at 06:30 (Lagos time) this gets Ibadan's forecast from Open-Meteo (no key needed), shapes it into one row with advice for the riders, and appends it to the HL Weather sheet.\n\n**Before you import: start n8n with a volume and your timezone**\n```\ndocker volume create n8n_data\n\ndocker run -it --name n8n -p 5678:5678 \\\n  -e GENERIC_TIMEZONE=\"Africa/Lagos\" \\\n  -e TZ=\"Africa/Lagos\" \\\n  -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \\\n  -e N8N_RUNNERS_ENABLED=true \\\n  -v n8n_data:/home/node/.n8n \\\n  n8nio/n8n\n```\nOpen http://localhost:5678 and create the owner account. (No Docker? Use an n8n Cloud trial.)\n\n**Credential:** Google Sheets (OAuth2). On Cloud, sign in with Google. Self-hosted: create an OAuth client in Google Cloud Console and paste the OAuth Redirect URL from n8n's credential window, character for character.\n\n**Placeholder:** YOUR_SHEET_ID in the Google Sheets node.",
+        "height": 620,
+        "width": 420
+      },
+      "id": "ba0a52b5-a4d3-4820-b73b-5fe815696d95",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 6,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "54900216-4229-4540-94dc-a01b17474b40",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=7.38&longitude=3.94&daily=temperature_2m_max,precipitation_sum,precipitation_probability_max&timezone=Africa%2FLagos&forecast_days=1",
+        "options": {}
+      },
+      "id": "77eed226-585c-4b20-9238-96c6bb7e9be8",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e74e006-8d88-4502-bff2-dd39fb6272ac",
+              "name": "date",
+              "value": "={{ $json.daily.time[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "f40ae914-bf0f-4a0f-b394-395c41e1eaa8",
+              "name": "max_temp_c",
+              "value": "={{ $json.daily.temperature_2m_max[0] }}",
+              "type": "number"
+            },
+            {
+              "id": "bd6b70d5-8f48-4922-ad3f-e32069e8ad90",
+              "name": "rain_chance",
+              "value": "={{ $json.daily.precipitation_probability_max[0] }}",
+              "type": "number"
+            },
+            {
+              "id": "e6bf03bc-251d-450f-8c19-139f10c160bc",
+              "name": "rain_mm",
+              "value": "={{ $json.daily.precipitation_sum[0] }}",
+              "type": "number"
+            },
+            {
+              "id": "77d65dfc-1964-4aa0-a8b7-d1e82010e428",
+              "name": "advice",
+              "value": "={{ $json.daily.precipitation_probability_max[0] >= 60 ? \"Rain likely: pack tarpaulins, start deliveries early\" : \"Dry day: normal routes\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14ed53d5-9a96-453c-8ab8-afc5a3b14629",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "ea79309b-5aec-4e20-88dd-a408a277a610",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## The sheet, then Publish\nSpreadsheet **HL Weather**, first tab (Sheet1), headers in row 1:\ndate · max_temp_c · rain_chance · rain_mm · advice\nMapping is Map Automatically, so the names must match exactly.\n\nClick **Execute workflow** once: a row appears. Then **Save**, then **Publish**. Saving alone never runs on a schedule. Tomorrow, check Executions for a run you didn't start.\n\nA laptop only runs this if Docker is up and the laptop is awake at 06:30 (moves to a server in 3.8).",
+        "height": 300,
+        "width": 440
+      },
+      "id": "0db290c1-2812-4fb7-9095-47593b7ddcc1",
+      "name": "Sheet and publish",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        330,
+        144
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

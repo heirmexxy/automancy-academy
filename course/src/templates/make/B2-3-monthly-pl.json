@@ -1,0 +1,701 @@
+{
+ "name": "Books · 3 Monthly P&L (1st, 07:00)",
+ "flow": [
+  {
+   "id": 1,
+   "module": "util:SetVariables",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "variables": [
+     {
+      "name": "this_first",
+      "value": "{{formatDate(setDate(now; 1); \"YYYY-MM-DD\")}}"
+     },
+     {
+      "name": "last_first",
+      "value": "{{formatDate(addMonths(setDate(now; 1); -1); \"YYYY-MM-DD\")}}"
+     },
+     {
+      "name": "month_label",
+      "value": "{{formatDate(addMonths(setDate(now; 1); -1); \"MMMM YYYY\")}}"
+     },
+     {
+      "name": "prev_label",
+      "value": "{{formatDate(addMonths(setDate(now; 1); -2); \"MMMM YYYY\")}}"
+     }
+    ],
+    "scope": "roundtrip"
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Month boundaries"
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_ORDERS_SHEET_ID",
+    "sheetId": "Orders",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "5000",
+    "filter": [
+     [
+      {
+       "a": "F",
+       "b": "Paid",
+       "o": "text:equal"
+      }
+     ]
+    ]
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Paid orders"
+    }
+   },
+   "onerror": [
+    {
+     "id": 20,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 3 Monthly P&L",
+       "2": "Search Orders",
+       "3": "",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 300,
+       "y": 250,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 21,
+     "module": "google-email:ActionSendEmail",
+     "version": 4,
+     "parameters": {},
+     "mapper": {
+      "to": [
+       "tolu@harvestlane.example"
+      ],
+      "subject": "Books system: Search Orders failed",
+      "bodyType": "rawHtml",
+      "contentType": "text",
+      "content": "B2 · 3 Monthly P&L · Search Orders\n{{error.type}}: {{error.message}}\n\nIt's in the Errors tab. Make will retry automatically if it can."
+     },
+     "metadata": {
+      "designer": {
+       "x": 600,
+       "y": 250,
+       "name": "Alert Tolu"
+      }
+     }
+    },
+    {
+     "id": 22,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 3,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 900,
+       "y": 250,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "module": "builtin:BasicAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 2
+   },
+   "mapper": {
+    "order_id": "{{2.`0`}}",
+    "total": "{{2.`7`}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0,
+     "name": "Orders last month"
+    }
+   },
+   "filter": {
+    "name": "Paid last month",
+    "conditions": [
+     [
+      {
+       "a": "{{formatDate(2.`12`; \"YYYY-MM-DD\")}}",
+       "b": "{{1.last_first}}",
+       "o": "text:greaterorequal"
+      },
+      {
+       "a": "{{formatDate(2.`12`; \"YYYY-MM-DD\")}}",
+       "b": "{{1.this_first}}",
+       "o": "text:less"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 4,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+    "sheetId": "Expenses",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "5000"
+   },
+   "metadata": {
+    "designer": {
+     "x": 900,
+     "y": 0,
+     "name": "All expenses"
+    }
+   },
+   "onerror": [
+    {
+     "id": 23,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 3 Monthly P&L",
+       "2": "Search Expenses",
+       "3": "",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 900,
+       "y": 450,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 24,
+     "module": "google-email:ActionSendEmail",
+     "version": 4,
+     "parameters": {},
+     "mapper": {
+      "to": [
+       "tolu@harvestlane.example"
+      ],
+      "subject": "Books system: Search Expenses failed",
+      "bodyType": "rawHtml",
+      "contentType": "text",
+      "content": "B2 · 3 Monthly P&L · Search Expenses\n{{error.type}}: {{error.message}}\n\nIt's in the Errors tab. Make will retry automatically if it can."
+     },
+     "metadata": {
+      "designer": {
+       "x": 1200,
+       "y": 450,
+       "name": "Alert Tolu"
+      }
+     }
+    },
+    {
+     "id": 25,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 3,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 1500,
+       "y": 450,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "module": "builtin:BasicAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 4
+   },
+   "mapper": {
+    "category": "{{4.`4`}}",
+    "amount_ex_vat": "{{4.`5`}}",
+    "vat": "{{4.`6`}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 1200,
+     "y": 0,
+     "name": "Expenses last month"
+    }
+   },
+   "filter": {
+    "name": "Dated last month",
+    "conditions": [
+     [
+      {
+       "a": "{{4.`1`}}",
+       "b": "{{1.last_first}}",
+       "o": "text:greaterorequal"
+      },
+      {
+       "a": "{{4.`1`}}",
+       "b": "{{1.this_first}}",
+       "o": "text:less"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 6,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+    "sheetId": "Monthly_PL",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "1",
+    "filter": [
+     [
+      {
+       "a": "A",
+       "b": "{{1.prev_label}}",
+       "o": "text:equal"
+      }
+     ]
+    ]
+   },
+   "metadata": {
+    "designer": {
+     "x": 1500,
+     "y": 0,
+     "name": "Previous P&L row"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "module": "builtin:BasicAggregator",
+   "version": 1,
+   "parameters": {
+    "feeder": 6
+   },
+   "mapper": {
+    "revenue": "{{6.`1`}}",
+    "cogs": "{{6.`2`}}",
+    "gross": "{{6.`3`}}",
+    "fuel": "{{6.`5`}}",
+    "packaging": "{{6.`6`}}",
+    "airtime": "{{6.`7`}}",
+    "rider": "{{6.`8`}}",
+    "other": "{{6.`9`}}",
+    "opex": "{{6.`10`}}",
+    "net": "{{6.`11`}}",
+    "vat": "{{6.`12`}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 1800,
+     "y": 0,
+     "name": "Previous month"
+    }
+   }
+  },
+  {
+   "id": 11,
+   "module": "util:SetVariables",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "variables": [
+     {
+      "name": "revenue",
+      "value": "{{sum(map(3.array; \"total\"))}}"
+     },
+     {
+      "name": "cogs",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Cost of goods\"))}}"
+     },
+     {
+      "name": "fuel",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Fuel\"))}}"
+     },
+     {
+      "name": "packaging",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Packaging\"))}}"
+     },
+     {
+      "name": "airtime",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Airtime & data\"))}}"
+     },
+     {
+      "name": "rider",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Rider pay\"))}}"
+     },
+     {
+      "name": "other",
+      "value": "{{sum(map(5.array; \"amount_ex_vat\"; \"category\"; \"Other\"))}}"
+     },
+     {
+      "name": "vat_paid",
+      "value": "{{sum(map(5.array; \"vat\"))}}"
+     }
+    ],
+    "scope": "roundtrip"
+   },
+   "metadata": {
+    "designer": {
+     "x": 2100,
+     "y": 0,
+     "name": "Totals"
+    }
+   }
+  },
+  {
+   "id": 12,
+   "module": "util:SetVariables",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "variables": [
+     {
+      "name": "p_revenue",
+      "value": "{{ifempty(first(map(8.array; \"revenue\")); 0)}}"
+     },
+     {
+      "name": "p_cogs",
+      "value": "{{ifempty(first(map(8.array; \"cogs\")); 0)}}"
+     },
+     {
+      "name": "p_gross",
+      "value": "{{ifempty(first(map(8.array; \"gross\")); 0)}}"
+     },
+     {
+      "name": "p_fuel",
+      "value": "{{ifempty(first(map(8.array; \"fuel\")); 0)}}"
+     },
+     {
+      "name": "p_packaging",
+      "value": "{{ifempty(first(map(8.array; \"packaging\")); 0)}}"
+     },
+     {
+      "name": "p_airtime",
+      "value": "{{ifempty(first(map(8.array; \"airtime\")); 0)}}"
+     },
+     {
+      "name": "p_rider",
+      "value": "{{ifempty(first(map(8.array; \"rider\")); 0)}}"
+     },
+     {
+      "name": "p_other",
+      "value": "{{ifempty(first(map(8.array; \"other\")); 0)}}"
+     },
+     {
+      "name": "p_opex",
+      "value": "{{ifempty(first(map(8.array; \"opex\")); 0)}}"
+     },
+     {
+      "name": "p_net",
+      "value": "{{ifempty(first(map(8.array; \"net\")); 0)}}"
+     },
+     {
+      "name": "p_vat",
+      "value": "{{ifempty(first(map(8.array; \"vat\")); 0)}}"
+     }
+    ],
+    "scope": "roundtrip"
+   },
+   "metadata": {
+    "designer": {
+     "x": 2400,
+     "y": 0,
+     "name": "Previous month values"
+    }
+   }
+  },
+  {
+   "id": 13,
+   "module": "util:SetVariables",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "variables": [
+     {
+      "name": "gross",
+      "value": "{{11.revenue - 11.cogs}}"
+     },
+     {
+      "name": "opex",
+      "value": "{{11.fuel + 11.packaging + 11.airtime + 11.rider + 11.other}}"
+     },
+     {
+      "name": "net",
+      "value": "{{11.revenue - 11.cogs - (11.fuel + 11.packaging + 11.airtime + 11.rider + 11.other)}}"
+     },
+     {
+      "name": "margin",
+      "value": "{{if(11.revenue = 0; 0; round((11.revenue - 11.cogs) / 11.revenue * 1000) / 10)}}"
+     }
+    ],
+    "scope": "roundtrip"
+   },
+   "metadata": {
+    "designer": {
+     "x": 2700,
+     "y": 0,
+     "name": "Profit"
+    }
+   }
+  },
+  {
+   "id": 14,
+   "module": "google-sheets:addRow",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+    "sheetId": "Monthly_PL",
+    "includesHeaders": true,
+    "insertUnformatted": false,
+    "valueInputOption": "USER_ENTERED",
+    "insertDataOption": "INSERT_ROWS",
+    "values": {
+     "0": "{{1.month_label}}",
+     "1": "{{11.revenue}}",
+     "2": "{{11.cogs}}",
+     "3": "{{13.gross}}",
+     "4": "{{13.margin}}",
+     "5": "{{11.fuel}}",
+     "6": "{{11.packaging}}",
+     "7": "{{11.airtime}}",
+     "8": "{{11.rider}}",
+     "9": "{{11.other}}",
+     "10": "{{13.opex}}",
+     "11": "{{13.net}}",
+     "12": "{{11.vat_paid}}",
+     "13": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}"
+    }
+   },
+   "metadata": {
+    "designer": {
+     "x": 3000,
+     "y": 0,
+     "name": "Add Monthly_PL row"
+    }
+   },
+   "onerror": [
+    {
+     "id": 26,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 3 Monthly P&L",
+       "2": "Add Monthly_PL row",
+       "3": "{{1.month_label}}",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 3000,
+       "y": 250,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 27,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 3,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 3300,
+       "y": 250,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "module": "google-email:ActionSendEmail",
+   "version": 4,
+   "parameters": {},
+   "mapper": {
+    "to": [
+     "tolu@harvestlane.example",
+     "accountant@harvestlane.example"
+    ],
+    "subject": "Harvest Lane P&L · {{1.month_label}} · net ₦{{formatNumber(13.net; 0; \".\"; \",\")}}",
+    "bodyType": "rawHtml",
+    "contentType": "html",
+    "content": "<p>Harvest Lane · {{1.month_label}} · all figures ex VAT, ₦</p><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\"><tr><th align=\"left\">Line</th><th>{{1.month_label}}</th><th>{{1.prev_label}}</th><th>Change</th></tr><tr><td>Revenue (paid orders)</td><td align=\"right\">{{formatNumber(11.revenue; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_revenue; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_revenue = 0; \"n/a\"; formatNumber(round((11.revenue - 12.p_revenue) / 12.p_revenue * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Cost of goods</td><td align=\"right\">{{formatNumber(11.cogs; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_cogs; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_cogs = 0; \"n/a\"; formatNumber(round((11.cogs - 12.p_cogs) / 12.p_cogs * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Gross profit (margin {{13.margin}}%)</td><td align=\"right\">{{formatNumber(13.gross; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_gross; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_gross = 0; \"n/a\"; formatNumber(round((13.gross - 12.p_gross) / 12.p_gross * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Fuel</td><td align=\"right\">{{formatNumber(11.fuel; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_fuel; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_fuel = 0; \"n/a\"; formatNumber(round((11.fuel - 12.p_fuel) / 12.p_fuel * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Packaging</td><td align=\"right\">{{formatNumber(11.packaging; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_packaging; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_packaging = 0; \"n/a\"; formatNumber(round((11.packaging - 12.p_packaging) / 12.p_packaging * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Airtime & data</td><td align=\"right\">{{formatNumber(11.airtime; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_airtime; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_airtime = 0; \"n/a\"; formatNumber(round((11.airtime - 12.p_airtime) / 12.p_airtime * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Rider pay</td><td align=\"right\">{{formatNumber(11.rider; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_rider; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_rider = 0; \"n/a\"; formatNumber(round((11.rider - 12.p_rider) / 12.p_rider * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Other</td><td align=\"right\">{{formatNumber(11.other; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_other; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_other = 0; \"n/a\"; formatNumber(round((11.other - 12.p_other) / 12.p_other * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Operating expenses</td><td align=\"right\">{{formatNumber(13.opex; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_opex; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_opex = 0; \"n/a\"; formatNumber(round((13.opex - 12.p_opex) / 12.p_opex * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>Net profit</td><td align=\"right\">{{formatNumber(13.net; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_net; 0; \".\"; \",\")}}</td><td align=\"right\">{{if(12.p_net = 0; \"n/a\"; formatNumber(round((13.net - 12.p_net) / 12.p_net * 1000) / 10; 1; \".\"; \",\") + \"%\")}}</td></tr><tr><td>VAT paid on purchases (separate)</td><td align=\"right\">{{formatNumber(11.vat_paid; 0; \".\"; \",\")}}</td><td align=\"right\">{{formatNumber(12.p_vat; 0; \".\"; \",\")}}</td><td></td></tr></table><p>{{length(3.array)}} paid orders · {{length(5.array)}} expense documents. Bookkeeping support, not tax or accounting advice: the accountant reviews before any filing.</p>"
+   },
+   "metadata": {
+    "designer": {
+     "x": 3300,
+     "y": 0,
+     "name": "Email P&L"
+    }
+   },
+   "onerror": [
+    {
+     "id": 28,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 3 Monthly P&L",
+       "2": "Email P&L",
+       "3": "{{1.month_label}}",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 3300,
+       "y": 450,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 29,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 3,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 3600,
+       "y": 450,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": true,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

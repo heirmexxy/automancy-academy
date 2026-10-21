@@ -1,0 +1,696 @@
+{
+  "name": "GD·08 CRM · Ops executor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·08 Ops executor (Boss 5 · D6b)\nA plain workflow, not the agent. Every 10 min: approved proposals → allow-list checked AGAIN in code → before-values saved → the change → result logged.\n- merge_companies: only if both companies really share the verified domain\n- bulk_update_property: before-values saved for undo\n- create_task\n- require_field / score_weight: not automatable on the free plan → Tolu/Nodo told to make it by hand, marked manual\n\n**Credentials:** HubSpot App Token (write scopes), Postgres, Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID, YOUR_HUBSPOT_OWNER_ID.",
+        "height": 360,
+        "width": 440
+      },
+      "id": "9426bbc0-9aff-4711-82ed-c2b8128c8ff5",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "id": "96af810f-c162-4152-b500-832d901feb43",
+      "name": "Every 10 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, action, target_ids, details FROM crm_proposals WHERE status = 'approved' ORDER BY decided_at LIMIT 10;",
+        "options": {}
+      },
+      "id": "8b5720bf-b4d5-4554-a475-13b6221e007d",
+      "name": "Approved, not executed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cf2e01d5-ac2d-4ceb-a36e-5261de46a73b",
+              "leftValue": "={{ $json.id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "26b8f1ce-3eb3-49eb-a2d8-390f97325e10",
+      "name": "Any approved",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ALLOWED = ['merge_companies', 'bulk_update_property', 'create_task', 'require_field', 'score_weight'];\nconst p = $json;\nconst ids = (Array.isArray(p.target_ids) ? p.target_ids : []).map(String);\nconst objects = ['companies', 'contacts', 'deals'];\nconst forbiddenProp = /^(dealstage|hs_|lifecyclestage|marketing_consent|hubspot_owner_id)/;\nlet ok = ALLOWED.includes(p.action);\nif (p.action === 'merge_companies') ok = ok && ids.length === 2 && !!p.details?.domain;\nif (p.action === 'bulk_update_property') ok = ok && objects.includes(p.details?.object) && !!p.details?.property && !forbiddenProp.test(p.details.property) && ids.length > 0 && ids.length <= 100;\nreturn { json: { ...p, ids, ok } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "ec89794b-9911-4fb5-8678-d2320d038dec",
+      "name": "Allow-list check again",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "2b6fc356-9e30-4dc0-a480-d16e2efcf8d0",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "33eea22c-fdca-4b70-8db7-e2148436f561",
+      "name": "Still allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_proposals SET status = 'rejected_by_code', result = '{\"why\":\"failed executor allow-list\"}' WHERE id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "id": "74e98fbc-f437-48a5-8df3-8a277a06bfec",
+      "name": "Refuse",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "b0b9b65c-fe89-4e3b-a0a9-74f5047a3ad9",
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "merge_companies"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "merge_companies"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "db2267d1-442f-45ed-82b1-aae05c0cf985",
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "bulk_update_property"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bulk_update_property"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "cec2fa29-0c05-4a72-9604-1cff9886d87f",
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "create_task"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create_task"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "41e1f991-6c79-4642-8356-8b56d3b7444c",
+      "name": "Route action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        -54
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/batch/read",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $json.ids.map(id => ({ id })), properties: ['name', 'domain'] }) }}",
+        "options": {}
+      },
+      "id": "30763ad6-d513-4622-aead-f3f6eb610088",
+      "name": "Before: read companies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Allow-list check again').item.json;\nconst rows = $json.results || [];\nconst norm = d => String(d || '').toLowerCase().replace(/^www\\./, '');\nconst ok = rows.length === 2 && norm(rows[0].properties.domain) && norm(rows[0].properties.domain) === norm(rows[1].properties.domain) && norm(rows[0].properties.domain) === norm(p.details.domain);\nreturn { json: { id: p.id, ok, before: rows.map(r => ({ id: r.id, ...r.properties })), keep: p.ids[0], merge: p.ids[1] } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "eb472a83-d6f8-478c-a157-af428062e2a1",
+      "name": "Same verified domain?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "fa52f890-2bf4-425f-8fa2-a083e484b87e",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2288ee16-36d1-482f-901b-b52df92445bb",
+      "name": "Domains match?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_proposals SET before_values = $2::jsonb WHERE id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, JSON.stringify($json.before) ] }}"
+        }
+      },
+      "id": "1630b89e-5d07-4043-a9c3-69ad99e6c16a",
+      "name": "Save before (merge)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/merge",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ primaryObjectId: String($('Same verified domain?').item.json.keep), objectIdToMerge: String($('Same verified domain?').item.json.merge) }) }}",
+        "options": {}
+      },
+      "id": "7efef015-31cc-466c-a438-30b7c9b5f94a",
+      "name": "Merge companies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_proposals SET status = 'rejected_by_code', before_values = $2::jsonb, result = '{\"why\":\"domains differ\"}' WHERE id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, JSON.stringify($json.before) ] }}"
+        }
+      },
+      "id": "f1d633f4-ece0-4b24-a29d-5fcad43cd805",
+      "name": "Refuse merge",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        -216
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v3/objects/{{ $json.details.object }}/batch/read",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $json.ids.map(id => ({ id })), properties: [$json.details.property] }) }}",
+        "options": {}
+      },
+      "id": "edaedc69-9c21-40c9-aaed-8eddb3a54b81",
+      "name": "Before: read values",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_proposals SET before_values = $2::jsonb WHERE id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Allow-list check again').item.json.id, JSON.stringify(($json.results || []).map(r => ({ id: r.id, value: r.properties[$('Allow-list check again').item.json.details.property] }))) ] }}"
+        }
+      },
+      "id": "5fbd3b47-4b85-4d8b-beca-3d0d9d326d56",
+      "name": "Save before (update)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v3/objects/{{ $('Allow-list check again').item.json.details.object }}/batch/update",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $('Allow-list check again').item.json.ids.map(id => ({ id, properties: { [$('Allow-list check again').item.json.details.property]: $('Allow-list check again').item.json.details.to } })) }) }}",
+        "options": {}
+      },
+      "id": "a19d5184-5b0f-4383-bf11-fd5ee736acd9",
+      "name": "Bulk update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.plus({ days: 1 }).set({ hour: 9 }).toISO(), hs_task_subject: $json.details.subject || 'Follow up (CRM Ops Agent)', hs_task_status: 'NOT_STARTED', hubspot_owner_id: $json.details.owner_id || 'YOUR_HUBSPOT_OWNER_ID' }, associations: $json.details.deal_id ? [{ to: { id: String($json.details.deal_id) }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 }] }] : [] }) }}",
+        "options": {}
+      },
+      "id": "9033bcda-4daf-46d6-b972-33c4178db36e",
+      "name": "Create task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=✍️ Approved CRM change #{{ $json.id }} ({{ $json.action }}) needs a person: {{ JSON.stringify($json.details) }}. Make it in HubSpot settings or the score code, then test it on last quarter.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "f2b06088-ad57-4ffa-961e-ab1a11c3ad39",
+      "name": "Manual change: tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE crm_proposals SET status = CASE WHEN $2 THEN 'manual' ELSE 'executed' END, executed_at = now(), result = $3::jsonb WHERE id = $1 RETURNING id, action)\nINSERT INTO events (workflow, event, detail) SELECT 'GD·08', 'crm_change', jsonb_build_object('proposal', id, 'action', action) FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Allow-list check again').item.json.id, $('Allow-list check again').item.json.action === 'require_field' || $('Allow-list check again').item.json.action === 'score_weight', JSON.stringify({ ok: true }) ] }}"
+        }
+      },
+      "id": "c8b0b2b5-4a88-4133-b69f-bb73ca048cd0",
+      "name": "Log result",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2420,
+        -72
+      ]
+    }
+  ],
+  "connections": {
+    "Every 10 minutes": {
+      "main": [
+        [
+          {
+            "node": "Approved, not executed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved, not executed": {
+      "main": [
+        [
+          {
+            "node": "Any approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any approved": {
+      "main": [
+        [
+          {
+            "node": "Allow-list check again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allow-list check again": {
+      "main": [
+        [
+          {
+            "node": "Still allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still allowed?": {
+      "main": [
+        [
+          {
+            "node": "Route action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Refuse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route action": {
+      "main": [
+        [
+          {
+            "node": "Before: read companies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Before: read values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Manual change: tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Before: read companies": {
+      "main": [
+        [
+          {
+            "node": "Same verified domain?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Same verified domain?": {
+      "main": [
+        [
+          {
+            "node": "Domains match?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Domains match?": {
+      "main": [
+        [
+          {
+            "node": "Save before (merge)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Refuse merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save before (merge)": {
+      "main": [
+        [
+          {
+            "node": "Merge companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge companies": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Before: read values": {
+      "main": [
+        [
+          {
+            "node": "Save before (update)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save before (update)": {
+      "main": [
+        [
+          {
+            "node": "Bulk update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk update": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual change: tell Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

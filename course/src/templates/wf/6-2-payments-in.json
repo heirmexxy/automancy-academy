@@ -1,0 +1,1646 @@
+{
+  "name": "FF · Payments in",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## FF · Payments in (lesson 6.2)\nPaystack payment → verified twice → onboarded once.\n\n1. Signature: HMAC-SHA512 of the RAW body with your Paystack TEST secret key must equal the x-paystack-signature header. Else: log and stop.\n2. Route by event. On charge.success: verify the transaction with Paystack (status success, amount matches the tier), then skip references already in the Payments sheet.\n3. Deposit → Clients row, welcome pack, Telegram to Tolu, intake follow-up after 2 days.\n4. invoice.payment_failed → friendly reminder, note to Tolu, check-in 3 days later. No cut-off.\n\n**Credentials:** Header Auth \"Paystack test\" (Authorization = Bearer + TEST secret key), Google Sheets, Gmail, Telegram.\n**Environment:** PAYSTACK_SECRET_KEY (test key), NODE_FUNCTION_ALLOW_BUILTIN=crypto, N8N_BLOCK_ENV_ACCESS_IN_NODE=false.\n**Replace:** YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID, YOUR_BOOKING_LINK, YOUR_INTAKE_FORM_LINK, YOUR_SCOPE_LINK.\nSettings → Error workflow: choose your error workflow (3.6).",
+        "height": 520,
+        "width": 400
+      },
+      "id": "cd68cd6f-2282-44db-a0f5-bcf6b02068c2",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -270
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ff-payments-in",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "29bb775b-72d3-4a3f-b392-3f9aa15ec9f0",
+      "name": "Paystack webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "1dd1c5d6-a5da-41ac-aa07-e7b6467785b7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Signature: HMAC-SHA512 of the raw body with your secret key must equal x-paystack-signature.\nconst crypto = require('crypto');\nconst secret = $env.PAYSTACK_SECRET_KEY;          // TEST secret key, kept in ONE place: the n8n environment\nconst item = $input.first();\nconst headers = item.json.headers || {};\nconst sig = String(headers['x-paystack-signature'] || '');\nlet raw = '';\nif (item.binary && item.binary.data) {\n  raw = (await this.helpers.getBinaryDataBuffer(0, 'data')).toString('utf8');\n}\nlet valid = false;\nif (secret && raw && sig) {\n  const hash = crypto.createHmac('sha512', secret).update(raw).digest('hex');\n  valid = hash.length === sig.length && crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(sig));\n}\nlet body = item.json.body;\nif ((!body || typeof body !== 'object') && raw) { try { body = JSON.parse(raw); } catch (e) { body = {}; } }\nbody = body || {};\nreturn [{ json: {\n  signature_valid: valid,\n  reason: !secret ? 'PAYSTACK_SECRET_KEY not set' : !raw ? 'raw body missing' : !sig ? 'no signature header' : valid ? 'ok' : 'signature mismatch',\n  event: body.event || '',\n  reference: (body.data && body.data.reference) || '',\n  body\n} }];"
+      },
+      "id": "3b76e3f5-f6fb-4e5a-9b4d-276836265602",
+      "name": "Verify signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "6f0f5275-4a02-4dcd-993a-6bda0e82d0f1",
+      "name": "Reply 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "fd0f0ac8-5159-4eae-a908-de690374622e",
+              "leftValue": "={{ $json.signature_valid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "56733f08-e36c-4f07-a1b7-336878c20b47",
+      "name": "Signature valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISO() }}",
+            "event": "signature_rejected",
+            "reference": "={{ $json.reference }}",
+            "detail": "={{ $json.reason }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8a465a41-a331-4f70-8f2b-cb82ac4ef84b",
+      "name": "Log rejected signature",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "71f8d405-b860-448a-a7a1-f42f0c2ea79e",
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "charge.success"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "charge.success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "adc209d8-a1be-4965-893a-24d810172f79",
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "subscription.create"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "subscription.create"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "f0180c76-f810-4e08-8230-65e9d1757760",
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "invoice.payment_failed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "invoice.payment_failed"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "7fe3250d-25e6-4bda-b010-a8585da0509e",
+      "name": "Route by event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.paystack.co/transaction/verify/{{ encodeURIComponent($json.reference) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "3f6c3625-46ef-4ec0-a7a5-c7ffb92bdf57",
+      "name": "Verify transaction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -540
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 2. Only Paystack's own answer counts. Amounts are in kobo.\nconst TIERS = {\n  starter: { deposit: 225000, monthly: 30000 },\n  growth:  { deposit: 425000, monthly: 60000 },\n  partner: { deposit: 600000, monthly: 120000 }\n};\nconst v = $input.first().json.data || {};\nconst hook = $('Verify signature').first().json.body.data || {};\nconst meta = v.metadata || hook.metadata || {};\nconst fields = Array.isArray(meta.custom_fields) ? meta.custom_fields : [];\nconst field = (name) => (fields.find(f => (f.display_name || f.variable_name || '').toLowerCase() === name) || {}).value;\nconst tierKey = String(meta.tier || field('tier') || '').toLowerCase().split(/[\\s:]/)[0];\nconst isRenewal = !!(v.plan && (v.plan.plan_code || typeof v.plan === 'string'));\nconst tier = TIERS[tierKey];\nconst expectedNgn = tier ? (isRenewal ? tier.monthly : tier.deposit) : null;\nconst ok = v.status === 'success' && tier !== undefined && v.amount === expectedNgn * 100 && v.currency === 'NGN';\nreturn [{ json: {\n  verified: ok,\n  why: v.status !== 'success' ? 'Paystack status is ' + (v.status || 'unknown') : !tier ? 'tier missing in metadata' : ok ? 'ok' : 'amount ' + v.amount + ' kobo, expected ' + (expectedNgn * 100),\n  reference: v.reference || $('Verify signature').first().json.reference,\n  kind: isRenewal ? 'monthly' : 'deposit',\n  tier: tierKey ? tierKey[0].toUpperCase() + tierKey.slice(1) : '',\n  amount_ngn: (v.amount || 0) / 100,\n  business: field('business name') || meta.business_name || '',\n  contact: [v.customer && v.customer.first_name, v.customer && v.customer.last_name].filter(Boolean).join(' '),\n  email: (v.customer && v.customer.email || '').toLowerCase(),\n  paid_at: v.paid_at || new Date().toISOString()\n} }];"
+      },
+      "id": "13bef4af-2866-4431-96b3-37497b62ea1c",
+      "name": "Check status and amount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -540
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "f210baf2-7619-4a1b-9ffe-6aa9463810cc",
+              "leftValue": "={{ $json.verified }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "499e4622-e298-4d07-9e12-612fe548bdfe",
+      "name": "Verified and amount matches?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -540
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ Paystack event NOT acted on (test)\nReference: {{ $json.reference }}\nWhy: {{ $json.why }}\nCheck it in the Paystack dashboard.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "6ed68165-717a-4550-a7b3-b439e859dc36",
+      "name": "Alert: payment not verified",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Payments",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "reference",
+              "lookupValue": "={{ $json.reference }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0d9d4482-b11d-4f3d-8624-d523e5b0fa58",
+      "name": "Find reference in Payments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1760,
+        -720
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "45f198da-7147-4e45-bb06-0bc4390e5f20",
+              "leftValue": "={{ $json.reference ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "213a71ea-6224-4a40-8ee7-cf37abfc07e0",
+      "name": "New reference?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -720
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3d8f1b4a-4506-4793-8424-c43801cacfda",
+      "name": "Duplicate: skip",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        -540
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Payments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "reference": "={{ $('Check status and amount').first().json.reference }}",
+            "date": "={{ $('Check status and amount').first().json.paid_at }}",
+            "business": "={{ $('Check status and amount').first().json.business }}",
+            "email": "={{ $('Check status and amount').first().json.email }}",
+            "tier": "={{ $('Check status and amount').first().json.tier }}",
+            "kind": "={{ $('Check status and amount').first().json.kind }}",
+            "amount_ngn": "={{ $('Check status and amount').first().json.amount_ngn }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "business",
+              "displayName": "business",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tier",
+              "displayName": "tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kind",
+              "displayName": "kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_ngn",
+              "displayName": "amount_ngn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4e252fd-1914-48e1-8447-b074f5bf7b0e",
+      "name": "Record payment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2200,
+        -900
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "f069ce6f-3ef4-4f10-a9ae-23a41002fb30",
+              "leftValue": "={{ $('Check status and amount').first().json.kind }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "deposit"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e8677f76-fa1b-4933-8399-886723c609c2",
+      "name": "Deposit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        -900
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clients",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "business": "={{ $('Check status and amount').first().json.business }}",
+            "contact": "={{ $('Check status and amount').first().json.contact }}",
+            "email": "={{ $('Check status and amount').first().json.email }}",
+            "tier": "={{ $('Check status and amount').first().json.tier }}",
+            "amount": "={{ $('Check status and amount').first().json.amount_ngn }}",
+            "reference": "={{ $('Check status and amount').first().json.reference }}",
+            "date": "={{ $now.toFormat('yyyy-LL-dd') }}",
+            "status": "Onboarding"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "business",
+              "displayName": "business",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact",
+              "displayName": "contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tier",
+              "displayName": "tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount",
+              "displayName": "amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "051db16b-86e4-432f-98aa-1a97efab863f",
+      "name": "Append to Clients",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2640,
+        -1080
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Check status and amount').first().json.email }}",
+        "subject": "=Welcome to your automation project, {{ $('Check status and amount').first().json.business }}",
+        "emailType": "text",
+        "message": "=Hello {{ $('Check status and amount').first().json.contact || 'there' }},\n\nThank you: your {{ $('Check status and amount').first().json.tier }} deposit of ₦{{ $('Check status and amount').first().json.amount_ngn.toLocaleString() }} has arrived (reference {{ $('Check status and amount').first().json.reference }}).\n\nYour signed scope: YOUR_SCOPE_LINK\n\nWhat happens next\nWeek 1: kick-off call and access to your accounts\nWeek 2: first working version, tested with your data\nWeek 3: your team tests it; we fix what they find\nWeek 4: go-live, handover and training\n\n1. Book the kick-off call: YOUR_BOOKING_LINK\n2. Fill in the intake form (accounts to share, data, contacts): YOUR_INTAKE_FORM_LINK\n\nAny questions, just reply to this email.\n\nTolu",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5a35d328-498c-4e24-a16a-be88bb489631",
+      "name": "Send welcome pack",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2860,
+        -1080
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=💰 New client: {{ $('Check status and amount').first().json.business }} · {{ $('Check status and amount').first().json.tier }} · deposit ₦{{ $('Check status and amount').first().json.amount_ngn.toLocaleString() }} received (test).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1760c7d4-16b6-48cd-b697-aedd4bf54a8c",
+      "name": "Tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3080,
+        -1080
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "days"
+      },
+      "id": "d2ac8409-170f-453e-a41a-95efbc1eb33b",
+      "name": "Wait 2 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3300,
+        -1080
+      ],
+      "webhookId": "3ab62ce8-6b39-400b-a696-76bd2bae7a02"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Intake",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $('Check status and amount').first().json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "845118bc-585c-4075-8804-86073fa7ea7e",
+      "name": "Find intake form",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3520,
+        -1080
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cc5e929d-4659-4fe2-af79-5d25ca69666b",
+              "leftValue": "={{ $json.email ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4f69ce42-aacf-405b-bdd2-38505ec170bd",
+      "name": "Intake submitted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        -1080
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b141041f-e9f1-44ed-9d67-1729b792472e",
+      "name": "Intake done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3960,
+        -1260
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Check status and amount').first().json.email }}",
+        "subject": "=A quick reminder: your intake form",
+        "emailType": "text",
+        "message": "=Hello {{ $('Check status and amount').first().json.contact || 'there' }},\n\nTo keep your project on schedule, please fill in the intake form when you have 10 minutes: YOUR_INTAKE_FORM_LINK\n\nAnd if you haven't yet, book the kick-off: YOUR_BOOKING_LINK\n\nThank you,\nTolu",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "cf589ca6-5d6e-477b-a913-4a95933063c6",
+      "name": "Intake reminder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3960,
+        -900
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=📋 {{ $('Check status and amount').first().json.business }} hasn't sent the intake form after 2 days. Reminder sent.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3a97eddf-13e8-4dc1-97fa-65edfaec873c",
+      "name": "Tell Tolu: intake missing",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4180,
+        -900
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clients",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $('Check status and amount').first().json.email }}",
+            "retainer": "active",
+            "last_paid": "={{ $now.toFormat('yyyy-LL-dd') }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retainer",
+              "displayName": "retainer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_paid",
+              "displayName": "last_paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f5ae398f-f3ad-473e-a777-617ea1a0d0e0",
+      "name": "Mark monthly paid",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2640,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.paystack.co/subscription/{{ $json.body.data.subscription_code }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "9fcaac2e-dab9-4cbb-b40a-63274e520e3b",
+      "name": "Verify subscription",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "3d09288a-5916-4058-a169-4249e28558b0",
+              "leftValue": "={{ $json.data?.status }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "active"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "6f5fa684-2cc0-4f6b-add1-64d05e83449a",
+      "name": "Subscription active?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clients",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ ($json.data.customer.email || '').toLowerCase() }}",
+            "retainer": "active",
+            "plan": "={{ $json.data.plan.name }}",
+            "subscription_code": "={{ $json.data.subscription_code }}",
+            "next_payment_date": "={{ $json.data.next_payment_date }}"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retainer",
+              "displayName": "retainer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "plan",
+              "displayName": "plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subscription_code",
+              "displayName": "subscription_code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_payment_date",
+              "displayName": "next_payment_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "53472ef5-0c8d-4e80-a517-37055fb18c4d",
+      "name": "Mark retainer active",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1540,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.paystack.co/subscription/{{ $json.body.data.subscription.subscription_code }}/manage/link",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "010a6e74-670e-4d9c-b243-7fbca462436f",
+      "name": "Get update-card link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Verify signature').first().json.body.data.customer.email }}",
+        "subject": "=Your monthly payment didn't go through",
+        "emailType": "text",
+        "message": "=Hello {{ $('Verify signature').first().json.body.data.customer.first_name || 'there' }},\n\nThis month's payment of ₦{{ (($('Verify signature').first().json.body.data.amount || 0) / 100).toLocaleString() }} for your automation retainer didn't go through. It happens: cards expire and banks decline.\n\nYou can update your card or pay here: {{ $json.data?.link || 'reply to this email and we will send a payment link' }}\n\nEverything keeps running in the meantime. Any questions, just reply.\n\nTolu",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fb60b79f-af65-4bba-b93f-311f8e25c69f",
+      "name": "Friendly payment reminder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🔔 Monthly charge failed (test): {{ $('Verify signature').first().json.body.data.customer.email }} · ₦{{ (($('Verify signature').first().json.body.data.amount || 0) / 100).toLocaleString() }}. Friendly reminder sent. No cut-off. Check-in in 3 days.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4b2964c8-8c75-4ebe-be30-42df526d2660",
+      "name": "Note to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISO() }}",
+            "event": "invoice.payment_failed",
+            "reference": "={{ $('Verify signature').first().json.body.data.subscription.subscription_code }}",
+            "detail": "={{ $('Verify signature').first().json.body.data.customer.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "42a312ac-e923-4026-a828-93fae5b9321d",
+      "name": "Log failed charge",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1760,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "ef360c89-2239-4e79-8f52-461c5a33ed37",
+      "name": "Wait 3 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        180
+      ],
+      "webhookId": "79a6af37-96a1-4c65-bf2e-dde4a42ad0cf"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=📞 Check in today with {{ $('Verify signature').first().json.body.data.customer.email }}: was the retainer payment sorted? Be friendly; nothing is switched off.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "46b8e5a7-0f16-48ff-af1b-0b569e54685b",
+      "name": "Check-in with client",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISO() }}",
+            "event": "={{ $json.event }}",
+            "reference": "={{ $json.reference }}",
+            "detail": "unhandled event: review"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reference",
+              "displayName": "reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ed91ae87-0b40-4ca4-9d30-6969f0c61a4b",
+      "name": "Log for review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Decision: tiers and amounts\nEdit TIERS in \"Check status and amount\" to match your own Paystack pages and plans (amounts in naira; the code compares kobo). Put the tier in each payment page's metadata (tier) or a custom field \"Tier\".",
+        "height": 160,
+        "width": 320
+      },
+      "id": "b799a4bf-f51f-4fcb-b334-a12ddc0b7361",
+      "name": "Sticky Note 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1276,
+        -1007
+      ]
+    }
+  ],
+  "connections": {
+    "Paystack webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify signature": {
+      "main": [
+        [
+          {
+            "node": "Reply 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply 200": {
+      "main": [
+        [
+          {
+            "node": "Signature valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signature valid?": {
+      "main": [
+        [
+          {
+            "node": "Route by event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log rejected signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by event": {
+      "main": [
+        [
+          {
+            "node": "Verify transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verify subscription",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get update-card link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log for review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify transaction": {
+      "main": [
+        [
+          {
+            "node": "Check status and amount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check status and amount": {
+      "main": [
+        [
+          {
+            "node": "Verified and amount matches?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified and amount matches?": {
+      "main": [
+        [
+          {
+            "node": "Find reference in Payments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert: payment not verified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find reference in Payments": {
+      "main": [
+        [
+          {
+            "node": "New reference?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New reference?": {
+      "main": [
+        [
+          {
+            "node": "Record payment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate: skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record payment": {
+      "main": [
+        [
+          {
+            "node": "Deposit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deposit?": {
+      "main": [
+        [
+          {
+            "node": "Append to Clients",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark monthly paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Clients": {
+      "main": [
+        [
+          {
+            "node": "Send welcome pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send welcome pack": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell Tolu": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 days": {
+      "main": [
+        [
+          {
+            "node": "Find intake form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find intake form": {
+      "main": [
+        [
+          {
+            "node": "Intake submitted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake submitted?": {
+      "main": [
+        [
+          {
+            "node": "Intake done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Intake reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake reminder": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu: intake missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify subscription": {
+      "main": [
+        [
+          {
+            "node": "Subscription active?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscription active?": {
+      "main": [
+        [
+          {
+            "node": "Mark retainer active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get update-card link": {
+      "main": [
+        [
+          {
+            "node": "Friendly payment reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Friendly payment reminder": {
+      "main": [
+        [
+          {
+            "node": "Note to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Note to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log failed charge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log failed charge": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 days": {
+      "main": [
+        [
+          {
+            "node": "Check-in with client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

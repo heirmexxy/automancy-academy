@@ -1,0 +1,284 @@
+{
+ "name": "HL · One inbox · response-time watchdog",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · One inbox: watchdog (Lesson 5.7)\nEvery 5 minutes: for each open conversation owned by a person with no person reply since the customer's last message, at 80% of the target time ping the assigned person; at 100% escalate to Tolu.\nPeople reply through Inbox · Send with sent_by = person (or close the conversation), so the timer stops.\n\nCredentials: Postgres (Supabase); Telegram.\nPlaceholders: YOUR_TELEGRAM_CHAT_ID (Tolu), YOUR_BISI_TELEGRAM_CHAT_ID.",
+    "height": 300,
+    "width": 500
+   },
+   "id": "ad457fad-a7e0-4224-883f-d165a670e81b",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -300
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 5
+      }
+     ]
+    }
+   },
+   "id": "eac32626-fa00-48be-ac00-a2f5851daf38",
+   "name": "Every 5 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select c.id, c.channel, c.assigned_to, c.priority, c.sla_due_at, c.pinged_80, c.escalated,\n       extract(epoch from (now() - c.last_customer_msg_at)) / nullif(extract(epoch from (c.sla_due_at - c.last_customer_msg_at)), 0) as used\nfrom conversations c\nwhere c.status = 'open' and c.assigned_to in ('Tolu', 'Bisi') and c.sla_due_at is not null\n  and not exists (select 1 from messages m where m.conversation_id = c.id and m.direction = 'out'\n                  and m.sent_by = 'person' and m.at >= c.last_customer_msg_at)\n  and ((now() >= c.sla_due_at and not c.escalated)\n       or (extract(epoch from (now() - c.last_customer_msg_at)) >= 0.8 * extract(epoch from (c.sla_due_at - c.last_customer_msg_at)) and not c.pinged_80));",
+    "options": {}
+   },
+   "id": "a1db7a1f-3b5d-45a6-abbb-421a3a8f4b0e",
+   "name": "Conversations near or past target",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const chat = { Tolu: 'YOUR_TELEGRAM_CHAT_ID', Bisi: 'YOUR_BISI_TELEGRAM_CHAT_ID' };\nconst late = new Date($json.sla_due_at) <= new Date();\nreturn { ...$json, action: late ? 'escalate' : 'ping', chat_id: late ? chat.Tolu : (chat[$json.assigned_to] || chat.Tolu) };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "709705cd-e44a-4271-a684-601c5d9e902d",
+   "name": "Ping or escalate",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "547f54da-01c1-48c3-8977-69ae9aa6805e",
+          "leftValue": "={{ $json.action }}",
+          "rightValue": "ping",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "ping"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "9522490a-7590-4658-af75-ca77555cadd3",
+          "leftValue": "={{ $json.action }}",
+          "rightValue": "escalate",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "escalate"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "2bafb2ef-81b8-4971-9583-d01f062f84dc",
+   "name": "Action",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "={{ $json.chat_id }}",
+    "text": "=Reminder: conversation {{ $json.id }} ({{ $json.channel }}, priority {{ $json.priority }}) is due by {{ $json.sla_due_at }}. It's yours, {{ $json.assigned_to }}.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "a3266101-310d-44a5-b79c-32a6d1c08e9f",
+   "name": "Ping assigned person",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "update conversations set pinged_80 = true where id = $1;",
+    "options": {
+     "queryReplacement": "={{ [ $('Action').item.json.id ] }}"
+    }
+   },
+   "id": "4c64df7e-810b-40fb-a699-96612f7cf8d1",
+   "name": "Mark pinged",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    1100,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "={{ $json.chat_id }}",
+    "text": "=MISSED TARGET: conversation {{ $json.id }} ({{ $json.channel }}, priority {{ $json.priority }}, owner {{ $json.assigned_to }}) was due at {{ $json.sla_due_at }}.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "859b49e3-36c9-45e0-bb9e-ad25119fa721",
+   "name": "Escalate to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "update conversations set escalated = true, pinged_80 = true where id = $1;",
+    "options": {
+     "queryReplacement": "={{ [ $('Action').item.json.id ] }}"
+    }
+   },
+   "id": "2b483795-f893-4e74-a6e6-00bb18ed6d41",
+   "name": "Mark escalated",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    1100,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Every 5 minutes": {
+   "main": [
+    [
+     {
+      "node": "Conversations near or past target",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Conversations near or past target": {
+   "main": [
+    [
+     {
+      "node": "Ping or escalate",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ping or escalate": {
+   "main": [
+    [
+     {
+      "node": "Action",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Action": {
+   "main": [
+    [
+     {
+      "node": "Ping assigned person",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Escalate to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ping assigned person": {
+   "main": [
+    [
+     {
+      "node": "Mark pinged",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Escalate to Tolu": {
+   "main": [
+    [
+     {
+      "node": "Mark escalated",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,400 @@
+<template data-mod="2.7" id="tpl-2-7">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.7</span>
+    <h1>AI Modules &amp; Make AI Agents</h1>
+    <div class="kicker"><span class="pill">≈ 110 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Weave and Sage</span><span class="pill">Tools: Make, an AI provider, Google Drive</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">Every supplier sends invoices in a different layout: neat PDFs, phone photos, even handwritten slips. Today Sage reads them all inside a Make scenario, pulls out every line, and Weave checks the arithmetic before anything reaches the books. Then you'll meet Make's AI agents, which decide for themselves which tools to use.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Choose between Make's built-in AI, a provider app, and an AI agent.</span></div>
+  <div><b>02</b><span>Extract structured data from documents, including scanned ones.</span></div>
+  <div><b>03</b><span>Check AI output with rules, and send doubtful results to a person.</span></div>
+  <div><b>04</b><span>Build a read-only Make AI Agent that answers questions using your scenarios as tools.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Five suppliers, five layouts</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Five invoice documents in different styles fanned out on a table.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="150" y="30" width="60" height="80" fill="var(--card)" transform="rotate(-10 180 70)"/><rect x="180" y="40" width="60" height="80" fill="var(--sun)" opacity=".7" transform="rotate(-2 210 80)"/><rect x="210" y="35" width="60" height="80" fill="var(--card)" transform="rotate(8 240 75)"/><rect x="190" y="90" width="60" height="80" fill="#f4f0e6" transform="rotate(-6 220 130)"/><rect x="240" y="95" width="60" height="80" fill="var(--card)" transform="rotate(10 270 135)"/></g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Month-end</b>The 1.1 Zap files every invoice in Drive. But someone still types each one into the books: 25 invoices, 3 hours.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A blurry phone photo of a handwritten invoice.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="100" y="20" width="120" height="150" rx="10" fill="#f4f0e6" stroke="var(--ink)" stroke-width="3" transform="rotate(-4 160 95)"/>
+        <g stroke="var(--muted)" stroke-width="2" fill="none" opacity=".8"><path d="M118 50 q20 -6 40 0 t40 0"/><path d="M118 74 q20 6 40 0 t40 0"/><path d="M118 98 q20 -6 40 0 t30 0"/><path d="M118 122 q20 6 40 0"/></g>
+        <text x="160" y="160" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-style="italic" font-size="12" fill="var(--ink)">Total: 311,750?</text>
+      </svg>
+      <div class="cap"><b>The hard one</b>Mama Bisi's farm sends a phone photo of a handwritten slip.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch smudging one digit on an invoice so 65,000 reads as 56,000.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="50" width="130" height="80" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="235" y="86" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" fill="var(--ink)">65,000</text>
+        <text x="235" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="16" fill="var(--glitch)">→ 56,000</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"One swapped digit. The AI reads it confidently. Nobody checks. Your books are off by ₦9,000."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage reading invoices while Weave holds a calculator.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="140" y="70" width="40" height="56" rx="6" fill="var(--ink)"/><rect x="146" y="76" width="28" height="12" fill="var(--volt)"/>
+        <use href="#sage" x="0" y="40" width="130" height="130"/>
+        <use href="#weave" x="180" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The deal</b>"I'll read," says Sage. "I'll add up," says Weave. "And anything that doesn't add up goes to Tolu."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Three ways to use AI in Make</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Option</th><th>What it is</th><th>How it's paid for</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><b>Make's built-in AI</b></td><td>Make AI tools (extract, categorise, summarise…) and the AI Content Extractor for documents, using Make's own AI provider</td><td>Credits, including extra credits based on token use</td><td>Quick starts with no separate AI account</td></tr>
+        <tr><td><b>Provider apps</b></td><td>OpenAI, Anthropic (Claude), Google Gemini and others, connected with your own API key</td><td>The provider bills tokens; Make charges the module's credit</td><td>Control over the model, and predictable token billing</td></tr>
+        <tr><td><b>Make AI Agents</b></td><td>An agent with instructions, a model and tools (modules, scenarios, MCP), run from a scenario</td><td>Credits for the agent's work plus model usage</td><td>Tasks where the steps vary each time</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.88rem;color:var(--muted)">Billing summary from Make's help centre (Oct 2026). Make AI Agents is in open beta: Make's own AI provider works on every plan, while connecting another provider to an agent needs a paid plan. Check current credit usage for AI before quoting a client.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Structured output in Make</h3>
+    <p>Same idea as 0.5 and 1.5: the AI must return JSON in a fixed shape. In Make, two habits make it mappable:</p>
+    <div class="vocab">
+      <div><b>Use JSON mode or structured output</b>if the provider module offers it, so the model is held to valid JSON.</div>
+      <div><b>Parse it with a data structure</b>Add <b>JSON · Parse JSON</b> and define a data structure (or generate one from a sample). Now <code>supplier</code>, <code>total</code> and <code>lines[]</code> appear as fields you can map and iterate (2.4).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Getting text out of documents</h3>
+    <div class="why">
+      <div class="box"><h5>Text PDFs</h5><ul><li>Generated by software; the text is inside the file.</li><li>Extraction is reliable; any capable model can then structure it.</li></ul></div>
+      <div class="box"><h5>Scans and photos</h5><ul><li>Pictures of text. They need OCR (optical character recognition) or a model that reads images.</li><li>Expect more mistakes, especially handwriting. Check harder.</li></ul></div>
+    </div>
+    <div class="analogy"><b>Privacy check (0.6):</b> invoices contain supplier bank details and prices. Send only the files you need, use a provider whose API data terms you've read, and never paste invoices into a free chat app to test.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Rules check the AI</h3>
+    <p>Invoices carry their own proof: the numbers must add up. Run these rules after every extraction, and only save automatically when all pass:</p>
+    <div class="never">
+      <div><b>Each line</b>qty × unit price = line total (within ₦1 for rounding).</div>
+      <div><b>The sum</b>Line totals add up to the subtotal, and subtotal + VAT = total.</div>
+      <div><b>The basics</b>Supplier, invoice number and an ISO date are present; the supplier is on your supplier list.</div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> VAT in Nigeria is 7.5%, but not every supplier charges it. I flag "VAT isn't 7.5%" as a note for Tolu, not an error. Rules should match how your business really works.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Make AI Agents</h3>
+    <p>An agent in Make has a <b>system prompt</b> (its job and rules), a <b>model connection</b>, and <b>tools</b>: Make modules, whole scenarios, or MCP toolboxes. A scenario runs it with the <b>Run an agent</b> module; a <b>thread ID</b> lets it remember a conversation; it can return structured output; and it can use knowledge files you attach.</p>
+    <div class="why">
+      <div class="box"><h5>Use a scenario when</h5><ul><li>The steps are the same every time (invoice extraction).</li><li>You need predictable cost and easy testing.</li></ul></div>
+      <div class="box"><h5>Use an agent when</h5><ul><li>Requests vary: "How much did we spend on tomatoes last month?" vs "Which supplier raised prices?"</li><li>The agent can pick from safe, read-only tools.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PLAYGROUND</span><h2>The invoice checker</h2></div>
+  <div class="jsonlab" data-invcheck>
+    <p style="font-size:.93rem;color:var(--muted)">This runs the same rules the scenario uses after the AI step. Load a sample, or edit the numbers to see how the route changes.</p>
+    <div class="pathchips">
+      <button type="button" data-invsample="inv-good-2-7">Clean invoice</button>
+      <button type="button" data-invsample="inv-bad1-2-7">Misread digit</button>
+      <button type="button" data-invsample="inv-bad2-2-7">Missing fields</button>
+    </div>
+    <label class="crit" for="inv-2-7">AI output (JSON)</label>
+    <textarea id="inv-2-7" spellcheck="false">{
+  "supplier": "Farmgate Supplies",
+  "invoice_number": "FG-0192",
+  "invoice_date": "2026-10-12",
+  "currency": "NGN",
+  "lines": [
+    { "description": "Tomatoes, crate", "qty": 20, "unit_price": 9000, "line_total": 180000 },
+    { "description": "Tatashe, big bag", "qty": 10, "unit_price": 6500, "line_total": 65000 },
+    { "description": "Onions, bag", "qty": 15, "unit_price": 3000, "line_total": 45000 }
+  ],
+  "subtotal": 290000,
+  "vat": 21750,
+  "total": 311750
+}</textarea>
+    <span class="jl-status"></span>
+    <div class="jl-out"></div>
+  </div>
+<pre hidden id="inv-good-2-7">{
+  "supplier": "Farmgate Supplies",
+  "invoice_number": "FG-0192",
+  "invoice_date": "2026-10-12",
+  "currency": "NGN",
+  "lines": [
+    { "description": "Tomatoes, crate", "qty": 20, "unit_price": 9000, "line_total": 180000 },
+    { "description": "Tatashe, big bag", "qty": 10, "unit_price": 6500, "line_total": 65000 },
+    { "description": "Onions, bag", "qty": 15, "unit_price": 3000, "line_total": 45000 }
+  ],
+  "subtotal": 290000,
+  "vat": 21750,
+  "total": 311750
+}</pre>
+<pre hidden id="inv-bad1-2-7">{
+  "supplier": "Farmgate Supplies",
+  "invoice_number": "FG-0192",
+  "invoice_date": "2026-10-12",
+  "currency": "NGN",
+  "lines": [
+    { "description": "Tomatoes, crate", "qty": 20, "unit_price": 9000, "line_total": 180000 },
+    { "description": "Tatashe, big bag", "qty": 10, "unit_price": 6500, "line_total": 56000 },
+    { "description": "Onions, bag", "qty": 15, "unit_price": 3000, "line_total": 45000 }
+  ],
+  "subtotal": 290000,
+  "vat": 21750,
+  "total": 311750
+}</pre>
+<pre hidden id="inv-bad2-2-7">{
+  "supplier": "Mama Bisi Farm",
+  "invoice_number": null,
+  "invoice_date": "12/10/2026",
+  "currency": "NGN",
+  "lines": [
+    { "description": "Ugwu leaves, bundle", "qty": 30, "unit_price": 500, "line_total": 15000 }
+  ],
+  "subtotal": 15000,
+  "vat": 0,
+  "total": 15000
+}</pre>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://help.make.com/make-ai-agents-new-app" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Help: Make AI Agents (New) app</b><small>Read: tools, the Run an agent module, thread IDs and credit usage.</small></span></a>
+    <a class="wcard" href="https://help.make.com/tools-for-ai-agents" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Help: tools for AI agents</b><small>Look for: using a scenario as a tool, and writing tool descriptions.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+AI+invoice+extraction+PDF" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make AI invoice extraction" walkthrough</b><small>Look for: Parse JSON with a data structure after the AI step.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 40 MIN</span><h2>Solved problem: invoices into the books, checked</h2></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Watch the invoice folder</h4>
+      <p>Trigger: <b>Google Drive · Watch Files in a Folder</b> on "Supplier invoices" (the folder your 1.1 Zap fills). Then <b>Google Drive · Download a File</b>. Schedule hourly in business hours (2.1).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Ask the AI for the invoice as JSON</h4>
+      <p>Use a provider module that accepts files or images (or extract the text first with Make's AI Content Extractor). Prompt:</p>
+<pre class="codebox">You extract supplier invoices for Harvest Lane, a produce business in
+Nigeria. Read the attached invoice (it may be a PDF, a photo or handwritten).
+Return ONLY JSON in exactly this shape:
+{ "supplier": string, "invoice_number": string|null,
+  "invoice_date": "YYYY-MM-DD"|null, "currency": "NGN",
+  "lines": [ { "description": string, "qty": number,
+               "unit_price": number, "line_total": number } ],
+  "subtotal": number|null, "vat": number|null, "total": number|null,
+  "unreadable_parts": [string] }
+Rules: numbers without ₦ or commas. If a value is unclear or missing,
+use null and describe it in unreadable_parts. Never guess a number.</pre>
+      <p>Then <b>JSON · Parse JSON</b> with a data structure generated from the clean sample in the playground.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Check the arithmetic</h4>
+      <p><b>Iterator</b> on <code>lines</code>, then a <b>Numeric aggregator</b> (SUM of line_total, source = iterator). In the same iterator section, a <b>Set variable</b> or text aggregator collects any line where <code>qty * unit_price</code> differs from <code>line_total</code> by more than 1 (2.2 maths in a field). After the aggregators, one <b>router</b> (2.3):</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Route</th><th>Filter</th><th>Action</th></tr></thead><tbody>
+        <tr><td>Auto-save</td><td>no bad lines AND sum = subtotal (±1) AND subtotal + vat = total (±1) AND invoice_number exists AND unreadable_parts is empty</td><td>Add rows to Supplier_Invoices and Invoice_Lines</td></tr>
+        <tr><td>Fallback · Review</td><td>anything else</td><td>Add to Needs_Review with the reasons and the Drive link; email Tolu</td></tr>
+      </tbody></table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Protect the AI step</h4>
+      <p>Add an error handler on the AI module (2.6): alert, then <b>Break</b> with two retries. If the provider is down, invoices wait instead of disappearing.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with five real-world layouts</h4>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Invoice</th><th>Type</th><th>Expected route (example result)</th></tr></thead>
+        <tbody>
+          <tr><td>Farmgate Supplies</td><td>Software PDF</td><td>Auto-save</td></tr>
+          <tr><td>Ibadan Onion Co.</td><td>Software PDF, two pages</td><td>Auto-save</td></tr>
+          <tr><td>Green Basket</td><td>Scanned PDF</td><td>Auto-save</td></tr>
+          <tr><td>Hotel produce co-op</td><td>Photo of printed invoice</td><td>Auto-save</td></tr>
+          <tr><td>Mama Bisi Farm</td><td>Photo of handwritten slip</td><td>Review (no invoice number, unclear digit)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="stats">
+        <div class="stat"><b>4 of 5</b><span>saved automatically (example result)</span></div>
+        <div class="stat"><b>1</b><span>sent to Tolu with exact reasons</span></div>
+        <div class="stat"><b>≈ 3 h → 20 min</b><span>month-end typing, now reviewing exceptions</span></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Bonus: an "Ask Weave" agent over the invoice data</h4>
+      <p>Create a Make AI Agent with this system prompt: <i>"You answer Tolu's questions about supplier spending using only the tools provided. Never change data. If the tools can't answer, say so."</i> Give it one tool: a small scenario that searches Invoice_Lines by supplier, product and date range and returns totals. Run it from a scenario triggered by Telegram messages from Tolu's account only, with the chat ID as thread ID.</p>
+      <div class="bubble"><b>Tolu:</b> How much did we spend on tomatoes from Farmgate in October? <br><b>Agent:</b> ₦540,000 across 3 invoices (FG-0188, FG-0192, FG-0197).</div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The AI reads; arithmetic checks prove what it read.</li><li>"null plus a reason" turns guesses into review items.</li><li>Only clean invoices skip a human; exceptions arrive explained.</li><li>The agent is read-only, scoped to one tool, and to Tolu's account.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Saving AI output with no arithmetic check.</li><li>Asking for totals but not line items (nothing to verify against).</li><li>Skipping Parse JSON, so fields aren't mappable.</li><li>Giving an agent tools that can write or delete.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My invoice robot is "nearly perfect". Five issues to find.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The books were ₦9,000 off for a month before anyone noticed.</td></tr>
+        <tr><td>B</td><td>The AI's answer arrived as one long text field; nothing could be mapped.</td></tr>
+        <tr><td>C</td><td>A handwritten slip was saved with invoice number "INV-001", which doesn't exist.</td></tr>
+        <tr><td>D</td><td>The "Ask Weave" agent deleted a duplicate invoice row when asked to "clean up".</td></tr>
+        <tr><td>E</td><td>A staff member tested by uploading 40 real invoices to a free chat website.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no arithmetic check, so a misread digit went straight to the books.</li>
+        <li><b>B:</b> no Parse JSON with a data structure after the AI step.</li>
+        <li><b>C:</b> no "use null, never guess" rule; the model invented a plausible number.</li>
+        <li><b>D:</b> the agent had a write/delete tool. Give agents read-only tools unless a human approves changes.</li>
+        <li><b>E:</b> real supplier data in an unapproved tool (0.6). Practise with samples; use the provider API with known data terms.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>One invoice, one JSON, one check</h4>
+    <ul><li>Make a sample invoice (a document you type up yourself) and run it through an AI module plus Parse JSON.</li><li>Paste the output into the playground checker and fix your prompt until it passes.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The checker says AUTO-SAVE and every field maps in Make.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>The checked invoice pipeline</h4>
+    <ul><li>Build the solved scenario end to end with your own five sample invoices, including one photo and one with a deliberately wrong total.</li><li>Record which route each took and why.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The wrong-total invoice and any unclear one land in Needs_Review with correct reasons, and clean ones save automatically.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A read-only spending agent</h4>
+    <ul><li>Build the "Ask Weave" agent with one or two read-only scenario tools.</li><li>Ask it 10 questions, including two it can't answer from the data.</li><li>Record: correct answers, honest "I can't answer" responses, and credits used.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>At least 8 of 10 answers match a manual check, both unanswerable questions get an honest reply, and the agent has no tool that changes data.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. After an AI module returns invoice JSON, what makes its fields mappable in Make?</p><div class="opts">
+      <button type="button" data-opt="a">A router</button><button type="button" data-opt="b">JSON · Parse JSON with a data structure</button><button type="button" data-opt="c">A webhook</button><button type="button" data-opt="d">Formatting it as currency</button></div>
+      <p class="fb" hidden data-why="Parse JSON turns text into fields and arrays you can map and iterate."></p></div>
+    <div class="q" data-ans="d"><p>2. What's the best proof that the AI read an invoice correctly?</p><div class="opts">
+      <button type="button" data-opt="a">The AI says it's confident</button><button type="button" data-opt="b">Using the most expensive model</button><button type="button" data-opt="c">A longer prompt</button><button type="button" data-opt="d">Line totals, subtotal, VAT and total all add up</button></div>
+      <p class="fb" hidden data-why="Invoices contain their own arithmetic. Let rules check the AI."></p></div>
+    <div class="q" data-ans="a"><p>3. The invoice number is smudged. What should the AI return?</p><div class="opts">
+      <button type="button" data-opt="a">null, with a note in unreadable_parts</button><button type="button" data-opt="b">Its best guess</button><button type="button" data-opt="c">The previous invoice number + 1</button><button type="button" data-opt="d">An empty JSON object</button></div>
+      <p class="fb" hidden data-why="Null plus a reason sends it to review instead of inventing a value."></p></div>
+    <div class="q" data-ans="c"><p>4. When is a Make AI Agent a better choice than a fixed scenario?</p><div class="opts">
+      <button type="button" data-opt="a">For every invoice extraction</button><button type="button" data-opt="b">When the steps never change</button><button type="button" data-opt="c">When requests vary and the agent can choose among safe tools</button><button type="button" data-opt="d">When you want the lowest, most predictable cost</button></div>
+      <p class="fb" hidden data-why="Fixed steps belong in scenarios; varied questions suit agents."></p></div>
+    <div class="q" data-ans="b"><p>5. What tools should a first spending-questions agent have?</p><div class="opts">
+      <button type="button" data-opt="a">Read, update and delete rows</button><button type="button" data-opt="b">Read-only tools that return the data it needs</button><button type="button" data-opt="c">Every module in the account</button><button type="button" data-opt="d">Email sending, to reply to suppliers</button></div>
+      <p class="fb" hidden data-why="Read-only tools keep an agent's mistakes harmless."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-7">AUTOMANCY LOG · Lesson 2.7 · AI Modules & Make AI Agents
+Date:
+AI option used (built-in / provider / agent) and model:
+Invoices tested and routes taken:
+Checks in my router filter:
+Agent tools (all read-only?):
+Credits and provider cost for the test run:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-7">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Make offers built-in AI, provider apps, and AI agents; choose by control, cost and how fixed the steps are.</li>
+      <li>Ask for JSON, then Parse JSON with a data structure.</li>
+      <li>Scans and handwriting need OCR or vision models, and stricter checking.</li>
+      <li>Let arithmetic and rules verify AI output; route doubt to a person.</li>
+      <li>"null plus a reason" beats a confident guess.</li>
+      <li>Agents get read-only tools first, scoped to the people who should use them.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://help.make.com/make-ai-agents-new-app" target="_blank" rel="noopener">Make Help: Make AI Agents (New) app</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/scenarios-for-ai-agents" target="_blank" rel="noopener">Make Help: scenarios for AI agents</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/how-features-use-credits" target="_blank" rel="noopener">Make Help: how AI features use credits</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy: AI agents courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+AI+agents+tutorial" target="_blank" rel="noopener">YouTube: Make AI agents tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Bring printed sample invoices and ask learners to photograph them with their phones, so the "photo" test case is real. Plant one invoice with a wrong total; the moment the checker catches it is the module's highlight. Never let a cohort upload real company invoices during class.</p>
+  </div>
+</section>
+
+</article>
+</template>

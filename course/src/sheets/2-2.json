@@ -1,0 +1,38 @@
+{
+  "id": "2.2",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: a Harvest Lane test sheet with three deliberately messy rows. One Update a Row module writes five clean columns.</p><pre class=\"codebox\">tidy_name    startcase(lower(trim(1.name)))\nphone_clean  if(substring(replace(1.phone; /[^0-9]/g; emptystring); 0; 1) = \"0\";\n                \"+234\" + substring(replace(1.phone; /[^0-9]/g; emptystring); 1; 20);\n                \"+\" + replace(1.phone; /[^0-9]/g; emptystring))\norder_date   parseDate(trim(1.date_text); \"DD/MM/YYYY\")\nprice_num    parseNumber(replace(1.price_text; /[^0-9.]/g; emptystring))\nprice_show   \"₦\" + formatNumber(parseNumber(replace(1.price_text; /[^0-9.]/g; emptystring)); 0; \".\"; \",\")</pre><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Messy input (name · phone · date · price)</th><th>Clean output</th></tr></thead><tbody><tr><td>\"  aDE bakare \" · 0803 123 4567 · 06/10/2026 · ₦12,500</td><td>Ade Bakare · +2348031234567 · 6 Oct 2026 · 12500 · ₦12,500</td></tr><tr><td>\"TUNDE okafor\" · +234-805-555-0101 · 15/10/2026 · N 9,000</td><td>Tunde Okafor · +2348055550101 · 15 Oct 2026 · 9000 · ₦9,000</td></tr><tr><td>\"  chioma EZE\" · (0701) 222 3333 · 02/11/2026 · 26500.00</td><td>Chioma Eze · +2347012223333 · 2 Nov 2026 · 26500 · ₦26,500</td></tr></tbody></table></div><p>Check: 06/10/2026 reads as 6 October, not 10 June; price_num is a number you can sum in the sheet; only price_show carries ₦ and commas.</p>",
+      "mistakes": [
+        "Calling parseDate without a format, so 06/10/2026 becomes 10 June.",
+        "Writing \"YYYY-mm-DD\" when formatting the date, which puts minutes where the month should be.",
+        "Saving the ₦-formatted price into the number column, so the sheet can't add it up.",
+        "Separating arguments with commas instead of semicolons, so Make rejects the formula."
+      ],
+      "pass": "Three messy rows each have five correct outputs written back to the sheet: tidy name, +234 phone, a real date read day-first, a plain number, and a ₦ display price with commas.",
+      "redo": "Send it back if fewer than three rows were tested, if any date is read month-first, or if the parsed price is still text."
+    },
+    "s": {
+      "answer": "<p>Worked example: the Harvest Lane receipt from the solved problem, with the title fix. The only change is the first_name formula: trim, then strip a leading title, then take the first word.</p><pre class=\"codebox\">first_name\nifempty(\n  startcase(lower(get(split(trim(replace(trim(1.customer_name);\n    /^(mr|mrs|miss|dr|chief)\\.?\\s+/i; emptystring)); \" \"); 1)));\n  \"there\")</pre><p>The <code>trim</code> comes first so leading spaces don't stop <code>^</code> matching the title. The <code>ifempty</code> gives \"Hi there!\" if nothing is left. delivery_day and receipt_text stay as in the solved problem (Sunday rule with <code>d</code> = 0, <code>ifempty(1.delivery_window; \"time to be confirmed\")</code>).</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test</th><th>created_at</th><th>Name</th><th>Window</th><th>Receipt shows</th></tr></thead><tbody><tr><td>T1 Saturday</td><td>Sat 10 Oct</td><td>\"  mrs ADEBAYO \"</td><td>afternoon</td><td>Hi Adebayo! … Delivery: Monday 12 Oct, afternoon.</td></tr><tr><td>T2 Friday</td><td>Fri 9 Oct</td><td>Dr. Ngozi Okeke</td><td>morning</td><td>Hi Ngozi! … Delivery: Saturday 10 Oct, morning.</td></tr><tr><td>T3 Blank window</td><td>Wed 7 Oct</td><td>Bola Ade</td><td>(blank)</td><td>Hi Bola! … Delivery: Thursday 8 Oct, time to be confirmed.</td></tr><tr><td>T4 Title</td><td>Tue 6 Oct</td><td>Chief Tunde Bakare</td><td>evening</td><td>Hi Tunde! … Delivery: Wednesday 7 Oct, evening.</td></tr><tr><td>T5 No title</td><td>Mon 5 Oct</td><td>chioma eze</td><td>morning</td><td>Hi Chioma! … Delivery: Tuesday 6 Oct, morning.</td></tr></tbody></table></div><p>Each receipt also shows Total: ₦ with commas from <code>formatNumber</code>, while the total column stays a plain number. A one-order run costs 2 credits (the trigger check plus one Update a Row), however many functions you use.</p><p>Submit: the formula text, the five test rows and a screenshot of the filled receipt_text column (test names only).</p>",
+      "mistakes": [
+        "Running the title regex before trimming, so \"  mrs ADEBAYO\" keeps its title because of the leading spaces.",
+        "Testing only names without titles, so \"Hi Mrs!\" is never caught.",
+        "Comparing the weekday with \"0\" in one place and 0 in another, or using \"dddd\" instead of \"d\", so the Sunday check never fires.",
+        "Hard-coding \"time to be confirmed\" instead of using ifempty, so filled windows are overwritten."
+      ],
+      "pass": "All four required tests (Saturday, Friday, blank window, with and without titles) are shown, and no receipt names a Sunday, greets a title, or leaves a blank window without \"time to be confirmed\".",
+      "redo": "Send it back if a test case is missing, if any receipt still says \"Hi Mrs!\" or a Sunday date, or if the fix was done with extra modules instead of functions."
+    },
+    "g": {
+      "answer": "<p>Worked example: the 1.4 website order JSON (HL-0051) in <b>JSON · Parse JSON</b> as module 1, plus two edited copies with one and three items.</p><p><b>map and join give the SKUs, but not the quantities beside them:</b></p><pre class=\"codebox\">join(map(1.items; \"sku\"); \", \")   → TOM-CRATE, PEP-TATASHE-L</pre><p><b>Pairing qty with sku needs get() for each position</b> (positions start at 1), guarded by <code>length()</code>:</p><pre class=\"codebox\">{{get(1.items; 1.qty)}}× {{get(1.items; 1.sku)}}{{if(length(1.items) &gt;= 2;\n  \", \" + get(1.items; 2).qty + \"× \" + get(1.items; 2).sku; emptystring)}}{{if(length(1.items) &gt;= 3;\n  \", \" + get(1.items; 3).qty + \"× \" + get(1.items; 3).sku; emptystring)}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}}</pre><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test order</th><th>Items</th><th>Summary</th></tr></thead><tbody><tr><td>1 item</td><td>3 × ONI-BAG @ 4,000 + fee 1,500</td><td>3× ONI-BAG · ₦13,500</td></tr><tr><td>2 items (HL-0051)</td><td>2 × TOM-CRATE, 1 × PEP-TATASHE-L + fee</td><td>2× TOM-CRATE, 1× PEP-TATASHE-L · ₦35,500</td></tr><tr><td>3 items</td><td>the above + 3 × ONI-BAG</td><td>2× TOM-CRATE, 1× PEP-TATASHE-L, 3× ONI-BAG · ₦47,500</td></tr></tbody></table></div><p><b>Functions vs iterators (two sentences).</b> map, join and formatNumber handled the SKU list and the money in one field, but pairing each qty with its sku meant one hand-written block per position, which silently drops a fourth item. An iterator plus a text aggregator (2.4) writes \"qty× sku\" once per bundle, so it works for any number of items.</p><p>Submit: the formula, three screenshots of the result for the 1-, 2- and 3-item tests, and the two sentences.</p>",
+      "mistakes": [
+        "Using get(1.items; 0), which returns nothing because Make counts from 1.",
+        "Expecting map(1.items; \"sku\") to also carry the quantities.",
+        "Formatting the total inside the JSON or the sheet instead of only in the summary text.",
+        "Testing only the 2-item sample, so the formula breaks or adds a stray comma for 1 or 3 items."
+      ],
+      "pass": "The summary is exactly right for a 1-item, a 2-item and a 3-item order, and two clear sentences explain what functions did well and why an iterator scales better.",
+      "redo": "Send it back if any of the three tests is wrong or missing, if the total isn't formatted with ₦ and commas, or if the functions-vs-iterators sentences are missing."
+    }
+  }
+}

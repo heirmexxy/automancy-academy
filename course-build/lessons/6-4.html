@@ -1,0 +1,558 @@
+<template data-mod="6.4" id="tpl-6-4">
+<article style="--c:var(--sky)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 6 · Launchpad · Lesson 6.4 · Grand Capstone</span>
+    <h1>Grand Capstone: Harvest Lane on Autopilot</h1>
+    <div class="kicker"><span class="pill">3 sessions · 6–8 hours</span><span class="pill">100 XP + 300 capstone XP</span><span class="pill">Badge: Autopilot</span><span class="pill">Guides: everyone</span><span class="pill">Tools: self-hosted n8n, Make, Zapier, WhatsApp Cloud API, Telegram, Supabase, Paystack (test mode), an AI provider</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#tolu"/></svg>
+</header>
+<p class="lede">Season finale. Over thirteen weeks you've built Harvest Lane's automations one at a time: order bots, payment checks, a support agent, reports, and the growth agents that bring customers in. Now they have to work as <i>one system</i>, across three platforms, watched by one set of alarms, explained in one handover pack, and proven with one set of numbers. Every guide shows up for this one. So does Glitch, and Glitch has brought friends.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Design one system across n8n, Make and Zapier, with clear owners for every piece of data.</span></div>
+  <div><b>02</b><span>Monitor outcomes as well as errors, so silent failures can't hide.</span></div>
+  <div><b>03</b><span>Write handover documentation someone else can run the system from.</span></div>
+  <div><b>04</b><span>Present results as business numbers an owner or investor trusts.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The investor visits on Friday</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu beside a calendar with Friday circled and the words investor visit.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="175" y="35" width="120" height="115" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="175" y="35" width="120" height="26" rx="8" fill="var(--glitch)"/>
+        <text x="235" y="53" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#fff">FRIDAY</text>
+        <circle cx="235" cy="100" r="28" fill="none" stroke="var(--glitch)" stroke-width="4"/>
+        <text x="235" y="98" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">investor</text>
+        <text x="235" y="112" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">visit</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"Friday, the investor comes to see the whole thing. Not five clever bots: one business that runs itself. And she wants numbers."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt, Weave, Nodo and Sage standing together.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <use href="#bolt" x="0" y="60" width="90" height="90"/>
+        <use href="#weave" x="78" y="60" width="90" height="90"/>
+        <use href="#nodo" x="156" y="60" width="90" height="90"/>
+        <use href="#sage" x="234" y="60" width="90" height="90"/>
+        <text x="160" y="35" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)">Every guide shows up</text>
+      </svg>
+      <div class="cap"><b>The team</b>Bolt brings Zapier, Weave brings Make, Nodo brings the n8n server, Sage brings the agents. "Who owns what?" is the first question.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three Glitch characters of different sizes grinning.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <use href="#glitch" x="20" y="55" width="100" height="100"/>
+        <use href="#glitch" x="110" y="30" width="130" height="130"/>
+        <use href="#glitch" x="225" y="65" width="85" height="85"/>
+      </svg>
+      <div class="cap"><b>Glitch, plus friends</b>"Three of us, three faults, one morning. Two of them won't even raise an alarm. Good luck finding us before Friday."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A results board showing hours saved, orders won back and net monthly value.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="30" width="160" height="130" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)"><text x="162" y="55">hours saved</text><text x="162" y="90">orders won back</text><text x="162" y="125">net / month</text></g>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)"><text x="162" y="72">87 h</text><text x="162" y="107">52</text><text x="162" y="142">₦215,500</text></g>
+        <use href="#sage" x="0" y="50" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Sage</b>"Investors don't buy workflows. They buy hours, orders and naira, measured honestly, with a plan for when things break."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 45 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The whole system on one page</h3>
+    <p>Before you build anything, draw the system so anyone can see it in ten seconds: what starts each flow, where data lives, which platform runs which part, and what watches it all.</p>
+    <figure class="fig"><svg viewBox="0 0 660 330" role="img" aria-label="Harvest Lane system map. Customers on WhatsApp send messages to HL-01 Intake on n8n. Orders go to HL-02 Order agent, then HL-03 Payments with Paystack, then HL-04 Dispatch to riders on Telegram. Support questions go from Intake to HL-05 Support desk. All of these read and write one Supabase database with customers, orders, stock and events tables. Below: HL-06 Weekly report on n8n, HL-07 Books sync on Make, HL-08 Supplier form on Zapier, and HL-00 Errors and watchdog, which watches everything.">
+      <defs><marker id="m55a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10.5" text-anchor="middle">
+        <rect x="10" y="40" width="105" height="48" rx="10" fill="var(--teal)" stroke="var(--ink)" stroke-width="2"/><text x="62" y="60" fill="#fff">Customers</text><text x="62" y="76" fill="#fff" font-size="9">WhatsApp</text>
+        <rect x="135" y="40" width="105" height="48" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="187" y="60" fill="var(--ink)">HL·01 Intake</text><text x="187" y="76" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n</text>
+        <rect x="260" y="40" width="115" height="48" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="317" y="60" fill="#fff">HL·02 Order agent</text><text x="317" y="76" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n · AI</text>
+        <rect x="395" y="40" width="115" height="48" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="452" y="60" fill="var(--ink)">HL·03 Payments</text><text x="452" y="76" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n · Paystack</text>
+        <rect x="530" y="40" width="120" height="48" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="590" y="60" fill="var(--ink)">HL·04 Dispatch</text><text x="590" y="76" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n · Telegram</text>
+        <rect x="260" y="150" width="115" height="48" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="317" y="170" fill="#fff">HL·05 Support</text><text x="317" y="186" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n · Sage Desk</text>
+        <rect x="395" y="150" width="255" height="48" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.5"/><text x="522" y="170" fill="#fff" font-size="12">Supabase (one source of truth)</text><text x="522" y="186" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">customers · orders · stock · events</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none">
+        <path d="M116 64 H131" marker-end="url(#m55a)"/><path d="M241 64 H256" marker-end="url(#m55a)"/><path d="M376 64 H391" marker-end="url(#m55a)"/><path d="M511 64 H526" marker-end="url(#m55a)"/>
+        <path d="M187 89 V174 H256" marker-end="url(#m55a)"/>
+      </g>
+      <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)"><text x="194" y="135">questions</text><text x="244" y="32">orders</text></g>
+      <g stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"><path d="M452 89 V146"/><path d="M590 89 V146"/><path d="M376 174 H391"/><path d="M80 252 L420 200"/><path d="M240 252 L470 200"/><path d="M405 252 L520 200"/></g>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10.5" text-anchor="middle">
+        <rect x="10" y="252" width="140" height="44" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="80" y="270" fill="var(--ink)">HL·06 Weekly report</text><text x="80" y="285" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">n8n · AI writes words</text>
+        <rect x="170" y="252" width="140" height="44" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="240" y="270" fill="var(--ink)">HL·07 Books sync</text><text x="240" y="285" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">Make (accountant)</text>
+        <rect x="330" y="252" width="150" height="44" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="405" y="270" fill="var(--ink)">HL·08 Supplier form</text><text x="405" y="285" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">Zapier (assistant)</text>
+        <rect x="500" y="252" width="150" height="44" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="575" y="270" fill="#13233A">HL·00 Errors + watchdog</text><text x="575" y="285" fill="#13233A" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">watches everything</text>
+      </g>
+      <text x="10" y="322" font-family="JetBrains Mono,monospace" font-size="9.5" fill="var(--muted)">Every workflow writes a row to events with the same order_id, so one order can be traced end to end.</text>
+    </svg><figcaption>Scroll sideways on a phone. Solid arrows: the order's journey. Dashed: reads and writes to the database. The growth workflows from Track 5 (HL·09 social inbox, HL·10 prospecting, HL·11 campaigns, HL·12 CRM sync) plug into the same database and events table.</figcaption></figure>
+    <div class="vocab">
+      <div><b>One owner per table</b>Each piece of data has exactly one workflow that <i>creates or changes</i> it. Everyone else reads. Orders are written by HL·02 and HL·03 only; the Make books sync only reads them.</div>
+      <div><b>Correlation ID</b>The <code>order_id</code> (e.g. HL-0412) travels through every workflow, every message and every log row. Ask "what happened to HL-0412?" and get one timeline.</div>
+      <div><b>Events table</b>A simple log every workflow appends to: <code>at, workflow, order_id, event, detail</code>. It powers the weekly report, the watchdog and your investigations.</div>
+      <div><b>Data contract</b>A written list of each table's columns and meaning. Renaming a column is a change to the contract, announced to every workflow that reads it.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Design decisions, explained</h3>
+    <p>A good capstone isn't the one with the most tools. It's the one where every choice has a reason you can say in one sentence. Here are the reference build's decisions.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Decision</th><th>Choice</th><th>Why</th><th>Rejected, and why</th></tr></thead>
+      <tbody>
+        <tr><td>Where the core runs</td><td>Self-hosted n8n (Track 3)</td><td>High volume, AI agents, code where needed, predictable monthly cost</td><td>Everything in Zapier: costs rise with every task at this volume</td></tr>
+        <tr><td>Bookkeeping export</td><td>Make scenario</td><td>The accountant already uses Make and maintains it herself</td><td>Moving it to n8n: saves little, removes her control</td></tr>
+        <tr><td>Supplier sign-up form</td><td>Zapier</td><td>Tolu's assistant edits it without help; a few runs a month</td><td>A custom n8n form: only Nodo could change it</td></tr>
+        <tr><td>Customer channel</td><td>WhatsApp</td><td>Where customers already are (5.1)</td><td>A web app: nobody would install it</td></tr>
+        <tr><td>Staff and rider channel</td><td>Telegram bots</td><td>Free, quick to build, buttons for approvals</td><td>WhatsApp for staff: costs and template rules for internal messages</td></tr>
+        <tr><td>Where AI is used</td><td>Reading messy messages; support answers; report wording</td><td>That's where language is messy</td><td>AI for prices, stock or payments: rules are exact and cheaper (Boss 3)</td></tr>
+        <tr><td>Data home</td><td>Supabase (Postgres)</td><td>One source of truth, safe concurrent writes, vectors for support</td><td>Sheets as the database: fine at first, fragile at this volume; kept as read-only views for Tolu</td></tr>
+        <tr><td>Human approval</td><td>Refunds, orders over ₦100,000, new bulk buyers</td><td>Money and new relationships need a person (4.5)</td><td>Full autonomy: one bad day costs more than the time saved</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><div class="bubble"><b>Bolt:</b> Notice that two of the three platforms are chosen for <i>who maintains them</i>, not for features. The best tool is often the one the person in charge of it can fix on a Sunday.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Monitor outcomes, not only errors</h3>
+    <p>An error workflow (3.6) catches the failures that <i>crash</i>. The dangerous failures don't crash: a workflow runs, shows green, and does the wrong thing. Watch the system in three layers.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Layer</th><th>Catches</th><th>How, in the reference build</th></tr></thead>
+      <tbody>
+        <tr><td><b>1 · Errors</b></td><td>Nodes that fail</td><td>Every workflow (n8n, Make and Zapier) sends failures to one alert channel, with the order_id and a link to the execution.</td></tr>
+        <tr><td><b>2 · Heartbeats</b></td><td>Workflows that silently stop running</td><td>Each workflow writes "last success" to the events table. A watchdog checks every 30 minutes: "Weekly report: expected every 7 days, last success 9 days ago."</td></tr>
+        <tr><td><b>3 · Outcome checks</b></td><td>Green runs that do the wrong thing</td><td>Business sanity rules: paid orders ≈ payment events; 0 orders in a week is an alarm, not a report; more than 3 rejected payment signatures in 10 minutes is an alarm; stock can't go below zero.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Then send Tolu one short health message each morning. She should be able to read it in ten seconds and know whether today needs her:</p>
+<pre class="codebox">☀️ Harvest Lane · health · Fri 07:30
+Yesterday: 63 orders · 61 paid · 59 delivered · 2 refunds awaiting you
+All 13 workflows ran on schedule ✓
+CRM: 3 leads to call first · 1 deal going cold (Mama Put Express)
+Watch: WhatsApp template "out_for_delivery" quality: medium ⚠️
+AI spend this month: ₦18,400 of ₦40,000 cap
+Nothing needs you before 10 a.m.</pre>
+    <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Nodo's rule:</b> for every important workflow, ask "how would I know if this stopped doing its job, even though it didn't crash?" If the answer is "a customer would tell us", add an outcome check.</p></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>The handover pack</h3>
+    <p>A system only one person understands is a liability. The handover pack lets someone else run it: Tolu, her new operations hire, or another builder if you're unavailable. Write it for a smart person who wasn't there.</p>
+    <div class="logbox">
+<pre id="runbook-6-4">HARVEST LANE AUTOMATION · HANDOVER PACK · v1.0 · [date]
+
+1. WHAT IT DOES (half a page)
+   The system map (one picture) and one paragraph per workflow:
+   trigger, what it does, what it writes, who owns it.
+
+2. ACCOUNTS AND ACCESS
+   Every account (n8n server, Make, Zapier, Meta/WhatsApp, Telegram bots,
+   Supabase, Paystack, AI provider, domain): owner, login holder,
+   where the password is kept (a password manager, never this document),
+   billing date and monthly cost.
+
+3. DAILY AND WEEKLY ROUTINE
+   Morning health message: what each line means and when to act.
+   Weekly: read the report, approve pending refunds, check AI spend.
+
+4. WHEN SOMETHING BREAKS (one entry per known failure)
+   Symptom → likely cause → what to check → fix → who to call.
+   e.g. "Customers say they paid but no order" → Payments signature
+   failures → events table, event=signature_rejected → check the
+   Paystack secret in the n8n environment → re-verify pending orders.
+
+5. CHANGES
+   How to change a price, add a product, edit a WhatsApp template,
+   add a rider. What NOT to change without the builder
+   (column names, webhook URLs, the system message).
+
+6. RECOVERY
+   Backups: what, where, how often, how to restore (tested on [date]).
+   Kill switch: how to pause the agent and fall back to manual orders.
+
+7. CONTACTS AND LIMITS
+   Builder and support terms (retainer, 6.2). Known limits, honestly.</pre>
+      <div><button type="button" class="btn" data-copy="runbook-6-4">Copy template</button></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#tolu"/></svg><div class="bubble"><b>Tolu:</b> The test of a handover pack: I follow section 4 alone, at 10 p.m., and fix the problem without calling you.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Present results as numbers</h3>
+    <p>Measure before and after: the minutes each order took, the orders that slipped away because nobody replied in time, and what the system costs to run. Then turn them into one headline sentence. Use Harvest Lane's numbers, or your own.</p>
+    <div class="tokcalc" data-results data-biz="Harvest Lane">
+      <div class="row">
+        <label>Minutes per order, before<input data-rs="bmin" type="number" value="12" min="0"></label>
+        <label>Minutes per order, after<input data-rs="amin" type="number" value="2" min="0"></label>
+        <label>Orders per week<input data-rs="orders" type="number" value="120" min="0"></label>
+        <label>Staff cost per hour (₦)<input data-rs="rate" type="number" value="1500" min="0" step="100"></label>
+        <label>Orders lost per week, before<input data-rs="bmiss" type="number" value="15" min="0"></label>
+        <label>Orders lost per week, after<input data-rs="amiss" type="number" value="3" min="0"></label>
+        <label>Average order value (₦)<input data-rs="aov" type="number" value="9500" min="0" step="500"></label>
+        <label>Profit margin on goods (%)<input data-rs="margin" type="number" value="25" min="0" max="100"></label>
+        <label>Running cost a month (₦)<input data-rs="run" type="number" value="38000" min="0" step="1000"></label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b data-o="hrs">–</b><span>staff hours saved a month</span></div>
+        <div class="stat"><b data-o="tval">–</b><span>value of that time</span></div>
+        <div class="stat"><b data-o="won">–</b><span>orders won back a month</span></div>
+        <div class="stat"><b data-o="wval">–</b><span>profit on those orders</span></div>
+        <div class="stat"><b data-o="net">–</b><span>net value a month</span></div>
+      </div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+    <p style="font-size:.86rem;color:var(--muted)">Count profit on won-back orders, not their full value: the investor will. And say how you measured "before" (e.g. a week of timing Tolu's order handling, and counting unanswered chats).</p>
+    <div class="vocab">
+      <div><b>1 · The problem (30 s)</b>One customer story and one number: "15 orders a week were lost because nobody replied in time."</div>
+      <div><b>2 · The system (45 s)</b>The one-page map. No node names.</div>
+      <div><b>3 · Live demo (90 s)</b>One order from WhatsApp message to rider, with the payment in test mode, while the audience watches the events table fill.</div>
+      <div><b>4 · Results (45 s)</b>The headline sentence and the five numbers above.</div>
+      <div><b>5 · Safety (30 s)</b>What it can't do without a person, and what happens when something breaks.</div>
+      <div><b>6 · Next (15 s)</b>One clear next step and what it would be worth.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://sre.google/sre-book/monitoring-distributed-systems/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Google SRE Book: Monitoring Distributed Systems</b><small>Read the "four golden signals" section: latency, traffic, errors, saturation. They map neatly onto automations.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/deploy/host-n8n/keep-n8n-running/monitor-n8n" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: monitoring n8n</b><small>Health endpoints for the server itself, layer zero under your heartbeats.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+end+to+end+business+automation+system+build" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: end-to-end business automation builds</b><small>Watch one full build and note where they monitor, and where they don't.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 3–5 HOURS</span><h2>Solved problem: the full reference build</h2></div>
+  <div class="prose"><p><b>The goal.</b> A customer sends "2 baskets of tomatoes and 1 crate of eggs to Bodija" on WhatsApp. Within a minute they get a confirmed price and a Paystack link. When they pay, a rider gets the job on Telegram, the customer gets "out for delivery" and then "delivered", stock goes down, and the books update. Questions go to Sage Desk. Every Monday Tolu gets a report. When anything breaks, or quietly stops working, someone knows within 30 minutes. Most pieces you've already built; this is how they fit together.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Session 1 · Map and data contract</h4>
+      <p>Draw the system map (Card 1) and create the Supabase tables. Write the contract before any workflow touches them.</p>
+<pre class="codebox"><span class="c">-- orders: written by HL·02 (create) and HL·03 (paid). Everyone else reads.</span>
+order_id text primary key   -- HL-0412
+customer_id text, items jsonb, total_ngn int,
+status text                 -- quoted · paid · dispatched · delivered · refunded
+created_at timestamptz, paid_at timestamptz, paystack_ref text unique
+
+<span class="c">-- events: every workflow appends, nobody edits</span>
+at timestamptz default now(), workflow text, order_id text,
+event text, detail jsonb    -- e.g. ('HL·03', 'HL-0412', 'paid', {"amount":19000})</pre>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><p><b>Weave's tip:</b> <code>paystack_ref unique</code> makes duplicate webhooks (6.2) impossible at the database level, a second safety net under your workflow check.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 1 · The core loop</h4>
+      <ol>
+        <li><b>HL·01 Intake</b> (WhatsApp Cloud API trigger, 5.1): log the message, then route. Order-like messages go to HL·02; questions to HL·05. A short classifier (3.7) decides, with "unsure" going to the agent that can ask.</li>
+        <li><b>HL·02 Order agent</b> (Boss 3 and 4.2): AI extracts items into JSON; code prices them from <code>stock</code>; orders over ₦100,000 wait for Tolu. Creates the order, sends the Paystack link inside the 24-hour customer service window.</li>
+        <li><b>HL·03 Payments</b> (2.5, 6.2): verify signature, verify the transaction, check the amount, mark paid, decrement stock in one database call, write <code>paid</code> to events.</li>
+        <li><b>HL·04 Dispatch</b>: assign the nearest free rider (a simple zone table), Telegram the job with Accept/Delivered buttons, message the customer with an approved template (the 24-hour window may have closed by delivery time).</li>
+      </ol>
+      <p>Each workflow is a <b>sub-workflow</b> called by the one before (3.6), and each writes to events with the order_id.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 2 · Support and reporting</h4>
+      <ul>
+        <li><b>HL·05 Support</b>: Sage Desk from Boss 4, now with a <code>get_order</code> tool that reads the same orders table, so "where is my order?" is always current.</li>
+        <li><b>HL·06 Weekly report</b> (Monday 07:00): SQL computes the numbers (orders, revenue, top products, late deliveries, refunds, AI spend). The AI only writes three sentences of commentary around numbers it's given, and is told not to change them. Email plus a Telegram summary.</li>
+      </ul>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's rule:</b> code calculates, AI explains. A model asked to "summarise this week's sales" from raw rows will sometimes add them up wrong, confidently.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 2 · The cross-platform edges</h4>
+      <ul>
+        <li><b>HL·07 Books sync (Make)</b>: every evening, reads paid orders from a read-only Supabase view and creates sales entries in the accountant's tool (Track 2). It writes its own heartbeat to events through an n8n webhook.</li>
+        <li><b>HL·08 Supplier form (Zapier)</b>: a new supplier submits the form; the Zap posts it to an n8n webhook with a shared secret header, which validates and stores it, and asks Tolu to approve (Track 1).</li>
+      </ul>
+      <p>Rules for every edge between platforms: a webhook with a secret header (2.5), a fixed JSON shape written in the contract, and the receiving side validates before trusting. Make and Zapier send their errors to the same alert channel as n8n: Make through an error-handler route (2.6), Zapier through its error notifications or a final webhook step.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 2 · The growth layer</h4>
+      <ul>
+        <li><b>HL·09 Social inbox</b> (5.5): comments and DMs on Facebook and Instagram are answered from the same price list, buyers get a private reply, and new leads land in the <code>customers</code> table with source and consent. Complaints hand over to Tolu.</li>
+        <li><b>HL·10 Prospecting</b> (5.2): up to 20 approved outreach emails a day to restaurant kitchens, with the suppression list checked before every send.</li>
+        <li><b>HL·11 Campaigns</b> (5.6): a weekly newsletter and a 60-day win-back sequence in Brevo, fed from paid orders in Supabase, from an authenticated domain.</li>
+        <li><b>HL·12 CRM sync</b> (5.8, 5.9): every restaurant and hotel lead is upserted into HubSpot or Zoho free with company, contact, deal and source; scored; followed up with tasks; and a paid first order moves the contact to Customer. People move deal stages; the workflow never does.</li>
+      </ul>
+      <p>All four write to the events table with a <code>lead_id</code> or <code>order_id</code>, so you can trace a customer from first comment to first order. That's the number the investor will ask for.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 2 · The safety net</h4>
+      <ol>
+        <li><b>HL·00 Error workflow</b> (3.6), set on every n8n workflow: alert to Tolu's Telegram with workflow, node, order_id and execution link.</li>
+        <li><b>Watchdog</b> (every 30 min): for each workflow, compare the last <code>success</code> event with its expected interval; alert if overdue.</li>
+        <li><b>Outcome checks</b> (every 30 min): paid orders vs payment events; rejected signatures in the last 10 minutes; orders stuck in "paid" for over 2 hours without dispatch; stock below zero.</li>
+        <li><b>Morning health message</b> at 07:30 (Card 3).</li>
+        <li><b>Kill switch</b>: a row in a <code>settings</code> table (<code>agent_enabled</code>) that HL·01 checks; off means "a person will reply shortly" and every message goes to Tolu.</li>
+      </ol>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Session 3 · Test day, handover and demo</h4>
+      <p>Run the end-to-end tests with test data and Paystack test mode, from two phones. Then write the handover pack and rehearse the 4-minute presentation.</p>
+      <div class="logbox">
+<pre id="e2e-6-4">#  | Test                                                    | Expected
+1  | WhatsApp order: 2 tomatoes + 1 eggs to Bodija           | Quote + Paystack link < 1 min
+2  | Pay (test card)                                         | Paid, stock down, rider job on Telegram
+3  | Rider taps Accept, then Delivered                       | Customer gets both updates (template)
+4  | Same Paystack event sent twice                          | Processed once
+5  | Fake POST to the payment webhook                        | Rejected, logged, no order change
+6  | Order of ₦150,000                                       | Waits for Tolu's approval
+7  | "Where is HL-0412?" from the right / wrong number      | Status / politely refused
+8  | Make books sync runs                                    | Entries match paid orders; heartbeat logged
+9  | Zapier supplier form submitted                          | Stored after secret check; Tolu asked
+10 | Turn off one workflow for 1 hour                        | Watchdog alert
+11 | Rename a column in a test copy                          | Outcome check alerts; report not sent with zeros
+12 | Kill switch on                                          | Holding reply; Tolu gets the messages
+13 | Comment "how much for 2 baskets?" on Instagram           | Correct price, private reply, lead saved
+14 | Reply STOP to a prospecting email                        | On suppression list; no follow-up
+15 | Customer quiet for 60 days (test date)                   | Win-back email from the authenticated domain
+16 | Hotel enquires on Instagram, then by email               | One company, contact and deal in the CRM; call-first list</pre>
+        <div><button type="button" class="btn" data-copy="e2e-6-4">Copy template</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>&lt; 1 min</b><span>message to price and payment link</span></div>
+        <div class="stat"><b>13</b><span>workflows on 3 platforms, one map</span></div>
+        <div class="stat"><b>30 min</b><span>worst-case time to notice any failure</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this design works</h5><ul><li>Each platform is chosen for who maintains it, and each table has one owner.</li><li>One order_id and one events table make every order traceable.</li><li>AI handles language; code handles money, stock and numbers.</li><li>Three layers of monitoring catch crashes, silences and wrong answers.</li><li>A kill switch and a handover pack mean the business never depends on one person or one model.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Rebuilding everything on one platform to look impressive.</li><li>Two workflows writing the same table.</li><li>Only watching for errors.</li><li>Letting AI calculate the numbers in reports.</li><li>Secrets copied into several places, so a key change breaks one of them.</li><li>A demo with live keys or real customer data.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 20 MIN</span><h2>Glitch hunt: the incident room</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> It's Friday, 10 a.m. The investor arrives at noon. My friends and I broke three things. Here's the morning's feed. Only one of us set off an alarm.</div></div>
+    <div class="incident" data-incident data-need="3">
+<pre class="feed"><span class="k">TUE</span>        Weave's note: renamed orders column "created" → "created_at" for the books sync
+<span class="k">THU</span>        Tolu's note: rotated the Paystack secret key after the 6.3 scare; updated the HTTP credential
+<span class="k">FRI 07:00</span>  HL·06 Weekly report   ✓ success  rows read: 0
+<span class="k">FRI 07:00</span>  HL·06 Weekly report   email sent: "Orders this week: 0 · Revenue: ₦0"
+<span class="k">FRI 08:02</span>  HL·03 Payments        ✓ success  stopped at "Signature valid?" (false branch)
+<span class="k">FRI 08:09</span>  HL·03 Payments        ✓ success  stopped at "Signature valid?" (false branch)
+           … 14 more, all the same
+<span class="w">FRI 08:30</span>  WhatsApp inbox        "I paid 40 minutes ago, where is my order?" ×6
+<span class="e">FRI 08:41</span>  HL·00 ALERT           HL·04 Dispatch failed at "WhatsApp: send template"
+                                 template out_for_delivery: status PAUSED
+<span class="e">FRI 08:41</span>  HL·04 Dispatch        retry 1 ✗ · retry 2 ✗
+<span class="k">FRI 09:05</span>  HL·02 Order agent     AI tokens today: 41,200 (cap 120,000) · promo day
+<span class="w">FRI 09:12</span>  Rider bot (Telegram)  429 Too Many Requests → retry after 3 s → ✓
+<span class="k">FRI 09:20</span>  WhatsApp inbox        "Rider was 25 minutes late, traffic on Iwo Road"</pre>
+      <p><b>Tick exactly three root causes</b>, then check your diagnosis.</p>
+      <div class="cands">
+        <label data-real="1"><input type="checkbox"> The payment signature check still uses the old Paystack secret, so every real payment is rejected<span class="exp" hidden><b>Real.</b> Tolu updated the HTTP credential used to verify transactions, but the signature check reads the secret from somewhere else. Every genuine webhook fails the check and stops "successfully", so no error fires. Fix: keep the secret in one place (an n8n environment variable or one credential used by both steps), re-verify every order stuck at "quoted" with Paystack's verify endpoint, and add the outcome check "more than 3 rejected signatures in 10 minutes".</span></label>
+        <label data-real="1"><input type="checkbox"> The WhatsApp "out_for_delivery" template was paused by Meta, so dispatch messages fail<span class="exp" hidden><b>Real, and the only one that raised an alarm.</b> Meta can pause a template whose quality rating drops (for example when customers block or report it). Fix: send riders' updates through a second approved template or a fallback channel, review the wording that's annoying customers, and add template quality to the morning health message.</span></label>
+        <label data-real="1"><input type="checkbox"> The weekly report filters on the old "created" column, so it finds zero orders and reports ₦0<span class="exp" hidden><b>Real.</b> The rename broke the data contract. The report ran "successfully" and emailed nonsense, the week before an investor visit. Fix: update the report's query, add the outcome check "0 orders in a week means alert, don't send", and announce every column change to every workflow that reads the table.</span></label>
+        <label><input type="checkbox"> The AI agent is using too many tokens because of the promo<span class="exp" hidden><b>Not a fault.</b> 41,200 tokens is well under the 120,000 cap on a busy promo day. That's the system doing its job, and a good line for the results slide.</span></label>
+        <label><input type="checkbox"> Telegram is blocking the rider bot<span class="exp" hidden><b>Not a fault.</b> A 429 means "slow down"; the retry after 3 seconds worked. That's error handling (3.6) behaving as designed.</span></label>
+        <label><input type="checkbox"> The rider is too slow, so customers think they haven't been charged<span class="exp" hidden><b>Not the cause.</b> One late delivery was traffic, an operations issue. The "I paid, where's my order?" messages come from payments never being marked paid, not from riders.</span></label>
+        <label><input type="checkbox"> The n8n server is down<span class="exp" hidden><b>Not a fault.</b> Workflows kept running all morning. A down server would show no executions at all, and your uptime monitor (3.8) would alert.</span></label>
+      </div>
+      <div><button type="button" class="btn" data-incheck>Check my diagnosis</button></div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GO-LIVE ============ -->
+<section class="part" style="--c:#BDEBD2">
+  <div class="part-h"><span class="tag">HANDOVER CHECK</span><h2>Could Tolu run this without you?</h2></div>
+  <div class="ready" data-ready data-okmsg="✓ Harvest Lane can run on autopilot, with Tolu in control. Time to present.">
+    <h5>Works end to end</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> All 16 end-to-end tests pass, in test mode with test data <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="6"> Every table has one owner; the data contract is written down</label>
+    <label><input type="checkbox" data-w="6"> One order_id traces any order across all workflows</label>
+    <h5>Safe</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> No money moves without verification, and refunds need Tolu <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="6"> Secrets live in one place each; none in documents or exports</label>
+    <label><input type="checkbox" data-w="6"> Kill switch tested: agent off, messages go to Tolu</label>
+    <h5>Watched</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> Errors from all three platforms reach one alert channel <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="8"> Watchdog and outcome checks catch the three Glitch faults</label>
+    <label><input type="checkbox" data-w="6"> Morning health message running; backups tested by a restore</label>
+    <h5>Handed over</h5>
+    <label><input type="checkbox" data-w="10" data-crit="1"> Handover pack written, and someone else fixed a test fault using only section 4 <span class="must">must</span></label>
+    <label><input type="checkbox" data-w="6"> Results measured before and after, with a headline sentence</label>
+    <label><input type="checkbox" data-w="6"> 4-minute presentation rehearsed</label>
+    <div class="stats"><div class="stat"><b data-o="score">–</b><span>handover score</span></div></div>
+    <p class="mgoal" data-o="verdict"></p>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · THE CAPSTONE</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP · THE CAPSTONE</span>
+    <h4>Rebuild Harvest Lane and present the numbers</h4>
+    <ul><li>Build the reference system with test data: at least HL·01–HL·04, HL·06 and HL·00, one cross-platform edge (Make or Zapier), and one growth workflow (HL·09, HL·10, HL·11 or HL·12).</li><li>Pass the end-to-end tests that apply, and the handover check.</li><li>Present for 4 minutes using the six-part structure and the results board (your own measured or clearly labelled estimated numbers).</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your capstone scores 80 or more on the rubric below, with every must-have passing.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Adapt it to a second industry</h4>
+    <p>The shape stays; the nouns change. Pick one and redraw the system map, the data contract and the outcome checks.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Harvest Lane</th><th>Pharmacy</th><th>School</th><th>Salon</th></tr></thead>
+      <tbody>
+        <tr><td>WhatsApp order</td><td>Refill request</td><td>Parent fee or absence message</td><td>Booking request</td></tr>
+        <tr><td>Order agent</td><td>Refill agent (pharmacist approves every item)</td><td>Parent desk agent</td><td>Booking agent with calendar tools</td></tr>
+        <tr><td>Paystack payment</td><td>Payment on collection or delivery</td><td>School fees, with instalments</td><td>Deposit to hold a slot</td></tr>
+        <tr><td>Dispatch to rider</td><td>Pickup-ready message</td><td>Receipt and bursar update</td><td>Reminder the day before</td></tr>
+        <tr><td>Outcome check</td><td>Refills due but not sent</td><td>Fees paid vs receipts issued</td><td>No-shows vs reminders sent</td></tr>
+        <tr><td>Human approval</td><td>Every prescription item</td><td>Fee waivers, discipline matters</td><td>Refunds of deposits</td></tr>
+      </tbody>
+    </table></div>
+    <span class="crit">Done when</span>
+    <ul><li>Your adapted map, contract and three outcome checks are reviewed by someone who works in that industry, and you've fixed what they flagged.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Deliver it for a real business</h4>
+    <ul><li>Use Track 6 end to end: discovery and scope (6.1), pricing and payment (6.2), build, handover pack, and a case study (6.3) with the owner's permission.</li><li>Run it for at least four weeks with monitoring on, and measure before and after.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The owner has paid, signed off the handover, and approved a case study with real numbers that you can publish.</li></ul>
+  </div>
+</section>
+
+<!-- ============ RUBRIC ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">SCORING</span><h2>The capstone rubric: 80 points to earn Autopilot</h2></div>
+  <div class="tablewrap"><table class="dt">
+    <thead><tr><th>Area</th><th>Full marks when…</th><th class="n">Points</th></tr></thead>
+    <tbody>
+      <tr><td>Works end to end</td><td>All applicable end-to-end tests pass; one order traceable by order_id; one customer traceable from first comment or email to first order</td><td class="n">20</td></tr>
+      <tr><td>Design</td><td>Map, data contract, one owner per table, each platform choice justified in one sentence</td><td class="n">15</td></tr>
+      <tr><td>Safety</td><td>Verified payments, human approval for money, secrets in one place, kill switch</td><td class="n">15</td></tr>
+      <tr><td>Monitoring</td><td>Errors from all platforms, watchdog, outcome checks; all three Glitch faults would be caught</td><td class="n">20</td></tr>
+      <tr><td>Handover pack</td><td>Someone else fixes a test fault from it alone</td><td class="n">15</td></tr>
+      <tr><td>Results and presentation</td><td>Before-and-after numbers, honest method, 4-minute presentation in six parts</td><td class="n">15</td></tr>
+    </tbody>
+    <tfoot><tr><td>Total</td><td>Win at 80 or more, with every must-have in the handover check passing</td><td class="n">100</td></tr></tfoot>
+  </table></div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Two of Glitch's three faults showed green "success". What's the lesson?</p><div class="opts">
+      <button type="button" data-opt="a">n8n's execution status is unreliable</button><button type="button" data-opt="b">Add more retries</button><button type="button" data-opt="c">Monitor outcomes, not only errors</button><button type="button" data-opt="d">Turn off the error workflow</button></div>
+      <p class="fb" hidden data-why="A run can succeed and still do the wrong thing. Outcome checks catch what error alerts can't."></p></div>
+    <div class="q" data-ans="a"><p>2. Why does the order_id travel through every workflow and log row?</p><div class="opts">
+      <button type="button" data-opt="a">So one order can be traced end to end, across platforms</button><button type="button" data-opt="b">Paystack requires it</button><button type="button" data-opt="c">To make the database bigger</button><button type="button" data-opt="d">So the AI can guess the price</button></div>
+      <p class="fb" hidden data-why="One ID, one timeline: “what happened to HL-0412?” gets a single answer."></p></div>
+    <div class="q" data-ans="d"><p>3. Which rule prevents two workflows from fighting over the same data?</p><div class="opts">
+      <button type="button" data-opt="a">Use Google Sheets for everything</button><button type="button" data-opt="b">Let the AI decide who writes</button><button type="button" data-opt="c">Write to every table from every workflow</button><button type="button" data-opt="d">Each table has one owner that writes it; others read</button></div>
+      <p class="fb" hidden data-why="One owner per table, written in the data contract."></p></div>
+    <div class="q" data-ans="b"><p>4. In the weekly report, who should calculate the totals?</p><div class="opts">
+      <button type="button" data-opt="a">The AI, from the raw rows</button><button type="button" data-opt="b">Code or SQL; the AI only writes words around the numbers</button><button type="button" data-opt="c">Tolu, by hand</button><button type="button" data-opt="d">Nobody: estimates are fine</button></div>
+      <p class="fb" hidden data-why="Code calculates, AI explains. Models can add up wrong, confidently."></p></div>
+    <div class="q" data-ans="c"><p>5. Why does the Make books sync stay on Make instead of moving to n8n?</p><div class="opts">
+      <button type="button" data-opt="a">Make is always cheaper</button><button type="button" data-opt="b">n8n can't connect to accounting tools</button><button type="button" data-opt="c">The accountant already uses Make and can maintain it herself</button><button type="button" data-opt="d">Mixing platforms is required for the badge</button></div>
+      <p class="fb" hidden data-why="Choose platforms for who maintains them, not only for features."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 5 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-6-4">AUTOMANCY LOG · Lesson 6.4 · Grand Capstone: Harvest Lane on Autopilot
+Date:
+Workflows built (name · platform · owner):
+Tables and their owners:
+End-to-end tests passed: __ / 16
+Glitch faults found in the incident room: __ / 3
+Outcome checks I added:
+Handover pack tested by (name), fault they fixed:
+Headline result sentence:
+Rubric score: __ / 100
+One thing I'd design differently next time:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-6-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS + GRADUATION ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Draw the whole system on one page before you build.</li>
+      <li>One owner per table, one order_id everywhere, one events log.</li>
+      <li>Choose each platform for who will maintain it.</li>
+      <li>Code calculates; AI handles language and explains.</li>
+      <li>Watch errors, heartbeats and outcomes. Green isn't the same as right.</li>
+      <li>A handover pack and a kill switch make the system the business's, not yours.</li>
+      <li>Present results as hours, orders and naira, with an honest method.</li>
+    </ol>
+  </div>
+
+  <div class="concept">
+    <span class="num">COURSE COMPLETE</span>
+    <h3>You're an Orchestrator</h3>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#tolu"/></svg><div class="bubble"><b>Tolu:</b> Thirteen weeks ago I was answering every order by hand at midnight. Now the business runs and grows while I sleep, and I know the moment something breaks. Thank you.</div></div>
+    <div class="vocab">
+      <div><b>Certificate criteria</b>All lessons ticked; all six boss battles at 80+; this capstone at 80+ with every must-have; a proof-of-work log for every module.</div>
+      <div><b>Your portfolio</b>Six boss builds, a capstone, a case study and a sanitised template (6.3). That's a stronger portfolio than most freelancers have.</div>
+      <div><b>Keep learning</b>The free courses below go further on agents, and the n8n Academy offers certificates to add to your profile.</div>
+      <div><b>Get hired or paid</b>Join the <a href="#hire">Hire talent</a> page, enter the <a href="#challenges">weekly challenges</a>, and post your capstone to your <a href="#community">learning journal</a> as a case study.</div>
+    </div>
+    <div class="insight"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><p><b>Glitch:</b> Fine. You win this season. But tools change, APIs change, and businesses change their minds. I'll be back. Keep your monitoring on.</p></div>
+  </div>
+
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/agents-course" target="_blank" rel="noopener">Hugging Face AI Agents Course (free certificate)</a></li>
+    <li><span class="kind">Course</span><a href="https://www.kaggle.com/learn-guide/5-day-agents" target="_blank" rel="noopener">Google × Kaggle: 5-Day AI Agents Intensive (free)</a></li>
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: Foundations program with certificates</a></li>
+    <li><span class="kind">Text</span><a href="https://sre.google/sre-book/monitoring-distributed-systems/" target="_blank" rel="noopener">Google SRE Book: Monitoring Distributed Systems</a></li>
+    <li><span class="kind">Text</span><a href="https://sre.google/sre-book/postmortem-culture/" target="_blank" rel="noopener">Google SRE Book: Postmortem Culture (for your incident notes)</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/flow-logic/handle-errors-gracefully" target="_blank" rel="noopener">n8n Docs: handling errors</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts" target="_blank" rel="noopener">n8n Docs: sub-workflows</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a Demo Day. Each learner presents for 4 minutes to a panel playing the investor, the owner and the accountant. Then the panel's "Glitch" breaks one thing in the learner's test system (renames a column, revokes a key or pauses a workflow) and starts a 15-minute timer. A classmate who has never seen the system must find and fix it using only the handover pack. Score with the rubric, and award the Autopilot badge live.</p>
+  </div>
+</section>
+
+</article>
+</template>

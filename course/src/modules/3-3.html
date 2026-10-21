@@ -1,0 +1,394 @@
+<template data-mod="3.3" id="tpl-3-3">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.3</span>
+    <h1>Flow Control</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n (IF, Switch, Merge, Loop Over Items, Wait), Google Sheets, Gmail</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Real workflows don't run in a straight line. They make decisions, join data from two places, and slow down so they don't upset the services they talk to. Five nodes do almost all of this in n8n: IF, Switch, Merge, Loop Over Items and Wait.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Branch with IF and Switch, including a fallback for anything unexpected.</span></div>
+  <div><b>02</b><span>Join two data sources with Merge, and choose the right mode for the job.</span></div>
+  <div><b>03</b><span>Process items in batches with Loop Over Items and Wait.</span></div>
+  <div><b>04</b><span>Know when you <i>don't</i> need a loop, because n8n already runs once per item.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>200 reminders, one blocked number</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu looking at a long list of unpaid invoices on a laptop.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="35" width="130" height="120" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g fill="var(--line)"><rect x="182" y="50" width="106" height="8" rx="4"/><rect x="182" y="66" width="106" height="8" rx="4"/><rect x="182" y="82" width="106" height="8" rx="4"/><rect x="182" y="98" width="106" height="8" rx="4"/><rect x="182" y="114" width="106" height="8" rx="4"/></g>
+        <text x="235" y="145" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--glitch)">200 unpaid</text>
+        <use href="#tolu" x="15" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Month end</b>200 restaurant and retail customers owe Harvest Lane money. Tolu wants a polite reminder to each.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A phone with a red banner reading Number restricted.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="120" y="20" width="80" height="150" rx="14" fill="var(--ink)"/><rect x="128" y="34" width="64" height="118" rx="4" fill="var(--paper)"/>
+        <rect x="128" y="74" width="64" height="34" fill="var(--glitch)"/>
+        <text x="160" y="89" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">NUMBER</text>
+        <text x="160" y="101" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">RESTRICTED</text>
+        <text x="60" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="26" fill="var(--spark)">200</text>
+        <text x="60" y="120" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">in 4 seconds</text>
+      </svg>
+      <div class="cap"><b>Last month</b>A friend's shop sent 200 messages in four seconds. The messaging service flagged the number as spam.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An angry customer holding a receipt marked PAID.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="40" width="100" height="110" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g transform="rotate(-14 230 95)"><rect x="192" y="78" width="76" height="32" rx="6" fill="none" stroke="var(--volt)" stroke-width="4"/><text x="230" y="101" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="18" fill="var(--volt)">PAID</text></g>
+        <text x="90" y="95" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">"I paid on Tuesday!"</text>
+      </svg>
+      <div class="cap"><b>Worse</b>Chef Tunde paid yesterday. A reminder today would be embarrassing. Paid customers must be skipped.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo beside a valve that releases items in small groups, while Glitch holds a mislabelled key.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="40" width="40" height="110" rx="8" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"><rect x="220" y="60" width="16" height="16" rx="3"/><rect x="240" y="60" width="16" height="16" rx="3"/><rect x="220" y="110" width="16" height="16" rx="3"/><rect x="240" y="110" width="16" height="16" rx="3"/></g>
+        <use href="#nodo" x="10" y="45" width="140" height="140"/>
+        <use href="#glitch" x="250" y="110" width="70" height="70"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"We'll release them twenty at a time and wait between groups. And we'll cross off anyone who's paid." Glitch has already renamed a column.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>IF and Switch: decisions</h3>
+    <div class="vocab">
+      <div><b>IF</b>Two outputs, <b>true</b> and <b>false</b>. Each item goes to one of them. Conditions have a type (string, number, date, boolean…) and can be combined with AND or OR.</div>
+      <div><b>Switch</b>Many outputs, one per rule, for routing several kinds of item. By default an item goes to the first rule it matches; an option sends it to every matching output.</div>
+      <div><b>Fallback output</b>Switch can add an extra output for items that match no rule. Use it, and send those items to Tolu, so nothing disappears silently (the 1.3 lesson again).</div>
+      <div><b>Filter</b>A one-way IF: items that pass continue and the rest are dropped. Use it when the "false" items need no action at all.</div>
+    </div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Switch rule (Harvest Lane orders)</th><th>Output goes to</th></tr></thead>
+      <tbody>
+        <tr><td><code>{{ $json.total }}</code> ≥ 100000</td><td>0 · Bulk: call the customer to confirm</td></tr>
+        <tr><td><code>{{ $json.type }}</code> = subscription</td><td>1 · Add to the weekly box list</td></tr>
+        <tr><td><code>{{ $json.type }}</code> = pickup</td><td>2 · Pickup slip</td></tr>
+        <tr><td><code>{{ $json.type }}</code> = delivery</td><td>3 · Rider list</td></tr>
+        <tr><td>Anything else (fallback)</td><td>4 · Email Tolu</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.9rem;color:var(--muted)">Order matters: a ₦150,000 delivery matches rules 0 and 3, and goes to Bulk because that rule comes first. That's intended here.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Merge: joining two streams</h3>
+    <p>Merge waits for two (or more) inputs and combines them. The modes you'll use most:</p>
+    <div class="vocab">
+      <div><b>Append</b>Input 1's items, then Input 2's. A simple stack.</div>
+      <div><b>Combine · matching fields</b>Pair items whose key fields are equal, like a lookup. Then choose what to output: <b>keep matches</b>, <b>keep non-matches</b>, <b>keep everything</b>, or <b>enrich</b> one input with data from the other.</div>
+      <div><b>Combine · by position</b>Item 0 with item 0, 1 with 1… Only safe when both lists are in exactly the same order.</div>
+      <div><b>Choose branch</b>Wait for both inputs, then pass on just one. Useful to rejoin after an IF.</div>
+    </div>
+    <p><b>Try it.</b> Input 1 is this month's unpaid <b>Invoices</b>; Input 2 is <b>Payments</b> received. Find the customers who still need a reminder. Then tick Glitch's box, see what breaks, and fix it by choosing the field Payments now uses.</p>
+    <div class="msim" data-merge='{"in1":[{"customer_id":"C-014","name":"Mrs Adebayo","amount":34000},{"customer_id":"C-022","name":"Mr Okafor","amount":4000},{"customer_id":"C-009","name":"Iya Basira","amount":21000},{"customer_id":"C-031","name":"Chef Tunde","amount":58000},{"customer_id":"C-040","name":"Mama Nkechi","amount":12500},{"customer_id":"C-052","name":"Hotel Grace","amount":96000}],"in2":[{"customer_id":"C-022","reference":"PSK-88412","paid":4000},{"customer_id":"C-031","reference":"PSK-88430","paid":58000},{"customer_id":"C-052","reference":"PSK-88451","paid":96000}],"goal":["C-014","C-009","C-040"]}'>
+      <div class="row">
+        <label>Mode<select data-m="mode">
+          <option value="append">Append</option>
+          <option value="matches" selected>Combine · keep matches</option>
+          <option value="non1">Combine · keep non-matches (output from Input 1)</option>
+          <option value="nonboth">Combine · keep non-matches (both inputs)</option>
+          <option value="everything">Combine · keep everything</option>
+          <option value="enrich1">Combine · enrich Input 1</option>
+        </select></label>
+        <label>Input 1 field (Invoices)<select data-m="f1"><option selected>customer_id</option><option>name</option></select></label>
+        <label>Input 2 field (Payments)<select data-m="f2"><option selected>customer_id</option><option>customerId</option><option>reference</option></select></label>
+      </div>
+      <label class="check"><input type="checkbox" data-m="glitch"> Glitch renames the Payments column to <code>customerId</code></label>
+      <span class="jl-status"></span>
+      <div class="mout" aria-live="polite"></div>
+      <p class="mgoal" data-o="goal"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Do you even need a loop?</h3>
+    <p>Usually not. Most n8n nodes already <b>run once per item</b> (3.2). Feed 200 items into a Gmail node and it sends 200 emails, no loop needed. Reach for <b>Loop Over Items</b> only when you need to:</p>
+    <div class="vocab">
+      <div><b>Pace the work</b>Send in batches with a pause between them, to respect rate limits or avoid looking like spam.</div>
+      <div><b>Handle one item fully before the next</b>For example, a chain of API calls where each must finish first.</div>
+      <div><b>Work with a node that only handles one item at a time</b>Some nodes read only the first item; their docs say so.</div>
+    </div>
+    <figure class="fig"><svg viewBox="0 -24 640 234" role="img" aria-label="Loop Over Items has two outputs: loop, which sends a batch through Build message, Send and Wait and back into Loop Over Items; and done, which runs once all batches are finished and leads to a summary email.">
+      <defs><marker id="lp1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <rect x="10" y="70" width="120" height="60" rx="12" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.5"/><text x="70" y="96" fill="#fff">Loop Over</text><text x="70" y="112" fill="#fff">Items (20)</text>
+        <rect x="190" y="20" width="110" height="50" rx="12" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="245" y="50" fill="#fff">Build message</text>
+        <rect x="340" y="20" width="110" height="50" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="395" y="50" fill="#13233A">Send</text>
+        <rect x="490" y="20" width="110" height="50" rx="12" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="545" y="50" fill="#13233A">Wait 60 s</text>
+        <rect x="190" y="140" width="150" height="50" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="265" y="170" fill="#fff">Summary to Tolu</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none">
+        <path d="M132 85 C160 85 160 45 186 45" marker-end="url(#lp1)"/>
+        <path d="M301 45 H336" marker-end="url(#lp1)"/><path d="M451 45 H486" marker-end="url(#lp1)"/>
+        <path d="M601 45 H625 V-8 H70 V66" stroke-dasharray="6 5" marker-end="url(#lp1)"/>
+        <path d="M132 115 C160 115 160 165 186 165" marker-end="url(#lp1)"/>
+      </g>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)"><text x="140" y="70">loop</text><text x="140" y="146">done</text><text x="250" y="-13">back to the loop for the next batch</text></g>
+    </svg><figcaption>The loop output carries one batch at a time; the last node in the batch connects back into Loop Over Items. The done output fires once, after the final batch, carrying all processed items.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Wait, and planning the pace</h3>
+    <p>The <b>Wait</b> node pauses the run: for a time interval, until a set date and time, or until a webhook or form submission arrives (useful for "wait until Tolu approves", Track 4). On n8n Cloud, a run with waits is still <b>one execution</b>. Plan the pace with numbers, not guesses. The limit below is an example; use your messaging provider's real one.</p>
+    <div class="tokcalc" data-batch>
+      <h4>Batch planner</h4>
+      <div class="row">
+        <label>Messages to send<input data-b="n" type="number" value="200" min="1"></label>
+        <label>Batch size<input data-b="size" type="number" value="20" min="1"></label>
+        <label>Wait between batches (seconds)<input data-b="wait" type="number" value="60" min="0"></label>
+        <label>Provider limit (messages per minute)<input data-b="limit" type="number" value="30" min="1"></label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b data-o="batches">–</b><span>batches</span></div>
+        <div class="stat"><b data-o="time">–</b><span>total waiting time</span></div>
+        <div class="stat"><b data-o="rate">–</b><span>most messages in any one minute (approx.)</span></div>
+      </div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Edit Fields: the glue</h3>
+    <p>Between flow-control nodes you'll constantly reshape items with <b>Edit Fields (Set)</b>: rename a column so two sources share a key, add a computed field, or keep only the fields the next node needs (turn off <b>Include Other Input Fields</b>). Small, tidy items make every Merge and IF easier to read.</p>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> When two sources call the same thing by different names (<code>customer_id</code> and <code>customerId</code>), fix it with Edit Fields <i>before</i> the Merge, or simply pick the right field on each side in the Merge itself. Never rename the sheet's column to suit one workflow; another workflow may depend on it.</div></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/build/flow-logic/merge-data" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: merging data</b><small>Read: the Merge modes, with examples. Compare with the simulator in Card 2.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/build/flow-logic/loop" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: looping</b><small>Read: when n8n loops for you, and when you need Loop Over Items.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+loop+over+items+merge+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n Loop Over Items and Merge tutorials</b><small>Watch one that wires the loop back. That's the part people get wrong.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: polite reminders, paced, paid customers skipped</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every Monday at 09:00, remind each customer with an unpaid invoice, skip anyone who has paid since, set aside anyone without a phone number, send in batches of 20 with a minute between batches, and email Tolu one summary at the end. To practise safely, the "Send" step writes to a <b>Sent log</b> sheet with a timestamp. You'll swap in a real messaging node or API later (3.4 and Boss 3).</p></div>
+
+  <figure class="fig"><svg viewBox="0 0 640 250" role="img" aria-label="Schedule feeds two Sheets nodes, Invoices and Payments, into Merge keep non-matches. Then IF has phone: false goes to a Fix list sheet, true goes into Loop Over Items with Build message, Send, Wait looping back, and done goes to one summary email.">
+    <defs><marker id="lp2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+    <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" text-anchor="middle">
+      <rect x="5" y="95" width="80" height="44" rx="10" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="45" y="121" fill="#fff">Mon 09:00</text>
+      <rect x="110" y="55" width="90" height="40" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="155" y="79" fill="#13233A">Invoices</text>
+      <rect x="110" y="140" width="90" height="40" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="155" y="164" fill="#13233A">Payments</text>
+      <rect x="225" y="95" width="80" height="44" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="265" y="121" fill="#fff">Merge</text>
+      <rect x="330" y="95" width="70" height="44" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="365" y="121" fill="#13233A">IF phone</text>
+      <rect x="330" y="190" width="90" height="40" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="375" y="214" fill="var(--ink)">Fix list</text>
+      <rect x="425" y="95" width="70" height="44" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="460" y="115" fill="#fff">Loop</text><text x="460" y="130" fill="#fff">20</text>
+      <rect x="520" y="10" width="115" height="34" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="577" y="31" fill="#fff">Build message</text>
+      <rect x="520" y="54" width="115" height="34" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="577" y="75" fill="#13233A">Send (log)</text>
+      <rect x="520" y="98" width="115" height="34" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="577" y="119" fill="#13233A">Wait 60 s</text>
+      <rect x="520" y="180" width="115" height="40" rx="10" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="577" y="204" fill="#fff">Summary email</text>
+    </g>
+    <g stroke="var(--ink)" stroke-width="2" fill="none">
+      <path d="M86 110 L106 80" marker-end="url(#lp2)"/><path d="M86 125 L106 155" marker-end="url(#lp2)"/>
+      <path d="M201 75 L221 108" marker-end="url(#lp2)"/><path d="M201 160 L221 127" marker-end="url(#lp2)"/>
+      <path d="M306 117 H326" marker-end="url(#lp2)"/>
+      <path d="M401 117 H421" marker-end="url(#lp2)"/><path d="M365 140 V186" marker-end="url(#lp2)"/>
+      <path d="M496 105 L516 30" marker-end="url(#lp2)"/><path d="M577 45 V50" marker-end="url(#lp2)"/><path d="M577 89 V94" marker-end="url(#lp2)"/>
+      <path d="M577 133 V150 H460 V141" stroke-dasharray="5 4" marker-end="url(#lp2)"/>
+      <path d="M496 130 L516 196" marker-end="url(#lp2)"/>
+    </g>
+    <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)"><text x="404" y="110">true</text><text x="370" y="165">false</text><text x="470" y="66">loop</text><text x="490" y="175">done</text></g>
+  </svg></figure>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Two sources, in parallel</h4>
+      <p>Add a <b>Schedule Trigger</b> (weekly, Monday, 09:00). Connect it to two Google Sheets nodes: <b>Invoices</b> (Get Row(s) where <code>status</code> = Unpaid) and <b>Payments</b> (Get Row(s) from the payments log you built in 2.5, or a test sheet). Both run from the same trigger. Pin both outputs.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Cross off the payers with Merge</h4>
+      <p>Add <b>Merge</b>. Connect Invoices to <b>Input 1</b> and Payments to <b>Input 2</b>. Mode: <b>Combine</b> → by <b>matching fields</b>, <code>customer_id</code> on both sides. Output type: <b>keep non-matches</b>, with output data from <b>Input 1</b>. Result: invoices with no matching payment, exactly the simulator's goal in Card 2.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><p><b>A Weave-style alternative:</b> Merge with "enrich Input 1", then an IF on "reference is empty". It's one node longer, but it lets you also catch <i>partial</i> payments (paid &lt; amount) in a third branch. Choose the one you can explain.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Set aside the ones you can't reach</h4>
+      <p>Add <b>IF</b>: <code>{{ $json.phone }}</code> · String · <b>is not empty</b>. The <b>false</b> output goes to Google Sheets · Append Row on a <b>Fix list</b> sheet, so Tolu can collect missing numbers. Nothing is silently dropped.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Batch, send, wait, loop back</h4>
+      <p>From IF's <b>true</b> output, add <b>Loop Over Items</b> with batch size <b>20</b>. From its <b>loop</b> output:</p>
+      <ol>
+        <li><b>Edit Fields · Build message</b>: <code>Good morning {{ $json.name }}, a gentle reminder that invoice {{ $json.invoice_id }} for ₦{{ Number($json.amount).toLocaleString('en-NG') }} is due. Pay here: {{ $json.pay_link }}. Thank you for buying from Harvest Lane!</code></li>
+        <li><b>Google Sheets · Append Row · Send (log)</b>: customer_id, phone, message, and <code>sent_at</code> = <code>{{ $now.toFormat('HH:mm:ss') }}</code>.</li>
+        <li><b>Wait</b>: 60 seconds.</li>
+        <li>Drag a connection from Wait's output <b>back into Loop Over Items</b>.</li>
+      </ol>
+      <p>Test with pinned data and a batch size of 2 and a wait of 5 seconds (so you're not waiting 10 minutes). The Sent log's <code>sent_at</code> times should come in clusters, one per batch.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>One summary at the end</h4>
+      <p>From the <b>done</b> output, add <b>Gmail · Send</b> to Tolu: <code>Reminders sent: {{ $input.all().length }}</code>. The done output carries <i>all</i> processed items, so Gmail would send one email per item. In the Gmail node's <b>Settings</b>, turn on <b>Execute Once</b>. Then set the batch back to 20 and the wait to 60, save and publish.</p>
+      <div class="stats">
+        <div class="stat"><b>10</b><span>batches for 200 reminders</span></div>
+        <div class="stat"><b>≈9 min</b><span>of waiting, never more than 20 a minute</span></div>
+        <div class="stat"><b>1</b><span>execution on n8n Cloud for the whole run</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Merge on a real key removes payers before a single message is built.</li><li>Every item ends somewhere visible: sent, on the Fix list, or in the summary.</li><li>The batch size and wait come from the provider's limit, calculated rather than guessed.</li><li>Testing with tiny batches and short waits makes the loop quick to check.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Adding a loop where n8n already runs once per item.</li><li>Forgetting to connect the last node back into Loop Over Items.</li><li>Putting the Wait after "done" instead of inside the loop.</li><li>Sending a summary per item instead of once.</li><li>Matching on name instead of an ID: two "Mrs Adebayo"s exist.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Six Mondays, six disasters. Which knob did I turn each time?</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>On the same morning, two things break: the "payments received" report (a Merge set to keep matches) outputs nothing, and the reminder run reminds everyone, payers included.</td></tr>
+        <tr><td>B</td><td>Chef Tunde, who paid, got a reminder anyway, along with everyone else.</td></tr>
+        <tr><td>C</td><td>The first 20 reminders went out, then the run finished. 180 customers heard nothing.</td></tr>
+        <tr><td>D</td><td>All 200 were sent within five seconds, even though there's a Wait node.</td></tr>
+        <tr><td>E</td><td>Tolu received 200 summary emails.</td></tr>
+        <tr><td>F</td><td>IF fails with a "wrong type" error on <code>amount &gt; 50000</code> because amounts arrive as text.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the Payments column was renamed <code>customerId</code>, so no key matches anywhere. "Keep matches" finds nothing; "keep non-matches" lets everyone through. Choose the right field on each side, or rename it with Edit Fields before the Merge. (Try both modes in Card 2.)</li>
+        <li><b>B:</b> the Merge was set to Append (or keep everything), which keeps payers. Use keep non-matches from Input 1.</li>
+        <li><b>C:</b> the last node in the batch (Wait) isn't connected back into Loop Over Items, so it never asks for the next batch.</li>
+        <li><b>D:</b> the Wait sits on the "done" branch, after everything was already sent. It belongs inside the loop.</li>
+        <li><b>E:</b> the Gmail node on "done" ran once per item. Turn on Execute Once (or Aggregate first).</li>
+        <li><b>F:</b> the value is the text <code>"58000"</code>. Turn on the IF option to convert types where required, or compare <code>{{ Number($json.amount) }}</code>.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Route four order types with Switch</h4>
+    <ul><li>Build the Switch from Card 1 with five outputs, including the fallback.</li><li>Send each output to its own Edit Fields node that labels the route.</li><li>Test with eight pinned orders: two per type, one ₦150,000 delivery and one with type "collection" (a typo).</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every order lands on exactly one route, the ₦150,000 delivery goes to Bulk, and "collection" reaches the fallback.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Merge customers with orders by ID</h4>
+    <ul><li>Merge an Orders list with a Customers list on <code>customer_id</code>, three times: keep matches, enrich Input 1, and keep non-matches.</li><li>Include one order whose customer doesn't exist and one customer with no orders.</li><li>For each mode, record the item count and which records appear.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You can predict each mode's output before running it, and you've named a real Harvest Lane use for each.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Batch process your own list</h4>
+    <ul><li>Take a real contact list of your own (at least 50 rows; mask the details if you'll share screenshots).</li><li>Build the full reminder pattern: Merge to exclude a "do not contact" list, IF for missing data, Loop Over Items with Wait, and one summary at the end.</li><li>Choose the batch size and wait with the planner, using a real provider's published limit, and note the source.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The Sent log shows batches spaced as planned, no excluded contact appears, the Fix list catches every incomplete row, and exactly one summary arrives.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. 50 items reach a Gmail node with no loop. What happens?</p><div class="opts">
+      <button type="button" data-opt="a">Only the first email is sent</button><button type="button" data-opt="b">50 emails are sent</button><button type="button" data-opt="c">It errors without a loop</button><button type="button" data-opt="d">One email listing all 50</button></div>
+      <p class="fb" hidden data-why="Most nodes run once per item. Loops are for pacing and one-at-a-time work."></p></div>
+    <div class="q" data-ans="c"><p>2. Which Merge setup returns unpaid invoices only?</p><div class="opts">
+      <button type="button" data-opt="a">Append</button><button type="button" data-opt="b">Combine by position</button><button type="button" data-opt="c">Matching fields, keep non-matches, output from Input 1 (Invoices)</button><button type="button" data-opt="d">Matching fields, keep matches</button></div>
+      <p class="fb" hidden data-why="Non-matches from Invoices are the invoices with no payment."></p></div>
+    <div class="q" data-ans="a"><p>3. A Switch has no fallback output. An order with an unknown type arrives. What happens?</p><div class="opts">
+      <button type="button" data-opt="a">It goes nowhere, silently</button><button type="button" data-opt="b">It goes to output 0</button><button type="button" data-opt="c">The workflow errors</button><button type="button" data-opt="d">It goes to every output</button></div>
+      <p class="fb" hidden data-why="Without a fallback, an item that matches no rule just stops. Add a fallback and send it to a human."></p></div>
+    <div class="q" data-ans="d"><p>4. In a batch loop, where does the Wait node go?</p><div class="opts">
+      <button type="button" data-opt="a">Before Loop Over Items</button><button type="button" data-opt="b">On the done output</button><button type="button" data-opt="c">After the summary email</button><button type="button" data-opt="d">Inside the loop, connected back into Loop Over Items</button></div>
+      <p class="fb" hidden data-why="The pause must happen between batches, which means inside the loop."></p></div>
+    <div class="q" data-ans="b"><p>5. 200 messages, batches of 20, 60-second waits. How long does the waiting take?</p><div class="opts">
+      <button type="button" data-opt="a">20 minutes</button><button type="button" data-opt="b">About 9 minutes</button><button type="button" data-opt="c">60 seconds</button><button type="button" data-opt="d">200 minutes</button></div>
+      <p class="fb" hidden data-why="10 batches need 9 waits between them: 9 × 60 seconds."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-3">AUTOMANCY LOG · Lesson 3.3 · Flow Control
+Date:
+Workflow name and flow-control nodes used:
+Merge mode and key fields chosen (and why):
+Items in → reminded / skipped (paid) / Fix list:
+Batch size, wait, provider limit and its source:
+Sent log: first and last sent_at times:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>IF splits in two; Switch routes many ways. Always give Switch a fallback.</li>
+      <li>Merge joins streams: append, or combine on a shared key (and pick what to keep).</li>
+      <li>Match on IDs, never on names.</li>
+      <li>You rarely need a loop. Use Loop Over Items to pace work or handle items one at a time.</li>
+      <li>Wire the end of the batch back into the loop; put Wait inside it.</li>
+      <li>"done" carries every item: use Execute Once for a single summary.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: n8n102 Integrations and n8n103 In Practice (free)</a></li>
+    <li><span class="kind">Course</span><a href="https://docs.n8n.io/build/flow-logic/split-with-conditionals" target="_blank" rel="noopener">n8n Docs: splitting with conditionals (IF and Switch)</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/flow-logic" target="_blank" rel="noopener">n8n Docs: flow logic (conditionals, merging, looping, waiting)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+loop+over+items+merge+tutorial" target="_blank" rel="noopener">YouTube: n8n Loop Over Items and Merge tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run the loop with people: 20 learners are "messages", a "Loop" learner lets four at a time through a doorway, and a "Wait" learner counts to ten between groups. Then remove the person who walks back to the loop and watch the line stop after the first group. That's Glitch's case C, acted out.</p>
+  </div>
+</section>
+
+</article>
+</template>

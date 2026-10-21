@@ -1,0 +1,351 @@
+<template data-mod="4.7" id="tpl-4-7">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.7</span>
+    <h1>Multi-Agent Systems</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: n8n AI Agent and AI Agent Tool nodes, Google Sheets, Gmail</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">One agent with one brief does one job well. Some work is really several jobs: research, then writing, then editing. Splitting it across specialist agents can raise quality, but every extra agent adds cost, delay and new ways to fail. This module covers the main team shapes, when a team beats a single agent, and how to stop agents passing work back and forth forever.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Recognise the main patterns: pipeline, router, orchestrator–workers and reviewer loop.</span></div>
+  <div><b>02</b><span>Decide when several agents beat one, using cost and quality, not excitement.</span></div>
+  <div><b>03</b><span>Build a researcher → writer → editor team in n8n with a capped review loop.</span></div>
+  <div><b>04</b><span>Pass clean, structured hand-offs between agents.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The Monday newsletter</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu writing a newsletter late on a Sunday night.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="280" cy="35" r="14" fill="#FFF3C4"/>
+        <rect x="170" y="70" width="120" height="80" rx="6" fill="#22344F" stroke="#5A6B85" stroke-width="2"/>
+        <g fill="#5A6B85"><rect x="182" y="84" width="96" height="6" rx="3"/><rect x="182" y="98" width="80" height="6" rx="3"/><rect x="182" y="112" width="96" height="6" rx="3"/></g>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Sunday, 23:40</b>Restaurant customers love Tolu's weekly "what's cheap, what's dear" note. It takes her three hours every Sunday night.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="One overloaded agent producing a messy draft.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="40" width="120" height="110" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="9.5" fill="var(--ink)"><text x="180" y="62">Tomatoes are up 20%</text><text x="180" y="78" fill="var(--glitch)">(source? none)</text><text x="180" y="94">Buy onions now!!!</text><text x="180" y="110" fill="var(--glitch)">Ugu: ₦15,000?</text><text x="180" y="126">…</text></g>
+        <use href="#sage" x="10" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Attempt 1</b>One agent researches, writes and checks itself. The result is chatty, unsourced, and has one wrong price.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three agent hats on a table labelled research, write and edit.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle" fill="#13233A">
+          <path d="M40 120 L70 70 L100 120 Z" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="70" y="140">research</text>
+          <path d="M130 120 L160 70 L190 120 Z" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="140">write</text>
+          <path d="M220 120 L250 70 L280 120 Z" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="250" y="140">edit</text>
+        </g>
+      </svg>
+      <div class="cap"><b>Sage</b>"Give each job its own agent with its own brief. The researcher only collects facts. The writer only writes. The editor only checks."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch watching two agents throwing a paper back and forth endlessly.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M170 90 C210 40 250 40 290 90" stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+        <path d="M290 110 C250 160 210 160 170 110" stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+        <rect x="220" y="44" width="22" height="28" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="230" y="182" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">revision #37…</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I told the editor to be very strict and never satisfied. Enjoy your token bill."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Four team shapes</h3>
+    <figure class="fig"><svg viewBox="0 0 640 260" role="img" aria-label="Pipeline: research, then write, then edit. Router: a front agent sends each request to one specialist. Orchestrator-workers: a lead agent splits a task, workers run in parallel, the lead combines. Reviewer loop: a writer and a reviewer exchange drafts up to a fixed number of rounds.">
+      <defs><marker id="ma1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="JetBrains Mono,monospace" font-size="10.5" font-weight="600" fill="var(--muted)"><text x="10" y="18">PIPELINE</text><text x="330" y="18">ROUTER</text><text x="10" y="148">ORCHESTRATOR–WORKERS</text><text x="330" y="148">REVIEWER LOOP (capped)</text></g>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10.5" text-anchor="middle">
+        <rect x="10" y="40" width="80" height="36" rx="8" fill="var(--sky)"/><text x="50" y="62" fill="#fff">Research</text>
+        <rect x="110" y="40" width="80" height="36" rx="8" fill="var(--sun)"/><text x="150" y="62" fill="#13233A">Write</text>
+        <rect x="210" y="40" width="80" height="36" rx="8" fill="var(--volt)"/><text x="250" y="62" fill="#13233A">Edit</text>
+        <rect x="330" y="55" width="80" height="36" rx="8" fill="var(--grape)"/><text x="370" y="77" fill="#fff">Front desk</text>
+        <rect x="460" y="28" width="90" height="28" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="505" y="46" fill="var(--ink)">Orders agent</text>
+        <rect x="460" y="62" width="90" height="28" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="505" y="80" fill="var(--ink)">Refund agent</text>
+        <rect x="460" y="96" width="90" height="28" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="505" y="114" fill="var(--ink)">Policy agent</text>
+        <rect x="10" y="190" width="70" height="36" rx="8" fill="var(--grape)"/><text x="45" y="212" fill="#fff">Lead</text>
+        <rect x="120" y="160" width="80" height="26" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="160" y="177" fill="var(--ink)">Worker 1</text>
+        <rect x="120" y="195" width="80" height="26" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="160" y="212" fill="var(--ink)">Worker 2</text>
+        <rect x="120" y="230" width="80" height="26" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="160" y="247" fill="var(--ink)">Worker 3</text>
+        <rect x="240" y="190" width="70" height="36" rx="8" fill="var(--grape)"/><text x="275" y="212" fill="#fff">Combine</text>
+        <rect x="350" y="185" width="90" height="40" rx="8" fill="var(--sun)"/><text x="395" y="209" fill="#13233A">Writer</text>
+        <rect x="520" y="185" width="90" height="40" rx="8" fill="var(--volt)"/><text x="565" y="209" fill="#13233A">Reviewer</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none">
+        <path d="M91 58 H106" marker-end="url(#ma1)"/><path d="M191 58 H206" marker-end="url(#ma1)"/>
+        <path d="M411 66 L456 44" marker-end="url(#ma1)"/><path d="M411 73 L456 76" marker-end="url(#ma1)" stroke-dasharray="4 3"/><path d="M411 80 L456 108" marker-end="url(#ma1)" stroke-dasharray="4 3"/>
+        <path d="M81 202 L116 175" marker-end="url(#ma1)"/><path d="M81 208 H116" marker-end="url(#ma1)"/><path d="M81 214 L116 241" marker-end="url(#ma1)"/>
+        <path d="M201 175 L236 202" marker-end="url(#ma1)"/><path d="M201 208 H236" marker-end="url(#ma1)"/><path d="M201 241 L236 214" marker-end="url(#ma1)"/>
+        <path d="M441 196 C480 176 490 176 516 196" marker-end="url(#ma1)"/><path d="M519 215 C490 236 480 236 444 215" marker-end="url(#ma1)" stroke-dasharray="4 3"/>
+      </g>
+      <text x="480" y="250" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="var(--glitch)">max 2 rounds, then a human</text>
+    </svg><figcaption>These match the patterns in Anthropic's <i>Building effective agents</i> guide: chaining, routing, orchestrator–workers and evaluator–optimizer. Pipelines and routers are often plain workflows with AI steps.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>When is a team worth it?</h3>
+    <p>Anthropic's write-up of its own multi-agent research system reports that, in its data, agents used about <b>4×</b> the tokens of a chat, and multi-agent systems about <b>15×</b>. The same article says teams suit work that splits into independent parallel parts, or that's too big for one context, and fit poorly where every agent needs the same shared context.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Use a team when…</th><th>Stay with one agent (or a workflow) when…</th></tr></thead>
+      <tbody>
+        <tr><td>Jobs need different instructions, tools or models (a strict fact-checker vs. a warm writer)</td><td>One brief covers the whole job</td></tr>
+        <tr><td>Parts can run in parallel (research five markets at once)</td><td>Each step depends tightly on the previous one</td></tr>
+        <tr><td>A separate reviewer clearly catches mistakes the author misses</td><td>A checklist in code would catch them more cheaply</td></tr>
+        <tr><td>The value of better output is high (a client newsletter, a report)</td><td>The task is quick and cheap (classify one email)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Hand-offs are contracts</h3>
+    <p>Agents fail at the joins. Pass <b>structured</b> data between them, not chat:</p>
+<pre class="codebox"><span class="c">// Researcher → Writer: facts only, every number sourced</span>
+{ "week": "2026-10-05",
+  "items": [ { "product": "Tomatoes", "price_now": 12500, "price_last_week": 10400,
+               "change_pct": 20.2, "source": "Agro Depot price list, 5 Oct" } ],
+  "notes": ["Rainy week: leafy greens wilting faster"] }
+
+<span class="c">// Editor → Writer (or → human): a verdict, not an essay</span>
+{ "approved": false,
+  "issues": ["Ugu price 15,000 doesn't match research (1,500)",
+             "Paragraph 3 over 60 words"] }</pre>
+    <p>Use structured output (an Output Parser or Information Extractor with a schema) so each hand-off can be checked by code: are all prices present, is every change sourced, is <code>approved</code> a real true/false?</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Count the cost of a team</h3>
+    <p>Change the settings and watch what a newsletter team costs, and what happens without a cap on review rounds. The price is a placeholder; use your provider's current rate.</p>
+    <div class="tokcalc" data-team>
+      <div class="row">
+        <label>Researcher model calls<input data-tm="res" type="number" value="6" min="0"></label>
+        <label>Average tokens per call<input data-tm="tok" type="number" value="6000" min="0" step="500"></label>
+        <label>Editor approves a draft (%)<input data-tm="p" type="number" value="60" min="0" max="100"></label>
+        <label>Max review rounds<select data-tm="cap" style="font-family:var(--mono);font-size:.9rem;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--paper);color:var(--ink);width:100%"><option value="0">0 (no review)</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="none">No cap (Glitch's)</option></select></label>
+        <label>Price, $ per million tokens (placeholder)<input data-tm="price" type="number" value="3" min="0" step="0.5"></label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b data-o="calls">–</b><span>expected model calls per issue</span></div>
+        <div class="stat"><b data-o="tok">–</b><span>expected tokens per issue</span></div>
+        <div class="stat"><b data-o="cost">–</b><span>cost per issue / per month (4 issues)</span></div>
+      </div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Building teams in n8n</h3>
+    <div class="vocab">
+      <div><b>Fixed pipeline</b>Several AI Agent (or LLM Chain) nodes in a row, each with its own system message and model. The workflow, not an agent, decides the order. Most predictable; start here.</div>
+      <div><b>Agents as tools</b>The <b>AI Agent Tool</b> sub-node lets a lead agent call specialist agents as tools, on one canvas. Or use Call n8n Workflow tools that each run an agent workflow.</div>
+      <div><b>Different models per role</b>A small, cheap model for the researcher's lookups; a stronger one for writing; a careful one for editing.</div>
+      <div><b>Caps everywhere</b>Max iterations on every agent, a fixed number of review rounds, and a timeout on the workflow.</div>
+      <div><b>Code frameworks</b>CrewAI and LangGraph build the same patterns in Python (4.8). The ideas transfer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Anthropic: How we built our multi-agent research system</b><small>Read: when teams help, token costs, and the lessons on prompting lead and worker agents.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolaiagent" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: AI Agent Tool</b><small>Read: putting specialist agents under a lead agent.</small></span></a>
+    <a class="wcard" href="https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>DeepLearning.AI: Multi AI Agent Systems with crewAI (free short course)</b><small>Watch the first two lessons: roles, tasks and hand-offs.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: the newsletter team</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every Monday at 06:00, a three-agent pipeline produces "This week at the market": price moves from Harvest Lane's own data, a short readable note, and an edit pass, with at most two revision rounds. The result lands in Gmail as a <b>draft</b> for Tolu to send.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>The researcher: facts in a fixed shape</h4>
+      <p><b>Schedule Trigger</b> (Monday 06:00) → <b>AI Agent · Researcher</b> with read-only tools: <code>get_price_history</code> (the 3.4 Supplier prices sheet, this week vs. last) and <code>get_top_sellers</code> (Orders, last 7 days). A small model, temperature 0, and a <b>Structured Output Parser</b> requiring the Card 3 research shape. System message: <i>"Collect facts only. Every price must come from a tool result, with its source. No opinions, no advice."</i></p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Check the hand-off in code</h4>
+      <p>A <b>Code</b> node checks the research: every item has <code>price_now</code>, <code>price_last_week</code> and <code>source</code>; <code>change_pct</code> is recalculated in code and overwritten. Anything missing → stop and alert Tolu (3.6). Facts must be right before anyone writes.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>The writer: voice and brevity</h4>
+      <p><b>AI Agent · Writer</b>, no tools, a stronger model. It receives the checked research and a short style guide: <i>"Warm, practical, Nigerian English; 180–250 words; headline, three 'cheaper this week' and three 'dearer this week' items with naira prices, one tip for restaurants. Use only numbers from the research."</i></p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>The editor, and a hard cap</h4>
+      <p><b>AI Agent · Editor</b> with a checklist and a structured verdict (<code>approved</code>, <code>issues</code>): every number matches the research, the length is within range, there's no advice beyond buying tips, and the tone is right. Then:</p>
+      <ol>
+        <li><b>IF</b> approved → draft. Otherwise → <b>Writer (revision 1)</b> gets the draft plus the issues → <b>Editor</b> again.</li>
+        <li><b>IF</b> approved → draft. Otherwise → <b>Writer (revision 2)</b> → <b>Editor</b>.</li>
+        <li>After round 2, whatever the verdict: <b>Gmail · Create a draft</b> to Tolu. If still not approved, the subject starts with "⚠ Needs a human look", and the editor's issues are listed at the top.</li>
+      </ol>
+      <p>Unrolling the rounds as nodes makes the cap impossible to miss. Set Max Iterations on each agent and a workflow timeout too.</p>
+      <div class="stats">
+        <div class="stat"><b>3</b><span>agents, each with one job and one brief</span></div>
+        <div class="stat"><b>2</b><span>review rounds maximum, then a human</span></div>
+        <div class="stat"><b>3 h → 5 min</b><span>Tolu's Sunday night, now a Monday read-through</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Nodo's test:</b> build a single-agent version too, and compare five weeks' newsletters on accuracy (numbers correct), Tolu's edit time and token cost. If the team doesn't clearly win, use the single agent. That decision is the skill.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Each agent has one job, one brief and the right model.</li><li>Structured hand-offs let code catch errors between agents.</li><li>Prices are verified in code before writing starts.</li><li>The review loop is capped, and ends with a human.</li><li>The output is a draft, never an automatic send.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>A team where one agent would do.</li><li>Agents chatting in free text instead of structured hand-offs.</li><li>An editor with no checklist ("make it better").</li><li>No cap on review rounds.</li><li>Every agent on the most expensive model.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> More agents, more places to hide. Five finds.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The writer and editor exchanged 37 drafts overnight. The workflow timed out and the bill jumped.</td></tr>
+        <tr><td>B</td><td>The newsletter says ugu costs ₦15,000. The research said ₦1,500.</td></tr>
+        <tr><td>C</td><td>The editor approves everything, including a 600-word draft full of advice.</td></tr>
+        <tr><td>D</td><td>The writer can't find the prices: the researcher returned a friendly paragraph.</td></tr>
+        <tr><td>E</td><td>The team version costs 12× more than one agent, and Tolu edits both versions about equally.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no cap on review rounds, and an editor told never to be satisfied. Cap rounds at 1–2, then hand to a person.</li>
+        <li><b>B:</b> nobody checked numbers against the research. Give the editor that check, and better still, check numbers in code after writing.</li>
+        <li><b>C:</b> a vague editor brief. Give a concrete checklist and a structured verdict.</li>
+        <li><b>D:</b> an unstructured hand-off. Require a schema (Output Parser) for the research.</li>
+        <li><b>E:</b> the team doesn't earn its cost. Go back to one agent (or a workflow with one AI step). Not every job needs a team.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A router with two specialists</h4>
+    <ul><li>Build a front-desk agent that hands customer messages to one of two specialists through AI Agent Tool nodes: an orders agent (4.2 tools) and a policy agent (4.4 search).</li><li>Test with ten messages, five for each.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>At least nine of ten reach the right specialist (check the execution trace), and the front desk never answers policy questions itself.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Add a reviewer to something you've built</h4>
+    <ul><li>Take an AI step from an earlier module (the 3.7 draft replies, or the 4.4 policy answers) and add a reviewer agent with a checklist and a structured verdict.</li><li>Cap it at one revision round. Run 10 cases with and without the reviewer.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your log shows the error count with and without the reviewer, the extra cost per case, and a keep-or-remove decision.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A multi-agent design for a real client</h4>
+    <ul><li>On paper, design a team for a real client task: roles, models, tools, hand-off schemas, caps, human checkpoints and an estimated cost per run (use Card 4).</li><li>Write the single-agent alternative and explain which you'd recommend, and why.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The design fits on one page, every hand-off has a schema, every loop has a cap, and the recommendation is backed by the cost and quality trade-off.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Which task best suits a multi-agent team?</p><div class="opts">
+      <button type="button" data-opt="a">Classifying one email</button><button type="button" data-opt="b">Sending a receipt</button><button type="button" data-opt="c">Researching five markets in parallel, then writing one report</button><button type="button" data-opt="d">Looking up an order status</button></div>
+      <p class="fb" hidden data-why="Independent, parallel parts and a high-value output."></p></div>
+    <div class="q" data-ans="a"><p>2. What should pass between agents?</p><div class="opts">
+      <button type="button" data-opt="a">Structured data that code can check</button><button type="button" data-opt="b">Long friendly messages</button><button type="button" data-opt="c">Screenshots</button><button type="button" data-opt="d">Nothing; they share a brain</button></div>
+      <p class="fb" hidden data-why="Schemas make hand-offs reliable and checkable."></p></div>
+    <div class="q" data-ans="d"><p>3. Writer and editor keep revising forever. The fix?</p><div class="opts">
+      <button type="button" data-opt="a">A bigger model</button><button type="button" data-opt="b">More agents</button><button type="button" data-opt="c">A stricter editor</button><button type="button" data-opt="d">A hard cap on rounds, then hand to a human</button></div>
+      <p class="fb" hidden data-why="Every loop needs an exit you control."></p></div>
+    <div class="q" data-ans="b"><p>4. Anthropic's multi-agent write-up reported multi-agent systems using roughly how many times a chat's tokens?</p><div class="opts">
+      <button type="button" data-opt="a">About the same</button><button type="button" data-opt="b">About 15×</button><button type="button" data-opt="c">Half</button><button type="button" data-opt="d">1,000×</button></div>
+      <p class="fb" hidden data-why="In their data: agents about 4×, multi-agent systems about 15× a chat."></p></div>
+    <div class="q" data-ans="c"><p>5. The team costs 12× more but isn't clearly better. What do you do?</p><div class="opts">
+      <button type="button" data-opt="a">Keep it: teams are more advanced</button><button type="button" data-opt="b">Add a fourth agent</button><button type="button" data-opt="c">Switch back to the simpler setup</button><button type="button" data-opt="d">Hide the cost from the client</button></div>
+      <p class="fb" hidden data-why="Complexity must earn its place with measurable improvement."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-7">AUTOMANCY LOG · Lesson 4.7 · Multi-Agent Systems
+Date:
+Pattern used (pipeline / router / orchestrator / reviewer loop):
+Agents: role · model · tools:
+Hand-off schemas used:
+Caps: max iterations, review rounds, timeout:
+Team vs. single agent: accuracy, edit time, tokens per run:
+Decision and reason:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-7">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Four shapes: pipeline, router, orchestrator–workers, reviewer loop.</li>
+      <li>Teams cost far more; use them when parts are independent or roles truly differ.</li>
+      <li>Hand-offs are contracts: structured, and checked by code.</li>
+      <li>One job, one brief, and the right-sized model per agent.</li>
+      <li>Cap every loop, then hand to a human.</li>
+      <li>Compare against one agent, and keep the simpler setup unless the team clearly wins.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">Anthropic: How we built our multi-agent research system</a></li>
+    <li><span class="kind">Text</span><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic: Building effective agents (the patterns)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/" target="_blank" rel="noopener">DeepLearning.AI: Multi AI Agent Systems with crewAI</a></li>
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/agents-course" target="_blank" rel="noopener">Hugging Face AI Agents Course (multi-agent units)</a></li>
+    <li><span class="kind">Course</span><a href="https://github.com/microsoft/ai-agents-for-beginners" target="_blank" rel="noopener">Microsoft AI Agents for Beginners: multi-agent design patterns</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolaiagent" target="_blank" rel="noopener">n8n Docs: AI Agent Tool</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a live "newsroom": three learners play researcher, writer and editor, passing only filled-in forms (the hand-off schema) with a two-round limit. Then run it again with free-form notes and no limit. The difference in speed and errors makes the case for schemas and caps better than any slide.</p>
+  </div>
+</section>
+
+</article>
+</template>

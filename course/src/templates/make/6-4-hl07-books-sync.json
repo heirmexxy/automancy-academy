@@ -1,0 +1,442 @@
+{
+ "name": "HL·07 Books sync",
+ "flow": [
+  {
+   "id": 1,
+   "module": "http:ActionSendDataAPIKeyAuth",
+   "version": 3,
+   "parameters": {
+    "handleErrors": true,
+    "useNewZLibDeCompress": true
+   },
+   "mapper": {
+    "url": "https://YOUR_PROJECT_REF.supabase.co/rest/v1/books_paid_orders",
+    "method": "get",
+    "headers": [],
+    "qs": [
+     {
+      "name": "select",
+      "value": "order_id,customer_id,total_ngn,paid_at,paystack_ref"
+     },
+     {
+      "name": "paid_at",
+      "value": "gte.{{formatDate(addDays(now; -3); \"YYYY-MM-DD\")}}"
+     },
+     {
+      "name": "order",
+      "value": "paid_at.asc"
+     }
+    ],
+    "bodyType": "",
+    "parseResponse": true,
+    "serializeUrl": false,
+    "shareCookies": false,
+    "rejectUnauthorized": true,
+    "followRedirect": true,
+    "useQuerystring": false,
+    "gzip": true,
+    "useMtls": false,
+    "timeout": ""
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Read paid orders (Supabase view)"
+    }
+   },
+   "onerror": [
+    {
+     "id": 2,
+     "module": "http:ActionSendDataAPIKeyAuth",
+     "version": 3,
+     "parameters": {
+      "handleErrors": true,
+      "useNewZLibDeCompress": true
+     },
+     "mapper": {
+      "url": "https://YOUR_N8N_DOMAIN/webhook/hl-errors",
+      "method": "post",
+      "headers": [],
+      "qs": [],
+      "bodyType": "raw",
+      "parseResponse": true,
+      "serializeUrl": false,
+      "shareCookies": false,
+      "rejectUnauthorized": true,
+      "followRedirect": true,
+      "useQuerystring": false,
+      "gzip": true,
+      "useMtls": false,
+      "timeout": "",
+      "contentType": "application/json",
+      "data": "{\"workflow\": \"HL·07 Books sync\", \"step\": \"Read paid orders\", \"message\": \"{{replace(error.message; /\"/g; \"'\")}}\", \"url\": \"https://YOUR_MAKE_ZONE.make.com/{{var.team.id}}/scenarios/{{var.scenario.id}}/logs/{{var.scenario.executionId}}\", \"order_id\": \"\", \"platform\": \"Make\"}"
+     },
+     "metadata": {
+      "designer": {
+       "x": 0,
+       "y": 250,
+       "name": "Report error to HL·00"
+      }
+     }
+    },
+    {
+     "id": 3,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 3,
+      "interval": 15
+     },
+     "metadata": {
+      "designer": {
+       "x": 300,
+       "y": 250,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "module": "builtin:BasicRouter",
+   "version": 1,
+   "parameters": {},
+   "mapper": null,
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Sync, then heartbeat"
+    }
+   },
+   "routes": [
+    {
+     "flow": [
+      {
+       "id": 5,
+       "module": "builtin:BasicFeeder",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "array": "{{1.data}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": -150,
+         "name": "Iterator · paid orders"
+        }
+       }
+      },
+      {
+       "id": 6,
+       "module": "datastore:ExistRecord",
+       "version": 1,
+       "parameters": {
+        "datastore": null
+       },
+       "mapper": {
+        "key": "{{5.order_id}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 900,
+         "y": -150,
+         "name": "Already in the books?"
+        }
+       }
+      },
+      {
+       "id": 7,
+       "module": "google-sheets:addRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "spreadsheetId": "YOUR_ACCOUNTANT_BOOKS_SHEET_ID",
+        "sheetId": "Sales",
+        "includesHeaders": true,
+        "insertUnformatted": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertDataOption": "INSERT_ROWS",
+        "values": {
+         "0": "{{formatDate(5.paid_at; \"YYYY-MM-DD\")}}",
+         "1": "{{5.order_id}}",
+         "2": "{{5.customer_id}}",
+         "3": "{{5.total_ngn}}",
+         "4": "{{5.paystack_ref}}",
+         "5": "HL·07 (Make)",
+         "6": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 1200,
+         "y": -150,
+         "name": "Add sales entry"
+        }
+       },
+       "filter": {
+        "name": "Not synced yet",
+        "conditions": [
+         [
+          {
+           "a": "{{6.exists}}",
+           "b": "false",
+           "o": "boolean:equal"
+          }
+         ]
+        ]
+       },
+       "onerror": [
+        {
+         "id": 8,
+         "module": "http:ActionSendDataAPIKeyAuth",
+         "version": 3,
+         "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+         },
+         "mapper": {
+          "url": "https://YOUR_N8N_DOMAIN/webhook/hl-errors",
+          "method": "post",
+          "headers": [],
+          "qs": [],
+          "bodyType": "raw",
+          "parseResponse": true,
+          "serializeUrl": false,
+          "shareCookies": false,
+          "rejectUnauthorized": true,
+          "followRedirect": true,
+          "useQuerystring": false,
+          "gzip": true,
+          "useMtls": false,
+          "timeout": "",
+          "contentType": "application/json",
+          "data": "{\"workflow\": \"HL·07 Books sync\", \"step\": \"Add sales entry\", \"message\": \"{{replace(error.message; /\"/g; \"'\")}}\", \"url\": \"https://YOUR_MAKE_ZONE.make.com/{{var.team.id}}/scenarios/{{var.scenario.id}}/logs/{{var.scenario.executionId}}\", \"order_id\": \"{{5.order_id}}\", \"platform\": \"Make\"}"
+         },
+         "metadata": {
+          "designer": {
+           "x": 1200,
+           "y": 50,
+           "name": "Report error to HL·00"
+          }
+         }
+        },
+        {
+         "id": 9,
+         "module": "builtin:Break",
+         "version": 1,
+         "parameters": {},
+         "mapper": {
+          "retry": true,
+          "count": 2,
+          "interval": 15
+         },
+         "metadata": {
+          "designer": {
+           "x": 1500,
+           "y": 50,
+           "name": "Break · retry"
+          }
+         }
+        }
+       ]
+      },
+      {
+       "id": 10,
+       "module": "datastore:AddRecord",
+       "version": 1,
+       "parameters": {
+        "datastore": null,
+        "overwrite": true
+       },
+       "mapper": {
+        "key": "{{5.order_id}}",
+        "data": {
+         "paid_at": "{{5.paid_at}}",
+         "amount_ngn": "{{5.total_ngn}}",
+         "synced_at": "{{now}}"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 1500,
+         "y": -150,
+         "name": "Remember synced order"
+        }
+       }
+      },
+      {
+       "id": 11,
+       "module": "builtin:BasicAggregator",
+       "version": 1,
+       "parameters": {
+        "feeder": 5
+       },
+       "mapper": {
+        "order_id": "{{5.order_id}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 1800,
+         "y": -150,
+         "name": "Count entries"
+        }
+       }
+      },
+      {
+       "id": 12,
+       "module": "util:SetVariable2",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "name": "entries",
+        "scope": "execution",
+        "value": "{{length(11.array)}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 2100,
+         "y": -150,
+         "name": "entries"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 13,
+       "module": "util:GetVariable2",
+       "version": 1,
+       "parameters": {},
+       "mapper": {
+        "name": "entries"
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": 200,
+         "name": "Get entries"
+        }
+       }
+      },
+      {
+       "id": 14,
+       "module": "http:ActionSendDataAPIKeyAuth",
+       "version": 3,
+       "parameters": {
+        "handleErrors": true,
+        "useNewZLibDeCompress": true
+       },
+       "mapper": {
+        "url": "https://YOUR_N8N_DOMAIN/webhook/hl-heartbeat",
+        "method": "post",
+        "headers": [],
+        "qs": [],
+        "bodyType": "raw",
+        "parseResponse": true,
+        "serializeUrl": false,
+        "shareCookies": false,
+        "rejectUnauthorized": true,
+        "followRedirect": true,
+        "useQuerystring": false,
+        "gzip": true,
+        "useMtls": false,
+        "timeout": "",
+        "contentType": "application/json",
+        "data": "{\"workflow\": \"HL·07\", \"entries\": {{ifempty(13.entries; 0)}}, \"period\": \"{{formatDate(now; \"YYYY-MM-DD\")}}\"}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 900,
+         "y": 200,
+         "name": "Heartbeat to n8n"
+        }
+       },
+       "onerror": [
+        {
+         "id": 15,
+         "module": "http:ActionSendDataAPIKeyAuth",
+         "version": 3,
+         "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+         },
+         "mapper": {
+          "url": "https://YOUR_N8N_DOMAIN/webhook/hl-errors",
+          "method": "post",
+          "headers": [],
+          "qs": [],
+          "bodyType": "raw",
+          "parseResponse": true,
+          "serializeUrl": false,
+          "shareCookies": false,
+          "rejectUnauthorized": true,
+          "followRedirect": true,
+          "useQuerystring": false,
+          "gzip": true,
+          "useMtls": false,
+          "timeout": "",
+          "contentType": "application/json",
+          "data": "{\"workflow\": \"HL·07 Books sync\", \"step\": \"Heartbeat to n8n\", \"message\": \"{{replace(error.message; /\"/g; \"'\")}}\", \"url\": \"https://YOUR_MAKE_ZONE.make.com/{{var.team.id}}/scenarios/{{var.scenario.id}}/logs/{{var.scenario.executionId}}\", \"order_id\": \"\", \"platform\": \"Make\"}"
+         },
+         "metadata": {
+          "designer": {
+           "x": 900,
+           "y": 400,
+           "name": "Report error to HL·00"
+          }
+         }
+        },
+        {
+         "id": 16,
+         "module": "builtin:Break",
+         "version": 1,
+         "parameters": {},
+         "mapper": {
+          "retry": true,
+          "count": 3,
+          "interval": 15
+         },
+         "metadata": {
+          "designer": {
+           "x": 1200,
+           "y": 400,
+           "name": "Break · retry"
+          }
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": true,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

@@ -1,0 +1,340 @@
+{
+  "name": "HL·06 Weekly report",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·06 Weekly report (lesson 6.4)\nMonday 07:00. SQL computes the numbers; the AI only writes three sentences of commentary around numbers it's given and is told not to change them. Code calculates, AI explains.\n0 orders in a week = alert Tolu, don't send the report (Glitch's fault 3).\n\n**Credentials:** Postgres (Supabase), OpenAI, Gmail, Telegram.\n**Replace:** YOUR_MODEL, tolu@harvestlane.example (Tolu's email), YOUR_TELEGRAM_CHAT_ID.",
+        "height": 320,
+        "width": 400
+      },
+      "id": "060de830-ebb1-4d1f-b1ae-b1e58b6d54b4",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "2b7eaf95-4147-4eab-8024-56420adc4686",
+      "name": "Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH wk AS (SELECT * FROM orders WHERE created_at >= date_trunc('week', now()) - interval '7 days'\n                                  AND created_at < date_trunc('week', now()))\nSELECT\n  (SELECT count(*) FROM wk) AS orders,\n  (SELECT coalesce(sum(total_ngn), 0) FROM wk WHERE paid_at IS NOT NULL) AS revenue_ngn,\n  (SELECT count(*) FROM wk WHERE status = 'refunded') AS refunds,\n  (SELECT json_agg(t) FROM (\n     SELECT i->>'name' AS product, sum((i->>'quantity')::int) AS qty\n     FROM wk, jsonb_array_elements(wk.items) i WHERE wk.paid_at IS NOT NULL\n     GROUP BY 1 ORDER BY 2 DESC LIMIT 3) t) AS top_products,\n  (SELECT count(*) FROM deliveries d JOIN wk ON wk.order_id = d.order_id\n     WHERE d.delivered_at > wk.paid_at + interval '3 hours') AS late_deliveries,\n  (SELECT coalesce(sum((detail->>'cost_ngn')::numeric), 0) FROM events\n     WHERE event = 'ai_usage' AND at >= date_trunc('week', now()) - interval '7 days'\n       AND at < date_trunc('week', now())) AS ai_spend_ngn;",
+        "options": {}
+      },
+      "id": "c514194a-1d65-406f-aa90-a50f622b295c",
+      "name": "Compute the week",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e9a710b4-ebca-4e75-89e4-8a107791e470",
+              "leftValue": "={{ Number($json.orders) }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0b7597ef-c0c7-4eff-9f51-1523b789da6e",
+      "name": "Zero orders?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🚫 Weekly report NOT sent: 0 orders found for last week. That's an alarm, not a report. Check the orders columns (data contract) and HL·01/HL·02.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e33ce9ce-ac22-49da-be01-a417ca8cbfea",
+      "name": "Alert: don't send zeros",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·06', $1, 'report_blocked', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ reason: 'zero orders' }) ] }}"
+        }
+      },
+      "id": "24db3fab-b51e-43bd-9690-e1fbc601db86",
+      "name": "Log report blocked",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Numbers for last week (do not change them):\n{{ JSON.stringify($json) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You write exactly three short sentences of commentary for Tolu, the owner of Harvest Lane (fresh-produce delivery, Ibadan), around the numbers you are given. Do not calculate, round or restate any number differently; do not invent numbers. If something looks worrying (late deliveries, refunds), say what to look at."
+            }
+          ]
+        }
+      },
+      "id": "2f832380-fd88-414f-bf49-a45dfc51aa25",
+      "name": "Three sentences",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        660,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "0e0b2372-6f3e-4163-af5e-0e3f0f1c0889",
+      "name": "Report model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        660,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const n = $('Compute the week').first().json;\nconst words = String($input.first().json.text || '').trim();\nconst naira = x => '₦' + Math.round(Number(x || 0)).toLocaleString('en-NG');\nconst top = (n.top_products || []).map(t => `${t.product} (${t.qty})`).join(', ') || 'none';\nconst numbers = [\n  `Orders: ${n.orders}`,\n  `Revenue (paid): ${naira(n.revenue_ngn)}`,\n  `Top products: ${top}`,\n  `Late deliveries (over 3 h): ${n.late_deliveries}`,\n  `Refunds: ${n.refunds}`,\n  `AI spend: ${naira(n.ai_spend_ngn)}`\n];\nconst text = `📊 Harvest Lane · week report\\n${numbers.join('\\n')}\\n\\n${words}`;\nreturn [{ json: { text, subject: `Harvest Lane week report: ${n.orders} orders, ${naira(n.revenue_ngn)}` } }];"
+      },
+      "id": "f691351d-c94b-410b-ab5d-1b842b07b6fc",
+      "name": "Assemble report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "tolu@harvestlane.example",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e8921df5-39b8-4ce4-a3bd-293228c98035",
+      "name": "Email Tolu",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $('Assemble report').item.json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "da38ae7d-d705-4d2c-9750-00fc1877f87e",
+      "name": "Telegram summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·06', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ orders: $('Compute the week').item.json.orders }) ] }}"
+        }
+      },
+      "id": "ba4f2a5c-291d-4832-bd86-70c8a5b5bfc9",
+      "name": "Log success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        -90
+      ]
+    }
+  ],
+  "connections": {
+    "Monday 07:00": {
+      "main": [
+        [
+          {
+            "node": "Compute the week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute the week": {
+      "main": [
+        [
+          {
+            "node": "Zero orders?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zero orders?": {
+      "main": [
+        [
+          {
+            "node": "Alert: don't send zeros",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Three sentences",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert: don't send zeros": {
+      "main": [
+        [
+          {
+            "node": "Log report blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Three sentences",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Three sentences": {
+      "main": [
+        [
+          {
+            "node": "Assemble report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble report": {
+      "main": [
+        [
+          {
+            "node": "Email Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Tolu": {
+      "main": [
+        [
+          {
+            "node": "Telegram summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram summary": {
+      "main": [
+        [
+          {
+            "node": "Log success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

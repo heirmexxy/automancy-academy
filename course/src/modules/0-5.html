@@ -1,0 +1,457 @@
+<template data-mod="0.5" id="tpl-0-5">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.5</span>
+    <h1>Talking to AI: LLM Essentials</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: Claude, ChatGPT or Gemini (free tiers)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">Large language models can read messy human messages and turn them into the clean data you learned to design in 0.3 and 0.4. This module teaches how they work, what they cost, and how to write and test prompts you can trust inside an automation.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain what an LLM does, and what it can't do reliably.</span></div>
+  <div><b>02</b><span>Estimate tokens and monthly cost for an AI step.</span></div>
+  <div><b>03</b><span>Write a structured prompt that returns strict JSON.</span></div>
+  <div><b>04</b><span>Test a prompt on a set of messages and measure its accuracy.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Sage wakes up</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu reading a pile of messages in English, Pidgin and Yoruba.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">
+          <rect x="150" y="14" width="160" height="34" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="36">abeg 3 bag onion, Bodija</text>
+          <rect x="140" y="56" width="170" height="34" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="150" y="78">Ẹ kú àárọ̀! 1 small crate…</text>
+          <rect x="160" y="98" width="150" height="34" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="170" y="120">same as last week pls</text>
+          <rect x="150" y="140" width="160" height="34" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="162">tomato 2, the red pepper</text>
+        </g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday, 5 October</b>The order form from 0.1 helps, but many customers still just type. In English, Pidgin, Yoruba, or all three.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage the owl lands with a glowing lamp.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="160" cy="92" r="70" fill="var(--grape)" opacity=".15"/>
+        <use href="#sage" x="92" y="24" width="136" height="136"/>
+        <text x="160" y="182" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="var(--ink)">"Give me the messy ones."</text>
+      </svg>
+      <div class="cap"><b>Enter Sage</b>The owl who thinks. "Rules can't read Pidgin," says Sage. "I can. Mostly."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An AI reply with an invented address highlighted in red, and Glitch grinning.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="16" y="20" width="200" height="120" rx="10" fill="var(--ink)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--paper)">
+          <text x="28" y="44">{ "items": [...],</text><text x="28" y="64">  "address":</text><text x="28" y="84" fill="var(--glitch)">   "12 Ring Road",</text><text x="28" y="104">  "total": 37000 }</text>
+        </g>
+        <text x="30" y="124" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--sun)">← nobody said that</text>
+        <use href="#glitch" x="214" y="66" width="100" height="100"/>
+      </svg>
+      <div class="cap"><b>The catch</b>Tolu's first try invents an address and a total. Glitch loves a confident guess.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage holding a checklist with ten ticks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="150" height="150" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--volt)"><text x="164" y="46">✓ ✓ ✓ ✓ ✓</text><text x="164" y="70">✓ ✓ ✓ ✓ ✓</text></g>
+        <text x="225" y="112" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="26" fill="var(--ink)">10/10</text>
+        <text x="225" y="140" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">tested, not hoped</text>
+        <use href="#sage" x="10" y="50" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The fix</b>"Don't trust me because I sound sure," says Sage. "Trust me because you tested me."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>What an LLM actually does</h3>
+    <p>A large language model breaks text into small pieces called <b>tokens</b>, then predicts the most likely next token, over and over, based on patterns learned from huge amounts of text. That simple loop is enough to read, summarise, classify, translate and write.</p>
+    <figure class="fig"><svg viewBox="0 0 640 170" role="img" aria-label="The prompt is split into tokens, the model predicts the next token, which is appended, and the loop repeats until the answer is complete.">
+      <defs><marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="JetBrains Mono,monospace" font-size="11">
+        <rect x="10" y="60" width="44" height="30" rx="6" fill="var(--sky)"/><text x="32" y="80" text-anchor="middle" fill="#fff">abeg</text>
+        <rect x="58" y="60" width="26" height="30" rx="6" fill="var(--sky)"/><text x="71" y="80" text-anchor="middle" fill="#fff">3</text>
+        <rect x="88" y="60" width="38" height="30" rx="6" fill="var(--sky)"/><text x="107" y="80" text-anchor="middle" fill="#fff">bag</text>
+        <rect x="130" y="60" width="46" height="30" rx="6" fill="var(--sky)"/><text x="153" y="80" text-anchor="middle" fill="#fff">onion</text>
+        <text x="94" y="48" text-anchor="middle" fill="var(--muted)" font-size="10">TOKENS</text>
+      </g>
+      <path d="M182 75 H230" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#d1)"/>
+      <circle cx="300" cy="75" r="62" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="300" y="72" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="#fff">Model</text>
+      <text x="300" y="92" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">next token?</text>
+      <path d="M364 75 H410" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#d1)"/>
+      <rect x="414" y="58" width="100" height="34" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/>
+      <text x="464" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#13233A">"ONI-BAG"</text>
+      <path d="M514 75 Q600 75 600 130 Q600 160 300 160 Q170 160 170 96" stroke="var(--spark)" stroke-width="2" fill="none" stroke-dasharray="5 4" marker-end="url(#d1)"/>
+      <text x="560" y="152" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--spark)">append &amp; repeat</text>
+    </svg><figcaption>Everything the model "knows" in a conversation is the text you send it. It has no memory between calls unless you send the history again.</figcaption></figure>
+    <div class="why">
+      <div class="box"><h5>Good at</h5><ul><li>Understanding messy, mixed-language text</li><li>Extracting fields into a fixed format</li><li>Classifying and summarising</li><li>Drafting replies in a set tone</li></ul></div>
+      <div class="box"><h5>Unreliable at</h5><ul><li>Arithmetic on money (use formulas)</li><li>Facts it wasn't given (it may invent them)</li><li>Today's date, prices, stock (send them in)</li><li>Being right 100% of the time (so test)</li></ul></div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Tokens, context and cost</h3>
+    <p>Providers charge per token, with separate prices for <b>input</b> (what you send) and <b>output</b> (what it writes). A rough rule for English: 1 token ≈ 4 characters, or about ¾ of a word. Pidgin, Yoruba and other languages often use more tokens per word. The <b>context window</b> is the most text one call can hold, including your instructions and its answer.</p>
+    <div class="analogy"><b>What drives cost:</b> the length of your prompt (sent on every call), the length of the answer, how many calls you make, and which model you pick. A long prompt repeated 10,000 times a month adds up; a short answer format saves money every time.</div>
+    <div class="tokcalc" data-tok>
+      <h4>Try it: estimate an AI step's cost</h4>
+      <label>Your prompt plus a typical message (paste or type)<textarea id="tok-0-5-text">You are the order-intake assistant for Harvest Lane. Extract the order as JSON using only these SKUs: TOM-CRATE, TOM-CRATE-S, PEP-TATASHE-L, PEP-ROF-L, ONI-BAG. Use null for anything not stated. Output only JSON.
+Message: abeg bring 3 bag onion come Bodija tomorrow morning. Tunde 0809 555 1212</textarea></label>
+      <div class="row">
+        <label>Output tokens per call<input id="tok-0-5-out" data-f="out" type="number" value="120" min="0"></label>
+        <label>Calls per month<input id="tok-0-5-n" data-f="n" type="number" value="1200" min="0"></label>
+        <label>Input price, $ per 1M tokens<input id="tok-0-5-pin" data-f="pin" type="number" value="1" min="0" step="0.05"></label>
+        <label>Output price, $ per 1M tokens<input id="tok-0-5-pout" data-f="pout" type="number" value="5" min="0" step="0.05"></label>
+        <label>Naira per dollar<input id="tok-0-5-fx" data-f="fx" type="number" value="1500" min="0"></label>
+      </div>
+      <div class="stats">
+        <div class="stat"><b data-o="tok">–</b><span>estimated input tokens per call</span></div>
+        <div class="stat"><b data-o="per">–</b><span>cost per call</span></div>
+        <div class="stat"><b data-o="month">–</b><span data-o="ngn">–</span></div>
+      </div>
+      <p style="font-size:.84rem;color:var(--muted)">Prices and the exchange rate here are placeholders. Check the provider's current pricing page and today's rate before you quote a client. The token count is a rough estimate (characters ÷ 4).</p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Anatomy of a reliable prompt</h3>
+    <p>Write a prompt the way you'd brief a sharp new staff member on their first day: who they are, the job, what they need to know, the rules, and exactly what to hand back. Most AI steps take two messages: a <b>system</b> message with the standing instructions, and a <b>user</b> message with the item to process.</p>
+    <div class="pblocks">
+      <div class="pblock" style="--bc:var(--sky)"><b>Role</b><span>You are the order-intake assistant for Harvest Lane, a produce delivery business in Ibadan.</span></div>
+      <div class="pblock" style="--bc:var(--volt)"><b>Task</b><span>Read one customer message and extract the order.</span></div>
+      <div class="pblock" style="--bc:var(--sun)"><b>Context</b><span>The product catalogue and SKUs; today's date; the languages customers use.</span></div>
+      <div class="pblock" style="--bc:var(--glitch)"><b>Rules</b><span>Use null when something isn't stated. Never guess addresses. Only use catalogue SKUs.</span></div>
+      <div class="pblock" style="--bc:var(--grape)"><b>Output format</b><span>Only JSON, in exactly this shape, with no extra words.</span></div>
+      <div class="pblock" style="--bc:var(--teal)"><b>Examples</b><span>One or two message → output pairs, including a tricky one.</span></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Examples are the most powerful part. One good example teaches me the format better than a paragraph of rules. It's called "few-shot" prompting.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Structured output: make the answer machine-readable</h3>
+    <p>An automation's next step needs JSON it can parse, not a friendly paragraph. Three habits get you there:</p>
+    <div class="vocab">
+      <div><b>Show the exact shape</b>Include the JSON template with every key and its type.</div>
+      <div><b>Say "only JSON"</b>No explanations and no markdown fences (```), which break parsing.</div>
+      <div><b>Use platform features</b>Many APIs offer a JSON or structured-output mode, and n8n has a Structured Output Parser. Use them when available; they enforce the shape.</div>
+      <div><b>Low temperature</b><i>Temperature</i> controls randomness. Use 0–0.3 for extraction and classification; higher only for creative writing.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Hallucinations and how to catch them</h3>
+    <p>A <b>hallucination</b> is when a model states something that isn't true or wasn't in the input, usually in a confident tone. You can't eliminate it, but you can design around it.</p>
+    <div class="never">
+      <div><b>Give it permission to not know</b>"If it isn't in the message, return null." Models guess less when guessing isn't required.</div>
+      <div><b>Check after the model</b>Does the JSON parse? Are SKUs in the catalogue? Is qty a number? Let rules check the AI.</div>
+      <div><b>Test on a set, not one example</b>Run 10–20 real messages with known right answers and count how many it gets right.</div>
+    </div>
+    <div class="analogy"><b>Which model?</b> Claude, GPT and Gemini all handle this well, and cheaper small models often do too. Pick the smallest, cheapest model that passes your test set. You'll compare models properly in Module 3.7.</div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.claude.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Claude Academy: AI Fluency and "how LLMs work" lessons (free)</b><small>Look for: what models can and can't do, and why context limits matter.</small></span></a>
+    <a class="wcard" href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Anthropic's interactive prompt engineering tutorial (chapters 1–5)</b><small>Look for: separating data from instructions, and giving examples.</small></span></a>
+    <a class="wcard" href="https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>DeepLearning.AI: Prompt Engineering for Developers (first two videos)</b><small>Look for: "ask for structured output" and "give the model time to think".</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: a prompt that turns any order message into clean JSON</h2></div>
+  <div class="prose"><p><b>The problem.</b> Build a prompt that reads customer messages in English, Pidgin or Yoruba and returns order JSON Harvest Lane's sheet can use. It must not invent anything. We'll test it on 10 real-style messages, measure, and improve until it scores 10 out of 10. You can do all of this in a free chat app by pasting the prompt and then each message.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Build the test set first</h4>
+      <p>Before writing the prompt, collect 10 messages that cover the normal cases and the tricky ones, and write down the right answer for each. This is your exam; the prompt is the student.</p>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>#</th><th>Message</th><th>What makes it tricky</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Good morning! Pls 2 crates of tomatoes and 1 big bag tatashe. Tuesday afternoon, 14 Ring Road. Mrs Adebayo 08031234567</td><td>Normal, complete order</td></tr>
+          <tr><td>2</td><td>abeg bring 3 bag onion come Bodija tomorrow morning. Tunde 0809 555 1212</td><td>Pidgin; relative date; phone with spaces</td></tr>
+          <tr><td>3</td><td>I want tomatoes</td><td>No quantity, no address, no date</td></tr>
+          <tr><td>4</td><td>Ẹ kú àárọ̀. 1 small crate tomato and rodo big bag, deliver Friday. Mama Kemi, Mokola</td><td>Yoruba greeting; "rodo" is local name</td></tr>
+          <tr><td>5</td><td>Same as last week pls</td><td>Nothing extractable</td></tr>
+          <tr><td>6</td><td>2 crates tomato + 2 bags ugwu</td><td>Ugwu isn't in the catalogue</td></tr>
+          <tr><td>7</td><td>Please send three bags of onions to 5 Adeola Street on Saturday</td><td>Number in words</td></tr>
+          <tr><td>8</td><td>Can I get 1 crate tomatoes and 1 small crate? For Sunday evening. +2348023456789</td><td>Two different SKUs for tomatoes</td></tr>
+          <tr><td>9</td><td>Tomatoes 2, pepper 1 (the red one), my usual address</td><td>"Red pepper" means tatashe; address not given</td></tr>
+          <tr><td>10</td><td>Hi, how much is onions this week?</td><td>Not an order at all</td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Version 1: the obvious prompt</h4>
+<pre class="codebox">Extract the order from this customer message as JSON.</pre>
+      <p>It "works" on message 1. On the full set, only <b>4 of 10</b> are usable. Four answers came wrapped in markdown fences, which a parser rejects. Message 3 got an invented quantity and address. Message 5 produced a made-up order. Message 6 turned ugwu into "pepper". Message 7 kept "Saturday" as text. Phone formats varied.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Version 2: rules and a catalogue</h4>
+      <p>Add a role, the SKU list, "only JSON", "use null if not stated", "unmatched products go in <code>unmatched</code>", and ISO dates using today's date. Score: <b>8 of 10</b>. Message 4 put "rodo" in <code>unmatched</code> because the catalogue only said "scotch bonnet", and message 9 guessed rodo for "the red one".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Version 3: local names, an example, and a confirmation flag</h4>
+      <p>Add the local names customers actually use, one worked example, a language rule, and a <code>needs_confirmation</code> flag so humans check uncertain orders. Score: <b>10 of 10</b>. Here's the final prompt:</p>
+<pre class="codebox"><span class="c"># SYSTEM MESSAGE</span>
+You are the order-intake assistant for Harvest Lane, a fresh-produce
+delivery business in Ibadan, Nigeria.
+
+TASK: Read ONE customer message and extract the order as JSON.
+
+CATALOGUE (use only these SKUs):
+- TOM-CRATE      tomatoes, full crate ("crate", "basket of tomato")
+- TOM-CRATE-S    tomatoes, small crate
+- PEP-TATASHE-L  tatashe / red bell pepper / "the red one", big bag
+- PEP-ROF-L      rodo / ata rodo / scotch bonnet, big bag
+- ONI-BAG        onions ("alubosa"), bag
+
+RULES:
+1. Output ONLY the JSON object. No explanations. No markdown.
+2. If a detail is not in the message, use null. Never guess
+   addresses, dates, names or phone numbers.
+3. Products not in the catalogue go in "unmatched", in the
+   customer's own words.
+4. qty is a number ("three" = 3). If no quantity is given, use 1
+   and set "needs_confirmation": true.
+5. Today is <span class="k">{{today}}</span> (Africa/Lagos). Convert days like
+   "tomorrow" or "Friday" to YYYY-MM-DD.
+6. Phone numbers: +234 format, no spaces.
+7. Customers write in English, Nigerian Pidgin, Yoruba or a mix.
+8. If the message is not an order, return "items": [] and
+   "needs_confirmation": true.
+9. Set "needs_confirmation": true whenever anything is uncertain.
+
+OUTPUT SHAPE:
+{
+  "customer_name": string | null,
+  "phone": string | null,
+  "items": [ { "sku": string, "qty": number } ],
+  "unmatched": [ string ],
+  "delivery_address": string | null,
+  "delivery_date": string | null,
+  "delivery_window": "morning" | "afternoon" | "evening" | null,
+  "needs_confirmation": boolean
+}
+
+EXAMPLE
+Message: "abeg 2 bag alubosa, Friday morning. Bodija. Tunde 0809 555 1212"
+Output: {"customer_name":"Tunde","phone":"+2348095551212",
+"items":[{"sku":"ONI-BAG","qty":2}],"unmatched":[],
+"delivery_address":"Bodija","delivery_date":"2026-10-09",
+"delivery_window":"morning","needs_confirmation":false}
+
+<span class="c"># USER MESSAGE</span>
+<span class="k">{{customer_message}}</span></pre>
+      <p>The parts in <span style="color:var(--spark);font-family:var(--mono)">{{double braces}}</span> are filled in by the automation each time. In a chat app, replace them yourself: type today's date, then paste each test message.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Compare the three versions</h4>
+      <div class="results">
+        <div><b>4/10</b><div class="bar"><i style="width:40%"></i></div><span>v1 · one sentence</span></div>
+        <div><b>8/10</b><div class="bar"><i style="width:80%"></i></div><span>v2 · role, rules, catalogue</span></div>
+        <div><b>10/10</b><div class="bar"><i style="width:100%"></i></div><span>v3 · local names, example, flag</span></div>
+      </div>
+      <p>Two expected outputs from v3, so you can check your own runs:</p>
+<pre class="codebox"><span class="c"># Message 9: "Tomatoes 2, pepper 1 (the red one), my usual address"</span>
+{"customer_name":null,"phone":null,
+ "items":[{"sku":"TOM-CRATE","qty":2},{"sku":"PEP-TATASHE-L","qty":1}],
+ "unmatched":[],"delivery_address":null,"delivery_date":null,
+ "delivery_window":null,"needs_confirmation":true}
+
+<span class="c"># Message 10: "Hi, how much is onions this week?"</span>
+{"customer_name":null,"phone":null,"items":[],"unmatched":[],
+ "delivery_address":null,"delivery_date":null,"delivery_window":null,
+ "needs_confirmation":true}</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Decide what the AI is not allowed to do</h4>
+      <p>Notice the prompt has no prices and asks for no total. The AI reads and structures; the sheet from Module 0.4 looks up prices and calculates totals with formulas. Each part does what it's reliable at.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Belt and braces:</b> in the real automation, a rules step checks every AI answer: does it parse, are the SKUs in the catalogue, is every qty a number above 0? Anything that fails, or has <code>needs_confirmation: true</code>, goes to Tolu instead of straight into the sheet. You'll build that in Tracks 1–3.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>A test set turns "seems fine" into a number you can improve.</li><li>Each version fixes the failures the last one revealed.</li><li>Local names and an example teach the model your world.</li><li>Maths and prices stay with formulas, not the model.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Testing on one easy message and calling it done.</li><li>Asking the AI to calculate totals from prices it wasn't given.</li><li>Forgetting to tell it today's date.</li><li>Letting uncertain answers flow into the sheet unchecked.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> My prompt is shorter AND more fun. The output even has a total! Find six problems.</div></div>
+<pre class="codebox"><span class="c"># Glitch's settings: model = biggest available, temperature = 1.2</span>
+Hey AI! Be creative and figure out what this customer wants.
+Work out the delivery address from context and calculate the
+total price. My key is sk-live-8f2a… in case you need it.
+Message: "I want tomatoes, deliver tomorrow"
+
+<span class="c"># Output</span>
+Sure! Here's the order:
+```json
+{"item":"tomatoes","qty":3,"address":"12 Ring Road","date":"tomorrow","total":37500}
+```</pre>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>"Be creative" and temperature 1.2:</b> exactly wrong for extraction. Ask for accuracy; use 0–0.3.</li>
+        <li><b>"Work out the address from context":</b> an invitation to invent. The rule should be: not stated → null.</li>
+        <li><b>Asking for a total without prices:</b> the model made up ₦37,500. Totals come from the sheet.</li>
+        <li><b>An API key pasted into the prompt:</b> keys never go into prompts or chats (Module 0.6). Revoke it now.</li>
+        <li><b>No output format:</b> chatty text and markdown fences around the JSON break the parser; "date": "tomorrow" isn't ISO; qty 3 was invented.</li>
+        <li><b>Biggest model by default:</b> costs more for no gain on a simple task. Start small and test.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Run the v3 prompt on three models</h4>
+    <ul><li>Open free chat versions of two or three assistants (for example Claude, ChatGPT and Gemini, or Google AI Studio).</li><li>Paste the v3 prompt with today's date, then messages 2, 4, 6, 9 and 10 from the test set, one at a time.</li><li>Score each answer against the expected result: fully right, partly right, or wrong.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You have a small table: model × message × score, and one sentence on which you'd choose and why.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build and measure a message classifier</h4>
+    <ul><li>Write a prompt that labels each message as exactly one of: <code>order</code> (new or change), <code>complaint</code>, <code>question</code>, <code>other</code>. Output only the label.</li><li>Run it on the 20 messages below and count how many match the expected label. Improve the prompt until you reach at least 18 of 20.</li></ul>
+    <div class="logbox">
+<pre id="cls-0-5">1  | 2 crates tomato for Tuesday pls                         | order
+2  | The pepper you sent yesterday was rotten                  | complaint
+3  | Do you deliver to Ogbomoso?                               | question
+4  | abeg how much be onions now                               | question
+5  | Rider never come since morning o                          | complaint
+6  | Send 3 bags onions to my shop, same address               | order
+7  | Thank you, the tomatoes were very fresh!                  | other
+8  | I was charged twice for order HL-0041                     | complaint
+9  | Can I pay on delivery?                                    | question
+10 | 1 crate tomato, 1 bag tatashe. Bodija. Friday             | order
+11 | Happy Sunday to you and your team                         | other
+12 | What time do your riders start delivery?                  | question
+13 | Cancel my order for tomorrow please                       | order
+14 | Wrong item delivered, I asked for rodo not tatashe        | complaint
+15 | Pls add 1 more crate to today's order                     | order
+16 | Are you open on public holidays?                          | question
+17 | Call me when you're outside                               | other
+18 | Na so una dey do? 2 hours late!                           | complaint
+19 | Need 5 crates for a party on Saturday, any discount?      | order
+20 | ok                                                        | other</pre>
+      <div><button type="button" class="btn" data-copy="cls-0-5">Copy template</button></div>
+    </div>
+    <span class="crit">Done when</span>
+    <ul><li>You reach 18/20 or better, and you've written down which messages were hardest and what fixed them.</li></ul>
+    <details class="reveal"><summary>Hints</summary><div><ul><li>Define each label in one line inside the prompt, with an example.</li><li>Messages 13 and 19 are edge cases: say that changes and cancellations count as <code>order</code>, and that when a message contains an order plus a question, <code>order</code> wins.</li><li>Ask for the label only, lowercase, one word.</li></ul></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Your own extraction prompt, tested to 95%</h4>
+    <ul><li>Pick a messy input from your own work: supplier invoices pasted as text, enquiry emails, farmer reports, CV summaries.</li><li>Design the JSON output (use Module 0.3), write a v1 prompt, and build a test set of 20 real examples with expected outputs in a sheet.</li><li>Score by field: for each example, count correct fields out of total fields. Iterate to 95% field accuracy.</li><li>Use the estimator on this page to cost it at your expected monthly volume.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your sheet shows at least three versions with their scores, and your final prompt includes a null rule, an output shape and at least one example.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Which best describes what an LLM does?</p><div class="opts">
+      <button type="button" data-opt="a">Looks answers up in a database of facts</button><button type="button" data-opt="b">Predicts likely next text based on patterns it learned</button><button type="button" data-opt="c">Runs calculations exactly like a spreadsheet</button><button type="button" data-opt="d">Remembers every past conversation automatically</button></div>
+      <p class="fb" hidden data-why="It predicts tokens from patterns. That's why it can read Pidgin, and also why it can confidently invent things."></p></div>
+    <div class="q" data-ans="a"><p>2. For extracting order details, which temperature fits best?</p><div class="opts">
+      <button type="button" data-opt="a">Low (0–0.3)</button><button type="button" data-opt="b">High (1.0+)</button><button type="button" data-opt="c">It makes no difference</button><button type="button" data-opt="d">As high as the platform allows</button></div>
+      <p class="fb" hidden data-why="Low temperature gives consistent, less random answers, which is what you want for extraction and classification."></p></div>
+    <div class="q" data-ans="c"><p>3. A message has no delivery address. What should a good prompt make the model do?</p><div class="opts">
+      <button type="button" data-opt="a">Use the customer's last known address</button><button type="button" data-opt="b">Guess from the area mentioned elsewhere</button><button type="button" data-opt="c">Return null for the address</button><button type="button" data-opt="d">Refuse to answer</button></div>
+      <p class="fb" hidden data-why="Null is honest and easy for the next step to catch. A later rule sends it to a person."></p></div>
+    <div class="q" data-ans="d"><p>4. Who should calculate an order's total?</p><div class="opts">
+      <button type="button" data-opt="a">The AI, from prices it knows</button><button type="button" data-opt="b">The AI, if you ask it to double-check</button><button type="button" data-opt="c">The customer</button><button type="button" data-opt="d">Formulas in the sheet, using stored prices</button></div>
+      <p class="fb" hidden data-why="The AI structures the order; the sheet does the maths reliably with real prices."></p></div>
+    <div class="q" data-ans="b"><p>5. Your prompt works on one example. What next?</p><div class="opts">
+      <button type="button" data-opt="a">Put it into production</button><button type="button" data-opt="b">Test it on a varied set of real messages and count the correct answers</button><button type="button" data-opt="c">Make it longer</button><button type="button" data-opt="d">Switch to the most expensive model</button></div>
+      <p class="fb" hidden data-why="Only a test set tells you how reliable a prompt really is, and what to fix next."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-0-5">AUTOMANCY LOG · Lesson 0.5 · Talking to AI
+Date:
+Prompt I built (task):
+Test set size:
+Scores by version:  v1 __/__   v2 __/__   v3 __/__
+Hardest example and what fixed it:
+Models compared and my pick:
+Estimated cost at my volume (per month):
+What the AI is NOT allowed to do in my design:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-0-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>An LLM predicts text from patterns. It knows only what you send it in that call.</li>
+      <li>You pay per token, in and out; long prompts cost money on every call.</li>
+      <li>Prompt = role + task + context + rules + output format + examples.</li>
+      <li>For automations: only JSON, low temperature, null when unsure.</li>
+      <li>Let formulas do maths and rules check the AI's answer.</li>
+      <li>Trust a prompt only after it passes a test set.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank" rel="noopener">Anthropic: interactive prompt engineering tutorial</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.claude.com/" target="_blank" rel="noopener">Claude Academy: AI Fluency and Claude API courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/" target="_blank" rel="noopener">DeepLearning.AI: Prompt Engineering for Developers</a></li>
+    <li><span class="kind">Course</span><a href="https://github.com/microsoft/generative-ai-for-beginners" target="_blank" rel="noopener">Microsoft: Generative AI for Beginners (lessons on prompting and LLM basics)</a></li>
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/llm-course" target="_blank" rel="noopener">Hugging Face LLM Course (for the curious: how models work inside)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run the v1 → v3 story live: project a chat app, paste v1, and let the room feed it the tricky messages. The failures are the lesson. For Silver, split the 20 messages across small groups, then pool the scores. Remind learners never to paste personal customer data into public chat tools while practising; use the sample messages.</p>
+  </div>
+</section>
+
+</article>
+</template>

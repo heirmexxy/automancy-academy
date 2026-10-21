@@ -1,0 +1,850 @@
+{
+ "name": "CRM · Upsert lead",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## CRM · Upsert lead (Lesson 5.9)\nCalled by every engine when a business lead appears (outreach reply, Instagram comment, WhatsApp, email). One sub-workflow, so every channel creates leads the same way.\n1 Normalise email (lowercase), phone (+234...), domain (no www.)\n2 Company: search by domain -> found? update : create\n3 Contact: Create or Update (by email) with lead_source and consent\n4 Associate contact <-> company\n5 Buying intent and no open deal for this company -> deal at New enquiry, owner Tolu, associated to both\n6 Supabase: save crm_contact_id and crm_deal_id\nThen the score (code, calibrated on last quarter; outside the zone is a knock-out rule) is written to harvest_score. Ready and below Sales qualified lead -> SQL, a Call today task and a Telegram ping.\nThis workflow never writes dealstage, so it can't start the stage-change workflow.\n\nCredentials: HubSpot App Token credential (the \"n8n Growth Desk\" private app token, with only contact, company and deal read/write scopes, plus tasks if you create tasks) on every HubSpot node and HTTP Request; Postgres; Telegram.\nPlaceholders: YOUR_STAGE_ID_NEW_ENQUIRY, YOUR_TOLU_OWNER_ID, YOUR_TELEGRAM_CHAT_ID.\nHubSpot free: about 100 requests per 10 seconds per private app. Test on a test portal or a few test records first.",
+    "height": 540,
+    "width": 660
+   },
+   "id": "385eed7b-b8e1-4bab-8cb2-51971469aabb",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -720,
+    -560
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "e5587075-42a5-4deb-b229-40a643177eab",
+   "name": "When called by an engine",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const d = String($json.phone || '').replace(/\\D/g, '').replace(/^(234|0)/, '');\nreturn { ...$json,\n  email: String($json.email || '').trim().toLowerCase(),\n  phone: d ? '+234' + d : '',\n  domain: String($json.domain || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0] };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "843b6c68-e0c1-443f-bd8e-7e0da5f04993",
+   "name": "1 Normalise",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/companies/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'domain', operator: 'EQ', value: $json.domain } ] } ], properties: ['domain', 'name'], limit: 1 }) }}",
+    "options": {}
+   },
+   "id": "c7a36bf1-2906-4499-ad82-6de078343cae",
+   "name": "2 Company: search by domain",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "dbdf1858-014b-47e9-a22b-9512bf92c674",
+       "leftValue": "={{ $json.total }}",
+       "rightValue": 0,
+       "operator": {
+        "type": "number",
+        "operation": "gt"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "7f5fa5fc-601e-4ff1-a89b-78f7967debc8",
+   "name": "Company found?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PATCH",
+    "url": "=https://api.hubapi.com/crm/v3/objects/companies/{{ $json.results[0].id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { business_type: $('1 Normalise').item.json.business_type, delivery_zone: $('1 Normalise').item.json.delivery_zone } }) }}",
+    "options": {}
+   },
+   "id": "25edbad8-d487-4812-89f8-f413d3239393",
+   "name": "Company: update",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/companies",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { name: $('1 Normalise').item.json.company, domain: $('1 Normalise').item.json.domain, business_type: $('1 Normalise').item.json.business_type, delivery_zone: $('1 Normalise').item.json.delivery_zone } }) }}",
+    "options": {}
+   },
+   "id": "9821fe2b-3d05-4c90-9a9a-7c0646954c6b",
+   "name": "Company: create",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "1a0714fd-a0dc-4b29-93e9-f2816c15252d",
+       "name": "company_id",
+       "value": "={{ $json.id }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "061e04c4-526d-4e10-bc7b-bcd80e3dc24c",
+   "name": "Company ID",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "authentication": "appToken",
+    "resource": "contact",
+    "operation": "upsert",
+    "email": "={{ $('1 Normalise').item.json.email }}",
+    "additionalFields": {
+     "firstName": "={{ $('1 Normalise').item.json.name.split(' ')[0] }}",
+     "lastName": "={{ $('1 Normalise').item.json.name.split(' ').slice(1).join(' ') }}",
+     "phoneNumber": "={{ $('1 Normalise').item.json.phone }}",
+     "customPropertiesUi": {
+      "customPropertiesValues": [
+       {
+        "property": "lead_source",
+        "value": "={{ $('1 Normalise').item.json.lead_source }}"
+       },
+       {
+        "property": "marketing_consent",
+        "value": "={{ $('1 Normalise').item.json.consent }}"
+       }
+      ]
+     }
+    },
+    "options": {}
+   },
+   "id": "16460444-62b6-4737-a84a-edd1e72bfa49",
+   "name": "3 Contact: create or update",
+   "type": "n8n-nodes-base.hubspot",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "2f131bc8-2f0e-4ac7-9069-fa821fa31604",
+       "name": "contact_id",
+       "value": "={{ $json.vid ?? $json['canonical-vid'] ?? $json.id }}",
+       "type": "string"
+      },
+      {
+       "id": "3594c07b-96f7-43a9-a790-5f3c0517612b",
+       "name": "company_id",
+       "value": "={{ $('Company ID').item.json.company_id }}",
+       "type": "string"
+      },
+      {
+       "id": "ce836fca-d72b-4dd8-a996-71a8c355e85a",
+       "name": "lifecyclestage",
+       "value": "={{ $json.properties?.lifecyclestage?.value ?? $json.properties?.lifecyclestage ?? '' }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "8f4cb7bc-920c-4b7b-9029-6a31f33475e7",
+   "name": "Contact ID",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    1540,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PUT",
+    "url": "=https://api.hubapi.com/crm/v4/objects/contact/{{ $json.contact_id }}/associations/default/company/{{ $json.company_id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "options": {}
+   },
+   "id": "b93ac71f-61b2-40de-8a2f-a8bb72c3d19a",
+   "name": "4 Associate contact and company",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1760,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "2891b73a-06cf-4360-9d37-71c2dc386dc9",
+       "leftValue": "={{ ['buying', 'lead'].includes($('1 Normalise').item.json.intent) }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "9f99b8ef-4fb1-40c9-b5f7-418f4ddb54d3",
+   "name": "5 Buying intent?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1980,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'associations.company', operator: 'EQ', value: $('Contact ID').item.json.company_id }, { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' } ] } ], properties: ['dealname', 'dealstage'], limit: 1 }) }}",
+    "options": {}
+   },
+   "id": "11401212-5240-4c12-83af-aa3936b00faf",
+   "name": "Open deals for this company",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2200,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "17c0bdc9-929e-4348-a7a2-80aad54e2f68",
+       "leftValue": "={{ $json.total }}",
+       "rightValue": 0,
+       "operator": {
+        "type": "number",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "f609733b-c47a-4d3d-a494-5f9f77e00ce8",
+   "name": "No open deal?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    2420,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/deals",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { dealname: $('1 Normalise').item.json.company + ' · weekly supply', pipeline: 'default', dealstage: 'YOUR_STAGE_ID_NEW_ENQUIRY', hubspot_owner_id: 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Contact ID').item.json.company_id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 5 } ] }, { to: { id: $('Contact ID').item.json.contact_id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "ebbb46ab-7e02-402c-9f1a-3174b8cf00b1",
+   "name": "Deal: create at New enquiry",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2640,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const ids = $('Contact ID').item.json;\nlet deal_id = '';\ntry { deal_id = $('Deal: create at New enquiry').item.json.id || ''; } catch (e) {}\nif (!deal_id) { try { deal_id = $('Open deals for this company').item.json.results?.[0]?.id || ''; } catch (e) {} }\nreturn { ...$('1 Normalise').item.json, contact_id: ids.contact_id, company_id: ids.company_id, deal_id, lifecyclestage: ids.lifecyclestage };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "4c37f302-35f3-4546-bef2-862581a98bd9",
+   "name": "IDs",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2860,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "update customers set crm_contact_id = $1, crm_deal_id = nullif($2, '') where id = $3;",
+    "options": {
+     "queryReplacement": "={{ [ String($json.contact_id), String($json.deal_id || ''), $json.customer_id ] }}"
+    }
+   },
+   "id": "e11a34e3-607b-4c26-a1d1-477a0199ee89",
+   "name": "6 Save CRM IDs in Supabase",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    3080,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Code node: weights calibrated in the Card 3 lab against last quarter\nconst W = { type: 20, asked: 25, opens: 5, size: 10 };\nconst L = $json;\nif (L.delivery_zone !== 'in')\n  return { ...L, harvest_score: 0, ready: false, why: 'outside delivery zone' };\nlet s = 30; // in zone\nif (['restaurant','hotel','caterer'].includes(L.business_type)) s += W.type;\nif (L.asked_price_or_tasting) s += W.asked;\nif (L.email_opens >= 3) s += W.opens;\nif (L.staff >= 20) s += W.size;\nreturn { ...L, harvest_score: s, ready: s >= 65 };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "0c52cceb-cffa-4f06-ab23-441ca6d382d2",
+   "name": "Score",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    3300,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PATCH",
+    "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $json.contact_id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { harvest_score: String($json.harvest_score) } }) }}",
+    "options": {}
+   },
+   "id": "8e0c0002-e1b8-47bd-bd91-12c529e1d41e",
+   "name": "Write harvest_score",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    3520,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "4d93b362-d7c5-4466-9ea1-684dbc181098",
+       "leftValue": "={{ $('Score').item.json.ready && ['', 'subscriber', 'lead', 'marketingqualifiedlead'].includes($('Score').item.json.lifecyclestage || '') }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "cd3a0bfa-1b95-4f58-8457-b13f6acff6ce",
+   "name": "Ready and below SQL?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    3740,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "PATCH",
+    "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Score').item.json.contact_id }}",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { lifecyclestage: 'salesqualifiedlead' } }) }}",
+    "options": {}
+   },
+   "id": "daa4d173-c908-46ed-9bda-e4923e7decf5",
+   "name": "Lifecycle: Sales qualified lead",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    3960,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date().toISOString(), hs_task_subject: 'Call today: ' + $('Score').item.json.company + ' (score ' + $('Score').item.json.harvest_score + ')', hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hubspot_owner_id: 'YOUR_TOLU_OWNER_ID' }, associations: [ { to: { id: $('Score').item.json.contact_id }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 204 } ] } ] }) }}",
+    "options": {}
+   },
+   "id": "47048718-46a3-48c3-ac57-49256331a436",
+   "name": "Task: Call today",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    4180,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Call today: {{ $('Score').item.json.company }} · score {{ $('Score').item.json.harvest_score }} ({{ $('Score').item.json.lead_source }}). Task created in HubSpot.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "1e08a0ad-c496-4ff1-ad53-f434c287d0ce",
+   "name": "Telegram ping",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    4400,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "f6bb1853-b5c0-4ab3-8afa-e902dc4c7b4d",
+       "name": "contact_id",
+       "value": "={{ $('Score').item.json.contact_id }}",
+       "type": "string"
+      },
+      {
+       "id": "eb208c8c-5266-4144-a5b1-0455a99592e3",
+       "name": "company_id",
+       "value": "={{ $('Score').item.json.company_id }}",
+       "type": "string"
+      },
+      {
+       "id": "7489a6f2-8028-4b70-a999-4da8ef901b4b",
+       "name": "deal_id",
+       "value": "={{ $('Score').item.json.deal_id }}",
+       "type": "string"
+      },
+      {
+       "id": "48236a54-1c41-4510-91ca-1fd13f0bee37",
+       "name": "harvest_score",
+       "value": "={{ $('Score').item.json.harvest_score }}",
+       "type": "number"
+      },
+      {
+       "id": "4428094c-caea-4d42-931a-38f161c45482",
+       "name": "ready",
+       "value": "={{ $('Score').item.json.ready }}",
+       "type": "boolean"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "5ea0a0be-f700-4664-92aa-f49d9c2eb904",
+   "name": "Result",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    4620,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When called by an engine": {
+   "main": [
+    [
+     {
+      "node": "1 Normalise",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "1 Normalise": {
+   "main": [
+    [
+     {
+      "node": "2 Company: search by domain",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "2 Company: search by domain": {
+   "main": [
+    [
+     {
+      "node": "Company found?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Company found?": {
+   "main": [
+    [
+     {
+      "node": "Company: update",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Company: create",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Company: update": {
+   "main": [
+    [
+     {
+      "node": "Company ID",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Company: create": {
+   "main": [
+    [
+     {
+      "node": "Company ID",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Company ID": {
+   "main": [
+    [
+     {
+      "node": "3 Contact: create or update",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "3 Contact: create or update": {
+   "main": [
+    [
+     {
+      "node": "Contact ID",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Contact ID": {
+   "main": [
+    [
+     {
+      "node": "4 Associate contact and company",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "4 Associate contact and company": {
+   "main": [
+    [
+     {
+      "node": "5 Buying intent?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "5 Buying intent?": {
+   "main": [
+    [
+     {
+      "node": "Open deals for this company",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "IDs",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Open deals for this company": {
+   "main": [
+    [
+     {
+      "node": "No open deal?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "No open deal?": {
+   "main": [
+    [
+     {
+      "node": "Deal: create at New enquiry",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "IDs",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Deal: create at New enquiry": {
+   "main": [
+    [
+     {
+      "node": "IDs",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "IDs": {
+   "main": [
+    [
+     {
+      "node": "6 Save CRM IDs in Supabase",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Score",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Score": {
+   "main": [
+    [
+     {
+      "node": "Write harvest_score",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Write harvest_score": {
+   "main": [
+    [
+     {
+      "node": "Ready and below SQL?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ready and below SQL?": {
+   "main": [
+    [
+     {
+      "node": "Lifecycle: Sales qualified lead",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Result",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Lifecycle: Sales qualified lead": {
+   "main": [
+    [
+     {
+      "node": "Task: Call today",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Task: Call today": {
+   "main": [
+    [
+     {
+      "node": "Telegram ping",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Telegram ping": {
+   "main": [
+    [
+     {
+      "node": "Result",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by an engine": [
+   {
+    "json": {
+     "name": "Adaeze Bello",
+     "email": "Procurement@BodijaSuites.example",
+     "phone": "0800 000 0000",
+     "company": "Bodija Suites",
+     "domain": "https://www.bodijasuites.example/",
+     "business_type": "hotel",
+     "lead_source": "Instagram",
+     "consent": "yes",
+     "intent": "buying",
+     "delivery_zone": "in",
+     "asked_price_or_tasting": true,
+     "email_opens": 1,
+     "staff": 40,
+     "customer_id": 1
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,342 @@
+<template data-mod="4.6" id="tpl-4-6">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.6</span>
+    <h1>MCP: Plugging Agents Into Anything</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: n8n MCP Server Trigger and MCP Client Tool, Claude Desktop, Node.js</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">So far, your tools live inside your own n8n agents. The <b>Model Context Protocol (MCP)</b> is an open standard that lets <i>any</i> AI application use them: Claude, ChatGPT, coding assistants and more. The MCP site compares it to a USB-C port for AI. Build a tool once, plug it in everywhere. This module turns Harvest Lane's order lookup into something Tolu can ask about from her own AI assistant.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain MCP's parts: hosts, clients, servers, and the tools, resources and prompts they share.</span></div>
+  <div><b>02</b><span>Expose n8n workflows as MCP tools with the MCP Server Trigger, protected by a token.</span></div>
+  <div><b>03</b><span>Connect Claude Desktop (or another client) to your n8n MCP server.</span></div>
+  <div><b>04</b><span>Use other people's MCP servers from n8n, and judge which ones to trust.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Where is order HL-0042?"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu at her laptop chatting with an AI assistant.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="40" width="140" height="95" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="172" y="54" width="116" height="26" rx="6" fill="var(--grape)"/><text x="230" y="71" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">Where is HL-0042?</text>
+        <rect x="172" y="88" width="116" height="34" rx="6" fill="var(--paper2)"/><text x="230" y="103" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--glitch)">I don't have access to</text><text x="230" y="115" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="9" fill="var(--glitch)">your order system.</text>
+        <rect x="150" y="135" width="160" height="8" rx="3" fill="var(--ink)"/>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Evening</b>Tolu uses an AI assistant all day for writing and planning. But it can't see Harvest Lane's orders.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu switching between five browser tabs: Sheets, n8n, Telegram, Paystack, email.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" text-anchor="middle">
+          <rect x="20" y="40" width="54" height="24" rx="5" fill="var(--volt)"/><text x="47" y="56" fill="#13233A">Sheets</text>
+          <rect x="78" y="40" width="54" height="24" rx="5" fill="var(--spark)"/><text x="105" y="56" fill="#fff">n8n</text>
+          <rect x="136" y="40" width="54" height="24" rx="5" fill="var(--sky)"/><text x="163" y="56" fill="#fff">Telegram</text>
+          <rect x="194" y="40" width="54" height="24" rx="5" fill="var(--sun)"/><text x="221" y="56" fill="#13233A">Paystack</text>
+          <rect x="252" y="40" width="54" height="24" rx="5" fill="var(--glitch)"/><text x="279" y="56" fill="#fff">Email</text>
+        </g>
+        <text x="160" y="120" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="16" fill="var(--ink)">5 tabs for 1 answer</text>
+      </svg>
+      <div class="cap"><b>Today</b>One customer question means five tabs: the sheet, n8n, Telegram, Paystack, email.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage holding a universal plug that fits many sockets.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="190" y="70" width="70" height="44" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="3"/>
+        <g fill="var(--ink)"><rect x="260" y="80" width="26" height="6" rx="2"/><rect x="260" y="98" width="26" height="6" rx="2"/></g>
+        <text x="225" y="97" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#fff">MCP</text>
+        <use href="#sage" x="10" y="40" width="150" height="150"/>
+      </svg>
+      <div class="cap"><b>Sage</b>"Give your order lookup a standard plug, and any AI app that speaks MCP can use it, with your permission."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch offering a free MCP server download with a suspicious grin.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="55" width="140" height="70" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <text x="230" y="82" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" fill="var(--glitch)">FREE MCP SERVER!</text>
+        <text x="230" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">"super-sheets-pro"</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Plugs work both ways. Install my free server. It only needs access to… everything."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>How MCP fits together</h3>
+    <figure class="fig"><svg viewBox="0 0 640 230" role="img" aria-label="A host application such as Claude Desktop contains MCP clients. Each client connects to one MCP server: an n8n server exposing Harvest Lane workflows over HTTP, and a local filesystem server over stdio. Servers offer tools, resources and prompts.">
+      <defs><marker id="mc1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="20" width="220" height="190" rx="14" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="120" y="46" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#fff">Host: Claude Desktop</text>
+      <text x="120" y="64" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">(or Claude Code, an IDE, n8n…)</text>
+      <g font-family="JetBrains Mono,monospace" font-size="10" text-anchor="middle"><rect x="30" y="90" width="180" height="40" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="120" y="115" fill="var(--ink)">MCP client ①</text><rect x="30" y="150" width="180" height="40" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="120" y="175" fill="var(--ink)">MCP client ②</text></g>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <rect x="380" y="70" width="250" height="70" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="505" y="96" fill="#fff">n8n MCP server</text><text x="505" y="114" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9.5">get_order_status · get_today_summary</text><text x="505" y="128" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9.5">(remote, over HTTPS + token)</text>
+        <rect x="380" y="155" width="250" height="56" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="505" y="180" fill="var(--ink)">Filesystem server</text><text x="505" y="198" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9.5">(local, runs on your computer)</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M212 110 C290 110 300 105 376 105" marker-end="url(#mc1)"/><path d="M212 170 C290 170 300 183 376 183" marker-end="url(#mc1)"/></g>
+      <g font-family="JetBrains Mono,monospace" font-size="9.5" fill="var(--muted)" text-anchor="middle"><text x="295" y="98">Streamable HTTP</text><text x="295" y="194">stdio</text></g>
+    </svg><figcaption>One host, many clients, each talking to one server. The server decides what's on offer; the host decides what the model may use.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Tools</b>Actions the model can call (look up an order, create a draft). The same idea as 4.2.</div>
+      <div><b>Resources</b>Data the app can read in (a file, a policy, a record).</div>
+      <div><b>Prompts</b>Ready-made templates the server offers ("Summarise today's orders").</div>
+      <div><b>Transports</b>Local servers usually run on your computer and talk over <i>stdio</i>; remote servers talk over HTTP (n8n's MCP Server Trigger supports SSE and streamable HTTP).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>n8n on both sides of the plug</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Node</th><th>Role</th><th>Use it to…</th></tr></thead>
+      <tbody>
+        <tr><td><b>MCP Server Trigger</b></td><td>n8n becomes an MCP <b>server</b></td><td>Offer your workflows to Claude Desktop, Claude Code, IDEs and other clients. It connects only to tool nodes (such as Call n8n Workflow tools); each tool is listed for the client and run on request.</td></tr>
+        <tr><td><b>MCP Client Tool</b></td><td>n8n's AI Agent becomes a <b>client</b></td><td>Give your n8n agents tools from someone else's MCP server.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Test vs. production URL</b>Like webhooks: the test URL works while you're listening in the editor; the production URL works once the workflow is published.</div>
+      <div><b>Authentication</b>None, Bearer or header. Always use Bearer (or header) with a long random token for anything real.</div>
+      <div><b>Behind a proxy</b>n8n's docs note that MCP's long-lived connections need proxy buffering turned off for the MCP path on nginx-style proxies, and, with several webhook replicas, all <code>/mcp*</code> traffic routed to one replica.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Build your Claude Desktop config</h3>
+    <p>n8n's docs show how to connect Claude Desktop through <code>mcp-remote</code>, a small bridge that runs with Node.js and forwards to your remote server with your token. Fill in your details:</p>
+    <div class="dock" data-mcpcfg>
+      <div class="row">
+        <label>Server name<input data-mc="name" type="text" value="harvest-lane" spellcheck="false"></label>
+        <label>MCP production URL (from the trigger)<input data-mc="url" type="text" value="https://n8n.harvestlane.example/mcp-test/orders" spellcheck="false"></label>
+      </div>
+      <label>Bearer token (stays in your browser)<input data-mc="tok" type="text" value="" placeholder="paste the token you set on the trigger" spellcheck="false" style="font-family:var(--mono);font-size:.84rem;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--paper);color:var(--ink);width:100%"></label>
+      <pre id="mcp-json-4-6" data-o="json"></pre>
+      <div><button type="button" class="btn ghost" data-copy="mcp-json-4-6">Copy config</button></div>
+      <ul data-o="notes" aria-live="polite"></ul>
+    </div>
+    <p style="font-size:.84rem;color:var(--muted)">Based on the example in n8n's MCP Server Trigger docs. The token is masked in the copy so it never ends up in screenshots or chat; type it into the real file yourself.</p>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Claude's apps can also add a remote MCP server as a <i>custom connector</i> by URL. That route connects from Anthropic's cloud, so the server must be reachable on the public internet, and Claude's help centre describes OAuth for sign-in. For a token-protected n8n server on your own machine or VPS, the Desktop config above is the simplest start.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Designing MCP tools</h3>
+    <p>Everything from 4.2 applies, with one difference: <b>you no longer control the agent</b>. Claude, a coding assistant or a colleague's bot might call your tools, so the tools themselves must be safe:</p>
+    <div class="vocab">
+      <div><b>Read-only first</b>Start with lookups (order status, today's summary). Add write tools only with approvals built into the workflow.</div>
+      <div><b>Checks inside the workflow</b>The workflow, not the client, validates inputs, limits results and refuses what it shouldn't do.</div>
+      <div><b>Small, clear outputs</b>Clients may show results to the person directly. Return tidy, human-readable fields.</div>
+      <div><b>One audience per server</b>Tolu's internal server (orders, revenue) and a public server (opening hours, prices) should be separate, with separate tokens.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Trusting other people's servers</h3>
+    <p>An MCP server you install is software that your AI can call, often with your files, accounts or tokens. Before adding one:</p>
+    <div class="vocab">
+      <div><b>Who made it?</b>Prefer official servers from the service itself, or well-known open-source projects you can read.</div>
+      <div><b>What can it touch?</b>Give it the narrowest access possible (one folder, a read-only token).</div>
+      <div><b>Read the tool descriptions</b>Descriptions are instructions the model reads. A malicious server can hide instructions in them ("tool poisoning").</div>
+      <div><b>Approve actions</b>Keep your client's per-tool approval prompts on for anything that writes, sends or deletes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>MCP: What is the Model Context Protocol?</b><small>Read the intro, then the architecture page.</small></span></a>
+    <a class="wcard" href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Anthropic: Introduction to Model Context Protocol (free course)</b><small>Tools, resources and prompts, built hands-on.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcptrigger" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: MCP Server Trigger</b><small>Read: URLs, authentication, the Claude Desktop example and the proxy notes.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: ask Claude about any order</h2></div>
+  <div class="prose"><p><b>The goal.</b> From Claude Desktop, Tolu asks "Where is order HL-0042?" or "How did today go?" and gets real answers from Harvest Lane's data, through two read-only n8n workflows exposed over MCP with a token.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Two read-only sub-workflows</h4>
+      <ul>
+        <li><b>SUB · Order status</b>: input <code>order_id</code> (validated against the pattern <code>HL-0000</code>); returns customer first name, items, total, status, delivery date and rider. No phone numbers or addresses: Tolu can open the sheet for those.</li>
+        <li><b>SUB · Today summary</b>: no input; returns orders, revenue, pending and low-stock counts for today.</li>
+      </ul>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>The MCP server workflow</h4>
+      <p>New workflow <b>HL · MCP (internal)</b>: add <b>MCP Server Trigger</b>, path <code>orders</code>, authentication <b>Bearer</b> with a credential holding a long random token. Attach two <b>Call n8n Workflow</b> tools:</p>
+<pre class="codebox"><span class="k">get_order_status</span>   Returns the status, items, total, delivery date and rider for one
+                   Harvest Lane order. Use when asked about a specific order.
+                   Input order_id, format HL-0000, e.g. HL-0042.
+<span class="k">get_today_summary</span>  Returns today's order count, revenue in naira, pending orders and
+                   low-stock items. Use for "how did today go?" questions. No input.</pre>
+      <p>Publish the workflow and copy the <b>production</b> URL.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Connect Claude Desktop</h4>
+      <p>Install Node.js on Tolu's computer. Generate the config in Card 3 with the production URL, open Claude Desktop → Settings → Developer → Edit Config, paste it, put the real token in place of the dots, save, and restart Claude Desktop. The <code>harvest-lane</code> server and its two tools should appear.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Ask, and watch both sides</h4>
+      <p>Ask Claude: <i>"Where is order HL-0042?"</i>, then <i>"How did today go, and which items are running low?"</i>. Claude asks permission to use each tool; approve it. In n8n's Executions, each tool call appears as a run of the MCP workflow. Then try <i>"Show me all customers' phone numbers"</i>: no tool can do that, so the answer is no.</p>
+      <div class="stats">
+        <div class="stat"><b>2</b><span>read-only tools, built once in n8n</span></div>
+        <div class="stat"><b>1</b><span>place Tolu asks, instead of five tabs</span></div>
+        <div class="stat"><b>0</b><span>phone numbers or addresses exposed</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><p><b>Nodo's note:</b> the same server works for Claude Code, IDEs and other MCP clients. And your <i>n8n</i> agents can use other people's servers through the MCP Client Tool. Plugs work in both directions.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Read-only tools mean any client can use them without risk to the data.</li><li>The workflows validate inputs and leave out sensitive fields.</li><li>A Bearer token over HTTPS keeps strangers out.</li><li>Clear tool descriptions let any client choose correctly.</li><li>The production URL keeps working without the editor open.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>An MCP server with authentication set to None.</li><li>Pasting the test URL into the client.</li><li>Write tools exposed without approvals.</li><li>Returning whole customer records.</li><li>Installing unknown community servers with broad access.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> The plug is in. Something's still wrong. Five cases.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Claude Desktop shows the server, but no tools. Or it worked yesterday afternoon and not today.</td></tr>
+        <tr><td>B</td><td>The server appears, but every call fails with 401.</td></tr>
+        <tr><td>C</td><td>The assistant sees the tools but never picks <code>get_order_status</code>; it says it can't look up orders.</td></tr>
+        <tr><td>D</td><td>Behind the company's nginx proxy, connections hang and time out.</td></tr>
+        <tr><td>E</td><td>A "free Google Sheets MCP server" from a forum started emailing Tolu's sheets to an unknown address.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the config uses the test URL, which only works while listening in the editor. Use the production URL of the published workflow.</li>
+        <li><b>B:</b> the token in the config doesn't match the trigger's Bearer credential (or the header line is malformed). Copy it again exactly, and restart Claude Desktop.</li>
+        <li><b>C:</b> the tool's name or description is vague ("tool1"). Describe what it returns, when to use it, and the input format.</li>
+        <li><b>D:</b> proxy buffering. Per n8n's docs, turn off buffering (and gzip) for the <code>/mcp</code> path.</li>
+        <li><b>E:</b> an untrusted server with broad access. Remove it, revoke its tokens, change exposed credentials, and only install servers you can trust and scope narrowly.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Use an existing MCP server</h4>
+    <ul><li>Connect one well-known MCP server to your AI assistant: for example, the reference filesystem server, limited to a single test folder.</li><li>Ask three questions that need it, and approve each tool call.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The assistant reads and summarises files in that folder only, and you can explain which tools the server offers and what access you gave it.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Two workflows as MCP tools</h4>
+    <ul><li>Build the solved problem: two read-only tools behind an MCP Server Trigger with Bearer auth.</li><li>Connect from Claude Desktop (or another MCP client) and ask five questions.</li><li>Also connect an n8n AI Agent to the same server with the MCP Client Tool.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both clients get correct answers, the executions show each call, and a request without the token is refused.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>An MCP toolkit plan for a client</h4>
+    <ul><li>For a real or imagined client, list 6–10 tools their team would want in an AI assistant. Mark each read-only or write, its data sensitivity, and who may use it.</li><li>Group them into servers by audience, with authentication and approvals for each.</li><li>Build the two most valuable read-only tools.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The plan fits on one page, every write tool has an approval step, and the two built tools work from an MCP client.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What is MCP?</p><div class="opts">
+      <button type="button" data-opt="a">An AI model</button><button type="button" data-opt="b">An open standard for connecting AI apps to tools and data</button><button type="button" data-opt="c">A Claude plan</button><button type="button" data-opt="d">An n8n node only</button></div>
+      <p class="fb" hidden data-why="Build a tool once; any MCP-capable app can use it."></p></div>
+    <div class="q" data-ans="d"><p>2. What can the n8n MCP Server Trigger connect to?</p><div class="opts">
+      <button type="button" data-opt="a">Any node, like a normal trigger</button><button type="button" data-opt="b">Only Google Sheets</button><button type="button" data-opt="c">Chat models</button><button type="button" data-opt="d">Tool nodes, which clients can list and call</button></div>
+      <p class="fb" hidden data-why="It exposes tools; each tool runs on request."></p></div>
+    <div class="q" data-ans="a"><p>3. Claude Desktop sees your server but nothing works the next day. Most likely?</p><div class="opts">
+      <button type="button" data-opt="a">It's using the test URL</button><button type="button" data-opt="b">Claude is down</button><button type="button" data-opt="c">The tools are too fast</button><button type="button" data-opt="d">Node.js is too new</button></div>
+      <p class="fb" hidden data-why="Test URLs work only while listening. Publish and use the production URL."></p></div>
+    <div class="q" data-ans="c"><p>4. Which tool is safest to expose first?</p><div class="opts">
+      <button type="button" data-opt="a">Issue refund</button><button type="button" data-opt="b">Send message to all customers</button><button type="button" data-opt="c">Read-only order status, without phone numbers</button><button type="button" data-opt="d">Edit the price list</button></div>
+      <p class="fb" hidden data-why="Read-only, minimal data. Writes need approvals inside the workflow."></p></div>
+    <div class="q" data-ans="b"><p>5. Why read a third-party server's tool descriptions?</p><div class="opts">
+      <button type="button" data-opt="a">For spelling</button><button type="button" data-opt="b">The model reads them as instructions; malicious ones can hide commands</button><button type="button" data-opt="c">They affect the price</button><button type="button" data-opt="d">They aren't used</button></div>
+      <p class="fb" hidden data-why="Tool poisoning: trust and scope servers carefully."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-6">AUTOMANCY LOG · Lesson 4.6 · MCP
+Date:
+MCP server path, auth type, tools exposed:
+Client(s) connected (Claude Desktop / Claude Code / n8n agent / other):
+Questions asked → tool used → correct?:
+Third-party server used, what access it has, and why I trust it:
+A problem I hit and the fix:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>MCP is a standard plug between AI apps (hosts and clients) and tools and data (servers).</li>
+      <li>Servers offer tools, resources and prompts; local via stdio, remote via HTTP.</li>
+      <li>n8n's MCP Server Trigger exposes tool nodes; the MCP Client Tool consumes other servers.</li>
+      <li>Production URL, HTTPS and a Bearer token, always.</li>
+      <li>You don't control the client, so put safety inside the workflow: read-only first, minimal data.</li>
+      <li>Trust third-party servers like software you install: check who made them, and scope them narrowly.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank" rel="noopener">Anthropic: Introduction to Model Context Protocol (free)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/mcp-build-rich-context-ai-apps-with-anthropic/" target="_blank" rel="noopener">DeepLearning.AI: MCP, Build Rich-Context AI Apps with Anthropic</a></li>
+    <li><span class="kind">Text</span><a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank" rel="noopener">modelcontextprotocol.io: introduction and architecture</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcptrigger" target="_blank" rel="noopener">n8n Docs: MCP Server Trigger</a></li>
+    <li><span class="kind">Text</span><a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp" target="_blank" rel="noopener">Claude Help: custom connectors using remote MCP</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+MCP+server+trigger+tutorial" target="_blank" rel="noopener">YouTube: n8n MCP Server Trigger tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run one shared, read-only n8n MCP server for the class (fake data, one token per learner). Everyone connects their own client in the first 20 minutes. Then hand out a "suspicious server" description with a poisoned tool description and ask teams to spot the hidden instruction. Most will miss it the first time, which is the point.</p>
+  </div>
+</section>
+
+</article>
+</template>

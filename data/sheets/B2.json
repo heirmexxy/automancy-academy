@@ -1,0 +1,67 @@
+{
+  "id": "B2",
+  "boss": true,
+  "intro": "<p>Use this guide after you've built Receipt-to-Books, to check your submission against the 100-point rubric before a reviewer does. Each row describes what full, partial and low marks look like, so learners and reviewers can score the same evidence the same way. You win at 80 points.</p>",
+  "rows": [
+    {
+      "area": "Accuracy",
+      "full": "The 12-document test report shows expected vs actual route for every document, and at least 11 of 12 match (for example #7, #8 and #9 in Needs_Review with reasons, #10 skipped as not_a_receipt).",
+      "partial": "9 or 10 of 12 documents take the expected route, or the report lists routes without showing the reason for each review item.",
+      "low": "Fewer than 9 documents route correctly, or the 12 tests weren't run and logged."
+    },
+    {
+      "area": "No double counting",
+      "full": "Document #2 (FG-0192 resent) stops at the data store check and is logged; two genuine same-day fuel purchases for the same amount both appear in Expenses; a forwarded copy of one fuel receipt is stopped.",
+      "partial": "Invoices with numbers are deduplicated, but numberless receipts either merge two real purchases or let a forwarded copy through.",
+      "low": "No dedupe key or data store check; resent documents are counted twice."
+    },
+    {
+      "area": "Review loop",
+      "full": "Each doubtful item reaches Needs_Review and Tolu's email with a clear reason and source link; after approval, #12 moves into Expenses once (a second Scenario 2 run doesn't add it again); Rejected rows stay out and are logged.",
+      "partial": "Items reach review, but reasons are vague, or approved rows can be moved twice, or Rejected rows aren't handled.",
+      "low": "No review tab or no Scenario 2; doubtful items are saved straight to Expenses or lost."
+    },
+    {
+      "area": "Monthly P&amp;L",
+      "full": "For a test month, revenue, cost of goods, gross profit and margin, expenses by category and net profit match a hand calculation; VAT is shown separately; month-on-month change is shown; the email and Monthly_PL row arrive at 07:00 on the 1st (scheduled run in history).",
+      "partial": "Totals are correct but VAT is mixed in, the comparison with last month is missing, or the run was only triggered by hand.",
+      "low": "Figures don't match a hand check, the date range is wrong (for example it includes this month), or no report is produced."
+    },
+    {
+      "area": "Reliability",
+      "full": "Every external module (Gmail, Drive, AI, HTTP, Sheets) has a handler; AI and HTTP failures alert and Break with retries; a bad attachment is logged and ignored; an outage test (for example AI provider unreachable) loses no documents and the Errors tab shows it.",
+      "partial": "Handlers exist on the AI step only, or failures are logged but nobody is alerted, or no outage test was run.",
+      "low": "No error handlers; a failure stops the scenario silently or loses documents."
+    },
+    {
+      "area": "Curveballs",
+      "full": "All three are handled with evidence: numberless receipts have a dedupe key that keeps genuine repeats; a two-invoice PDF becomes two Expenses rows (or goes to review if one is missed); the P&amp;L shows figures ex VAT, VAT separately, and change by amount and %, plus gross margin %.",
+      "partial": "Two of the three curveballs are handled, or all three are addressed in writing but only partly shown working.",
+      "low": "One or none of the curveballs is handled."
+    },
+    {
+      "area": "Report and demo",
+      "full": "A test report with all 12 documents, credits used and AI cost per document; a monthly estimate at 120 documents with the plan it needs; a 3-minute video ending with the P&amp;L email.",
+      "partial": "The report or the cost estimate is missing a part (for example no AI cost per document), or the video runs well over or skips the P&amp;L.",
+      "low": "No report, no estimate or no video."
+    }
+  ],
+  "evidence": [
+    "Link or screenshots of the books sheet: Expenses, Expense_Lines, Needs_Review, Errors and Monthly_PL, with validation on category and status.",
+    "Screenshots of the three scenarios (intake, review, monthly) showing every module and its error handlers.",
+    "The 12-document test report: expected vs actual route, reasons for review items, credits used and AI cost per document.",
+    "Data store screenshot of stored dedupe keys, plus history showing #2 stopped and two same-day fuel purchases both kept.",
+    "The P&amp;L email and Monthly_PL row for a test month, with a hand calculation alongside.",
+    "Outage test evidence: the alert email, the Errors row and the documents completing after recovery.",
+    "Curveball notes: the dedupe key for numberless receipts, the two-invoice PDF result, and the ex-VAT and month-on-month format.",
+    "A 3-minute demo video ending with the P&amp;L email, and the monthly credit estimate with the plan it needs."
+  ],
+  "mistakes": [
+    "A dedupe key for receipts that merges two genuine same-day fuel purchases, or one so unique (such as the email ID alone) that a forwarded copy slips through.",
+    "AI output saved without arithmetic checks, so a misread digit reaches the books.",
+    "A last-month date range that includes this month or misses the 1st, so the P&amp;L totals are wrong.",
+    "VAT mixed into costs instead of stored separately, so ex-VAT figures and gross margin are off.",
+    "Error handlers on the AI step only; a Sheets or Gmail failure loses a document silently.",
+    "Real receipts, bank details or customer data in the test documents or demo video instead of self-made samples."
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "B1",
+  "boss": true,
+  "intro": "<p>Use this guide to score the Lead Machine against the 100-point rubric; 80 wins. Every mark needs evidence: the 12-lead test report, Zap history, the Leads sheet and the demo. Different designs are fine if the results match the brief.</p>",
+  "rows": [
+    {
+      "area": "Accuracy",
+      "full": "11 or 12 of the 12 test leads land in the expected tier (e.g. lead 9's ₦1.5m monthly becomes about 346,000 weekly and scores warm 6; lead 11 scores 5 with no budget), and lead 8 shows Filtered in Zap history with no Leads row.",
+      "partial": "8–10 leads correct, usually monthly budgets left unconverted, Agbowo or Ogbomoso treated as inside the zone, or the test lead saved as cold instead of filtered.",
+      "low": "Fewer than 8 correct, tiers guessed by the AI instead of calculated by code, or no test report."
+    },
+    {
+      "area": "Speed",
+      "full": "Intake starts from Catch Raw Hook (instant); Zap history timestamps show acknowledgements within 15 minutes and hot alerts within 5 for every test lead.",
+      "partial": "Emails arrive within 15 minutes but the hot alert depends on a polling step or a sheet trigger, so some alerts take longer than 5 minutes.",
+      "low": "Intake polls a sheet or form, or timings aren't shown."
+    },
+    {
+      "area": "Follow-up",
+      "full": "Warm leads get exactly one follow-up after the 3-day delay; a warm lead that replied (status Replied via Zap 2) gets none; status moves Contacted → Followed up and followed_up_at is filled.",
+      "partial": "The follow-up sends, but there's no re-check of status after the delay, or replied leads were never tested.",
+      "low": "No follow-up, follow-ups to hot or cold leads, or more than one per lead."
+    },
+    {
+      "area": "Data",
+      "full": "Every lead has a Leads row with lead_id, received_at, a numeric weekly_budget, score, tier and status from the dropdowns; contacted_at and status update as emails go out and replies come in.",
+      "partial": "Rows exist but budgets are text, statuses never change from New, or dates are in mixed formats.",
+      "low": "Leads missing from the sheet, or one free-text column holding everything."
+    },
+    {
+      "area": "Safety",
+      "full": "No automatic email mentions a price or discount; spam and test leads receive nothing; the hook URL and any token or keys are kept out of screenshots, the sheet and the video.",
+      "partial": "One email template edges towards a promise (\"special rates\"), or spam gets a polite reply.",
+      "low": "Prices or discounts in automatic emails, spam emailed back, or keys or the hook URL visible in evidence."
+    },
+    {
+      "area": "Resilience",
+      "full": "All three curveballs handled and shown: monthly and missing budgets (÷ 4.33, empty → 0); a Settings tab (or similar) switches alert_to and caller_name with one cell edit; a duplicate-email check and honeypot stop a 40-lead flood before AI and email tasks.",
+      "partial": "Two curveballs handled, or the Tolu-away change hard-coded into the Zap instead of being switchable.",
+      "low": "One or no curveballs handled."
+    },
+    {
+      "area": "Report and demo",
+      "full": "A test report with expected vs actual tier, emails, alerts and tasks per lead for all 12; a monthly estimate at 60 leads under about 500 tasks, built from Zap history; a video of about two minutes showing a hot lead, its email, alert and Leads row.",
+      "partial": "Report or estimate incomplete (no tasks per lead, guessed numbers) or the video runs long or skips the alert.",
+      "low": "No report, no estimate, or no video."
+    }
+  ],
+  "evidence": [
+    "The Leads sheet (test data only) with the 12 test leads, showing score, tier, status and dates.",
+    "The AI extraction spec: prompt, typed output fields and its results on the 12 leads.",
+    "The scoring Code step and a screenshot of its output for at least two leads.",
+    "Screenshots of Zap 1 (with Paths), Zap 2 and the warm follow-up steps, hook URL hidden.",
+    "Zap history screenshots: one per tier, the filtered test lead, and a replied lead skipped at follow-up.",
+    "The test report table: expected vs actual tier, emails, alerts and tasks per lead, plus the monthly task estimate.",
+    "Short notes and screenshots showing how each curveball was handled.",
+    "A two-minute screen recording of a hot lead going through end to end."
+  ],
+  "mistakes": [
+    "Letting the AI decide the tier instead of extracting fields and scoring with code.",
+    "Not converting monthly budgets or crashing on empty budgets.",
+    "Follow-up with no status re-check after the delay, so leads who replied still get chased.",
+    "Spam or the test lead receiving an acknowledgement email.",
+    "Task estimate guessed, or the duplicate check placed after the AI step so a flood still burns tasks.",
+    "The hook URL, token or real contact details visible in screenshots or the demo."
+  ]
+}

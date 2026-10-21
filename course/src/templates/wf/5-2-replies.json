@@ -1,0 +1,811 @@
+{
+ "name": "HL · Prospects · sort replies",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Prospects: sort replies (Lesson 5.2)\nEvery reply in the outreach inbox is classified: interested, not now, stop, out of office, bounce, other.\n- stop and bounce -> straight to Suppression (checked before every send).\n- interested -> Telegram alert to Tolu with the thread and your booking link.\n- every outcome updates Prospects (reply_type), which also stops the follow-up.\n\nCredentials: Gmail (outreach inbox) on the trigger; OpenAI; Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID, YOUR_BOOKING_LINK, YOUR_MODEL.",
+    "height": 360,
+    "width": 480
+   },
+   "id": "06c65038-9c14-495d-b4d7-8c1d9b2901c6",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -300
+   ]
+  },
+  {
+   "parameters": {
+    "pollTimes": {
+     "item": [
+      {
+       "mode": "everyMinute"
+      }
+     ]
+    },
+    "simple": false,
+    "filters": {
+     "q": "in:inbox -from:me"
+    },
+    "options": {}
+   },
+   "id": "773d1de8-48f4-45e5-a9b4-451904df2f21",
+   "name": "Gmail Trigger",
+   "type": "n8n-nodes-base.gmailTrigger",
+   "typeVersion": 1.1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const from = ($json.from?.value?.[0]?.address || '').toLowerCase();\nconst text = String($json.text || '').slice(0, 4000);\nconst isDaemon = /mailer-daemon|postmaster/.test(from);\n// For a bounce, the address that failed is in the body.\nconst found = (text.match(/[\\w.+-]+@[\\w-]+\\.[\\w.-]+/g) || []).map(e => e.toLowerCase()).filter(e => !/mailer-daemon|postmaster/.test(e));\nreturn { email: isDaemon ? (found[0] || '') : from, subject: $json.subject || '', text, threadId: $json.threadId || '' };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "99e9ed37-2d6f-41f1-95fd-4eb9a34dceaa",
+   "name": "Prepare reply",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "inputText": "=From: {{ $json.email }}\nSubject: {{ $json.subject }}\n\n{{ $json.text }}",
+    "categories": {
+     "categories": [
+      {
+       "category": "interested",
+       "description": "Wants a sample, prices, a call or a meeting"
+      },
+      {
+       "category": "not now",
+       "description": "Polite no for now, maybe later"
+      },
+      {
+       "category": "stop",
+       "description": "Asks to stop, unsubscribe, remove them, or not to be contacted (including just STOP)"
+      },
+      {
+       "category": "out of office",
+       "description": "Automatic out-of-office or holiday reply"
+      },
+      {
+       "category": "bounce",
+       "description": "Delivery failure from a mail server: address not found, mailbox unavailable"
+      },
+      {
+       "category": "other",
+       "description": "Anything else"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "df08c5c0-26fe-4f2f-8ee5-4f073efdd022",
+   "name": "Sort reply",
+   "type": "@n8n/n8n-nodes-langchain.textClassifier",
+   "typeVersion": 1,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "33c58fe2-0a4b-4c7d-a8a3-5da40aa2b352",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    440,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "28fbeed7-d3a6-4ee6-8cd2-336904e6468f",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "c3b5bc0d-1c16-49aa-8d68-fa3d4bd14508",
+       "name": "reply_type",
+       "value": "interested",
+       "type": "string"
+      },
+      {
+       "id": "5c80a7ce-4678-47ae-9a41-f0d297eda877",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "65bb69ee-f84f-4e24-a8e1-c937079e65c7",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "c9469113-ddb7-4687-8ce2-8c0ef3644774",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "4ed2f0b4-e208-4e2a-a079-17e5a0c49531",
+   "name": "Type: interested",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    -450
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "26f49974-98a2-4625-ada5-6633686859fe",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "991a0f5b-65dd-4c08-8be4-86c3ae3aa7ab",
+       "name": "reply_type",
+       "value": "not now",
+       "type": "string"
+      },
+      {
+       "id": "e4a5bc84-ae51-4bea-b972-b3d5e081286a",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "a7aa4e94-4a8e-4b89-95ea-2b13fa2c4f9b",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "f793e8c9-9e2c-413d-8809-acc2fcc46bc9",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "6262cd4b-6669-49f5-ac06-431ed13f5288",
+   "name": "Type: not now",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    -270
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "5cc56f63-e334-4bf2-8030-e9b865e950fe",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "3e891269-9728-4e15-805b-51890859db96",
+       "name": "reply_type",
+       "value": "stop",
+       "type": "string"
+      },
+      {
+       "id": "f775af87-8c33-4235-b96a-597929102d4e",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "6c00e5e9-e12f-4082-a731-5e1b8d9a36f2",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "3229288f-d993-408c-b0d8-5db21bb6186c",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "c3deefba-0fe7-40b6-8980-fe1c41955d09",
+   "name": "Type: stop",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "fca5d17f-79b9-4a69-9450-09c1b0f1189c",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "9beb8010-91fe-47e5-b2b4-5998911526cd",
+       "name": "reply_type",
+       "value": "out of office",
+       "type": "string"
+      },
+      {
+       "id": "b179b987-bd66-4b3a-9ee5-e0437e04f173",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "e1af10d2-47b4-4a2d-92ab-d3a3752019aa",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "04a6a164-e141-460d-8b46-2adafaff49b3",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "d9c3b8ef-17ab-45a4-ae17-de87674d4fb6",
+   "name": "Type: out of office",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "25de7c2c-7343-453c-bb35-adc442cf5e11",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "6ccc03e3-2d3e-4660-b7bb-886ab44be525",
+       "name": "reply_type",
+       "value": "bounce",
+       "type": "string"
+      },
+      {
+       "id": "05156c16-33f9-4cf0-a842-ced8b6a7418b",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "123e709a-266f-473d-ac39-cf9e04274dff",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "2dba6006-03ac-40a2-a43c-2657fdf74991",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "ba9a9739-cb0b-437a-b523-88ee16eb4a9b",
+   "name": "Type: bounce",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    270
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "aaec8c51-4279-4ce4-921f-51286f8d9ef3",
+       "name": "business_email",
+       "value": "={{ $('Prepare reply').item.json.email }}",
+       "type": "string"
+      },
+      {
+       "id": "f47aaf44-c0e9-4341-8500-451273437b2c",
+       "name": "reply_type",
+       "value": "other",
+       "type": "string"
+      },
+      {
+       "id": "b8bf4845-9e80-4eb6-bdeb-67dbe66e8fdd",
+       "name": "replied_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      },
+      {
+       "id": "85ce251e-f216-4395-b5c2-2483f8435237",
+       "name": "snippet",
+       "value": "={{ $('Prepare reply').item.json.text.slice(0, 300) }}",
+       "type": "string"
+      },
+      {
+       "id": "996f22f8-d728-4c5b-bfa0-d2d0a9d0d552",
+       "name": "threadId",
+       "value": "={{ $('Prepare reply').item.json.threadId }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "62a4e25e-dc37-4efe-b8f5-a23f181f19ae",
+   "name": "Type: other",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    450
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "e3dc9268-7734-477f-b0e8-4919b3345c5d",
+          "leftValue": "={{ $json.reply_type }}",
+          "rightValue": "stop",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         },
+         {
+          "id": "2c3cdd13-1e90-4ab7-9a99-87893dc841d9",
+          "leftValue": "={{ $json.reply_type }}",
+          "rightValue": "bounce",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "or"
+       },
+       "renameOutput": true,
+       "outputKey": "suppress"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "71b8140c-c568-4cc1-86ad-9b4aada20e9e",
+          "leftValue": "={{ $json.reply_type }}",
+          "rightValue": "interested",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "interested"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "extra",
+     "renameFallbackOutput": "update only"
+    }
+   },
+   "id": "8ccb9aa9-b0ed-4e29-a1e6-b0f3b2906901",
+   "name": "What next?",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Suppression",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "email": "={{ $json.business_email }}",
+      "reason": "={{ $json.reply_type }}",
+      "date": "={{ $now.toISODate() }}"
+     },
+     "matchingColumns": [],
+     "schema": [
+      {
+       "id": "email",
+       "displayName": "email",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "reason",
+       "displayName": "reason",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "date",
+       "displayName": "date",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "62b9e99b-50ab-47d6-b2cb-02a711b9c06d",
+   "name": "Add to Suppression",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Interested reply from {{ $json.business_email }}:\n\n{{ $json.snippet }}\n\nThread: https://mail.google.com/mail/u/0/#all/{{ $json.threadId }}\nReply with your booking link: YOUR_BOOKING_LINK",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "a0d8f283-4dc4-4e1a-89f2-6c84e35f7d31",
+   "name": "Tell Tolu: interested",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "business_email": "={{ $('What next?').item.json.business_email }}",
+      "reply_type": "={{ $('What next?').item.json.reply_type }}"
+     },
+     "matchingColumns": [
+      "business_email"
+     ],
+     "schema": [
+      {
+       "id": "business_email",
+       "displayName": "business_email",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "reply_type",
+       "displayName": "reply_type",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "b7a6901b-4b12-46fe-8a56-7d80d117ca2b",
+   "name": "Update Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1320,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Sort reply": {
+   "main": [
+    [
+     {
+      "node": "Type: interested",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Type: not now",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Type: stop",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Type: out of office",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Type: bounce",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Type: other",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: interested": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: not now": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: stop": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: out of office": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: bounce": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Type: other": {
+   "main": [
+    [
+     {
+      "node": "What next?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "What next?": {
+   "main": [
+    [
+     {
+      "node": "Add to Suppression",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Tell Tolu: interested",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Update Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Add to Suppression": {
+   "main": [
+    [
+     {
+      "node": "Update Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Tell Tolu: interested": {
+   "main": [
+    [
+     {
+      "node": "Update Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Sort reply",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Gmail Trigger": {
+   "main": [
+    [
+     {
+      "node": "Prepare reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Prepare reply": {
+   "main": [
+    [
+     {
+      "node": "Sort reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

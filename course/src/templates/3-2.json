@@ -1,0 +1,119 @@
+{
+  "id": "3.2",
+  "items": [
+    {
+      "file": "3-2-order-messages.json",
+      "name": "HL · Tomorrow's order messages → Outbox",
+      "what": "Gets tomorrow's orders, looks up each customer, builds a WhatsApp-ready message and a wa.me click-to-chat link per order, and appends them to an Outbox sheet without sending anything.",
+      "setup": [
+        "Create one Google Sheet with three tabs: Orders (order_id, customer_id, items, total, delivery_date as YYYY-MM-DD), Customers (customer_id, name, phone, area) and Outbox (order_id, phone, message, wa_link). Use test data only, with phones like +2348000000001.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" and select it in Orders, Find customer and Outbox.",
+        "Replace YOUR_SHEET_ID in all three Google Sheets nodes with your sheet's ID.",
+        "The Orders and Find customer nodes have pinned sample data. Keep it to build and test; unpin both (pin icon in the Output panel) when you want to read your real sheet.",
+        "When it works, replace the Manual Trigger with a Schedule Trigger at 18:00 and publish."
+      ],
+      "test": "Click Execute workflow with the pinned data: Outbox gets three rows, each with a different customer (Mrs Adebayo, Mr Okafor, Iya Basira), their own order number, a formatted total such as ₦34,000, and a wa.me link. To see the missing-customer case, unpin Find customer, add an Orders row for tomorrow whose customer_id isn't in Customers, and run again: that order still reaches the Outbox with Hello Customer instead of disappearing.",
+      "walk": {
+        "title": "Build it: a WhatsApp-ready message for every order",
+        "sample": "Three orders for tomorrow · HL-0071 Mrs Adebayo ₦34,000 · HL-0072 Mr Okafor ₦4,000 · HL-0073 Iya Basira ₦21,000",
+        "steps": [
+          {
+            "at": "Manual Trigger",
+            "say": "We build with a Manual Trigger, so nothing runs on its own while we work. Once it's right, we swap in a schedule at six in the evening.",
+            "show": [
+              "Manual Trigger (later: Schedule Trigger 18:00)"
+            ]
+          },
+          {
+            "at": "Orders",
+            "say": "Get the rows from the Orders tab where the delivery date is tomorrow. Rename the node Orders first, because expressions refer to nodes by name.",
+            "show": [
+              "Google Sheets › Get Row(s) · Sheet: Orders",
+              "delivery_date = {{ $today.plus({ days: 1 }).toISODate() }}"
+            ],
+            "data": "3 items · HL-0071, HL-0072, HL-0073"
+          },
+          {
+            "at": "Orders",
+            "say": "Execute it once, then pin the output. From now on we build without calling Google, and we can edit the pinned data to invent test cases.",
+            "show": [
+              "Output panel: pin icon"
+            ],
+            "data": "pinned · 3 orders"
+          },
+          {
+            "at": "Find customer",
+            "say": "Look up each order's customer on the Customers tab. It runs once per order, and each result stays linked to its own order.",
+            "show": [
+              "Get Row(s) · Sheet: Customers",
+              "customer_id = {{ $json.customer_id }}"
+            ],
+            "data": "3 items · Mrs Adebayo, Mr Okafor, Iya Basira"
+          },
+          {
+            "at": "Find customer",
+            "say": "Turn on Always Output Data in its settings. Otherwise an order with an unknown customer silently disappears.",
+            "show": [
+              "Settings: Always Output Data ✓"
+            ]
+          },
+          {
+            "at": "Build message",
+            "say": "In Build message, dollar json is the customer, because that's the node just before. To reach the order, we follow the item link back with Orders dot item.",
+            "show": [
+              "order_id: {{ $('Orders').item.json.order_id }}",
+              "phone: {{ $json.phone }}"
+            ]
+          },
+          {
+            "at": "Build message",
+            "say": "The message mixes text and expressions: the name with a fallback, the items, a total with proper commas, and a friendly delivery day.",
+            "show": [
+              "Hello {{ $json.name ?? 'Customer' }}",
+              "Total: ₦{{ …total.toLocaleString('en-NG') }}",
+              "Delivery: …toFormat('cccc d LLL')"
+            ],
+            "data": "Hello Mrs Adebayo · ₦34,000 · Tuesday 6 Oct"
+          },
+          {
+            "at": "Build message",
+            "say": "Use dot item, not dot first. First would give every message item zero's data. Step through items zero, one and two in the preview to be sure each is different.",
+            "show": [
+              "$('Orders').item ✓ · .first() ✗",
+              "Preview: items 0, 1, 2"
+            ]
+          },
+          {
+            "at": "Add WhatsApp link",
+            "say": "Fields in one Edit Fields node can't see each other, so a second node builds the one-tap link from the finished message. WhatsApp wants the number without the plus, and the text URL-encoded.",
+            "show": [
+              "wa_link: https://wa.me/{{ ($json.phone ?? '').replace('+', '') }}",
+              "?text={{ encodeURIComponent($json.message) }}",
+              "Include Other Input Fields: on"
+            ],
+            "data": "wa.me/2348000000001?text=Hello…"
+          },
+          {
+            "at": "Outbox",
+            "say": "Append each message to the Outbox tab. Nothing is sent yet; Tolu reviews and taps the link.",
+            "show": [
+              "Google Sheets › Append Row · Sheet: Outbox",
+              "Mapping: Map Automatically",
+              "order_id · phone · message · wa_link"
+            ],
+            "data": "3 rows"
+          },
+          {
+            "at": "Find customer",
+            "say": "Now test the edge case: add a pinned order whose customer doesn't exist. Thanks to Always Output Data, it still reaches the Outbox as Hello Customer, so Tolu can fix the record.",
+            "show": [
+              "4th order · unknown customer_id"
+            ],
+            "data": "4 orders, 4 messages, 0 mix-ups"
+          }
+        ],
+        "end": "Execute the workflow with the pinned orders and check that each Outbox row has its own customer, order number and total."
+      }
+    }
+  ]
+}

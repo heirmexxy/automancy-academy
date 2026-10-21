@@ -1,0 +1,79 @@
+{
+  "name": "HL · Forget old chats",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Forget old chats\nLesson 4.3. Daily clean-up: deletes chat memory rows older than 30 days.\n\n**Credential:** Postgres (the same one the agent's memory uses).\n\nCheck your table's columns first (Supabase table editor). n8n's memory table may have no timestamp column: if so, add one before relying on this:\nALTER TABLE hl_chat_memory ADD COLUMN created_at timestamptz DEFAULT now();",
+        "height": 340,
+        "width": 380
+      },
+      "id": "4fa93e72-c1af-40fe-820d-8ea75ed33d59",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "id": "8cfbe28f-c576-432b-be9c-1310dce3efb6",
+      "name": "Every day at 03:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM hl_chat_memory WHERE created_at < now() - interval '30 days';",
+        "options": {}
+      },
+      "id": "71184e84-5220-4ec6-a331-30b77ddaa402",
+      "name": "Delete chats older than 30 days",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        240,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Every day at 03:00": {
+      "main": [
+        [
+          {
+            "node": "Delete chats older than 30 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

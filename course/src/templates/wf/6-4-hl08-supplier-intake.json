@@ -1,0 +1,294 @@
+{
+  "name": "HL·08 Supplier form (n8n side)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·08 Supplier form: n8n side (lesson 6.4)\nThe form and Zap stay in ZAPIER (Tolu's assistant edits them). The Zap POSTs each submission here with a shared secret header. n8n validates, stores it as pending, and asks Tolu to approve.\nContract: {\"business_name\",\"contact_name\",\"phone\",\"email\",\"products\",\"area\"} + header x-hl-secret.\n\nTable: suppliers(id serial, business_name, contact_name, phone, email, products, area, status, created_at).\n**Credentials:** Postgres (Supabase), Telegram. **Environment:** HL_EDGE_SECRET. **Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 320,
+        "width": 400
+      },
+      "id": "f5e10edb-4b4a-4b28-8257-08eb1aa83fc6",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hl-supplier",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "359c4550-2409-44f6-a20e-0dcbf226fa80",
+      "name": "Supplier webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "75f596f2-3056-41b1-83f8-3a6a27b1d1fc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\nconst b = j.body || {};\nconst secretOk = !!$env.HL_EDGE_SECRET && (j.headers || {})['x-hl-secret'] === $env.HL_EDGE_SECRET;\nconst s = v => String(v || '').trim().slice(0, 200);\nconst digits = String(b.phone || '').replace(/\\D/g, '').replace(/^(234|0)/, '');\nconst rec = {\n  business_name: s(b.business_name), contact_name: s(b.contact_name),\n  phone: digits.length === 10 ? '+234' + digits : '',\n  email: /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(s(b.email)) ? s(b.email).toLowerCase() : '',\n  products: s(b.products), area: s(b.area)\n};\nconst missing = Object.entries(rec).filter(([k, v]) => !v && k !== 'email').map(([k]) => k);\nreturn [{ json: { ...rec, ok: secretOk && missing.length === 0, why: !secretOk ? 'bad secret' : missing.length ? 'missing: ' + missing.join(', ') : 'ok' } }];"
+      },
+      "id": "92a05a96-d68c-4a68-ad31-615882429e2a",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "7405f057-3110-4fdc-9c4a-090ad1a3fcb8",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "c0bb0127-e11d-4345-a35e-b22411df166d",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO suppliers (business_name, contact_name, phone, email, products, area, status, created_at)\nVALUES ($1, $2, $3, $4, $5, $6, 'pending', now()) RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.business_name, $json.contact_name, $json.phone, $json.email, $json.products, $json.area ] }}"
+        }
+      },
+      "id": "f84b5663-5c50-4f5e-8f8f-6e745ad9c421",
+      "name": "Store pending supplier",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "80b75ace-f565-4b26-baa9-443c5c6de918",
+      "name": "Reply 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=🧑‍🌾 New supplier: {{ $('Validate').item.json.business_name }} ({{ $('Validate').item.json.area }})\nContact: {{ $('Validate').item.json.contact_name }} {{ $('Validate').item.json.phone }}\nProducts: {{ $('Validate').item.json.products }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 72,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "80ba747a-7e8c-49ae-8c7b-342f8bf89fac",
+      "name": "Ask Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        -90
+      ],
+      "webhookId": "b8654c4b-1be7-4291-a961-0e3174e16494"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE suppliers SET status = $2 WHERE id = $1 RETURNING id)\nINSERT INTO events (workflow, event, detail) SELECT 'HL·08', 'supplier_' || $2, jsonb_build_object('supplier_id', id) FROM u;",
+        "options": {
+          "queryReplacement": "={{ [ $('Store pending supplier').item.json.id, $json.data?.approved === true ? 'approved' : 'rejected' ] }}"
+        }
+      },
+      "id": "31a349c2-6b2e-40bd-85e1-dee2b5309081",
+      "name": "Save decision",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·08', $1, 'edge_rejected', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ why: $json.why }) ] }}"
+        }
+      },
+      "id": "39784479-36bd-4476-b1eb-6fbbf1057b39",
+      "name": "Log rejected",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "rejected",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "7d7081f6-82fa-4cc3-a204-57a23889e02e",
+      "name": "Reply 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        90
+      ]
+    }
+  ],
+  "connections": {
+    "Supplier webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Store pending supplier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store pending supplier": {
+      "main": [
+        [
+          {
+            "node": "Reply 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply 200": {
+      "main": [
+        [
+          {
+            "node": "Ask Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Tolu": {
+      "main": [
+        [
+          {
+            "node": "Save decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rejected": {
+      "main": [
+        [
+          {
+            "node": "Reply 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

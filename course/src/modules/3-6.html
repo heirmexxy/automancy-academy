@@ -1,0 +1,376 @@
+<template data-mod="3.6" id="tpl-3-6">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.6</span>
+    <h1>Errors, Sub-workflows &amp; Logs</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n (Error Trigger, Stop And Error, Execute Sub-workflow), Telegram, Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Every automation fails eventually: an API goes down, a token expires, someone renames a column. Professionals don't build workflows that never fail. They build workflows that <b>fail loudly, recover where they can, and leave a trail</b>. This module gives Harvest Lane a single alarm system for every workflow, a library of reusable pieces, and logs worth reading.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Build one central error workflow that alerts you on Telegram, naming the workflow, node and message.</span></div>
+  <div><b>02</b><span>Choose, node by node, between retrying, continuing and stopping.</span></div>
+  <div><b>03</b><span>Split repeated logic into sub-workflows that many workflows can call.</span></div>
+  <div><b>04</b><span>Read executions, retry failed runs, and set sensible data retention.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Silence at 3 a.m.</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A dark night scene with a server showing a red light and the time 03:12.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="270" cy="40" r="16" fill="#FFF3C4"/>
+        <rect x="120" y="60" width="80" height="110" rx="8" fill="#22344F" stroke="#5A6B85" stroke-width="2"/>
+        <circle cx="180" cy="80" r="6" fill="var(--glitch)"/><circle cx="180" cy="104" r="5" fill="#35C680"/><circle cx="180" cy="128" r="5" fill="#35C680"/>
+        <text x="60" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="18" fill="#FFC53D">03:12</text>
+      </svg>
+      <div class="cap"><b>03:12</b>The supplier's API rejects the nightly price update. The workflow stops. Nobody is told.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer on the phone, annoyed, holding a receipt with the wrong price.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="45" width="120" height="70" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="230" y="74" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">"Your site says</text>
+        <text x="230" y="92" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">₦9,000. I paid ₦12,500!"</text>
+        <use href="#tolu" x="15" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>11:40</b>Hotel Grace's buyer calls, angry. Yesterday's prices are still showing. That's how Tolu finds out.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A phone showing a Telegram alert with a red siren.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="110" y="18" width="100" height="160" rx="14" fill="var(--ink)"/><rect x="118" y="32" width="84" height="130" rx="4" fill="var(--paper)"/>
+        <rect x="124" y="50" width="72" height="56" rx="8" fill="var(--sky)"/>
+        <text x="160" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">🚨 Supplier</text>
+        <text x="160" y="85" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">prices failed</text>
+        <text x="160" y="98" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">03:12 · 429</text>
+      </svg>
+      <div class="cap"><b>Nodo</b>"What you want at 03:12 is this message: which workflow, which node, what went wrong, and a link to the run."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a phone whose alert reads undefined failed at undefined.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="50" width="130" height="64" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <text x="235" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">🚨 undefined</text>
+        <text x="235" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">failed at undefined</text>
+        <use href="#glitch" x="15" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Oh, you'll get an alert. It just won't tell you anything."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Error workflows: one alarm for everything</h3>
+    <p>An <b>error workflow</b> is an ordinary workflow that starts with the <b>Error Trigger</b> node. In any other workflow, open <b>Settings → Error workflow</b> and choose it. From then on, whenever an automatic run of that workflow fails, n8n starts the error workflow and hands it the details.</p>
+    <figure class="fig"><svg viewBox="0 0 640 200" role="img" aria-label="Three workflows, Supplier prices, Customers nightly and Reminders, each point to one shared error workflow, which formats the error, sends a Telegram alert and logs an incident row.">
+      <defs><marker id="er1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <rect x="10" y="20" width="150" height="40" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="45" fill="var(--ink)">Supplier prices</text>
+        <rect x="10" y="80" width="150" height="40" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="105" fill="var(--ink)">Customers nightly</text>
+        <rect x="10" y="140" width="150" height="40" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="165" fill="var(--ink)">Monday reminders</text>
+        <rect x="240" y="75" width="130" height="50" rx="12" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2.5"/><text x="305" y="97" fill="#fff">Error Trigger</text><text x="305" y="113" fill="#fff" font-size="10" font-family="JetBrains Mono,monospace" font-weight="400">HL · Error alerts</text>
+        <rect x="430" y="30" width="190" height="40" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="525" y="55" fill="#fff">Telegram alert</text>
+        <rect x="430" y="130" width="190" height="40" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="525" y="155" fill="#13233A">Incidents sheet</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="6 4"><path d="M162 40 C200 40 200 92 236 95" marker-end="url(#er1)"/><path d="M162 100 H236" marker-end="url(#er1)"/><path d="M162 160 C200 160 200 108 236 105" marker-end="url(#er1)"/></g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M372 92 C400 92 400 50 426 50" marker-end="url(#er1)"/><path d="M372 108 C400 108 400 150 426 150" marker-end="url(#er1)"/></g>
+      <text x="200" y="196" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">Settings → Error workflow</text>
+    </svg><figcaption>Build the alarm once; connect every workflow to it in Settings.</figcaption></figure>
+    <div class="vocab">
+      <div><b>When it runs</b>When an <i>automatic</i> (published) run fails. Failures while you click Execute in the editor show on your screen instead, so test with a real scheduled run.</div>
+      <div><b>Stop And Error</b>A node that fails the run on purpose, with your message, for business rules like "payment total doesn't match". It sets off the error workflow too.</div>
+      <div><b>What it receives</b>One item with two objects: <code>execution</code> (id, url, error, last node) and <code>workflow</code> (id, name). Explore it below.</div>
+    </div>
+    <div class="jsonlab" data-jsonlab>
+      <label class="crit" for="jl-3-6-a">Error Trigger output (based on n8n's documented example)</label>
+      <textarea id="jl-3-6-a" spellcheck="false">{
+  "execution": {
+    "id": "4812",
+    "url": "http://localhost:5678/workflow/7/executions/4812",
+    "error": {
+      "message": "429 - Too Many Requests",
+      "stack": "NodeApiError: …"
+    },
+    "lastNodeExecuted": "Supplier API",
+    "mode": "trigger"
+  },
+  "workflow": {
+    "id": "7",
+    "name": "HL · Supplier prices → Sheet"
+  }
+}</textarea>
+      <span class="jl-status"></span>
+      <div class="pathchips"><button type="button" data-p="workflow.name">workflow.name</button><button type="button" data-p="execution.lastNodeExecuted">execution.lastNodeExecuted</button><button type="button" data-p="execution.error.message">execution.error.message</button><button type="button" data-p="execution.url">execution.url</button><button type="button" data-p="error.message">error.message</button></div>
+      <label class="crit" for="jl-3-6-a-path">Path</label>
+      <input id="jl-3-6-a-path" type="text" value="execution.error.message" spellcheck="false">
+      <div class="jl-out"></div>
+    </div>
+    <p style="font-size:.84rem;color:var(--muted)">If the failure happens in the trigger node itself, the shape is a little different (details sit under <code>trigger</code>, not <code>execution</code>). Use <code>??</code> fallbacks in your alert so it never says nothing.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Write the alert, and beat Glitch's "undefined"</h3>
+    <p>The alert message is a set of expressions. Point them at the wrong place and you get blanks (Telegram shows "undefined"). Fix Glitch's template so both test failures produce a useful alert.</p>
+    <div class="xsim" data-expr='{"input":"Error Trigger","okText":"✓ workflow, node and message all present","badText":"✗ details missing","nodes":{"Error Trigger":[{"execution":{"id":"4812","url":"http://localhost:5678/workflow/7/executions/4812","error":{"message":"429 - Too Many Requests"},"lastNodeExecuted":"Supplier API","mode":"trigger"},"workflow":{"id":"7","name":"HL · Supplier prices → Sheet"}},{"execution":{"id":"4820","url":"http://localhost:5678/workflow/9/executions/4820","error":{"message":"Code doesn&#39;t return items properly"},"lastNodeExecuted":"Rank customers","mode":"trigger"},"workflow":{"id":"9","name":"HL · Customers nightly"}}]},"expect":[["HL · Supplier prices → Sheet","Supplier API","429 - Too Many Requests"],["HL · Customers nightly","Rank customers","return items properly"]]}'>
+      <label class="crit" for="xs-3-6">Telegram message template</label>
+      <textarea id="xs-3-6" spellcheck="false">🚨 {{ $json.workflow_name }} failed at {{ $json.lastNodeExecuted }}: {{ $json.error.message }}</textarea>
+      <div class="btns"><button type="button" class="btn ghost" data-xtpl="xt36-glitch">Glitch's version</button><button type="button" class="btn ghost" data-xtpl="xt36-fix">The fix</button></div>
+      <div class="xout" aria-live="polite"></div>
+    </div>
+    <pre id="xt36-glitch" hidden>🚨 {{ $json.workflow_name }} failed at {{ $json.lastNodeExecuted }}: {{ $json.error.message }}</pre>
+    <pre id="xt36-fix" hidden>🚨 {{ $json.workflow.name }} failed at {{ $json.execution.lastNodeExecuted }}: {{ $json.execution.error.message }} · run {{ $json.execution.url }}</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Per node: retry, continue, or stop?</h3>
+    <p>Every node has a <b>Settings</b> tab. Two settings decide what happens when it fails:</p>
+    <div class="vocab">
+      <div><b>Retry On Fail</b>Try again automatically, with <i>Max Tries</i> and <i>Wait Between Tries</i>. For temporary problems: 429, 5xx, timeouts.</div>
+      <div><b>On Error → Stop Workflow</b>The default. The run fails and the error workflow fires.</div>
+      <div><b>On Error → Continue</b>Pass the error along as normal output and carry on. Only for steps that truly don't matter.</div>
+      <div><b>On Error → Continue (using error output)</b>The node gets a second, red output for failed items. Route them somewhere useful (a Fix list, an alert) while the good items carry on.</div>
+    </div>
+    <p><b>Sort these.</b> For each situation, pick the best setting:</p>
+    <div class="sorter">
+      <div class="sitem" data-ans="retry"><span>The supplier API sometimes answers 503 for a few seconds during its own updates.</span><span class="sb"><button type="button" data-v="retry">Retry</button><button type="button" data-v="errout">Error output</button><button type="button" data-v="stop">Stop + alert</button></span><span class="why" hidden data-t="A temporary server error: retry three times with a few seconds between tries. If it still fails, the run stops and the alert fires."></span></div>
+      <div class="sitem" data-ans="errout"><span>In a run of 200 reminders, 3 phone numbers are invalid and the messaging API rejects them.</span><span class="sb"><button type="button" data-v="retry">Retry</button><button type="button" data-v="errout">Error output</button><button type="button" data-v="stop">Stop + alert</button></span><span class="why" hidden data-t="Retrying a bad number never helps. Send the 3 to the Fix list through the error output; the other 197 still go."></span></div>
+      <div class="sitem" data-ans="stop"><span>The Paystack amount doesn't match the order total.</span><span class="sb"><button type="button" data-v="retry">Retry</button><button type="button" data-v="errout">Error output</button><button type="button" data-v="stop">Stop + alert</button></span><span class="why" hidden data-t="A business rule broke: money is involved. Use Stop And Error with a clear message so a person looks at it now."></span></div>
+      <div class="sitem" data-ans="stop"><span>Google returns 401: the Sheets credential has expired.</span><span class="sb"><button type="button" data-v="retry">Retry</button><button type="button" data-v="errout">Error output</button><button type="button" data-v="stop">Stop + alert</button></span><span class="why" hidden data-t="Retrying a 401 won't fix it. Someone must reconnect the credential, so stop and alert."></span></div>
+      <div class="sitem" data-ans="errout"><span>Writing a "nice to have" analytics row fails, but the customer's receipt must still be sent.</span><span class="sb"><button type="button" data-v="retry">Retry</button><button type="button" data-v="errout">Error output</button><button type="button" data-v="stop">Stop + alert</button></span><span class="why" hidden data-t="Log the failure on the error output (or use Continue) so optional work never blocks the important step."></span></div>
+      <p class="qscore sscore" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Sub-workflows: build once, call everywhere</h3>
+    <p>When several workflows repeat the same steps (normalise a phone, send an alert, look up a customer), move those steps into a <b>sub-workflow</b>:</p>
+    <div class="vocab">
+      <div><b>In the sub-workflow</b>Start with the trigger <b>When Executed by Another Workflow</b>. Define its inputs: named fields (best: like a form), a JSON example, or accept all data.</div>
+      <div><b>In the parent</b>Add <b>Execute Sub-workflow</b>, choose the sub-workflow, and map the inputs. Whatever the sub-workflow's <b>last node</b> outputs comes back to the parent.</div>
+      <div><b>Why bother</b>Fix a bug once and every workflow gets the fix. Long workflows become readable chapters. And, per n8n's docs, sub-workflow runs don't count towards your plan's monthly execution limit.</div>
+      <div><b>Watch out</b>Change a sub-workflow's inputs and every parent must be updated. Name sub-workflows clearly, such as <code>SUB · Normalise phone</code>, and keep a list of who calls them.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Executions: your logbook</h3>
+    <div class="vocab">
+      <div><b>Read a failed run</b>Open <b>Executions</b>, filter by <i>Error</i>, and open a run: each node shows exactly the data it received and produced. Start at the red node and look at its input.</div>
+      <div><b>Retry a failed run</b>From the execution, retry using the workflow as it was or as it is now (after your fix). Check that retrying won't double anything first, such as a second receipt.</div>
+      <div><b>What gets saved</b>In each workflow's settings: save failed runs, save successful runs, save manual runs, and a timeout. Self-hosted n8n prunes old runs automatically; by default it keeps runs up to 336 hours (14 days) old, up to 10,000 of them.</div>
+      <div><b>Logs hold customer data</b>Executions contain names, phones and amounts. Keep only what you need: for busy workflows full of personal data, consider not saving successful runs, and keep failures long enough to investigate.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/build/flow-logic/handle-errors-gracefully" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: handling errors</b><small>Read: creating an error workflow, the error data, and Stop And Error.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: sub-workflows</b><small>Read: the trigger's input modes and how data returns to the parent.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+error+workflow+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n error workflow tutorials</b><small>Watch one that sends the alert to a chat app.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Harvest Lane's alarm system</h2></div>
+  <div class="prose"><p><b>The goal.</b> One error workflow that, whenever any Harvest Lane workflow fails, sends Tolu a Telegram message with the workflow, node, error and a link to the run, and logs the incident. Then prove it works with a deliberate failure.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Create a Telegram bot</h4>
+      <p>In Telegram, message <b>@BotFather</b>, send <code>/newbot</code>, choose a name (e.g. <i>Harvest Lane Alerts</i>) and copy the <b>token</b> it gives you. Treat it like a password. In n8n, create a <b>Telegram</b> credential with that token. Then send your new bot any message ("hi"), so it's allowed to message you back.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Find your chat ID</h4>
+      <p>After messaging your bot, open this address in your browser, with your token in place of <code>&lt;TOKEN&gt;</code>:</p>
+<pre class="codebox">https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</pre>
+      <p>Find <code>"chat":{"id":512349876 …</code> in the reply and note the number. (For a group, add the bot to the group, post a message there, and look again; group IDs start with a minus sign.) This address contains your token, so don't share it or save it in a workflow. Why not use n8n's Telegram Trigger? It needs a public web address to receive messages, which a laptop install doesn't have until 3.8.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Build the error workflow</h4>
+      <p>New workflow <b>HL · Error alerts</b>. Add <b>Error Trigger</b>, then <b>Edit Fields · Format</b>:</p>
+<pre class="codebox"><span class="k">workflow</span>  {{ $json.workflow?.name ?? 'Unknown workflow' }}
+<span class="k">node</span>      {{ $json.execution?.lastNodeExecuted ?? 'trigger' }}
+<span class="k">message</span>   {{ $json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No message' }}
+<span class="k">url</span>       {{ $json.execution?.url ?? '' }}
+<span class="k">time</span>      {{ $now.toFormat('ccc d LLL, HH:mm') }}</pre>
+      <p>Then <b>Telegram · Send Message</b>: Chat ID = yours, Text:</p>
+<pre class="codebox">🚨 {{ $json.workflow }} failed
+Node: {{ $json.node }}
+Error: {{ $json.message }}
+When: {{ $json.time }}
+Open: {{ $json.url }}</pre>
+      <p>Save it. The <code>?.</code> and <code>??</code> make the alert useful even when the error data has an unusual shape.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Connect every workflow to it</h4>
+      <p>In each Harvest Lane workflow (weather, prices, reminders, customers), open <b>Settings → Error workflow</b> and choose <b>HL · Error alerts</b>. Save. Add <b>Retry On Fail</b> (3 tries, 2,000 ms apart) to every node that calls an outside service, so short blips never wake Tolu.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Prove it with a deliberate failure</h4>
+      <p>Create <b>HL · Alarm test</b>: <b>Schedule Trigger</b> (every minute) → <b>Stop And Error</b> with the message <code>Test alarm: if you can read this, alerts work</code>. Set its error workflow to HL · Error alerts, publish it, wait a minute, and check your phone. Then <b>unpublish it</b> immediately.</p>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>error workflow for every Harvest Lane workflow</span></div>
+        <div class="stat"><b>&lt;1 min</b><span>from failure to Tolu's phone</span></div>
+        <div class="stat"><b>0</b><span>alerts for blips that a retry fixed</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><p><b>Bolt's comparison:</b> Zapier emails you about failed Zaps, and Make has its own error handlers and notifications (2.6). In n8n you build the alarm yourself, which means you choose exactly where it goes and what it says.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>One error workflow means one place to improve alerts for everything.</li><li>Retries absorb temporary failures; alerts are only for problems that need a person.</li><li>The alert carries the run link, so diagnosis starts with one tap.</li><li>A deliberate, scheduled failure proves the whole chain, not just the message.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Testing the error workflow with manual runs and concluding it doesn't work.</li><li>Expression paths like <code>$json.error.message</code> that miss <code>execution</code>.</li><li>Forgetting to set the error workflow in each workflow's settings.</li><li>Leaving the every-minute alarm test published.</li><li>Pasting the bot token into a node field instead of a credential.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Six ways I kept your alarm quiet, or made it useless.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The alert arrives but reads "🚨 undefined failed at undefined: undefined".</td></tr>
+        <tr><td>B</td><td>Tolu clicked Execute on a broken workflow ten times. No alert ever came.</td></tr>
+        <tr><td>C</td><td>The Monday reminders failed overnight. Other workflows alert fine; this one didn't.</td></tr>
+        <tr><td>D</td><td>Tolu's phone buzzed 1,440 times yesterday.</td></tr>
+        <tr><td>E</td><td>Alerts arrive every few nights for a 503 that fixes itself a second later.</td></tr>
+        <tr><td>F</td><td>Retrying a failed payment run from Executions sent two customers a second receipt.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the expressions point at <code>$json.workflow_name</code> and <code>$json.error.message</code>. The data lives at <code>$json.workflow.name</code>, <code>$json.execution.lastNodeExecuted</code> and <code>$json.execution.error.message</code>.</li>
+        <li><b>B:</b> error workflows run when automatic runs fail. Manual runs show the error on screen.</li>
+        <li><b>C:</b> that workflow's Settings → Error workflow was never set.</li>
+        <li><b>D:</b> the every-minute "Alarm test" workflow was left published: 60 × 24 = 1,440 alerts.</li>
+        <li><b>E:</b> no Retry On Fail on that HTTP node. Add 3 tries with a short wait; alert only if all fail.</li>
+        <li><b>F:</b> the retry reran steps that had already succeeded. Before retrying, check what already happened, and design steps to be safe to repeat (match on a key, record what was sent).</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Retries on every outside call</h4>
+    <ul><li>Go through every workflow you've built in Track 3 and list each node that calls an outside service.</li><li>Give each one Retry On Fail (3 tries, 2,000 ms) for timeouts and 429/5xx errors, and set the right On Error option, using Card 3's rules (a 401 needs fixing, not retrying).</li><li>Connect every workflow to HL · Error alerts.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You have a table: workflow, node, retry yes/no, on-error choice and a one-line reason. The alarm test has reached your phone once.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Split a long workflow into sub-workflows</h4>
+    <ul><li>Take your longest workflow (the 3.3 reminders or 3.5 customers).</li><li>Move one reusable part, such as phone normalising or message building, into a sub-workflow called <code>SUB · …</code> with defined input fields.</li><li>Call it from the original workflow <i>and</i> from one other workflow.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Both parents produce exactly the same results as before, and changing one line in the sub-workflow changes both.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>An incident log that learns</h4>
+    <ul><li>Extend HL · Error alerts to append each failure to an <b>Incidents</b> sheet: time, workflow, node, message, run URL, and empty columns for cause, fix and minutes to resolve.</li><li>Add a Switch: messages containing "401" or "credential" also email Tolu ("reconnect needed"); others go to Telegram only.</li><li>After a week, fill in the cause and fix for each incident and write three lessons.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every failure in the week has a row with cause and fix, credential problems arrive by email as well, and you've changed at least one workflow because of what the log showed.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. How does a workflow use your error workflow?</p><div class="opts">
+      <button type="button" data-opt="a">You add an Error Trigger to every workflow</button><button type="button" data-opt="b">You choose it in the workflow's Settings → Error workflow</button><button type="button" data-opt="c">n8n finds it automatically by name</button><button type="button" data-opt="d">You call it with an HTTP Request</button></div>
+      <p class="fb" hidden data-why="Each workflow points to its error workflow in Settings."></p></div>
+    <div class="q" data-ans="c"><p>2. Which expression gives the failing node's name in an error workflow?</p><div class="opts">
+      <button type="button" data-opt="a">{{ $json.node }}</button><button type="button" data-opt="b">{{ $json.lastNodeExecuted }}</button><button type="button" data-opt="c">{{ $json.execution.lastNodeExecuted }}</button><button type="button" data-opt="d">{{ $json.workflow.node }}</button></div>
+      <p class="fb" hidden data-why="It's inside the execution object."></p></div>
+    <div class="q" data-ans="a"><p>3. Three of 200 messages fail because of bad phone numbers. Best node setting?</p><div class="opts">
+      <button type="button" data-opt="a">On Error: Continue (using error output) → Fix list</button><button type="button" data-opt="b">Retry 5 times</button><button type="button" data-opt="c">Stop the workflow</button><button type="button" data-opt="d">Delete the three customers</button></div>
+      <p class="fb" hidden data-why="Bad data won't fix itself. Route failed items aside and let the rest succeed."></p></div>
+    <div class="q" data-ans="d"><p>4. What does a sub-workflow send back to its parent?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing</button><button type="button" data-opt="b">Its first node's output</button><button type="button" data-opt="c">An email</button><button type="button" data-opt="d">The output of its last node</button></div>
+      <p class="fb" hidden data-why="The last node's items return to the Execute Sub-workflow node."></p></div>
+    <div class="q" data-ans="b"><p>5. Why think about how long execution data is kept?</p><div class="opts">
+      <button type="button" data-opt="a">It makes workflows faster</button><button type="button" data-opt="b">Executions store customer data, and storage grows</button><button type="button" data-opt="c">n8n deletes workflows otherwise</button><button type="button" data-opt="d">It's required for Telegram</button></div>
+      <p class="fb" hidden data-why="Logs contain personal data and fill the database: keep what you need, for as long as you need it."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-6">AUTOMANCY LOG · Lesson 3.6 · Errors, Sub-workflows & Logs
+Date:
+Error workflow name and alert channel:
+Workflows connected to it (list):
+Alarm test: time it failed → time the alert arrived:
+Nodes given Retry On Fail / error output:
+Sub-workflow created and its callers:
+Execution retention settings chosen (and why):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>One error workflow, connected to every workflow in Settings.</li>
+      <li>Alert with workflow, node, message and run link: <code>$json.execution…</code>.</li>
+      <li>Error workflows fire on automatic runs; test with a scheduled failure.</li>
+      <li>Retry temporary errors; route bad items aside; stop and alert on broken rules.</li>
+      <li>Sub-workflows: build once, call everywhere, name them clearly.</li>
+      <li>Executions are your logbook, and they hold customer data. Set retention on purpose.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/flow-logic/handle-errors-gracefully" target="_blank" rel="noopener">n8n Docs: handling errors and error workflows</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts" target="_blank" rel="noopener">n8n Docs: sub-workflows</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/executions" target="_blank" rel="noopener">n8n Docs: execution data settings (self-hosted)</a></li>
+    <li><span class="kind">Text</span><a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener">Telegram: bot tutorial (BotFather and tokens)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/@n8n-io" target="_blank" rel="noopener">n8n official YouTube channel</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+error+workflow+tutorial" target="_blank" rel="noopener">YouTube: n8n error workflow tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>End the session with a live "fire drill": every learner publishes their alarm test at the same moment and holds up their phone when the alert lands. Anyone whose phone stays quiet debugs with the group: missing setting, wrong chat ID or manual run. Then everyone unpublishes together.</p>
+  </div>
+</section>
+
+</article>
+</template>

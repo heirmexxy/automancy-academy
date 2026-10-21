@@ -1,0 +1,245 @@
+{
+ "name": "HL · Social inbox · forward a comment",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Social inbox: forward a comment (Lesson 5.5)\nLinkedIn and TikTok comments, until API access is approved. Tolu's team opens https://YOUR_N8N_DOMAIN/webhook/hl-forward-comment on their phones, pastes the comment and its link, and it joins the same queue. For these platforms the agent only drafts; a person posts the reply.\n\nThis uses a Webhook + Respond to Webhook form because n8n's Form Trigger isn't in this course's template node list; you can swap in a Form Trigger if you prefer.\n\nPlaceholders: YOUR_FORM_PASSCODE, YOUR_HANDLE_WORKFLOW_ID.",
+    "height": 320,
+    "width": 500
+   },
+   "id": "9c049e24-8435-4f31-82c4-ea3efc077203",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -340
+   ]
+  },
+  {
+   "parameters": {
+    "httpMethod": "GET",
+    "path": "hl-forward-comment",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "46be2e82-b131-4833-a750-354ad450e9ef",
+   "name": "Form page (GET)",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    -180
+   ],
+   "webhookId": "1eb38079-ab81-4a0c-8913-8b8365c1b064"
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Forward a comment</title>\n<style>body{font-family:sans-serif;max-width:480px;margin:24px auto;padding:0 16px}label{display:block;margin-top:12px}input,select,textarea{width:100%;padding:8px;font-size:16px}button{margin-top:16px;padding:10px 16px;font-size:16px}</style></head>\n<body><h2>Forward a comment to the inbox</h2>\n<form method=\"POST\">\n<label>Platform<select name=\"platform\"><option value=\"linkedin\">LinkedIn</option><option value=\"tiktok\">TikTok</option></select></label>\n<label>Link to the comment<input name=\"link\" type=\"url\" required></label>\n<label>Their handle (no phone numbers)<input name=\"author_handle\"></label>\n<label>What they wrote<textarea name=\"text\" rows=\"5\" required></textarea></label>\n<label>Team passcode<input name=\"passcode\" type=\"password\" required></label>\n<button type=\"submit\">Forward</button></form></body></html>",
+    "options": {
+     "responseCode": 200,
+     "responseHeaders": {
+      "entries": [
+       {
+        "name": "Content-Type",
+        "value": "text/html; charset=utf-8"
+       }
+      ]
+     }
+    }
+   },
+   "id": "d1de27f5-2131-4baf-b03f-85f234cd4c01",
+   "name": "Show form",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    220,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "hl-forward-comment",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "e8cd888e-6c17-458a-a21c-ad28e0bacdf4",
+   "name": "Form submitted (POST)",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    180
+   ],
+   "webhookId": "9c7102d7-4581-47c4-b636-735d2b558cb0"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "32c6e0c0-c462-4c9b-a0e0-16732ab421b6",
+       "leftValue": "={{ $json.body.passcode }}",
+       "rightValue": "YOUR_FORM_PASSCODE",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c1daa47c-94f7-4f23-ad75-414e4f458be0",
+   "name": "Passcode correct?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    220,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "Wrong passcode.",
+    "options": {
+     "responseCode": 403
+    }
+   },
+   "id": "a7a0b3da-0c97-4391-a6f6-ae06664645d8",
+   "name": "Wrong passcode",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    360
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "Forwarded. Thank you!",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "13e3df03-f720-4800-84d3-e65b0ab39af7",
+   "name": "Thanks",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const b = $('Form submitted (POST)').first().json.body;\nconst now = new Date().toISOString();\nreturn [{ json: { platform: b.platform === 'tiktok' ? 'tiktok' : 'linkedin', kind: 'comment',\n  item_id: 'form-' + Date.now(), thread_id: b.link, author_handle: b.author_handle || '', text: b.text,\n  source_link: b.link, received_at: now, last_customer_msg_at: now } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "c2d20961-9ef0-4b57-bd9d-e48eac3cad36",
+   "name": "One shape",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    660,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_HANDLE_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "0d2d8f11-d5b6-471a-ac74-407fcd7256da",
+   "name": "SUB · Social inbox · handle",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    880,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Form page (GET)": {
+   "main": [
+    [
+     {
+      "node": "Show form",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Form submitted (POST)": {
+   "main": [
+    [
+     {
+      "node": "Passcode correct?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Passcode correct?": {
+   "main": [
+    [
+     {
+      "node": "Thanks",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Wrong passcode",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Thanks": {
+   "main": [
+    [
+     {
+      "node": "One shape",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One shape": {
+   "main": [
+    [
+     {
+      "node": "SUB · Social inbox · handle",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

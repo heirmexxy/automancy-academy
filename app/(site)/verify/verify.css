@@ -1,0 +1,27 @@
+/* Certificate card and verification pages (also used by components/account/Certificate.tsx). */
+.cert-card{position:relative;background:var(--card);border:3px solid var(--ink);border-radius:18px;padding:clamp(18px,4vw,36px);display:grid;gap:16px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;max-width:820px}
+.cert-card::before{content:"";position:absolute;inset:10px;border:1.5px solid var(--line);border-radius:12px;pointer-events:none}
+.cert-card > *{position:relative;min-width:0}
+.cert-card .cert-org{font-family:var(--mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cert-card h2{font-family:var(--display);font-size:clamp(1.4rem,4vw,2.1rem);margin:2px 0 0;line-height:1.1}
+.cert-card .cert-name{font-family:var(--display);font-size:clamp(1.6rem,5vw,2.6rem);line-height:1.1;overflow-wrap:anywhere;border-bottom:2px solid var(--sun);padding-bottom:6px;display:inline-block}
+.cert-card .cert-what{max-width:60ch;margin:6px 0 0}
+.cert-card .cert-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+.cert-card.revoked{opacity:.75}
+.cert-card .cert-stamp{position:absolute;right:18px;top:18px;transform:rotate(8deg);font-family:var(--mono);font-weight:700;border:2px solid currentColor;border-radius:8px;padding:2px 10px;font-size:.8rem}
+.cert-card .cert-stamp.ok{color:var(--teal)}
+.cert-card .cert-stamp.bad{color:var(--glitch)}
+.cert-checks{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.cert-checks li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:start;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card)}
+.cert-checks li > *{min-width:0}
+.cert-checks .tick{font-weight:700;color:var(--muted)}
+.cert-checks li.met .tick{color:var(--teal)}
+.cert-checks .miss{font-size:.82rem;color:var(--muted);overflow-wrap:anywhere}
+.cert-actions{display:flex;flex-wrap:wrap;gap:8px}
+.verify-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.verify-form .fld{flex:1;min-width:200px}
+@media print{
+  header,footer,nav,.no-print,.cert-actions,.verify-form{display:none!important}
+  body{background:#fff!important}
+  .cert-card{box-shadow:none;max-width:none;break-inside:avoid}
+}

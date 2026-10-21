@@ -1,0 +1,103 @@
+{
+  "name": "SUB · Get FAQ",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Get FAQ\nLesson 4.1. The get_faq tool for the FAQ agent: reads the FAQ sheet and returns every topic and answer as one small list.\n\nThe lesson attaches a Google Sheets tool directly; this template does the same read in a sub-workflow so it imports on any n8n version. Same result for the agent.\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID.",
+        "height": 320,
+        "width": 380
+      },
+      "id": "8e72b862-0bb6-4734-90c7-52f7da7434e9",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "83b8740e-406d-4932-9a30-bf637f2c201c",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "405e706a-4def-48e4-a139-46ce7b5dd4dd",
+      "name": "Read FAQ",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Small, clear result: just topic and answer for each row.\nconst faq = $input.all().map(i => ({ topic: i.json.topic, answer: i.json.answer }));\nreturn [{ json: { found: faq.length > 0, faq } }];"
+      },
+      "id": "00641177-d5d5-4816-9204-269263505485",
+      "name": "Return FAQ",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Read FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read FAQ": {
+      "main": [
+        [
+          {
+            "node": "Return FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

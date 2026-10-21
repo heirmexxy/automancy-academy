@@ -1,0 +1,533 @@
+{
+  "name": "HL · Monday payment reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Monday payment reminders (Lesson 3.3)\nMonday 09:00: unpaid invoices minus anyone who has paid (Merge, keep non-matches from Input 1), set aside anyone with no phone (Fix list), then remind in batches of 20 with a 60 s wait, and email Tolu one summary.\n\n\"Send (log)\" only writes to a Sent log sheet: no message reaches a customer. A real messaging node comes in 3.4 / Boss 3.\n\n**Credentials:** Google Sheets (OAuth2) in all four Sheets nodes; Gmail (OAuth2) in Summary email.\n**Placeholders:** YOUR_SHEET_ID (tabs Invoices, Payments, Fix list, Sent log), YOUR_EMAIL (Tolu's address) in Summary email.\n\n**Test first:** batch size 2 and wait 5 s. Put them back to 20 and 60 before publishing.",
+        "height": 440,
+        "width": 420
+      },
+      "id": "51e26622-f782-4f0e-bd49-0e11cd47ac52",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -234
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "91d9b67e-f62b-4529-9718-c3ca67fcd8f3",
+      "name": "Mon 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Invoices",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "Unpaid"
+            }
+          ]
+        }
+      },
+      "id": "31b845a4-6b2f-4655-8d11-388b33a7523d",
+      "name": "Invoices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Payments",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "1bdeae72-464e-414b-87ca-46c197847aad",
+      "name": "Payments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByFields",
+        "fieldsToMatchString": "customer_id",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input1",
+        "options": {}
+      },
+      "id": "94b86974-5757-46b9-a3ff-b580007a1828",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        440,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "6e44e91c-7ea5-441b-a7b9-70a269da8e1c",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f774a3e3-1e8e-467c-894d-09ba08e74c85",
+      "name": "IF phone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Fix list",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "997d8633-803c-4cf1-83ee-ce6084c37353",
+      "name": "Fix list",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 20,
+        "options": {}
+      },
+      "id": "a978f409-bc19-4c89-84d0-f41193c3f7c5",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4d9133f4-e19f-423c-adae-7331f2ee370d",
+              "name": "message",
+              "value": "=Good morning {{ $json.name }}, a gentle reminder that invoice {{ $json.invoice_id }} for ₦{{ Number($json.amount).toLocaleString('en-NG') }} is due. Pay here: {{ $json.pay_link }}. Thank you for buying from Harvest Lane!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      },
+      "id": "11db9656-220c-4721-9517-1264d87ba59c",
+      "name": "Build message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sent log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_id": "={{ $json.customer_id }}",
+            "phone": "={{ $json.phone }}",
+            "message": "={{ $json.message }}",
+            "sent_at": "={{ $now.toFormat('HH:mm:ss') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5170c0eb-6ab9-4f58-be3b-43536bce5efd",
+      "name": "Send (log)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1320,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "id": "238f316e-2939-4f49-bcbe-fb3e00580494",
+      "name": "Wait 60 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL",
+        "subject": "Harvest Lane · Monday reminders",
+        "emailType": "text",
+        "message": "=Reminders sent: {{ $input.all().length }}",
+        "options": {}
+      },
+      "id": "d32df264-d44b-4077-8926-12e7bb9b6bd4",
+      "name": "Summary email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        -108
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "## Loop wiring (check these three)\n- **loop** output → Build message → Send (log) → Wait 60 s → **back into Loop Over Items**. Without that last wire only the first batch goes.\n- The Wait is inside the loop, not on done.\n- **done** carries every item, so Summary email has **Execute Once** on (Settings): one email, not 200.\n\nMerge: Combine by matching fields, customer_id on both sides, keep non-matches, output from Input 1. If Payments renames its column (customerId), pick that field on the Input 2 side; never rename the sheet.",
+        "height": 300,
+        "width": 440
+      },
+      "id": "822ea5d1-b173-41db-b4b5-a1e4763faef5",
+      "name": "Loop wiring",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        234
+      ]
+    }
+  ],
+  "connections": {
+    "Mon 09:00": {
+      "main": [
+        [
+          {
+            "node": "Invoices",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoices": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payments": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "IF phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF phone": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fix list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Summary email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build message": {
+      "main": [
+        [
+          {
+            "node": "Send (log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send (log)": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 s": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Invoices": [
+      {
+        "json": {
+          "invoice_id": "INV-201",
+          "customer_id": "C-014",
+          "name": "Mrs Adebayo",
+          "phone": "+2348000000001",
+          "amount": "34000",
+          "pay_link": "https://paystack.example/pay/test-201",
+          "status": "Unpaid"
+        }
+      },
+      {
+        "json": {
+          "invoice_id": "INV-202",
+          "customer_id": "C-030",
+          "name": "Chef Tunde",
+          "phone": "+2348000000004",
+          "amount": "58000",
+          "pay_link": "https://paystack.example/pay/test-202",
+          "status": "Unpaid"
+        }
+      },
+      {
+        "json": {
+          "invoice_id": "INV-203",
+          "customer_id": "C-022",
+          "name": "Mr Okafor",
+          "phone": "",
+          "amount": "4000",
+          "pay_link": "https://paystack.example/pay/test-203",
+          "status": "Unpaid"
+        }
+      },
+      {
+        "json": {
+          "invoice_id": "INV-204",
+          "customer_id": "C-009",
+          "name": "Iya Basira",
+          "phone": "+2348000000003",
+          "amount": "21000",
+          "pay_link": "https://paystack.example/pay/test-204",
+          "status": "Unpaid"
+        }
+      },
+      {
+        "json": {
+          "invoice_id": "INV-205",
+          "customer_id": "C-041",
+          "name": "Hotel Grace",
+          "phone": "+2348000000005",
+          "amount": "96000",
+          "pay_link": "https://paystack.example/pay/test-205",
+          "status": "Unpaid"
+        }
+      }
+    ],
+    "Payments": [
+      {
+        "json": {
+          "reference": "T-TEST-0001",
+          "customer_id": "C-030",
+          "amount": "58000",
+          "paid_at": "2026-10-04"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

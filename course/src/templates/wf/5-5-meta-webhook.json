@@ -1,0 +1,391 @@
+{
+ "name": "HL · Social inbox · Meta webhook",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Social inbox: Meta webhook (Lesson 5.5)\nOne webhook for Page feed comments, Messenger, and Instagram comments and messages.\n- GET: answer Meta's verification request once (hub.verify_token must match).\n- POST: check every event's X-Hub-Signature-256 (HMAC SHA-256 of the raw body with your app secret, as with Paystack in 2.5). Invalid -> 401, nothing processed.\nValid events are flattened into one shape and passed to SUB · Social inbox: handle.\n\nCredentials: none here (the secret check uses the Crypto node).\nPlaceholders: YOUR_META_VERIFY_TOKEN, YOUR_META_APP_SECRET, YOUR_HANDLE_WORKFLOW_ID.\nIn the Meta app, set the callback URL to https://YOUR_N8N_DOMAIN/webhook/hl-social-inbox and subscribe to feed, messages and Instagram comments. Use a test app and test Page first.",
+    "height": 440,
+    "width": 560
+   },
+   "id": "752fc72c-eba3-498b-85ce-9db7e87f4a97",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    -420
+   ]
+  },
+  {
+   "parameters": {
+    "httpMethod": "GET",
+    "path": "hl-social-inbox",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "dcc5e5ad-3098-43ca-875b-8ebe8bc9baf5",
+   "name": "Meta verification (GET)",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    -180
+   ],
+   "webhookId": "3ff384d2-ddeb-472d-8674-f4ab2c724d7f"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "2309f2e6-5bd2-4545-85a6-35c4cd568d06",
+       "leftValue": "={{ $json.query['hub.mode'] }}",
+       "rightValue": "subscribe",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      },
+      {
+       "id": "ef536c9c-bafb-4b10-a76a-8a980ffcbf9b",
+       "leftValue": "={{ $json.query['hub.verify_token'] }}",
+       "rightValue": "YOUR_META_VERIFY_TOKEN",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "6888b469-e955-4356-8685-6e26a4c58af2",
+   "name": "Verify token matches?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    220,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "={{ $json.query['hub.challenge'] }}",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "6edb69aa-f37c-43ef-8ae8-891f4f614442",
+   "name": "Send challenge",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    -270
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "Forbidden",
+    "options": {
+     "responseCode": 403
+    }
+   },
+   "id": "4fbddbff-5e67-46ff-9320-b01b2dbb4b03",
+   "name": "Wrong token",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "hl-social-inbox",
+    "responseMode": "responseNode",
+    "options": {
+     "rawBody": true
+    }
+   },
+   "id": "350934ee-56e6-4929-8c6f-43bdef2b6036",
+   "name": "Meta events (POST)",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    180
+   ],
+   "webhookId": "7fc2b4c9-d277-4543-8671-29a4cf9270ac"
+  },
+  {
+   "parameters": {
+    "jsCode": "// The signature is computed over the exact raw bytes Meta sent, not over re-serialised JSON.\nconst item = $input.first();\nlet raw;\ntry {\n  const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\n  raw = buf.toString('utf8');\n} catch (e) {\n  raw = JSON.stringify(item.json.body); // fallback only; turn on Raw Body in the webhook options\n}\nreturn [{ json: { raw, signature: item.json.headers['x-hub-signature-256'] || '' } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "417b6d52-f9f9-41ba-8e56-dce2249c9e89",
+   "name": "Raw body",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "action": "hmac",
+    "type": "SHA256",
+    "value": "={{ $json.raw }}",
+    "dataPropertyName": "expected",
+    "secret": "YOUR_META_APP_SECRET",
+    "encoding": "hex"
+   },
+   "id": "71737653-199e-41ce-8be8-4a5949a40cfd",
+   "name": "HMAC SHA256",
+   "type": "n8n-nodes-base.crypto",
+   "typeVersion": 1,
+   "position": [
+    440,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "d6796b30-b995-4127-968f-ac594e0dff56",
+       "leftValue": "={{ 'sha256=' + $json.expected }}",
+       "rightValue": "={{ $json.signature }}",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "30727273-4224-4b05-8981-80d7b4bf101e",
+   "name": "Signature valid?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    660,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "EVENT_RECEIVED",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "053feb4c-e889-4786-bf92-4543dceaba5b",
+   "name": "Respond 200",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "Invalid signature",
+    "options": {
+     "responseCode": 401
+    }
+   },
+   "id": "e0934329-92aa-4a3c-8350-028a042685e4",
+   "name": "Respond 401",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    880,
+    270
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "05ff21c1-9663-4c37-a4ab-8621185553cc",
+   "name": "Rejected: nothing processed",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    270
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// One row per comment or message: platform, kind, item_id, thread_id, author_handle, text, received_at, last_customer_msg_at\nconst body = JSON.parse($('Signature valid?').first().json.raw);\nconst now = new Date().toISOString();\nconst platform = body.object === 'instagram' ? 'instagram' : 'facebook';\nconst out = [];\nfor (const entry of body.entry || []) {\n  for (const ch of entry.changes || []) {\n    const v = ch.value || {};\n    if (v.from && v.from.id === entry.id) continue; // our own replies\n    if (platform === 'facebook' && ch.field === 'feed' && v.item === 'comment' && v.verb === 'add') {\n      out.push({ platform, kind: 'comment', item_id: v.comment_id, thread_id: v.post_id, author_handle: v.from?.name || '',\n        text: v.message || '', source_link: v.post?.permalink_url || '',\n        received_at: v.created_time ? new Date(v.created_time * 1000).toISOString() : now });\n    }\n    if (platform === 'instagram' && ch.field === 'comments') {\n      out.push({ platform, kind: 'comment', item_id: v.id, thread_id: v.media?.id || '', author_handle: v.from?.username || '',\n        text: v.text || '', source_link: '', received_at: now });\n    }\n  }\n  for (const m of entry.messaging || []) {\n    if (!m.message || m.message.is_echo) continue;\n    out.push({ platform, kind: 'dm', item_id: m.message.mid, thread_id: m.sender.id, author_handle: m.sender.id,\n      text: m.message.text || '', source_link: '', received_at: new Date(m.timestamp).toISOString() });\n  }\n}\nreturn out.map(e => ({ json: { ...e, last_customer_msg_at: e.received_at } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "790bdade-ba91-4657-a9e4-e0fc34041f52",
+   "name": "Flatten events",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_HANDLE_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "2ffcf5f9-dab5-4c53-83e9-777b555f43c5",
+   "name": "SUB · Social inbox · handle",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    1320,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Meta verification (GET)": {
+   "main": [
+    [
+     {
+      "node": "Verify token matches?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Verify token matches?": {
+   "main": [
+    [
+     {
+      "node": "Send challenge",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Wrong token",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Meta events (POST)": {
+   "main": [
+    [
+     {
+      "node": "Raw body",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Raw body": {
+   "main": [
+    [
+     {
+      "node": "HMAC SHA256",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "HMAC SHA256": {
+   "main": [
+    [
+     {
+      "node": "Signature valid?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Signature valid?": {
+   "main": [
+    [
+     {
+      "node": "Respond 200",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Respond 401",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Respond 401": {
+   "main": [
+    [
+     {
+      "node": "Rejected: nothing processed",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Respond 200": {
+   "main": [
+    [
+     {
+      "node": "Flatten events",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Flatten events": {
+   "main": [
+    [
+     {
+      "node": "SUB · Social inbox · handle",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

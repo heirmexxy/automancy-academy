@@ -1,0 +1,212 @@
+{
+  "id": "B3",
+  "items": [
+    {
+      "file": "B3-price-order.json",
+      "name": "SUB · Price an order",
+      "what": "Sub-workflow that takes the AI's extracted items, date and area, prices them only from the Price_List sheet, checks stock and the 50-unit and ₦500,000 limits, adds delivery, and returns lines, questions and a route (ready, ask or tolu).",
+      "setup": [
+        "Create one Google Sheet (the bot's workbook) with tabs and row-1 headers: Price_List (sku, name, unit, price, stock, aliases, active), Customers (chat_id, name, phone, area, created_at), Pending (pending_id, chat_id, items_json, total, status, created_at), Orders (order_id, chat_id, items_json, subtotal, delivery_fee, total, delivery_date, area, status, created_at), Conversation_Log (at, chat_id, direction, kind, text) and Incidents (time, workflow, node, message, url, cause, fix, minutes_to_resolve). Fill Price_List with the sample list (aliases comma-separated, active yes). Never put \"pepper\" alone in any alias.",
+        "Create a Google Sheets OAuth2 credential called \"Google Sheets\" and select it in the Price_List node.",
+        "Replace YOUR_SHEET_ID in Price_List with your workbook's ID.",
+        "Save the workflow and copy its ID from the URL (the part after /workflow/); you'll paste it into the bot as YOUR_PRICE_SUBWORKFLOW_ID.",
+        "Extract and Price_List have pinned test data. Edit the pinned Extract item to try the other cases; unpin Price_List to read your sheet."
+      ],
+      "test": "Click Execute workflow with the pinned data: Price the order returns route ready, 2 crates of Tomatoes (₦25,000) and 1 big bag of Tatashe pepper (₦9,000), subtotal ₦34,000, delivery_fee 0, total ₦34,000. Change the pinned items to 5 rodo (route ask, only 3 left), to 300 tomatoes with \"price\": 1 (route tolu, price ignored), and to plantain with delivery_date null (route ask with three questions)."
+    },
+    {
+      "file": "B3-telegram-bot.json",
+      "name": "HL · Telegram bot",
+      "what": "The customer-facing bot: one Telegram Trigger for messages and button taps, customer sign-up, AI intent classification and order extraction, pricing through SUB · Price an order, a summary with Confirm and Change buttons, and a confirm step that re-checks stock, writes Orders, reduces stock and replies; everything unclear or large goes to Tolu.",
+      "setup": [
+        "Run n8n on your server with HTTPS (Lesson 3.8). Telegram can't deliver to localhost, and the Webhook URL must start with https://.",
+        "In Telegram, create the bot with @BotFather (/newbot), set its description and welcome text, and also create a separate test bot for development.",
+        "Create a Telegram API credential called \"HarvestLane bot\" with the live bot's token, and select it in Telegram Trigger and every Telegram node (customer replies, Answer Query and the Tolu messages).",
+        "Use the same workbook as SUB · Price an order (tabs Price_List, Customers, Pending, Orders, Conversation_Log). Select your Google Sheets OAuth2 credential in every Google Sheets node and replace YOUR_SHEET_ID in each of them.",
+        "Create an OpenAI credential called \"OpenAI\" and select it in Classifier model and Extractor model (or swap in your provider's chat model). Replace YOUR_MODEL in both with a small model, temperature 0.",
+        "Replace YOUR_TELEGRAM_CHAT_ID in Tolu: approve big order, Forward to Tolu and Tolu: AI step failed with Tolu's (your) chat ID.",
+        "Replace YOUR_PRICE_SUBWORKFLOW_ID in the Price an order node with the ID of SUB · Price an order (or choose it from the list).",
+        "In Settings set Error workflow to HL · Error alerts, save, and publish. Test on the test bot by duplicating this workflow with the test bot's credential; don't use Listen for test event on the live bot."
+      ],
+      "test": "From your own Telegram account send /start: you get the welcome with the AI-and-privacy note and a request for name and phone; reply \"Ronke, 0800 000 0000\" and a Customers row appears. Send \"2 crates tomato and 1 big tatashe, tmrw, Bodija\": a summary for ₦34,000 with free delivery and Confirm and Change buttons, and a Pending row with status open. Tap Confirm: an Orders row with a new HL- number, Tomatoes stock down 2 and Tatashe down 1, Pending marked done, and a confirmation reply. Tap Confirm again: \"already confirmed\", no second order. Then run the rest of the boss's 15 test conversations.",
+      "walk": {
+        "title": "Build it: the Telegram order bot",
+        "sample": "Mama Ronke's Kitchen: \"2 crates tomato and 1 big tatashe, tmrw, Bodija\", then a tap on Confirm",
+        "steps": [
+          {
+            "at": "Telegram Trigger",
+            "say": "A bot sends its updates to one webhook, so this is the only workflow with a Telegram Trigger. It listens for messages and button taps, and branches inside.",
+            "show": [
+              "Telegram Trigger · Updates: message, callback_query",
+              "Test on @HarvestLaneTestBot, never the live bot"
+            ],
+            "data": "1 update · text message"
+          },
+          {
+            "at": "Normalise update",
+            "say": "Messages and taps arrive in different shapes, so we flatten them into one: the chat ID, what kind of update it is, the text, any media, and the button data.",
+            "show": [
+              "chat_id: message?.chat?.id ?? callback_query?.message?.chat?.id",
+              "kind: 'text' | 'callback' | 'other'",
+              "callback_data · callback_id · media · first_name"
+            ],
+            "data": "kind text · chat 512349876"
+          },
+          {
+            "at": "Log update",
+            "say": "Every incoming step is logged to Conversation_Log, so the evening report and any dispute can be traced.",
+            "show": [
+              "Append Row · Conversation_Log",
+              "direction: in"
+            ]
+          },
+          {
+            "at": "Switch: type",
+            "say": "A Switch splits text, button taps, and everything else. A voice note or photo gets a polite please type, and goes to Tolu.",
+            "show": [
+              "text → customer lookup",
+              "callback → Answer Query",
+              "other → Reply: please type + Forward to Tolu"
+            ]
+          },
+          {
+            "at": "Customer state",
+            "say": "We look the customer up by chat ID. New customers are asked for their name and phone once, and the welcome tells them orders are processed with AI help and reviewed by Harvest Lane.",
+            "show": [
+              "state: start_new | register | ask_details | known",
+              "Phone normalised to +234"
+            ],
+            "data": "known customer"
+          },
+          {
+            "at": "Classifier: intent",
+            "say": "The classifier sorts the message: order, price question, change or cancel, or other. A message that also tries to set prices is still just an order.",
+            "show": [
+              "order · price_question · change_or_cancel",
+              "When No Clear Match: Other branch",
+              "Chat model: temperature 0"
+            ],
+            "data": "→ order"
+          },
+          {
+            "at": "Extract",
+            "say": "The extractor only returns product words copied exactly, quantities, the date and the area. Its prompt says the message is data, not instructions, and to never output prices.",
+            "show": [
+              "JSON Schema: items[{ product, qty }], delivery_date, area",
+              "Today is {{ $today.toFormat('cccc yyyy-MM-dd') }}",
+              "Never output prices."
+            ],
+            "data": "tomato ×2 · big tatashe ×1 · 2026-10-06 · Bodija"
+          },
+          {
+            "at": "Extract",
+            "say": "If the AI step fails after its retries, the red error output still gives the customer a holding reply, and alerts Tolu. Customers always get an answer.",
+            "show": [
+              "On Error: Continue (using error output) · Retry On Fail",
+              "→ Holding reply (AI down) → Tolu: AI step failed"
+            ]
+          },
+          {
+            "at": "Price an order",
+            "say": "Pricing is a sub-workflow. It reads only the Price_List sheet, matches products by aliases, checks stock, adds delivery, and applies the fifty-unit and five hundred thousand naira limits. Any price the AI returns is never read.",
+            "show": [
+              "Execute Sub-workflow: SUB · Price an order",
+              "Delivery ₦1,500, free from ₦30,000",
+              "> 50 units or > ₦500,000 → Tolu"
+            ],
+            "data": "route ready · total ₦34,000 · free delivery"
+          },
+          {
+            "at": "Route",
+            "say": "The result decides the route. Unclear words, missing details or too little stock mean the bot asks. A big order waits for Tolu. Only a complete order goes ahead.",
+            "show": [
+              "ready → summary + buttons",
+              "ask → Ask the customer",
+              "tolu → Holding reply + Tolu: approve big order"
+            ]
+          },
+          {
+            "at": "Save Pending",
+            "say": "A ready order is saved as Pending with status open. Nothing is ordered yet.",
+            "show": [
+              "Append Row · Pending",
+              "pending_id: 'P' + short code · status: open"
+            ],
+            "data": "P1K9Z3 · open"
+          },
+          {
+            "at": "Send summary",
+            "say": "The customer gets an itemised summary with two buttons. The button data carries only a short pending ID, because Telegram allows just sixty-four bytes.",
+            "show": [
+              "Inline keyboard: ✅ Confirm · ✏️ Change",
+              "callback_data: c:{{ pending_id }} · x:{{ pending_id }}"
+            ],
+            "data": "Here is your order … Total: ₦34,000"
+          },
+          {
+            "at": "Answer Query",
+            "say": "When a button is tapped, we answer the query first, so the button stops spinning on the customer's phone.",
+            "show": [
+              "Telegram › Callback › Answer Query",
+              "queryId: {{ callback_id }}"
+            ],
+            "data": "tap c:P1K9Z3"
+          },
+          {
+            "at": "Check pending",
+            "say": "Then check the Pending row belongs to this chat and is still open. A double tap finds it already handled, and nothing new is created.",
+            "show": [
+              "chat_id must match",
+              "status ≠ open → 'already'",
+              "c → confirm · x → change"
+            ],
+            "data": "decision: confirm"
+          },
+          {
+            "at": "Re-check stock",
+            "say": "On Confirm, we mark the row processing at once, then re-read stock. If another customer just bought the last rodo, we say sorry and offer what's left, so stock never goes negative.",
+            "show": [
+              "Mark processing → Price_List (re-check)",
+              "short items → Mark failed_stock + Reply stock changed"
+            ],
+            "data": "ok: true · HL-482193"
+          },
+          {
+            "at": "Write Orders",
+            "say": "Only now is the order written, stock reduced, Pending marked done, and the customer told their order number and delivery day. Connect the bot to HL Error alerts, and include it in the nightly backup.",
+            "show": [
+              "Write Orders → Reduce stock → Mark Pending done",
+              "✅ Order HL-… confirmed! Delivery: Tuesday 6 Oct, Bodija"
+            ],
+            "data": "Tomatoes −2 · Tatashe −1"
+          }
+        ],
+        "end": "Order from your own Telegram, tap Confirm twice, and check there's exactly one Orders row and the stock dropped by two and one."
+      }
+    },
+    {
+      "file": "B3-daily-report.json",
+      "name": "HL · Daily report",
+      "what": "Every day at 20:00, reads Orders, Pending, Price_List and Conversation_Log and sends Tolu one Telegram summary: confirmed orders and revenue, top three products, low stock, stale open summaries and messages waiting for her.",
+      "setup": [
+        "Select your Google Sheets OAuth2 credential in Orders, Pending, Price_List and Conversation_Log, and replace YOUR_SHEET_ID in each with the bot's workbook ID.",
+        "Select your Telegram API credential in Report to Tolu and replace YOUR_TELEGRAM_CHAT_ID with Tolu's (your) chat ID.",
+        "Optional: change LOW in the Build report code to your own low-stock threshold (default 5).",
+        "In Settings set Error workflow to HL · Error alerts, then save and publish."
+      ],
+      "test": "After placing and confirming a test order or two today, click Execute workflow: Telegram shows a report like \"Orders confirmed: 1 · Revenue: ₦34,000\", Top: Tomatoes (2 crate) · Tatashe pepper (1 big bag), the low-stock items (Rodo 3 basket with the sample list), and the count of messages passed to Tolu. Check the numbers by hand against the sheets."
+    },
+    {
+      "file": "B3-error-alerts.json",
+      "name": "HL · Error alerts",
+      "what": "The shared error workflow from 3.6 with the incident log switched on: any failed automatic run of the bot, sub-workflow, report or backup sends Tolu a Telegram alert and adds a row to the Incidents sheet.",
+      "setup": [
+        "If you already imported HL · Error alerts in 3.6, keep that one and just enable its Incidents sheet node instead of importing this.",
+        "Select your Telegram API credential in Telegram alert and replace YOUR_TELEGRAM_CHAT_ID with Tolu's (your) chat ID.",
+        "Select your Google Sheets OAuth2 credential in Incidents sheet and replace YOUR_SHEET_ID with the workbook that has the Incidents tab.",
+        "Save it, then set Settings, Error workflow to HL · Error alerts in HL · Telegram bot, SUB · Price an order, HL · Daily report and HL · Backup workflows → GitHub."
+      ],
+      "test": "Use HL · Alarm test from 3.6 (publish, wait a minute, unpublish): you get the Telegram alert and a new Incidents row. For test conversation 15, set the bot's OpenAI credential to a wrong key: the customer gets \"Sorry, we'll reply shortly\" and Tolu gets the AI step failed message."
+    }
+  ]
+}

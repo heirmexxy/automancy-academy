@@ -1,0 +1,148 @@
+{
+  "id": "3.7",
+  "items": [
+    {
+      "file": "3-7-inbox-triage.json",
+      "name": "HL · Support inbox triage",
+      "what": "Classifies each new support email into order, complaint, refund, enquiry, spam or Other, extracts the fields each route needs, drafts (never sends) replies in Gmail, alerts Tolu on Telegram for complaints, refunds and unclear emails, logs order requests to a sheet, and labels spam without deleting it.",
+      "setup": [
+        "Use a test Gmail inbox while building. Create a Gmail OAuth2 credential called \"Gmail support\" and select it in Gmail Trigger, Gmail draft (complaint), Gmail draft (enquiry) and Label Spam?.",
+        "Create an OpenAI credential called \"OpenAI\" and select it in all six chat model sub-nodes (Classifier model, Order extractor model, Complaint extractor model, Refund extractor model, Complaint draft model, Enquiry draft model). To use Anthropic, Gemini or OpenRouter, replace those sub-nodes with your provider's chat model.",
+        "Replace YOUR_MODEL in each chat model sub-node with a model name you have access to (a small, cheap model for the classifier and extractors).",
+        "Create a Telegram API credential called \"Telegram alerts bot\" (from 3.6) and select it in Telegram: complaint, Telegram: refund and Telegram: other. Replace YOUR_TELEGRAM_CHAT_ID in all three with Tolu's (your) chat ID.",
+        "Create a Google Sheet tab called Order requests with headers received_at, from, subject, items, delivery_date, area, order_id, status. Create a Google Sheets OAuth2 credential, select it in Order requests, and replace YOUR_SHEET_ID.",
+        "In Gmail create a label called Spam? and replace YOUR_SPAM_LABEL_ID in Label Spam? with its label ID (or pick the label from the list in the node).",
+        "Score the 12-email test set (see the sticky note) and get zero critical misses before going live.",
+        "In Settings set Error workflow to HL · Error alerts, then save and publish."
+      ],
+      "test": "First deactivate every node after Text Classifier, run the Test set (12 emails) trigger and compare each classifier output with the expected field: 3 complaints and 3 refunds must land on those outputs and no real email on spam. Then reactivate the nodes, publish, and send the test inbox a complaint (\"The pepper was rotten, order HL-0131\"): a reply draft appears in Gmail (not sent) and Telegram shows a Complaint alert with severity, issue and HL-0131. A prize-scam email only gets the Spam? label.",
+      "walk": {
+        "title": "Build it: support inbox triage",
+        "sample": "Test inbox email: \"The pepper you delivered was rotten, order HL-0131. This is the second time.\"",
+        "steps": [
+          {
+            "at": "Gmail Trigger",
+            "say": "New emails to the support address start the workflow, checked every five minutes. Use a test inbox while you build.",
+            "show": [
+              "Gmail Trigger · Message received",
+              "Poll: every 5 minutes · Simplify: off"
+            ],
+            "data": "1 email"
+          },
+          {
+            "at": "Clean",
+            "say": "Before any AI sees it, we trim the email: cut off the quoted thread and cap it at two thousand characters. Less text in means lower cost.",
+            "show": [
+              "from: {{ $json.from?.value?.[0]?.address ?? $json.From }}",
+              "body: (…text…).split(/\\nOn .* wrote:/)[0].slice(0, 2000)",
+              "message_id: {{ $json.id }}"
+            ],
+            "data": "from, subject, body, message_id"
+          },
+          {
+            "at": "Text Classifier",
+            "say": "The Text Classifier sorts each email. The category descriptions are the prompt: they say what belongs and settle the borderline cases.",
+            "show": [
+              "Input: Subject: {{ $json.subject }} + body",
+              "order · complaint · refund · enquiry · spam",
+              "spam: … If unsure, do not choose spam."
+            ]
+          },
+          {
+            "at": "Text Classifier",
+            "say": "When nothing fits clearly, the email goes to an extra Other branch, never discarded.",
+            "show": [
+              "When No Clear Match: Output on Extra, 'Other' Branch"
+            ],
+            "data": "→ complaint"
+          },
+          {
+            "at": "Classifier model",
+            "say": "Underneath sits the chat model, a small cheap one, at temperature zero so the same email always gets the same answer.",
+            "show": [
+              "Chat model: YOUR_MODEL",
+              "Temperature: 0"
+            ]
+          },
+          {
+            "at": "Test set (12 emails)",
+            "say": "Before going live, run the twelve test emails, with the right answers written down first. Switch off the nodes after the classifier so nothing is drafted or sent. Don't continue until there are no critical misses.",
+            "show": [
+              "Manual Trigger → 12 test emails → Clean",
+              "Critical miss: complaint or refund missed, or real email → spam"
+            ],
+            "data": "12 items · expected vs predicted"
+          },
+          {
+            "at": "Extract complaint",
+            "say": "On the complaint route, the Information Extractor pulls out what Tolu needs. The order number must never be invented.",
+            "show": [
+              "order_id: format HL-0000. Empty if not mentioned. Never invent one.",
+              "issue · amount · severity (low, medium, high)"
+            ],
+            "data": "HL-0131 · rotten pepper · high"
+          },
+          {
+            "at": "Draft complaint reply",
+            "say": "A Basic LLM Chain drafts a short, warm reply. It's told never to offer refunds or discounts, only that Tolu will reply today.",
+            "show": [
+              "Never offer refunds, credits or discounts",
+              "At most 80 words · temperature 0.3"
+            ]
+          },
+          {
+            "at": "Gmail draft (complaint)",
+            "say": "The reply is saved as a Gmail draft in the same thread. It is never sent automatically; Tolu reads it and sends it herself.",
+            "show": [
+              "Gmail › Draft › Create",
+              "Subject: Re: {{ $('Clean').item.json.subject }}",
+              "Thread ID: from the Gmail Trigger"
+            ],
+            "data": "1 draft, not sent"
+          },
+          {
+            "at": "Telegram: complaint",
+            "say": "Then Tolu gets a Telegram alert with the severity, the issue and the order number.",
+            "show": [
+              "🔴 Complaint · severity · issue · order_id",
+              "· draft ready in Gmail"
+            ],
+            "data": "🔴 Complaint · high · HL-0131"
+          },
+          {
+            "at": "Telegram: refund",
+            "say": "Refund requests only alert Tolu. Nothing here pays or refunds. An email can contain instructions, so AI may sort and draft, but a person approves money.",
+            "show": [
+              "🟠 Refund request · … · please review (nothing has been paid)"
+            ]
+          },
+          {
+            "at": "Order requests",
+            "say": "Order emails get their items, date and area extracted, and land in the Order requests sheet for Tolu to confirm.",
+            "show": [
+              "Append Row · Sheet: Order requests",
+              "items, delivery_date, area, order_id",
+              "status: to confirm"
+            ]
+          },
+          {
+            "at": "Label Spam?",
+            "say": "Spam is only labelled, never deleted, so Tolu can glance at it weekly. A real customer in spam is the costliest mistake.",
+            "show": [
+              "Gmail › Add Labels · Spam?"
+            ]
+          },
+          {
+            "at": "Telegram: other",
+            "say": "Anything unclear goes to Tolu too. Finally, connect the workflow to HL Error alerts in its settings, then publish.",
+            "show": [
+              "⚪ Unclear email · from · subject",
+              "Settings › Error workflow: HL · Error alerts"
+            ]
+          }
+        ],
+        "end": "Send the test inbox a complaint and a prize scam, then check for one unsent draft, one Telegram alert and one Spam? label."
+      }
+    }
+  ]
+}

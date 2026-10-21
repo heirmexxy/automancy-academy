@@ -1,0 +1,49 @@
+{
+  "id": "1.2",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Form order → Sheet + alert",
+      "what": "One nine-step Zap: a Google Form order is cleaned (phone, date), priced from the Products sheet, given a delivery fee by area (with a fallback), totalled, saved as a clean row in Orders with the total as a plain number, and emailed to Tolu with the total shown in naira.",
+      "steps": [
+        "1 · Trigger · Google Forms › New Form Response: Form = the order form from 1.1 Bronze (name, phone, product, quantity, delivery date) with an Area dropdown added.",
+        "2 · Action · Formatter by Zapier › Numbers › Format Phone Number (rename step \"Clean phone\"): Input = [1. Phone]; Country code = Nigeria (NG); To Format = international format without spaces (E.164 or similar, e.g. +2348031234567).",
+        "3 · Action · Formatter by Zapier › Date/Time › Format (rename step \"Clean date\"): Input = [1. Delivery date]; To Format = YYYY-MM-DD; To Timezone = Africa/Lagos.",
+        "4 · Action · Google Sheets › Lookup Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Products; Lookup Column = name; Lookup Value = [1. Product]; tick the option to stop or flag the Zap if nothing is found. Returns the whole row (sku, price_ngn).",
+        "5 · Action · Formatter by Zapier › Utilities › Lookup Table: Lookup Key = [1. Area]; Lookup Table rows: Bodija = 1500, Mokola = 1500, Ring Road = 1500, Challenge = 2000; Fallback Value = 2500.",
+        "6 · Action · Formatter by Zapier › Numbers › Spreadsheet-Style Formula: Formula = [1. Quantity] * [4. price_ngn] + [5. Value] (e.g. 2 * 12500 + 1500 = 26500).",
+        "7 · Action · Formatter by Zapier › Numbers › Format Currency: Input = [6. Output]; Currency = NGN; Currency Locale = English (Nigeria) if listed. Output like ₦26,500.00, used only in the email.",
+        "8 · Action · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Orders; name = [1. Name]; phone = [2. Output]; delivery date = [3. Output]; sku = [4. sku]; unit price = [4. price_ngn]; quantity = [1. Quantity]; area = [1. Area]; delivery fee = [5. Value]; total = [6. Output] (the plain number); status = New.",
+        "9 · Action · Gmail › Send Email: To = Tolu's address (e.g. tolu@harvestlane.example); Subject = New order · [1. Name] · [3. Output] · [7. Output]; Body = each order field on its own line (name, phone from step 2, product, quantity, delivery date from step 3, area, fee from step 5, total from step 7)."
+      ],
+      "setup": [
+        "Multi-step Zaps need a paid Zapier plan or a trial of paid features.",
+        "Set your Zapier account time zone to Africa/Lagos (Settings) before building.",
+        "Add an Area dropdown (Bodija, Mokola, Ring Road, Challenge, …) to the order form from 1.1 Bronze.",
+        "Have the 0.4 workbook ready: a Products tab with headers name, sku, price_ngn in row 1, and an Orders tab with its header row in row 1.",
+        "Connect Google Forms, Google Sheets and Gmail with the Harvest Lane business Google account.",
+        "Build the nine steps in order, renaming each Formatter step (Clean phone, Clean date, Delivery fee, Total, Total for email) so the Zap reads like a recipe.",
+        "Test each step top to bottom, name the Zap HL · Form order → Sheet + alert, and Publish. Share it from the Zap's menu → Share to get the template link."
+      ],
+      "test": "Submit a deliberately messy response: name \"mrs ADEBAYO \", phone \"0803 123 4567\", product Tomatoes (crate), quantity 2, date 6 October, area Bodija. Orders gets a row with phone +2348031234567, date 2026-10-06, unit price 12500, fee 1500 and total 26500 (a number); Tolu's email subject ends with ₦26,500.00. A second order from an unlisted area (e.g. Apete) gets fee 2500.",
+      "tasks": "About three tasks per order: the two Google Sheets steps and the Gmail step count, while the five Formatter steps use no tasks (check Zapier's pricing page for exact counting on searches).",
+      "walk": {
+        "title": "Build it: the one-Zap order line",
+        "sample": "mrs ADEBAYO · 0803 123 4567 · 2 tomato crates · 6 October · Bodija",
+        "steps": [
+          {"at": "1", "say": "The order form is our trigger. Test it with deliberately messy data, so you can prove every cleaning step works.", "show": ["Google Forms › New Form Response", "Form: order form + Area dropdown"], "data": "phone: 0803 123 4567"},
+          {"at": "2", "say": "First station: clean the phone number into one international format the riders' dialler understands.", "show": ["Numbers › Format Phone Number", "Country code: Nigeria (NG)"], "data": "+2348031234567"},
+          {"at": "3", "say": "Next we clean the date into the format we store, in Lagos time, so nothing is an hour off.", "show": ["Date/Time › Format", "To Format: YYYY-MM-DD", "To Timezone: Africa/Lagos"], "data": "2026-10-06"},
+          {"at": "4", "say": "Prices change, so we look them up in the Products sheet Tolu controls. If the product isn't found, the Zap stops instead of pricing it at nothing.", "show": ["Sheets › Lookup Spreadsheet Row", "Worksheet: Products · Column: name", "Stop if nothing is found"], "data": "sku · price_ngn 12500"},
+          {"at": "5", "say": "Delivery fee comes from a small lookup table. The fallback charges a safe default for any new area, so the fee is never blank.", "show": ["Bodija 1500 · Challenge 2000", "Fallback value: 2500"], "data": "1500"},
+          {"at": "6", "say": "Now the maths: quantity times price, plus the fee.", "show": ["[quantity] * [price_ngn] + [value]"], "data": "26500"},
+          {"at": "7", "say": "We make a naira version of the total, but only for the email a person reads.", "show": ["Numbers › Format Currency", "Currency: NGN"], "data": "₦26,500.00"},
+          {"at": "8", "say": "Save the clean row. Map the cleaned phone and date, and store the plain number total so the sheet can add it up.", "show": ["phone: step 2 · date: step 3", "total: step 6 (plain number)"], "data": "row saved · total 26500"},
+          {"at": "9", "say": "Finally, tell Tolu with a readable summary. Test every step, name the Zap, and publish.", "show": ["Subject: New order · name · date · total", "Total from step 7"], "data": "email sent"}
+        ],
+        "end": "Nine steps, one Zap, about three tasks. Build it yourself, then check three totals by hand."
+      }
+    }
+  ]
+}

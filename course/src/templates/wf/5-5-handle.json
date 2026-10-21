@@ -1,0 +1,1232 @@
+{
+  "name": "SUB · Social inbox · handle",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Social inbox: handle (Lesson 5.5)\nEvery door (Meta webhook, X mentions, forward form) calls this with one shape.\n1. Save to inbox, skipping duplicates by item_id.\n2. Label intent and urgent (the 5.3 labeller).\n3. Code computes the allowed actions from timestamps and platform rules BEFORE the agent writes a word.\n4. The agent chooses among allowed actions only (structured output).\n5. Code rejects any action not allowed, and anything with personal details in a public reply.\n6. auto -> send; otherwise Tolu approves on Telegram first; complaints and LinkedIn/TikTok drafts go to Tolu.\n7. Send in order: private reply or DM first, then the public reply, so the public text never promises something that failed.\n\nCredentials: Postgres (Supabase); OpenAI (both model nodes); Header Auth \"Meta page token\" (Authorization: Bearer + Page access token); X OAuth2 for X reply; Telegram.\nPlaceholders: YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID, YOUR_GET_PRICE_WORKFLOW_ID, YOUR_DELIVERY_ZONE_WORKFLOW_ID (from Boss 4), YOUR_SAVE_LEAD_WORKFLOW_ID, YOUR_HANDOVER_WORKFLOW_ID.",
+        "height": 520,
+        "width": 640
+      },
+      "id": "3c4d4ae6-8a58-44e4-9f51-e55b7d6b0692",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Supabase tables\n-- Run once in Supabase (SQL editor)\ncreate table inbox (\n  id bigserial primary key, platform text, kind text,\n  item_id text unique, thread_id text, author_handle text,\n  text text, source_link text, received_at timestamptz,\n  last_customer_msg_at timestamptz, status text default 'new',\n  intent text, urgent boolean, private_sent boolean default false,\n  answered_at timestamptz, alarm_sent boolean default false,\n  handover_reason text);\ncreate table leads (\n  id bigserial primary key, created_at timestamptz default now(),\n  platform text, handle_or_thread_id text, source_link text,\n  wants text, size_estimate text,\n  consent_followup boolean default false,\n  status text default 'new', owner text default 'Tolu');\ncreate table api_budget (\n  id bigserial primary key, api text, units int,\n  at timestamptz default now());\n\nSupabase is Postgres: create a Postgres credential with your Supabase database connection details (Project settings -> Database) so the nodes can run exact SQL.",
+        "height": 560,
+        "width": 640
+      },
+      "id": "0b745797-644f-4299-b098-51ba119faa2b",
+      "name": "Tables",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6d565853-4255-4d8f-a0b8-d84cd93280b5",
+      "name": "When called by a door",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into inbox (platform, kind, item_id, thread_id, author_handle, text, source_link, received_at, last_customer_msg_at)\nvalues ($1, $2, $3, $4, $5, $6, $7, $8, $9)\non conflict (item_id) do nothing\nreturning *;",
+        "options": {
+          "queryReplacement": "={{ [ $json.platform, $json.kind, $json.item_id, $json.thread_id, $json.author_handle, $json.text, $json.source_link, $json.received_at, $json.last_customer_msg_at ] }}"
+        }
+      },
+      "id": "4c55e688-68f0-423e-af98-8c071bb0ec02",
+      "name": "Save to inbox (skip duplicates)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sentiment\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"positive\",\n        \"neutral\",\n        \"negative\",\n        \"mixed\"\n      ]\n    },\n    \"topic\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"quality\",\n        \"late delivery\",\n        \"price\",\n        \"refund\",\n        \"food safety\",\n        \"hours\",\n        \"other\"\n      ]\n    },\n    \"urgent\": {\n      \"type\": \"boolean\",\n      \"description\": \"needs a person today\"\n    },\n    \"intent\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"praise\",\n        \"complaint\",\n        \"question\",\n        \"lead\",\n        \"spam\"\n      ]\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"sentiment\",\n    \"topic\",\n    \"urgent\",\n    \"intent\",\n    \"confidence\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You label customer comments about Harvest Lane, a fresh-produce delivery business in Ibadan. Comments may be in Nigerian English, Pidgin, Yoruba, slang or emoji. Return sentiment, topic, urgent (needs a person today), intent and confidence (0 to 1, your honest estimate).\n\nExamples:\n1. \"Una tomatoes fresh well well, I go order again\" -> positive, quality, praise, urgent false\n2. \"Price don cost o\" -> neutral, price, complaint, urgent false (about price, not anger)\n3. \"This bread is sick 🔥\" -> positive, quality, praise, urgent false (sick = amazing)\n4. \"deadly jollof, we go come back\" -> positive, quality, praise, urgent false (deadly = excellent)\n5. \"Great, another 'fresh' delivery of soft tomatoes 🙄\" -> negative, quality, complaint, urgent false (sarcasm)\n6. \"Half the onions were rotten and nobody is picking my calls\" -> negative, quality, complaint, urgent true\n7. \"My son was sick after eating your ugu\" -> negative, food safety, complaint, urgent true\n8. \"What time do you open on Sundays?\" -> neutral, hours, question, urgent false\n9. \"Do you supply restaurants weekly? We need about 20 crates\" -> positive, other, lead, urgent false\n10. \"Delivery late again. Third time this month.\" -> negative, late delivery, complaint, urgent false\n11. \"Veggies dey fresh but the rider was rude\" -> mixed, other, complaint, urgent false\n12. \"I paid since Monday, nothing came. I want my money back\" -> negative, refund, complaint, urgent true\n13. \"Earn N50k daily!!! Click the link in my bio\" -> neutral, other, spam, urgent false"
+        }
+      },
+      "id": "2e4ad824-b697-488c-b357-0848f0e5c31d",
+      "name": "Label (5.3 labeller)",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "ee1ded1b-f987-42b1-bcc4-7efa23421f8d",
+      "name": "OpenAI Chat Model (labeller)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        440,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $('Save to inbox (skip duplicates)').item.json;\nreturn { ...row, intent: $json.output.intent, urgent: $json.output.urgent, sentiment: $json.output.sentiment, topic: $json.output.topic };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "660fcbe8-0bb6-42ed-959c-8feed6c8edb5",
+      "name": "Combine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = (Date.now() - new Date($json.received_at)) / 36e5;\nconst sinceCustomer = (Date.now() - new Date($json.last_customer_msg_at)) / 36e5;\nconst meta = ['facebook','instagram'].includes($json.platform);\nreturn { ...$json, allowed: {\n  public:  $json.kind !== 'dm',\n  private: meta && $json.kind === 'comment' && h <= 24*7 && !$json.private_sent,\n  dm:      $json.kind === 'dm' && sinceCustomer <= 24,\n  auto:    ['question','praise','lead'].includes($json.intent) && !$json.urgent\n}};\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "f0c209dd-d54b-4e2e-b1a1-6aa23c491882",
+      "name": "Allowed actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set intent = $1, urgent = $2 where item_id = $3;",
+        "options": {
+          "queryReplacement": "={{ [ $json.intent, $json.urgent, $json.item_id ] }}"
+        }
+      },
+      "id": "931d458b-a95b-4f79-a22b-8e9513022494",
+      "name": "Save labels",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Platform: {{ $('Allowed actions').item.json.platform }} · kind: {{ $('Allowed actions').item.json.kind }}\nIntent: {{ $('Allowed actions').item.json.intent }} · urgent: {{ $('Allowed actions').item.json.urgent }}\nallowed: {{ JSON.stringify($('Allowed actions').item.json.allowed) }}\n\nMessage from {{ $('Allowed actions').item.json.author_handle }}:\n{{ $('Allowed actions').item.json.text }}",
+        "options": {
+          "systemMessage": "You are Harvest Lane's social inbox assistant (Sage Desk). Tolu sees everything and steps in when needed; if you write to a customer privately for the first time, say you are Harvest Lane's assistant.\nRules:\n- Short replies.\n- Public replies never contain personal details: no names with addresses, order numbers, phone numbers or refund amounts. Prices and opening hours may be public. When in doubt, move it to private or to a person.\n- Only use actions whose permission is true in \"allowed\". Map: public_reply needs public; private_reply needs private; public_and_private needs both; dm needs dm; hide needs public (spam and scam links only; never reply to spam); handover is always possible.\n- Simple question (price, hours, delivery area): a short public reply plus a private reply with details and the order link (public_and_private), if allowed.\n- Buying signal: private reply or DM, and call save_lead (consent_followup true only if they said yes to a follow-up).\n- Complaint, refund, anger, anything legal or safety-related, a big account, or the customer asks for a person: handover (call handover_to_tolu), with a short suggested reply for Tolu.\n- Praise: a warm thank-you.\n- Never say a message was sent; the system sends it.\n- Use get_price and check_delivery_zone for facts. Never invent prices.\nReturn JSON: { action, public_text, private_text, lead }."
+        },
+        "hasOutputParser": true
+      },
+      "id": "76216179-f049-41ed-b456-b8e63c4dcf8d",
+      "name": "Sage Desk agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "b7fa3be3-85d3-4feb-9759-88727d6e2256",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_price",
+        "description": "Current price and stock for a product (from Boss 4).",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_GET_PRICE_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"product\": {\n      \"type\": \"string\",\n      \"description\": \"product name, for example tomatoes\"\n    }\n  },\n  \"required\": [\n    \"product\"\n  ]\n}"
+      },
+      "id": "b05b387a-4737-419b-983d-a271a3c439ce",
+      "name": "get_price",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1320,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "name": "check_delivery_zone",
+        "description": "Whether Harvest Lane delivers to an area of Ibadan (from Boss 4).",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_DELIVERY_ZONE_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"area\": {\n      \"type\": \"string\",\n      \"description\": \"the area or street name\"\n    }\n  },\n  \"required\": [\n    \"area\"\n  ]\n}"
+      },
+      "id": "ab0a5b38-3329-449e-b619-068b72f2f26c",
+      "name": "check_delivery_zone",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1540,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "name": "save_lead",
+        "description": "Save a buying signal as a lead. Ask, don't assume: consent_followup is true only if they said yes to a follow-up.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SAVE_LEAD_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "platform",
+              "stringValue": "={{ $('Allowed actions').item.json.platform }}"
+            },
+            {
+              "name": "handle_or_thread_id",
+              "stringValue": "={{ $('Allowed actions').item.json.thread_id || $('Allowed actions').item.json.author_handle }}"
+            },
+            {
+              "name": "source_link",
+              "stringValue": "={{ $('Allowed actions').item.json.source_link || $('Allowed actions').item.json.item_id }}"
+            }
+          ]
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"wants\": {\n      \"type\": \"string\",\n      \"description\": \"what they want, for example weekly supply, restaurant, Akobo\"\n    },\n    \"size_estimate\": {\n      \"type\": \"string\",\n      \"description\": \"rough size, for example 20 crates a week, or unknown\"\n    },\n    \"consent_followup\": {\n      \"type\": \"boolean\",\n      \"description\": \"true only if the customer said yes to a follow-up\"\n    }\n  },\n  \"required\": [\n    \"wants\",\n    \"size_estimate\",\n    \"consent_followup\"\n  ]\n}"
+      },
+      "id": "73d6a298-9db1-4724-bb19-95c48204f459",
+      "name": "save_lead",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "name": "handover_to_tolu",
+        "description": "Hand this conversation to Tolu (complaints, refunds, anger, legal or safety, big accounts, two failed answers, or the customer asks for a person).",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_HANDOVER_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "item_id",
+              "stringValue": "={{ $('Allowed actions').item.json.item_id }}"
+            }
+          ]
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"why a person is needed\"\n    }\n  },\n  \"required\": [\n    \"reason\"\n  ]\n}"
+      },
+      "id": "55e1e7d9-a2b4-47c8-b8ed-862b863c6f42",
+      "name": "handover_to_tolu",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1980,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"action\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"public_reply\",\n        \"private_reply\",\n        \"public_and_private\",\n        \"dm\",\n        \"hide\",\n        \"handover\"\n      ]\n    },\n    \"public_text\": {\n      \"type\": \"string\"\n    },\n    \"private_text\": {\n      \"type\": \"string\"\n    },\n    \"lead\": {\n      \"type\": \"boolean\",\n      \"description\": \"true if this message is a buying signal saved with save_lead\"\n    }\n  },\n  \"required\": [\n    \"action\",\n    \"public_text\",\n    \"private_text\",\n    \"lead\"\n  ]\n}"
+      },
+      "id": "741c7b57-fca0-4155-ba61-26401cad70cb",
+      "name": "Agent output",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        251
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $('Allowed actions').item.json;\nconst a = m.allowed;\nconst o = $json.output || {};\nconst meta = ['facebook', 'instagram'].includes(m.platform);\nconst assisted = ['linkedin', 'tiktok'].includes(m.platform);\nconst needs = { public_reply: ['public'], private_reply: ['private'], public_and_private: ['public', 'private'], dm: ['dm'], hide: ['public'], handover: [] };\nlet action = o.action, reason = '';\nif (!(action in needs)) { action = 'handover'; reason = 'unknown action'; }\nelse if (needs[action].some(k => !a[k])) { reason = `${action} is not allowed here`; action = 'handover'; }\nif (action === 'hide' && !meta) { action = 'handover'; reason = 'hide is only for Facebook and Instagram comments'; }\nif (m.platform === 'x' && ['private_reply', 'public_and_private', 'dm'].includes(action)) { action = 'handover'; reason = 'X: public replies only in this build'; }\n// Personal details never go in public.\nconst personal = /(\\+?234|\\b0)[789]\\d{9}|[\\w.+-]+@[\\w-]+\\.\\w+|\\bHL-\\d+|\\d+\\s+\\w+\\s+(road|rd|street|st|close|avenue|ave|crescent)\\b/i;\nif (['public_reply', 'public_and_private'].includes(action) && personal.test(o.public_text || '')) { action = 'handover'; reason = 'personal details in a public reply'; }\nlet route = 'auto';\nif (action === 'handover' || assisted) route = 'tolu';\nelse if (!a.auto) route = 'approve';\nreturn { ...m, action, public_text: o.public_text || '', private_text: o.private_text || '', lead: !!o.lead, reject_reason: reason, route };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "f17125aa-6429-4d8f-9aa5-95c10e8d0365",
+      "name": "Reject actions not allowed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "d83a45e1-158a-4d5b-8b5a-47c586a63967",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "auto",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "auto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "9ca40027-bd3e-4aeb-b833-5bd753eac955",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "approve"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "38bb24ee-28de-4592-8efd-ab0b66113d5f",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "tolu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "tolu"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "bf760d2b-5b7c-4eb6-8b78-22dbbd675206",
+      "name": "Who sends?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set status = 'awaiting_approval' where item_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.item_id ] }}"
+        }
+      },
+      "id": "392f5491-7905-4c38-9d41-78a8653a9c7f",
+      "name": "Mark awaiting approval",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1980,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "={{ $('Who sends?').item.json.platform }} {{ $('Who sends?').item.json.kind }} from {{ $('Who sends?').item.json.author_handle }} ({{ $('Who sends?').item.json.intent }}):\n\"{{ $('Who sends?').item.json.text }}\"\n\nPlanned: {{ $('Who sends?').item.json.action }}\nPublic: {{ $('Who sends?').item.json.public_text || '-' }}\nPrivate: {{ $('Who sends?').item.json.private_text || '-' }}\n{{ $('Who sends?').item.json.source_link }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Approve",
+            "disapproveLabel": "Reject"
+          }
+        },
+        "options": {}
+      },
+      "id": "739447f6-8de2-43b8-bbd1-ec85a936695a",
+      "name": "Tolu approves?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        125
+      ],
+      "webhookId": "a5a0b5d2-9d66-41ac-bce0-88c522830347"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a6fa81b6-c1d9-446f-be63-9ef5a326a34e",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2c3af965-6d62-4d77-8af7-7a71d070e5f4",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Approval can take hours: re-check the windows before anything is sent.\nconst m = $('Who sends?').item.json;\nconst h = (Date.now() - new Date(m.received_at)) / 36e5;\nconst sinceCustomer = (Date.now() - new Date(m.last_customer_msg_at)) / 36e5;\nif (['private_reply', 'public_and_private'].includes(m.action) && !(h <= 24 * 7)) throw new Error('Private reply window closed while waiting for approval: reply by hand. Item ' + m.item_id);\nif (m.action === 'dm' && !(sinceCustomer <= 24)) throw new Error('24-hour DM window closed while waiting for approval: reply by hand. Item ' + m.item_id);\nreturn m;\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "74d5f922-dc93-4788-82f5-4039e85ebb02",
+      "name": "Restore message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set status = 'rejected_by_tolu' where item_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $('Who sends?').item.json.item_id ] }}"
+        }
+      },
+      "id": "ace7d97f-d68c-4d40-a1ef-d8b5973642dd",
+      "name": "Mark rejected",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2640,
+        234
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=Needs you: {{ $json.platform }} {{ $json.kind }} from {{ $json.author_handle }}\nWants: {{ $json.intent }}{{ $json.urgent ? ' · URGENT' : '' }}{{ $json.reject_reason ? ' · ' + $json.reject_reason : '' }}\nSaid: \"{{ $json.text }}\"\nSuggested reply: {{ $json.private_text || $json.public_text || '-' }}\nLink: {{ $json.source_link || $json.item_id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "91fc0efc-fbae-45fa-9058-8c91c7e87556",
+      "name": "Hand over to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set status = 'handed_over' where item_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $('Who sends?').item.json.item_id ] }}"
+        }
+      },
+      "id": "ae8531f6-beb7-4025-a720-1df77323c23e",
+      "name": "Mark handed over",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "80705178-be89-45c5-8e70-d132c76a162c",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "hide",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f25b9cec-d622-4324-b432-dbb280fe7e89",
+      "name": "Hide?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.item_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.platform === 'instagram' ? { hide: true } : { is_hidden: true }) }}",
+        "options": {}
+      },
+      "id": "981da025-ef96-408d-9180-8af328a8904f",
+      "name": "Hide comment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        -234
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "fd0ce9df-6612-4c52-8af1-61470c38e209",
+              "leftValue": "={{ ['private_reply', 'public_and_private', 'dm'].includes($json.action) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "923d73c7-1379-4533-8887-b014c9671a24",
+      "name": "Private reply or DM first?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: $json.kind === 'dm' ? { id: $json.thread_id } : { comment_id: $json.item_id }, messaging_type: 'RESPONSE', message: { text: $json.private_text } }) }}",
+        "options": {}
+      },
+      "id": "b9a7cbb2-1c82-4b3f-932e-26e44902c129",
+      "name": "Send private reply or DM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3300,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set private_sent = true where item_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $('Hide?').item.json.item_id ] }}"
+        }
+      },
+      "id": "7a71c5ee-9951-45ac-b855-07817ea4fac7",
+      "name": "Mark private_sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3520,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b7e312ad-4581-4c33-8827-d6d4663cab34",
+              "leftValue": "={{ ['public_reply', 'public_and_private'].includes($('Hide?').item.json.action) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a08197f5-d094-415f-8831-c72ab7f10933",
+      "name": "Public reply too?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a157c17b-682b-4623-b837-ba2c8f8b9800",
+              "leftValue": "={{ $('Hide?').item.json.platform }}",
+              "rightValue": "x",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "703cabfc-02e4-47e3-a0d4-f0681486adf2",
+      "name": "On X?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.com/2/tweets",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $('Hide?').item.json.public_text, reply: { in_reply_to_tweet_id: $('Hide?').item.json.item_id } }) }}",
+        "options": {}
+      },
+      "id": "e6acc74d-38d5-4ad9-b14b-e98373be86cd",
+      "name": "X reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4180,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Hide?').item.json.item_id }}/{{ $('Hide?').item.json.platform === 'instagram' ? 'replies' : 'comments' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $('Hide?').item.json.public_text }) }}",
+        "options": {}
+      },
+      "id": "6f99b501-21cb-4ee2-8d6c-bec407dbf051",
+      "name": "Public reply (Meta)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update inbox set status = $1, answered_at = now() where item_id = $2;",
+        "options": {
+          "queryReplacement": "={{ [ $('Hide?').item.json.action === 'hide' ? 'hidden' : 'answered', $('Hide?').item.json.item_id ] }}"
+        }
+      },
+      "id": "e8ff97b3-3dc5-420e-8c50-1453b7f6fea0",
+      "name": "Mark answered",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Sage's reminder\nThe agent never decides what's allowed. Allowed actions is computed in code from timestamps and platform rules (7-day private reply, 24-hour DM window); the agent only chooses among them, and Reject actions not allowed checks again.",
+        "height": 200,
+        "width": 400
+      },
+      "id": "eff3e89d-e736-43a3-866f-8974d7da74f4",
+      "name": "Note 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -420
+      ]
+    }
+  ],
+  "connections": {
+    "When called by a door": {
+      "main": [
+        [
+          {
+            "node": "Save to inbox (skip duplicates)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to inbox (skip duplicates)": {
+      "main": [
+        [
+          {
+            "node": "Label (5.3 labeller)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label (5.3 labeller)": {
+      "main": [
+        [
+          {
+            "node": "Combine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine": {
+      "main": [
+        [
+          {
+            "node": "Allowed actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allowed actions": {
+      "main": [
+        [
+          {
+            "node": "Save labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save labels": {
+      "main": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sage Desk agent": {
+      "main": [
+        [
+          {
+            "node": "Reject actions not allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject actions not allowed": {
+      "main": [
+        [
+          {
+            "node": "Who sends?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (labeller)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Label (5.3 labeller)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_price": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_delivery_zone": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_lead": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "handover_to_tolu": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Sage Desk agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Who sends?": {
+      "main": [
+        [
+          {
+            "node": "Hide?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark awaiting approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hand over to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark awaiting approval": {
+      "main": [
+        [
+          {
+            "node": "Tolu approves?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tolu approves?": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Restore message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore message": {
+      "main": [
+        [
+          {
+            "node": "Hide?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hand over to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Mark handed over",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hide?": {
+      "main": [
+        [
+          {
+            "node": "Hide comment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Private reply or DM first?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hide comment": {
+      "main": [
+        [
+          {
+            "node": "Mark answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Private reply or DM first?": {
+      "main": [
+        [
+          {
+            "node": "Send private reply or DM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Public reply too?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send private reply or DM": {
+      "main": [
+        [
+          {
+            "node": "Mark private_sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark private_sent": {
+      "main": [
+        [
+          {
+            "node": "Public reply too?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Public reply too?": {
+      "main": [
+        [
+          {
+            "node": "On X?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On X?": {
+      "main": [
+        [
+          {
+            "node": "X reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Public reply (Meta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X reply": {
+      "main": [
+        [
+          {
+            "node": "Mark answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Public reply (Meta)": {
+      "main": [
+        [
+          {
+            "node": "Mark answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When called by a door": [
+      {
+        "json": {
+          "platform": "instagram",
+          "kind": "comment",
+          "item_id": "test_ig_c1",
+          "thread_id": "test_media_1",
+          "author_handle": "ibadan_foodie",
+          "text": "how much for the veggie basket?",
+          "source_link": "https://instagram.com/p/example1",
+          "received_at": "2026-10-07T10:00:00.000Z",
+          "last_customer_msg_at": "2026-10-07T10:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "platform": "facebook",
+          "kind": "dm",
+          "item_id": "test_fb_m1",
+          "thread_id": "test_psid_1",
+          "author_handle": "test_psid_1",
+          "text": "Hello, do you deliver to Akobo?",
+          "source_link": "",
+          "received_at": "2026-10-05T08:00:00.000Z",
+          "last_customer_msg_at": "2026-10-05T08:00:00.000Z"
+        }
+      },
+      {
+        "json": {
+          "platform": "facebook",
+          "kind": "comment",
+          "item_id": "test_fb_c2",
+          "thread_id": "test_post_1",
+          "author_handle": "Promo Deals",
+          "text": "Earn N50k daily!!! click www.example.com/scam",
+          "source_link": "",
+          "received_at": "2026-10-07T10:00:00.000Z",
+          "last_customer_msg_at": "2026-10-07T10:00:00.000Z"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

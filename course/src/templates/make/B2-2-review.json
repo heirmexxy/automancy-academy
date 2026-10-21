@@ -1,0 +1,571 @@
+{
+ "name": "Books · 2 Review loop (every 2 hours)",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-sheets:filterRows",
+   "version": 2,
+   "parameters": {},
+   "mapper": {
+    "from": "drive",
+    "mode": "select",
+    "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+    "sheetId": "Needs_Review",
+    "includesHeaders": true,
+    "tableFirstRow": "A1:Z1",
+    "sortOrder": "asc",
+    "limit": "",
+    "filter": [
+     [
+      {
+       "a": "M",
+       "b": "Approved",
+       "o": "text:equal"
+      },
+      {
+       "a": "N",
+       "o": "notexist"
+      }
+     ],
+     [
+      {
+       "a": "M",
+       "b": "Rejected",
+       "o": "text:equal"
+      },
+      {
+       "a": "N",
+       "o": "notexist"
+      }
+     ]
+    ]
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Approved or Rejected, not processed"
+    }
+   },
+   "onerror": [
+    {
+     "id": 2,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 2 Review",
+       "2": "Search Needs_Review",
+       "3": "",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 0,
+       "y": 250,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 3,
+     "module": "builtin:Break",
+     "version": 1,
+     "parameters": {},
+     "mapper": {
+      "retry": true,
+      "count": 2,
+      "interval": 30
+     },
+     "metadata": {
+      "designer": {
+       "x": 300,
+       "y": 250,
+       "name": "Break · retry"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "module": "builtin:BasicRouter",
+   "version": 1,
+   "parameters": {},
+   "mapper": null,
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Approved or Rejected"
+    }
+   },
+   "routes": [
+    {
+     "flow": [
+      {
+       "id": 5,
+       "module": "datastore:GetRecord",
+       "version": 1,
+       "parameters": {
+        "datastore": null
+       },
+       "mapper": {
+        "key": "{{1.`9`}}"
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": -200,
+         "name": "Key status"
+        }
+       },
+       "filter": {
+        "name": "Approved",
+        "conditions": [
+         [
+          {
+           "a": "{{1.`12`}}",
+           "b": "Approved",
+           "o": "text:equal"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "id": 6,
+       "module": "builtin:BasicRouter",
+       "version": 1,
+       "parameters": {},
+       "mapper": null,
+       "metadata": {
+        "designer": {
+         "x": 900,
+         "y": -200,
+         "name": "Already booked?"
+        }
+       },
+       "routes": [
+        {
+         "flow": [
+          {
+           "id": 7,
+           "module": "google-sheets:updateRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Needs_Review",
+            "includesHeaders": true,
+            "rowNumber": "{{1.__ROW_NUMBER__}}",
+            "valueInputOption": "USER_ENTERED",
+            "values": {
+             "13": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} · already in Expenses"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 1200,
+             "y": -400,
+             "name": "Mark done (already booked)"
+            }
+           },
+           "filter": {
+            "name": "Already booked",
+            "conditions": [
+             [
+              {
+               "a": "{{5.status}}",
+               "b": "booked",
+               "o": "text:equal"
+              }
+             ]
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "flow": [
+          {
+           "id": 8,
+           "module": "google-sheets:addRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Expenses",
+            "includesHeaders": true,
+            "insertUnformatted": false,
+            "valueInputOption": "USER_ENTERED",
+            "insertDataOption": "INSERT_ROWS",
+            "values": {
+             "0": "{{1.`0`}}",
+             "1": "{{1.`1`}}",
+             "2": "{{1.`2`}}",
+             "3": "{{1.`3`}}",
+             "4": "{{1.`4`}}",
+             "5": "{{1.`5`}}",
+             "6": "{{1.`6`}}",
+             "7": "{{1.`7`}}",
+             "8": "{{1.`8`}}",
+             "9": "{{1.`9`}}",
+             "10": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 1200,
+             "y": -150,
+             "name": "Add to Expenses"
+            }
+           },
+           "filter": {
+            "name": "Not booked yet",
+            "conditions": [
+             [
+              {
+               "a": "{{5.status}}",
+               "b": "booked",
+               "o": "text:notequal"
+              }
+             ]
+            ]
+           },
+           "onerror": [
+            {
+             "id": 9,
+             "module": "google-sheets:addRow",
+             "version": 2,
+             "parameters": {},
+             "mapper": {
+              "from": "drive",
+              "mode": "select",
+              "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+              "sheetId": "Errors",
+              "includesHeaders": true,
+              "insertUnformatted": false,
+              "valueInputOption": "USER_ENTERED",
+              "insertDataOption": "INSERT_ROWS",
+              "values": {
+               "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+               "1": "B2 · 2 Review",
+               "2": "Add to Expenses",
+               "3": "{{1.`9`}}",
+               "4": "{{error.type}}",
+               "5": "{{error.message}}"
+              }
+             },
+             "metadata": {
+              "designer": {
+               "x": 1200,
+               "y": 50,
+               "name": "Log to Errors"
+              }
+             }
+            },
+            {
+             "id": 10,
+             "module": "google-email:ActionSendEmail",
+             "version": 4,
+             "parameters": {},
+             "mapper": {
+              "to": [
+               "tolu@harvestlane.example"
+              ],
+              "subject": "Books system: Add to Expenses failed",
+              "bodyType": "rawHtml",
+              "contentType": "text",
+              "content": "B2 · 2 Review · Add to Expenses\n{{error.type}}: {{error.message}}\nReview row {{1.__ROW_NUMBER__}}\nIt's in the Errors tab. Make will retry automatically if it can."
+             },
+             "metadata": {
+              "designer": {
+               "x": 1500,
+               "y": 50,
+               "name": "Alert Tolu"
+              }
+             }
+            },
+            {
+             "id": 11,
+             "module": "builtin:Break",
+             "version": 1,
+             "parameters": {},
+             "mapper": {
+              "retry": true,
+              "count": 2,
+              "interval": 15
+             },
+             "metadata": {
+              "designer": {
+               "x": 1800,
+               "y": 50,
+               "name": "Break · retry"
+              }
+             }
+            }
+           ]
+          },
+          {
+           "id": 12,
+           "module": "datastore:AddRecord",
+           "version": 1,
+           "parameters": {
+            "datastore": null,
+            "overwrite": true
+           },
+           "mapper": {
+            "key": "{{1.`9`}}",
+            "data": {
+             "status": "booked",
+             "expense_id": "{{1.`0`}}",
+             "added_at": "{{now}}"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 1500,
+             "y": -150,
+             "name": "Store key (booked)"
+            }
+           }
+          },
+          {
+           "id": 13,
+           "module": "google-sheets:updateRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Needs_Review",
+            "includesHeaders": true,
+            "rowNumber": "{{1.__ROW_NUMBER__}}",
+            "valueInputOption": "USER_ENTERED",
+            "values": {
+             "13": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} · added to Expenses"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 1800,
+             "y": -150,
+             "name": "Mark done"
+            }
+           }
+          },
+          {
+           "id": 14,
+           "module": "google-sheets:filterRows",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Review_Lines",
+            "includesHeaders": true,
+            "tableFirstRow": "A1:Z1",
+            "sortOrder": "asc",
+            "limit": "",
+            "filter": [
+             [
+              {
+               "a": "A",
+               "b": "{{1.`9`}}",
+               "o": "text:equal"
+              }
+             ]
+            ]
+           },
+           "metadata": {
+            "designer": {
+             "x": 2100,
+             "y": -150,
+             "name": "Find its lines"
+            }
+           }
+          },
+          {
+           "id": 15,
+           "module": "google-sheets:addRow",
+           "version": 2,
+           "parameters": {},
+           "mapper": {
+            "from": "drive",
+            "mode": "select",
+            "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+            "sheetId": "Expense_Lines",
+            "includesHeaders": true,
+            "insertUnformatted": false,
+            "valueInputOption": "USER_ENTERED",
+            "insertDataOption": "INSERT_ROWS",
+            "values": {
+             "0": "{{1.`0`}}",
+             "1": "{{14.`2`}}",
+             "2": "{{14.`3`}}",
+             "3": "{{14.`4`}}",
+             "4": "{{14.`5`}}"
+            }
+           },
+           "metadata": {
+            "designer": {
+             "x": 2400,
+             "y": -150,
+             "name": "Add to Expense_Lines"
+            }
+           },
+           "onerror": [
+            {
+             "id": 16,
+             "module": "builtin:Break",
+             "version": 1,
+             "parameters": {},
+             "mapper": {
+              "retry": true,
+              "count": 2,
+              "interval": 15
+             },
+             "metadata": {
+              "designer": {
+               "x": 2400,
+               "y": 50,
+               "name": "Break · retry"
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "flow": [
+      {
+       "id": 17,
+       "module": "google-sheets:updateRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+        "sheetId": "Needs_Review",
+        "includesHeaders": true,
+        "rowNumber": "{{1.__ROW_NUMBER__}}",
+        "valueInputOption": "USER_ENTERED",
+        "values": {
+         "13": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} · rejected, left out"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 600,
+         "y": 250,
+         "name": "Mark rejected"
+        }
+       },
+       "filter": {
+        "name": "Rejected",
+        "conditions": [
+         [
+          {
+           "a": "{{1.`12`}}",
+           "b": "Rejected",
+           "o": "text:equal"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "id": 18,
+       "module": "google-sheets:addRow",
+       "version": 2,
+       "parameters": {},
+       "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+        "sheetId": "Intake_Log",
+        "includesHeaders": true,
+        "insertUnformatted": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertDataOption": "INSERT_ROWS",
+        "values": {
+         "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+         "1": "{{1.`8`}}",
+         "2": "{{1.`2`}}",
+         "3": "{{1.`9`}}",
+         "4": "rejected by Tolu"
+        }
+       },
+       "metadata": {
+        "designer": {
+         "x": 900,
+         "y": 250,
+         "name": "Log rejection"
+        }
+       },
+       "onerror": [
+        {
+         "id": 19,
+         "module": "builtin:Ignore",
+         "version": 1,
+         "parameters": {},
+         "mapper": {},
+         "metadata": {
+          "designer": {
+           "x": 900,
+           "y": 450,
+           "name": "Ignore"
+          }
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": true,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

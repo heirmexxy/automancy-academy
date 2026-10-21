@@ -1,0 +1,383 @@
+{
+ "name": "HL · Listening post · collect",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Listening post: collect (Lesson 5.3)\nEvery 15 minutes: Facebook Page comments, Instagram comments and Talkwalker Alerts web mentions, merged into one shape (source, item_id, link, posted_at, text) and passed to SUB · Listening post: label and alert, which removes duplicates.\n\nCredentials:\n- Facebook Graph API (Page access token) on Facebook Page comments.\n- Header Auth \"Meta page token\" (Name Authorization, Value Bearer + Page access token) on both Instagram nodes. Instagram needs a Business or Creator account.\nPlaceholders: YOUR_PAGE_ID, YOUR_IG_USER_ID, YOUR_TALKWALKER_RSS_URL, YOUR_LABEL_WORKFLOW_ID.\nAttach your error workflow (3.6).",
+    "height": 400,
+    "width": 500
+   },
+   "id": "616ba823-8ace-48ee-aa27-4d7a012ad827",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -380
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 15
+      }
+     ]
+    }
+   },
+   "id": "164750b8-9735-4ed1-ae7c-4519ae7d3db9",
+   "name": "Every 15 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "httpRequestMethod": "GET",
+    "node": "YOUR_PAGE_ID",
+    "edge": "posts",
+    "options": {
+     "fields": {
+      "field": [
+       {
+        "name": "id"
+       },
+       {
+        "name": "permalink_url"
+       },
+       {
+        "name": "comments.limit(50){id,message,created_time,permalink_url}"
+       }
+      ]
+     },
+     "queryParameters": {
+      "parameter": [
+       {
+        "name": "limit",
+        "value": "10"
+       }
+      ]
+     }
+    }
+   },
+   "id": "6745c37c-b8fe-44da-ae4d-aa57eb1474be",
+   "name": "Facebook Page comments",
+   "type": "n8n-nodes-base.facebookGraphApi",
+   "typeVersion": 1,
+   "position": [
+    220,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const out = [];\nfor (const item of $input.all()) {\n  for (const post of (item.json.data || [item.json])) {\n    for (const c of (post.comments?.data || [])) {\n      out.push({ json: { source: 'facebook', item_id: c.id, link: c.permalink_url || post.permalink_url,\n        posted_at: c.created_time, text: c.message || '' } });\n    }\n  }\n}\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "001efc9d-2e4b-4d66-9a1e-56ab40aa3ef2",
+   "name": "Normalise Facebook",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "https://graph.facebook.com/v21.0/YOUR_IG_USER_ID/media",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "fields",
+       "value": "id,permalink,timestamp"
+      },
+      {
+       "name": "limit",
+       "value": "10"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "3aae4408-98bb-4cfc-9b2d-447744d7fa29",
+   "name": "Instagram recent media",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "fieldToSplitOut": "data",
+    "options": {}
+   },
+   "id": "6974a792-5be2-4a65-b8ea-cffa6fc8e0df",
+   "name": "One item per media",
+   "type": "n8n-nodes-base.splitOut",
+   "typeVersion": 1,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://graph.facebook.com/v21.0/{{ $json.id }}/comments",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "fields",
+       "value": "id,text,timestamp"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "935b7fb4-e87e-4ee8-a2a7-11a7ca06ba6b",
+   "name": "Instagram comments",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const out = [];\nconst media = $('One item per media').all();\n$input.all().forEach((item, i) => {\n  const permalink = media[i]?.json.permalink || '';\n  for (const c of (item.json.data || [])) {\n    out.push({ json: { source: 'instagram', item_id: c.id, link: permalink, posted_at: c.timestamp, text: c.text || '' } });\n  }\n});\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "6ca52a70-9ed0-4f84-83ca-bf79a2b08adc",
+   "name": "Normalise Instagram",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "YOUR_TALKWALKER_RSS_URL",
+    "options": {
+     "response": {
+      "response": {
+       "responseFormat": "text"
+      }
+     }
+    }
+   },
+   "id": "872dc74c-5b55-45c7-928f-e73bc6db797b",
+   "name": "Talkwalker Alerts RSS",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// Stands in for n8n's RSS Read node: parse the feed's items.\nconst xml = String($input.first().json.data || '');\nconst pick = (block, tag) => {\n  const m = block.match(new RegExp('<' + tag + '[^>]*>([\\\\s\\\\S]*?)</' + tag + '>', 'i'));\n  return m ? m[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, '').replace(/<[^>]+>/g, ' ').trim() : '';\n};\nconst items = xml.split(/<item[\\s>]/i).slice(1);\nreturn items.map(b => {\n  const link = pick(b, 'link');\n  return { json: { source: 'web', item_id: pick(b, 'guid') || link, link, posted_at: pick(b, 'pubDate'),\n    text: (pick(b, 'title') + ' - ' + pick(b, 'description')).slice(0, 1000) } };\n});\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "209436d0-12b1-45f1-9355-94998d480abf",
+   "name": "Normalise web",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "numberInputs": 3
+   },
+   "id": "43203619-9c41-44b7-80a9-fe3713ac8b4e",
+   "name": "Merge",
+   "type": "n8n-nodes-base.merge",
+   "typeVersion": 3,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_LABEL_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "501817a0-81bb-4b56-9f25-a43e413927e5",
+   "name": "SUB · label and alert",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Listen, don't profile\nStore the comment and its link, not the person. No names, phone numbers or profile links are collected here.",
+    "height": 160,
+    "width": 340
+   },
+   "id": "53cca8bb-5da1-4441-84ea-5d8a9ec14028",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    900,
+    -420
+   ]
+  }
+ ],
+ "connections": {
+  "Every 15 minutes": {
+   "main": [
+    [
+     {
+      "node": "Facebook Page comments",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Instagram recent media",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Talkwalker Alerts RSS",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Facebook Page comments": {
+   "main": [
+    [
+     {
+      "node": "Normalise Facebook",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram recent media": {
+   "main": [
+    [
+     {
+      "node": "One item per media",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One item per media": {
+   "main": [
+    [
+     {
+      "node": "Instagram comments",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram comments": {
+   "main": [
+    [
+     {
+      "node": "Normalise Instagram",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Talkwalker Alerts RSS": {
+   "main": [
+    [
+     {
+      "node": "Normalise web",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Normalise Facebook": {
+   "main": [
+    [
+     {
+      "node": "Merge",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Normalise Instagram": {
+   "main": [
+    [
+     {
+      "node": "Merge",
+      "type": "main",
+      "index": 1
+     }
+    ]
+   ]
+  },
+  "Normalise web": {
+   "main": [
+    [
+     {
+      "node": "Merge",
+      "type": "main",
+      "index": 2
+     }
+    ]
+   ]
+  },
+  "Merge": {
+   "main": [
+    [
+     {
+      "node": "SUB · label and alert",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

@@ -1,0 +1,389 @@
+{
+ "name": "HL · CRM import cleaner",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · CRM import cleaner (Lesson 5.8)\nLesson 5.8 is built in HubSpot's screens, not in n8n. This helper does the Card 4 checklist on the Growth Desk leads sheet so the import is clean, and splits it into Import · Companies, Import · Contacts and Import · Deals tabs (import in that order), plus Import · Problems to fix by hand. The first 10 people are marked batch 1: import those, check the associations, then the rest.\n\nIt sends nothing and changes nothing in HubSpot.\n\nCredentials: Google Sheets.\nPlaceholders: YOUR_SHEET_ID (tab Leads export with columns name, email, phone, company, website, business_type, lead_source, delivery_zone, marketing_consent, consent_date, deal_stage, weekly_value_ngn, owner, next_step_date, lost_reason, role).",
+    "height": 380,
+    "width": 580
+   },
+   "id": "aa94d398-35b6-416e-92d2-5c8e28ff0eca",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -640,
+    -400
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Do these in HubSpot (the solved problem)\n1. One-page design agreed with Tolu: contacts, companies, deals; 5 stages with exit rules; up to 10 custom properties; owners Tolu and Bisi (households); four dashboard numbers.\n2. Sign up with Harvest Lane's own domain email. Settings -> Objects -> Deals -> Pipelines: New enquiry 10%, Tasting booked 25%, Proposal sent 50%, Trial order 75%, Won 100% / Lost 0%. (Zoho: Setup -> Customization -> Pipelines.)\n3. Properties (8, all dropdowns or numbers/dates): Contact lead_source, marketing_consent (yes/no/unknown), consent_date. Company business_type, delivery_zone (in/out). Deal weekly_value_ngn, lost_reason, next_step_date.\n4. Import companies, then contacts (matched to companies by domain), then open deals. 10 rows first; check each deal shows its company and contact.\n5. Owner on every open deal. Saved view: My deals needing a next step. HubSpot mobile app on Tolu's phone; log one call together.\n6. Dashboard: open deal value by stage; deals in the same stage over 14 days; won and lost this month with reasons; new deals by lead_source. 20-minute Monday review for four weeks.",
+    "height": 460,
+    "width": 580
+   },
+   "id": "5033571e-0c4a-445b-9242-94ed0ecaff78",
+   "name": "HubSpot steps",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -640,
+    20
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "46dbc3d4-ad41-4a5f-83f0-d7d084441f6c",
+   "name": "Run the checklist",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Leads export",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "7ad5e197-b956-439b-a49b-4e23225a578c",
+   "name": "Read Leads export",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const SOURCES = { instagram: 'Instagram', ig: 'Instagram', insta: 'Instagram', 'instagram ad': 'Instagram', facebook: 'Facebook', fb: 'Facebook',\n  whatsapp: 'WhatsApp', outreach: 'Outreach', email: 'Outreach', referral: 'Referral', website: 'Website', event: 'Event' };\nconst TYPES = ['restaurant', 'hotel', 'caterer', 'household'];\nconst STAGES = { 'new enquiry': 'New enquiry', 'tasting booked': 'Tasting booked', 'proposal sent': 'Proposal sent', 'trial order': 'Trial order', won: 'Won', lost: 'Lost' };\nconst OWNERS = ['Tolu', 'Bisi'];\nconst phoneFix = (p) => { const d = String(p || '').replace(/\\D/g, '').replace(/^(234|0)/, ''); return d.length === 10 ? '+234' + d : ''; };\nconst domainFix = (w) => String(w || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0];\nconst out = [], problems = [];\nconst seenEmail = new Set(), companies = new Map();\nlet people = 0;\nfor (const { json: r } of $input.all()) {\n  const row = r.row_number;\n  const role = String(r.role || '').toLowerCase();\n  const email = String(r.email || '').trim().toLowerCase();\n  if (['staff', 'supplier', 'test'].includes(role) || /test|example\\.com$/.test(email)) { problems.push({ row, problem: `removed: ${role || 'test row'}` }); continue; }\n  if (email && seenEmail.has(email)) { problems.push({ row, problem: `duplicate email ${email}` }); continue; }\n  if (email) seenEmail.add(email);\n  const source = SOURCES[String(r.lead_source || '').trim().toLowerCase()];\n  if (!source) problems.push({ row, problem: `lead_source \"${r.lead_source}\" is not a dropdown value` });\n  const type = String(r.business_type || '').trim().toLowerCase();\n  if (!TYPES.includes(type)) problems.push({ row, problem: `business_type \"${r.business_type}\" is not a dropdown value` });\n  let consent = String(r.marketing_consent || '').trim().toLowerCase();\n  if (!['yes', 'no'].includes(consent)) consent = 'unknown';\n  if (consent === 'yes' && !r.consent_date) { consent = 'unknown'; problems.push({ row, problem: 'consent yes without a date: set to unknown (a WhatsApp contact is not email consent)' }); }\n  const domain = domainFix(r.website);\n  if (r.company && !domain) problems.push({ row, problem: `company \"${r.company}\" has no domain` });\n  const batch = people < 10 ? 'batch 1 (first 10)' : 'batch 2';\n  people++;\n  if (domain && !companies.has(domain)) {\n    companies.set(domain, true);\n    out.push({ record_type: 'company', batch, name: r.company, domain, business_type: TYPES.includes(type) ? type : '', delivery_zone: String(r.delivery_zone || '').toLowerCase() === 'in' ? 'in' : 'out' });\n  }\n  out.push({ record_type: 'contact', batch, firstname: String(r.name || '').split(' ')[0], lastname: String(r.name || '').split(' ').slice(1).join(' '),\n    email, phone: phoneFix(r.phone), company_domain: domain, lead_source: source || '', marketing_consent: consent, consent_date: consent === 'yes' ? r.consent_date : '' });\n  const stage = STAGES[String(r.deal_stage || '').trim().toLowerCase()];\n  if (r.deal_stage && !stage) problems.push({ row, problem: `deal_stage \"${r.deal_stage}\" is not one of the 5 stages` });\n  if (stage) {\n    const open = !['Won', 'Lost'].includes(stage);\n    if (open && !OWNERS.includes(r.owner)) problems.push({ row, problem: 'open deal without an owner (Tolu or Bisi)' });\n    if (open && !r.next_step_date) problems.push({ row, problem: 'open deal without a next step date' });\n    if (stage === 'Lost' && !r.lost_reason) problems.push({ row, problem: 'lost deal without a lost reason' });\n    out.push({ record_type: 'deal', batch, dealname: `${r.company || r.name} · weekly supply`, dealstage: stage, weekly_value_ngn: Number(String(r.weekly_value_ngn || '').replace(/[^\\d]/g, '')) || '',\n      hubspot_owner: r.owner || '', next_step_date: r.next_step_date || '', lost_reason: r.lost_reason || '', company_domain: domain, contact_email: email });\n  }\n}\nreturn [...out, ...problems.map(p => ({ record_type: 'problem', ...p }))].map(j => ({ json: j }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "51e24834-3a5c-43b0-89e3-32f66130ef7b",
+   "name": "Clean (Card 4 checklist)",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "da78c058-4130-475d-8a8f-81a7e083e12d",
+          "leftValue": "={{ $json.record_type }}",
+          "rightValue": "company",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "company"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "4a955049-aa6c-437b-8eb4-200ae05a9006",
+          "leftValue": "={{ $json.record_type }}",
+          "rightValue": "contact",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "contact"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "4dc4c4e2-18bf-4a6f-90ad-313ad06c8351",
+          "leftValue": "={{ $json.record_type }}",
+          "rightValue": "deal",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "deal"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "171cc14e-276a-4e13-9ed5-51bafc09f66c",
+          "leftValue": "={{ $json.record_type }}",
+          "rightValue": "problem",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "problem"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "a7079a5b-41d9-40e9-8330-17b7d3934ca6",
+   "name": "Record type",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Import · Companies",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "3d7726db-05de-45d8-9202-b8de59f74666",
+   "name": "Import · Companies",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    -270
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Import · Contacts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "4e00acd6-b8d8-4893-807d-e8de507badde",
+   "name": "Import · Contacts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Import · Deals",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "4028efd9-e904-47c8-950c-34d9cfe63c24",
+   "name": "Import · Deals",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Import · Problems",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "0bddab55-4ea8-4b51-aae3-5bcd7a1967e3",
+   "name": "Import · Problems",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    270
+   ]
+  }
+ ],
+ "connections": {
+  "Record type": {
+   "main": [
+    [
+     {
+      "node": "Import · Companies",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Import · Contacts",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Import · Deals",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Import · Problems",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Run the checklist": {
+   "main": [
+    [
+     {
+      "node": "Read Leads export",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Leads export": {
+   "main": [
+    [
+     {
+      "node": "Clean (Card 4 checklist)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Clean (Card 4 checklist)": {
+   "main": [
+    [
+     {
+      "node": "Record type",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

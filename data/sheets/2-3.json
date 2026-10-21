@@ -1,0 +1,38 @@
+{
+  "id": "2.3",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: the Harvest Lane 2.1 scenario, with a filter on the link between Watch New Rows and Gmail.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Filter setting</th><th>Value</th></tr></thead><tbody><tr><td>Label</td><td>Big order or VIP</td></tr><tr><td>Condition group 1</td><td><code>1. total</code> · Numeric operators: Greater than · 20000</td></tr><tr><td>OR group 2</td><td><code>1. vip</code> · Text operators: Equal to (case insensitive) · yes</td></tr></tbody></table></div><p>The two conditions sit in separate groups (click \"Add OR rule\"), not in one group, where they would both have to pass.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test row</th><th>total</th><th>vip</th><th>Email?</th></tr></thead><tbody><tr><td>HL-T1</td><td>25,000</td><td>yes</td><td>Yes (both)</td></tr><tr><td>HL-T2</td><td>25,000</td><td>no</td><td>Yes (total)</td></tr><tr><td>HL-T3</td><td>9,000</td><td>Yes</td><td>Yes (VIP, case insensitive)</td></tr><tr><td>HL-T4</td><td>9,000</td><td>no</td><td>No</td></tr></tbody></table></div><p>Run once: Watch New Rows shows 4, Gmail shows 3. Credits: 1 check + 3 emails = 4; the filter is free.</p>",
+      "mistakes": [
+        "Putting both conditions in one group, which makes them AND, so only the row that is big and VIP sends.",
+        "Using a Text operator for total, so 9000 counts as \"greater than\" 20000.",
+        "Using the case-sensitive Equal to, so \"Yes\" fails where \"yes\" passes.",
+        "Testing only two rows instead of all four combinations."
+      ],
+      "pass": "The filter shows two OR groups with a numeric total check and a case-insensitive VIP check, and a run of four rows (both, total only, VIP only, neither) sends exactly three emails.",
+      "redo": "Send it back if the filter is AND, if a number is compared as text, or if fewer than four combinations were tested."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's <b>HL · 8 p.m. tomorrow run</b>, built exactly as the solved problem.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Part</th><th>Setting</th></tr></thead><tbody><tr><td>Search Rows</td><td>Orders, delivery_date = <code>formatDate(addDays(now; 1); \"YYYY-MM-DD\")</code>; schedule daily 20:00; time zone Africa/Lagos</td></tr><tr><td>Link filter</td><td>Not cancelled: status · Not equal to (case insensitive) · Cancelled</td></tr><tr><td>Route 1</td><td>Rider list: status = Paid OR channel = standing → Add a Row to Deliveries</td></tr><tr><td>Route 2</td><td>Reminder: status = New AND channel ≠ standing → Gmail reminder with payment link</td></tr><tr><td>Route 3</td><td>Big order: total (Numeric) &gt; 50000 → Alert Tolu</td></tr><tr><td>Fallback</td><td>Marked as fallback → Add a Row to Needs checking</td></tr></tbody></table></div><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Order</th><th>Expected</th><th>Actual</th></tr></thead><tbody><tr><td>T1 Paid · whatsapp · 26,500</td><td>1</td><td>1</td></tr><tr><td>T2 New · form · 13,500</td><td>2</td><td>2</td></tr><tr><td>T3 New · whatsapp · 82,000</td><td>2 and 3</td><td>2 and 3</td></tr><tr><td>T4 New · standing · 95,000</td><td>1 and 3</td><td>1 and 3</td></tr><tr><td>T5 On hold · form · 9,000</td><td>Fallback</td><td>Fallback</td></tr><tr><td>T6 Cancelled · whatsapp · 40,000</td><td>None</td><td>Stopped at filter</td></tr></tbody></table></div><p><b>Module counts from Run once:</b> Search 6 · router 5 · Deliveries 2 · Reminder 2 · Alert 2 · Needs checking 1. Deliveries has two rows (T1, T4), no duplicates. Credits: 1 + 7 = 8.</p><p>Submit: the screenshot of the counts (test names only, no phone numbers), the table above, and the Deliveries tab showing two rows.</p>",
+      "mistakes": [
+        "Adding a fourth route for big paid orders that also writes to Deliveries, so they appear twice.",
+        "Forgetting to mark the fallback route, so T5 vanishes or is caught by every bundle.",
+        "Comparing total with a text operator, so small orders trigger the big-order alert.",
+        "Screenshots that show real customer names or phone numbers."
+      ],
+      "pass": "The screenshot shows Deliveries 2, Reminder 2, Alert 2 and Needs checking 1, T6 stops at the Not cancelled filter, and the Deliveries tab holds T1 and T4 once each.",
+      "redo": "Send it back if any count differs without explanation, if T6 reaches the router, or if any order is on the rider list twice."
+    },
+    "g": {
+      "answer": "<p>Worked example: Harvest Lane's 8 p.m. run with one <b>Google Sheets · Add a Row</b> to an Activity tab placed after the Not cancelled filter and <i>before</i> the router.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Activity column</th><th>Value</th></tr></thead><tbody><tr><td>run_date</td><td><code>formatDate(now; \"YYYY-MM-DD\")</code></td></tr><tr><td>order_id, status, total</td><td>mapped from the Search module</td></tr><tr><td>routes_taken</td><td>the formula below</td></tr></tbody></table></div><pre class=\"codebox\">ifempty(trim(\n  if(lower(1.status) = \"paid\" or lower(1.channel) = \"standing\"; \"1 \"; emptystring) +\n  if(lower(1.status) = \"new\" and lower(1.channel) != \"standing\"; \"2 \"; emptystring) +\n  if(parseNumber(1.total) &gt; 50000; \"3\"; emptystring));\n  \"Fallback\")</pre><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Order</th><th>routes_taken</th></tr></thead><tbody><tr><td>T1</td><td>1</td></tr><tr><td>T2</td><td>2</td></tr><tr><td>T3</td><td>2 3</td></tr><tr><td>T4</td><td>1 3</td></tr><tr><td>T5</td><td>Fallback</td></tr><tr><td>T6</td><td>(no row: stopped by the filter)</td></tr></tbody></table></div><p>Five Activity rows for five non-cancelled orders, each once. Credits: 1 search + 5 log rows + 7 route actions = 13.</p><p><b>Why it's easier to maintain (three sentences).</b> There is one log module instead of four copies, so a new column is added in one place. Every order is logged before anything can fail on a route, so the Activity tab is complete even when a route errors. The trade-off is that the formula repeats the route rules, so I copied each filter's wording beside its <code>if()</code> and change both together.</p><p>Submit: a screenshot of the scenario, the formula, the Activity tab after the six test rows, and the three sentences.</p>",
+      "mistakes": [
+        "Copying the log module into every route, which gives T3 and T4 two Activity rows each.",
+        "Logging after the router, which no longer exists as a single point because routes never merge.",
+        "Writing if() conditions that don't match the route filters (for example a case-sensitive \"Paid\"), so routes_taken is wrong.",
+        "Forgetting the fallback text, so T5's routes_taken is blank."
+      ],
+      "pass": "After the six test rows, the Activity tab has exactly five rows (none for T6), each listing the right routes (1, 2, 2 3, 1 3, Fallback), with one log module in the scenario and a three-sentence explanation.",
+      "redo": "Send it back if any order is logged twice or not at all, if a routes_taken value is wrong, or if the log module was duplicated across routes."
+    }
+  }
+}

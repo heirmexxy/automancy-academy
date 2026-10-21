@@ -1,0 +1,39 @@
+{
+  "id": "4.3",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's 4.2 quoting agent with Simple Memory.</p><p>On the AI Agent, add <b>Simple Memory</b>. Session ID: take it from the connected Chat Trigger (its session ID). Context window length: <b>5</b>.</p><pre class=\"codebox\">1  Please deliver to 14 Ring Road.\n2  I want 2 crates of tomatoes and 1 bag of tatashe.\n3  Change the tatashe to 2 bags.\n4  Is delivery free for that?\n5  Please summarise my order and address.</pre><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Window</th><th>Message 5 reply</th><th>Result</th></tr></thead><tbody><tr><td>5</td><td>2 crates of tomatoes (₦25,000), 2 bags of tatashe (₦18,000), free delivery, to 14 Ring Road</td><td>Correct</td></tr><tr><td>1</td><td>\"Delivery is free for orders of ₦30,000 or more. What would you like to order, and where should we deliver?\"</td><td>Lost the address (message 1) and the items and change (messages 2 and 3)</td></tr></tbody></table></div><p><b>Why:</b> with window 1 the agent sees only the last interaction (message 4 and its reply), so everything before it is gone. Window 5 holds the whole conversation.</p><p>Log line: <i>\"Window 1 lost the 14 Ring Road address and the tatashe change from 1 bag to 2.\"</i></p>",
+      "mistakes": [
+        "Writing \"it forgot things\" for window 1 instead of naming the exact details lost.",
+        "Testing window 1 in the same chat session as window 5, so earlier history muddies the result; start a fresh chat for each run.",
+        "Putting the address in the system message during testing, so memory is never really tested.",
+        "Not checking the summary's prices against the price tool; the item change should change the total."
+      ],
+      "pass": "A five-message transcript where the window-5 summary has the right address, the changed item and a correct total, plus a window-1 run with the specific lost details written down.",
+      "redo": "Send it back if the window-1 result is vague, only one run is shown, or the window-5 summary is wrong."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's Telegram agent on Supabase.</p><ol><li><b>Credential:</b> a Postgres credential with Supabase's host, database, user, port and password. The password lives only in the credential.</li><li><b>Memory:</b> replace Simple Memory with <b>Postgres Chat Memory</b>. Session key: Define below → <code>tg-{{ $('Telegram Trigger').item.json.message.chat.id }}</code>. Table: <code>hl_chat_memory</code>. Context window length: 8.</li><li><b>Restart test:</b> from test account A, send \"Deliver to 14 Ring Road\" and \"2 crates of tomatoes\". Run <code>docker compose restart n8n</code>. Wait for n8n to come back, then send \"Where are you delivering?\" Expected: \"To 14 Ring Road.\"</li><li><b>Two-account test:</b> account B sends \"3 crates of eggs to Akobo\", then \"Where are you delivering?\" Expected: \"Akobo\", never Ring Road.</li></ol><p>In Supabase's SQL editor, run:</p><pre class=\"codebox\">SELECT session_id, count(*)\nFROM hl_chat_memory\nGROUP BY session_id;\n\nsession_id      | count\ntg-512349876    | 6\ntg-733120044    | 4</pre><p>Also check one detail by hand: open a row for <code>tg-512349876</code> and confirm the message text is account A's (\"14 Ring Road\"), never B's (\"Akobo\"). If both accounts ever appear under one key, the session key expression is wrong; fix it before going further.</p><p>Each test account has its own <code>session_id</code>, and every message row sits under the right one. Log the key expression, the row counts, and screenshots of both chats after the restart.</p>",
+      "mistakes": [
+        "Leaving Simple Memory attached as well, or forgetting to switch it off, so the restart test proves nothing.",
+        "Using the first name or a constant as the session key.",
+        "Restarting only the workflow (deactivate and activate) instead of the n8n container.",
+        "Pasting the database password into a node field or a screenshot instead of keeping it in the credential."
+      ],
+      "pass": "Screenshots show the conversation continuing correctly after a container restart, and the table shows two different channel-based session keys with each account's rows kept apart.",
+      "redo": "Send it back if there's no evidence of a real restart, the two accounts' rows share a key, or a password or connection string is visible."
+    },
+    "g": {
+      "answer": "<p>Worked example: Harvest Lane's memory policy and its tests.</p><p><b>Policy (summary).</b> We store chat messages in <code>hl_chat_memory</code> (Supabase) to help with your order. We keep them 30 days. Orders stay in the Orders sheet. We never store card numbers, PINs, passwords or one-time codes. Type \"forget me\" to delete your chat history at any time.</p><p><b>Build.</b></p><ul><li>Daily <b>HL · Forget old chats</b>: Schedule → Postgres: <code>DELETE FROM hl_chat_memory WHERE created_at &lt; now() - interval '30 days';</code> (a <code>created_at</code> column with default <code>now()</code> was added first).</li><li>Before the agent, an <b>IF</b> on <code>{{ /(\\d[ -]?){15,19}/.test($json.message.text) }}</code> (15 or more digits, so a +234 phone number, 13 digits, isn't caught). True → reply \"Please don't send card details here. Pay with our Paystack link.\" and stop, so the message never reaches the agent or memory.</li><li>Before the agent, an <b>IF</b> on text equal to \"forget me\" → Postgres: <code>DELETE FROM hl_chat_memory WHERE session_id = 'tg-' || $1;</code> with the chat ID from the trigger as the parameter → reply \"Done. Your chat history is deleted.\"</li></ul><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Rule</th><th>Test</th><th>Result</th></tr></thead><tbody><tr><td>30-day retention</td><td>Insert a test row dated 31 days ago, run clean-up</td><td>Row gone, today's rows kept</td></tr><tr><td>No card numbers</td><td>Send \"my card is 5399 8312 3456 7890\" (fake)</td><td>Warning sent, 0 new rows</td></tr><tr><td>Forget me</td><td>Account A sends \"forget me\"</td><td>A's rows: 0. B's rows: unchanged (4)</td></tr><tr><td>Orders kept</td><td>A asks \"same as last time\"</td><td>get_last_order still works</td></tr></tbody></table></div><p><b>Submit:</b> the half-page policy, the three workflows' screenshots, and the test table with row counts before and after.</p>",
+      "mistakes": [
+        "Running the clean-up on a table with no timestamp column, so the DELETE fails or deletes nothing.",
+        "Checking for card numbers after the agent, so the message is already saved in memory.",
+        "Building \"forget me\" with the customer identity from the model or the message text instead of the trigger's chat ID.",
+        "Testing \"forget me\" with one account only, so there's no proof the other history survives.",
+        "Using a real card number in the test instead of an obviously fake one."
+      ],
+      "pass": "A half-page policy covering what, where, how long, never-store and deletion, and one passing test per rule, including row counts showing \"forget me\" from account A left account B's rows untouched.",
+      "redo": "Send it back if any policy rule has no test, the sensitive-data check runs after memory is saved, the delete uses an identity the customer can type, or real personal data appears."
+    }
+  }
+}

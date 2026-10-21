@@ -1,0 +1,442 @@
+<template data-mod="0.3" id="tpl-0-3">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.3</span>
+    <h1>Data Is the Cargo: JSON &amp; Arrays</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: this page, JSONLint, JSON Crack</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">In Module 0.2 you saw apps send each other JSON. Now you'll learn to read and write it fluently. Every workflow you'll ever build moves JSON from one step to the next, so this is the single most useful hour in Base Camp.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Name the four basic data types and pick the right one for any field.</span></div>
+  <div><b>02</b><span>Build objects and arrays, including lists of objects.</span></div>
+  <div><b>03</b><span>Write a path to any value, like <code>items[1].unit_price</code>.</span></div>
+  <div><b>04</b><span>Handle dates, time zones, money and phone numbers without silent errors.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The sheet that added up to zero</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A spreadsheet whose total cell shows zero even though prices are listed.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="24" width="150" height="140" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">
+          <text x="162" y="50">₦12,500</text><text x="162" y="74">₦9,000</text><text x="162" y="98">₦5,000</text>
+          <path d="M150 110 H300" stroke="var(--line)" stroke-width="2"/>
+          <text x="162" y="132" font-weight="600">SUM =</text><text x="232" y="132" font-weight="600" fill="var(--glitch)">0</text>
+        </g>
+        <use href="#tolu" x="20" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday</b>Tolu's new sheet totals the week's sales. The answer: ₦0.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A phone number losing its leading zero and a date that can be read two ways.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="20" y="30" width="130" height="50" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="85" y="61" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="var(--ink)">08031234567</text>
+        <path d="M156 55 H184" stroke="var(--ink)" stroke-width="3"/><path d="M178 48 L186 55 L178 62" stroke="var(--ink)" stroke-width="3" fill="none"/>
+        <rect x="190" y="30" width="116" height="50" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <text x="248" y="61" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="var(--glitch)">8031234567</text>
+        <rect x="80" y="110" width="160" height="56" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="160" y="136" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="15" fill="var(--ink)">06/10</text>
+        <text x="160" y="156" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">6 October? or June 10?</text>
+      </svg>
+      <div class="cap"><b>Tuesday</b>Phone numbers lose their first zero. A delivery for "06/10" goes out in the wrong month.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo holds up a labelled shipping crate with compartments.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="40" width="150" height="120" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M150 80 H300 M150 120 H300 M225 40 V160" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A"><text x="158" y="64">name</text><text x="233" y="64">phone</text><text x="158" y="104">items</text><text x="233" y="104">qty</text><text x="158" y="144">paid</text><text x="233" y="144">date</text></g>
+        <use href="#nodo" x="14" y="56" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Wednesday</b>"Your data isn't wrong," says Nodo. "It's packed in the wrong boxes. Let me show you proper cargo."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch cheering beside a pile of mislabelled boxes.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2.5"><rect x="160" y="110" width="60" height="50" fill="var(--card)"/><rect x="226" y="110" width="60" height="50" fill="var(--card)"/><rect x="192" y="58" width="60" height="50" fill="var(--card)" transform="rotate(8 222 83)"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)"><text x="168" y="140">"12,500"</text><text x="232" y="140">'Tue'</text><text x="198" y="88" transform="rotate(8 222 83)">qty: "2"</text></g>
+        <use href="#glitch" x="24" y="50" width="120" height="120"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Numbers stored as words! Dates nobody can read! My favourite kind of data."</div>
+    </div>
+  </div>
+  <div class="prose"><p>Every one of Tolu's problems is a <b>type</b> problem. "₦12,500" typed with a symbol and comma is text, so the sheet can't add it. A phone number stored as a number drops its leading zero. "06/10" means different dates in Nigeria and the US. Machines are literal: they need data in the right shape and the right type.</p></div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 15 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Four types carry almost everything</h3>
+    <p>JSON (JavaScript Object Notation) is plain text with strict rules. Each value in it is one of these types:</p>
+    <div class="types">
+      <div style="--tc:var(--sky)"><b>String</b><code>"Mrs Adebayo"</code><p>Text, always in double quotes. Also phone numbers, IDs and codes.</p></div>
+      <div style="--tc:var(--volt)"><b>Number</b><code>12500</code><p>No quotes, no ₦, no commas. Anything you'll do maths with.</p></div>
+      <div style="--tc:var(--sun)"><b>Boolean</b><span><code>true</code> / <code>false</code></span><p>Yes or no. No quotes. "paid", "delivered", "is_vip".</p></div>
+      <div style="--tc:var(--line)"><b>Null</b><code>null</code><p>Deliberately empty: "we know there's no value".</p></div>
+    </div>
+    <div class="analogy"><b>The phone number rule:</b> if you'd never add two of them together, it's a string. Phone numbers, account numbers and order IDs are strings, even though they're made of digits. That's how you keep the leading zero in 08031234567.</div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Store money as a plain number in one currency unit and say which in the field name: <code>unit_price_ngn: 12500</code> or <code>amount_kobo: 1250000</code>. Add the ₦ and commas only when showing it to a person.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Objects are labelled boxes</h3>
+    <p>An <b>object</b> groups related values under names, inside curly braces. Each name is a <b>key</b> (always a string in double quotes), followed by a colon and its <b>value</b>. Pairs are separated by commas.</p>
+<pre class="codebox">{
+  <span class="k">"name"</span>: "Mrs Adebayo",
+  <span class="k">"phone"</span>: "+2348031234567",
+  <span class="k">"is_regular"</span>: true
+}</pre>
+    <div class="analogy"><b>Think of a crate with labelled compartments.</b> The label is the key; what's inside is the value. Order doesn't matter: you find things by label, not by position.</div>
+    <div class="never">
+      <div><b>Double quotes only</b><code>'name'</code> breaks JSON. Use <code>"name"</code>.</div>
+      <div><b>No trailing comma</b>The last pair has no comma after it.</div>
+      <div><b>No comments</b>JSON can't hold notes like <code>// check this</code>.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Arrays are numbered rows of crates</h3>
+    <p>An <b>array</b> is an ordered list inside square brackets. Positions are counted from <b>0</b>, so the first item is <code>[0]</code>. An array of objects is how JSON holds a table: each object is one row.</p>
+    <figure class="fig"><svg viewBox="0 0 620 170" role="img" aria-label="Three crates in a row labelled index 0, 1 and 2, each an object with name, quantity and price.">
+      <g font-family="JetBrains Mono,monospace">
+        <rect x="10" y="40" width="190" height="100" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="215" y="40" width="190" height="100" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="420" y="40" width="190" height="100" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="105" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">items[0]</text>
+        <text x="310" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">items[1]</text>
+        <text x="515" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">items[2]</text>
+        <g font-size="11" fill="#13233A">
+          <text x="24" y="70">name: "Tomatoes"</text><text x="24" y="94">qty: 2</text><text x="24" y="118">unit_price: 12500</text>
+          <text x="229" y="70">name: "Tatashe"</text><text x="229" y="94">qty: 1</text><text x="229" y="118">unit_price: 9000</text>
+          <text x="434" y="70">name: "Onions"</text><text x="434" y="94">qty: 3</text><text x="434" y="118">unit_price: 4000</text>
+        </g>
+      </g>
+      <text x="310" y="162" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--muted)">3 items · the last one is items[2], not items[3]</text>
+    </svg><figcaption>Counting from zero is the most common beginner bug. The last item is always at "length minus one".</figcaption></figure>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> One twist to remember for Track 2: in Make's mapping and its <code>get()</code> function, list positions start at <b>1</b>, not 0. JSON itself and n8n count from 0.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Nesting and paths: the address of a value</h3>
+    <p>Objects can hold objects and arrays, which can hold more objects. A <b>path</b> is the address of one value: use a dot to open an object's key and <code>[n]</code> to pick an array position.</p>
+    <figure class="fig"><svg viewBox="0 0 620 210" role="img" aria-label="Tree: order contains customer (with name and phone), items (with index 0 and 1, each with qty) and delivery (with date). Example paths shown.">
+      <defs><marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="JetBrains Mono,monospace" font-size="12">
+        <rect x="250" y="10" width="120" height="34" rx="17" fill="var(--ink)"/><text x="310" y="32" text-anchor="middle" fill="var(--paper)">order</text>
+        <rect x="40" y="80" width="130" height="32" rx="8" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="105" y="101" text-anchor="middle" fill="#fff">customer</text>
+        <rect x="245" y="80" width="130" height="32" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="310" y="101" text-anchor="middle" fill="#13233A">items [ ]</text>
+        <rect x="450" y="80" width="130" height="32" rx="8" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="515" y="101" text-anchor="middle" fill="#13233A">delivery</text>
+        <path d="M280 44 L125 78 M310 44 V78 M340 44 L495 78" stroke="var(--ink)" stroke-width="2" marker-end="url(#c1)"/>
+        <text x="20" y="150" fill="var(--ink)">name</text><text x="100" y="150" fill="var(--ink)">phone</text>
+        <text x="230" y="150" fill="var(--ink)">[0]</text><text x="360" y="150" fill="var(--ink)">[1]</text>
+        <text x="500" y="150" fill="var(--ink)">date</text>
+        <path d="M80 112 L45 136 M120 112 L125 136 M290 112 L245 136 M330 112 L370 136 M515 112 V136" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="230" y="176" fill="var(--muted)" font-size="11">qty · unit_price</text>
+      </g>
+      <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--spark)">
+        <text x="20" y="200">customer.name</text><text x="220" y="200">items[1].qty</text><text x="440" y="200">delivery.date</text>
+      </g>
+    </svg><figcaption>Read a path left to right, like directions: start at the order, open "items", take the second one, read its "qty".</figcaption></figure>
+    <div class="syn">
+      <div><b>n8n</b><code>{{ $json.items[1].qty }}</code><span style="font-size:.86rem;color:var(--muted)">Counts from 0, exactly like JSON.</span></div>
+      <div><b>Make</b><code>{{get(1.items; 2).qty}}</code><span style="font-size:.86rem;color:var(--muted)">Counts from 1, so the second item is 2.</span></div>
+      <div><b>Zapier</b><span style="font-size:.86rem;color:var(--muted)">Shows nested fields with friendly labels like "Items Qty" and handles lists as "line items". You'll rarely type a path, but knowing the shape explains its choices.</span></div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Dates, times and time zones</h3>
+    <p>Use the international <b>ISO 8601</b> format: biggest unit first, so it can only be read one way and sorts correctly as text.</p>
+    <div class="urlparts" aria-label="An ISO 8601 timestamp broken into parts">
+      <span style="--pc:#FFD37A"><i>Year</i>2026</span><span style="--pc:#FFC59E"><i></i>-</span><span style="--pc:#9FD3F7"><i>Month</i>10</span><span style="--pc:#FFC59E"><i></i>-</span><span style="--pc:#8FE0B5"><i>Day</i>06</span><span style="--pc:#FFC59E"><i>Time starts</i>T</span><span style="--pc:#C9BBFF"><i>Hour:min:sec</i>14:00:00</span><span style="--pc:#FF9FA4"><i>Offset from UTC</i>+01:00</span>
+    </div>
+    <div class="vocab">
+      <div><b>WAT = UTC+01:00</b>Nigeria's time zone. Many servers work in UTC, one hour behind Lagos.</div>
+      <div><b>Date only</b><code>"2026-10-06"</code> when time doesn't matter, like a delivery day.</div>
+      <div><b>Unix timestamp</b>Seconds since 1 Jan 1970, e.g. <code>1791291600</code>. Some APIs use it; platforms convert it for you.</div>
+      <div><b>Never "06/10"</b>It's 6 October in Nigeria and June 10 in the US. Convert at the edges; store ISO inside.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=JSON+crash+course+for+beginners" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A 10–15 minute "JSON crash course"</b><small>Look for: objects vs. arrays, and how nesting builds up. Skip any JavaScript coding sections for now.</small></span></a>
+    <a class="wcard" href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>MDN: Working with JSON (read the first half)</b><small>Look for: the superhero-squad example, and how they reach a value deep inside it.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/build/work-with-data/transform-data/expression-reference" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: expression reference</b><small>Skim only: notice that n8n data is a list of objects ("items"), exactly what you learn today.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 25 MIN</span><h2>Solved problem: turn a WhatsApp order into clean cargo</h2></div>
+  <div class="prose"><p><b>The problem.</b> This message arrived on Monday 5 October 2026 at 8:14 a.m. Turn it into JSON that any automation could use, then calculate the total from paths. Prices: tomatoes ₦12,500 per crate, big bag of tatashe ₦9,000, delivery ₦1,500.</p></div>
+  <div class="bubble" style="max-width:62ch"><b>Customer:</b> Good morning! Pls I need 2 crates of tomatoes and 1 big bag of pepper (tatashe). Deliver Tuesday afternoon to 14 Ring Road, Ibadan. Mrs Adebayo 08031234567 🙏</div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Find the things in the message</h4>
+      <p>Read it like a machine would need it. There are three groups: <b>who</b> (name, phone), <b>what</b> (two products, each with a quantity), and <b>where and when</b> (address, day, time of day). Tuesday after Monday 5 October is 6 October.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Choose a type for every field</h4>
+      <div class="tablewrap"><table class="dt" style="min-width:0">
+        <thead><tr><th>Field</th><th>Type</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>phone</td><td>string</td><td>Keeps the country code and leading digits; never added up.</td></tr>
+          <tr><td>qty, unit_price</td><td>number</td><td>You'll multiply them.</td></tr>
+          <tr><td>items</td><td>array of objects</td><td>An order can have any number of products.</td></tr>
+          <tr><td>delivery.date</td><td>string (ISO date)</td><td>"2026-10-06" can't be misread.</td></tr>
+          <tr><td>paid</td><td>boolean</td><td>Yes or no, nothing else.</td></tr>
+          <tr><td>notes</td><td>null</td><td>No notes this time, and we say so on purpose.</td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the JSON</h4>
+      <p>Group related fields into objects (<code>customer</code>, <code>delivery</code>), put products in an array, and give each product a stable code (<code>sku</code>) so later steps don't depend on how a customer spells "tatashe".</p>
+<pre class="codebox">{
+  "order_id": "HL-0043",
+  "received_at": "2026-10-05T08:14:00+01:00",
+  "customer": { "name": "Mrs Adebayo", "phone": "+2348031234567" },
+  "items": [
+    { "sku": "TOM-CRATE", "name": "Tomatoes", "unit": "crate", "qty": 2, "unit_price": 12500 },
+    { "sku": "PEP-TATASHE-L", "name": "Tatashe pepper", "unit": "big bag", "qty": 1, "unit_price": 9000 }
+  ],
+  "delivery": { "address": "14 Ring Road, Ibadan", "date": "2026-10-06", "window": "afternoon", "fee": 1500 },
+  "paid": false,
+  "notes": null
+}</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test it and pull values out with paths</h4>
+      <p>This lab holds the JSON above. Tap a path, or type your own, and see exactly what comes back and what type it is. Try editing the JSON too: delete a comma and watch it break.</p>
+      <div class="jsonlab" data-jsonlab>
+        <label class="crit" for="jl-0-3-a">JSON</label>
+        <textarea id="jl-0-3-a" spellcheck="false">{
+  "order_id": "HL-0043",
+  "received_at": "2026-10-05T08:14:00+01:00",
+  "customer": { "name": "Mrs Adebayo", "phone": "+2348031234567" },
+  "items": [
+    { "sku": "TOM-CRATE", "name": "Tomatoes", "unit": "crate", "qty": 2, "unit_price": 12500 },
+    { "sku": "PEP-TATASHE-L", "name": "Tatashe pepper", "unit": "big bag", "qty": 1, "unit_price": 9000 }
+  ],
+  "delivery": { "address": "14 Ring Road, Ibadan", "date": "2026-10-06", "window": "afternoon", "fee": 1500 },
+  "paid": false,
+  "notes": null
+}</textarea>
+        <span class="jl-status"></span>
+        <label class="crit" for="jl-0-3-a-path">Path</label>
+        <input id="jl-0-3-a-path" type="text" value="items[1].unit_price" spellcheck="false">
+        <div class="pathchips">
+          <button type="button" data-p="customer.name">customer.name</button>
+          <button type="button" data-p="items[0].qty">items[0].qty</button>
+          <button type="button" data-p="items[1].unit_price">items[1].unit_price</button>
+          <button type="button" data-p="delivery.fee">delivery.fee</button>
+          <button type="button" data-p="items">items</button>
+          <button type="button" data-p="items[2].qty">items[2].qty</button>
+          <button type="button" data-p="paid">paid</button>
+        </div>
+        <div class="jl-out"></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Calculate the total from paths</h4>
+<pre class="codebox">items[0].qty × items[0].unit_price   = 2 × 12500 = 25000
+items[1].qty × items[1].unit_price   = 1 ×  9000 =  9000
+                            delivery.fee         =  1500
+                                         <span class="k">total = 35500</span></pre>
+      <p>Only now, when showing it to Mrs Adebayo, does it become "₦35,500". Inside the data it stays <code>35500</code>, so every later step can do maths with it.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Coming in Module 0.5:</b> you'll write a prompt that makes an AI model produce exactly this JSON from any messy message. You now know what "exactly this" means, which is what makes that prompt reliable.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Flatten it into rows (a preview of 0.4)</h4>
+      <p>Spreadsheets can't hold a list inside a cell cleanly. So the order becomes one row in an <b>Orders</b> table and one row <i>per item</i> in an <b>Order items</b> table, linked by <code>order_id</code>.</p>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>order_id</th><th>sku</th><th class="n">qty</th><th class="n">unit_price</th><th class="n">line_total</th></tr></thead>
+        <tbody><tr><td>HL-0043</td><td>TOM-CRATE</td><td class="n">2</td><td class="n">12500</td><td class="n">25000</td></tr><tr><td>HL-0043</td><td>PEP-TATASHE-L</td><td class="n">1</td><td class="n">9000</td><td class="n">9000</td></tr></tbody>
+      </table></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Choosing types first prevents the ₦0 total and lost zeros.</li><li>Grouping into objects keeps paths short and readable.</li><li>An array handles one product or fifty with the same design.</li><li>A <code>sku</code> gives later steps a stable ID regardless of spelling.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Money written as <code>"₦12,500"</code> (a string).</li><li>Separate fields <code>item1</code>, <code>item2</code> instead of an array.</li><li>Relative dates like "Tuesday" kept in the data.</li><li>Reaching for <code>items[2]</code> when there are only two items.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I "improved" an order. It won't even load now. Fix it right here until the lab says Valid, then find the three sneaky type problems that still hide inside.</div></div>
+    <div class="jsonlab" data-jsonlab>
+      <label class="crit" for="jl-0-3-b">Glitch's JSON · edit to fix</label>
+      <textarea id="jl-0-3-b" spellcheck="false">{
+  'order_id': "HL-0044",
+  "customer": { "name": "Mr Okafor", "phone": 8059876543 },
+  "items": [
+    { "sku": "ONI-BAG", "qty": "3", "unit_price": "₦4,000" },
+  ],
+  "delivery": { "date": "07/10" },
+  "paid": "no"
+}</textarea>
+      <span class="jl-status"></span>
+      <label class="crit" for="jl-0-3-b-path">Path</label>
+      <input id="jl-0-3-b-path" type="text" value="items[0].qty" spellcheck="false">
+      <div class="jl-out"></div>
+    </div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <p><b>Two syntax errors</b> stop it loading:</p>
+      <ol><li><code>'order_id'</code> uses single quotes. Keys need double quotes.</li><li>A trailing comma after the last item in <code>items</code>.</li></ol>
+      <p><b>Five type problems</b> load fine but break later:</p>
+      <ol><li><code>phone</code> is a number: the leading 0 is gone. Use <code>"+2348059876543"</code>.</li><li><code>qty</code> is the string <code>"3"</code>. Use <code>3</code>.</li><li><code>unit_price</code> is <code>"₦4,000"</code>. Use <code>4000</code>.</li><li><code>date</code> is <code>"07/10"</code>. Use <code>"2026-10-07"</code>.</li><li><code>paid</code> is the string <code>"no"</code>. Use <code>false</code>.</li></ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 17 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Describe yourself in JSON</h4>
+    <ul><li>Write JSON about you and your work with at least 8 fields.</li><li>Include at least one of each: string, number, boolean, null, a nested object, and an array.</li><li>Paste it into the lab above (replace the order) until it says Valid, then write three paths and check each one.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>It's valid, uses all six features, and all three paths return what you expected.</li></ul>
+    <details class="reveal"><summary>See a model answer</summary><div>
+<pre class="codebox">{
+  "name": "Ada Obi",
+  "city": "Enugu",
+  "years_in_business": 4,
+  "has_website": false,
+  "tagline": null,
+  "business": { "name": "Ada's Kitchen", "type": "catering", "staff": 3 },
+  "services": ["weddings", "office lunches", "small chops"]
+}
+<span class="c">business.name → "Ada's Kitchen"   services[2] → "small chops"   business.staff → 3</span></pre>
+    </div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Model three orders and total them</h4>
+    <ul>
+      <li>Write an array of three Harvest Lane orders, each with a customer object, an items array (at least one order with three items), a delivery fee and a <code>paid</code> flag.</li>
+      <li>Write the paths for: the second order's customer phone; the third item of whichever order has three; every <code>paid</code> value.</li>
+      <li>Calculate each order's total by hand from paths, then the grand total of unpaid orders only.</li>
+    </ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your paths start from the top-level array, e.g. <code>[1].customer.phone</code>, and your unpaid total is correct.</li></ul>
+    <details class="reveal"><summary>Hint</summary><div><p>When the JSON starts with <code>[</code>, the whole thing is an array, so every path begins with a position: <code>[0].items[2].qty</code>. The lab above accepts paths that start this way.</p></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Map a real API response</h4>
+    <ul>
+      <li>Call the Open-Meteo request from Module 0.2 (or the public holidays API) and paste the full response into the lab.</li>
+      <li>Write working paths for 10 values, including at least three inside arrays.</li>
+      <li>Design how you'd flatten it into a sheet: which table(s), which columns, one row per what?</li>
+      <li>Write each of three paths in both n8n and Make syntax, remembering Make counts from 1.</li>
+    </ul>
+    <span class="crit">Done when</span>
+    <ul><li>All 10 paths work in the lab, your table design has no lists inside cells, and your Make paths are shifted by one.</li></ul>
+    <details class="reveal"><summary>See part of a model answer</summary><div>
+      <p>Open-Meteo's <code>daily</code> object holds parallel arrays, so the right flattening is <b>one row per day</b>: column <code>date</code> from <code>daily.time[n]</code>, column <code>rain_chance</code> from <code>daily.precipitation_probability_max[n]</code>, same n.</p>
+      <p>Tomorrow's rain chance: n8n <code>{{ $json.daily.precipitation_probability_max[1] }}</code> · Make <code>{{get(1.daily.precipitation_probability_max; 2)}}</code>.</p>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Which of these is valid JSON?</p><div class="opts">
+      <button type="button" data-opt="a">{'qty': 2}</button><button type="button" data-opt="b">{qty: 2}</button><button type="button" data-opt="c">{"qty": 2}</button><button type="button" data-opt="d">{"qty": 2,}</button></div>
+      <p class="fb" hidden data-why="Keys need double quotes, and there's no comma after the last pair."></p></div>
+    <div class="q" data-ans="b"><p>2. What type should a phone number like 08031234567 be?</p><div class="opts">
+      <button type="button" data-opt="a">Number</button><button type="button" data-opt="b">String</button><button type="button" data-opt="c">Boolean</button><button type="button" data-opt="d">Array</button></div>
+      <p class="fb" hidden data-why="You never do maths with it, and as a number it loses the leading zero."></p></div>
+    <div class="q" data-ans="d"><p>3. An order has three items. What does <code>items[1]</code> point to?</p><div class="opts">
+      <button type="button" data-opt="a">The first item</button><button type="button" data-opt="b">The last item</button><button type="button" data-opt="c">Nothing; lists start at 1</button><button type="button" data-opt="d">The second item</button></div>
+      <p class="fb" hidden data-why="JSON arrays count from 0, so [1] is the second item. (Make's get() is the exception, counting from 1.)"></p></div>
+    <div class="q" data-ans="a"><p>4. In the solved problem's order, what's the path to the delivery date?</p><div class="opts">
+      <button type="button" data-opt="a">delivery.date</button><button type="button" data-opt="b">date.delivery</button><button type="button" data-opt="c">delivery[date]</button><button type="button" data-opt="d">items[0].date</button></div>
+      <p class="fb" hidden data-why="Open the delivery object, then read its date key."></p></div>
+    <div class="q" data-ans="b"><p>5. Which date can only be read one way?</p><div class="opts">
+      <button type="button" data-opt="a">06/10/2026</button><button type="button" data-opt="b">2026-10-06</button><button type="button" data-opt="c">Tuesday</button><button type="button" data-opt="d">6/10/26</button></div>
+      <p class="fb" hidden data-why="ISO 8601 puts year, month, day in that order, so it's unambiguous and sorts correctly."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-0-3">AUTOMANCY LOG · Lesson 0.3 · Data Is the Cargo
+Date:
+JSON I wrote (what it describes):
+Fields by type — strings:   numbers:   booleans:   nulls:
+Deepest path I wrote and its value:
+A bug I fixed (before → after):
+How I'd flatten it into a sheet:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-0-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Four types: string, number, boolean, null. Pick the type by what you'll do with the value.</li>
+      <li>Phone numbers and IDs are strings; money is a plain number in one stated unit.</li>
+      <li>Objects are labelled boxes <code>{ }</code>; arrays are numbered lists <code>[ ]</code> counted from 0.</li>
+      <li>A path is directions to a value: dots open keys, <code>[n]</code> picks a position.</li>
+      <li>Double quotes, no trailing commas, no comments.</li>
+      <li>Dates in ISO 8601; know whether a time is in UTC or Lagos time.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON" target="_blank" rel="noopener">MDN: Working with JSON</a></li>
+    <li><span class="kind">Course</span><a href="https://n8n.io/education/" target="_blank" rel="noopener">n8n Academy: free courses (n8n101 Essentials covers working with data)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy: data types, arrays and collections</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=JSON+crash+course+for+beginners" target="_blank" rel="noopener">YouTube: JSON crash course for beginners</a></li>
+    <li><span class="kind">Tool</span><a href="https://jsonlint.com/" target="_blank" rel="noopener">JSONLint</a> · <a href="https://jsoncrack.com/editor" target="_blank" rel="noopener">JSON Crack (draws JSON as a tree)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Bring physical props: a box with labelled compartments (object) and a row of numbered cups (array). Ask learners to "walk a path" by pointing. Before the solved problem, let pairs write their own JSON for the WhatsApp message and compare designs; there's more than one good answer, and the discussion about types is the lesson.</p>
+  </div>
+</section>
+
+</article>
+</template>

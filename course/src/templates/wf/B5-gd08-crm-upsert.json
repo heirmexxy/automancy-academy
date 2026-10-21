@@ -1,0 +1,1056 @@
+{
+  "name": "GD·08 CRM · Upsert lead",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·08 CRM · Upsert lead (Boss 5 · D6b, from 5.9)\nONE sub-workflow every engine calls when a business lead appears (outreach reply, Instagram/Facebook comment, WhatsApp, email).\nInput: lead_id, customer_id, name, email, phone, company, domain, business_type, lead_source, consent, intent, delivery_zone, asked_price_or_tasting, email_opens, staff.\n1 normalise (email lowercase, phone +234…, domain without www) and SCORE in code\n2 company: CRM ID already saved? → else search by domain → update : create\n3 contact: create or update BY EMAIL (or saved ID / create when no email)\n4 associate contact ↔ company\n5 crossed the call-first threshold → lifecycle Sales qualified lead + \"Call today\" task + Telegram ping\n6 buying intent and no open deal for this company → deal at New enquiry, owner Tolu, associated to both\n7 CRM IDs saved in Supabase (customers + leads). It never changes a deal stage.\n\n**Credentials:** HubSpot App Token (private app), Postgres, Telegram.\n**Replace:** YOUR_HUBSPOT_OWNER_ID (Tolu), YOUR_STAGE_NEW_ENQUIRY, YOUR_PIPELINE_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 500,
+        "width": 460
+      },
+      "id": "a671d3f0-c21e-49df-a056-96413dfc9097",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -468
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "991d708e-7a9b-4a0a-8e1a-149733ec2e4d",
+      "name": "Called by an engine",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Normalise keys, then score (weights calibrated in the 5.9 Card 3 lab).\nconst W = { type: 20, asked: 25, opens: 5, size: 10 };\nconst L = { ...$json };\nconst free = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'ymail.com'];\nL.email = L.email ? String(L.email).trim().toLowerCase() : '';\nif (L.phone) { const d = String(L.phone).replace(/\\D/g, '').replace(/^(234|0)/, ''); L.phone = d.length === 10 ? '+234' + d : ''; }\nL.domain = String(L.domain || '').toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0];\nif (!L.domain && L.email && !free.includes(L.email.split('@')[1])) L.domain = L.email.split('@')[1];\nL.company = String(L.company || '').trim();\nconst [first, ...rest] = String(L.name || '').trim().split(/\\s+/);\nL.firstname = first || ''; L.lastname = rest.join(' ');\nlet s = 0, ready = false, why = '';\nif (L.delivery_zone !== 'in') { why = 'outside delivery zone'; }\nelse {\n  s = 30;\n  if (['restaurant', 'hotel', 'caterer'].includes(L.business_type)) s += W.type;\n  if (L.asked_price_or_tasting) s += W.asked;\n  if (Number(L.email_opens) >= 3) s += W.opens;\n  if (Number(L.staff) >= 20) s += W.size;\n  ready = s >= 65;\n}\nreturn { json: { ...L, harvest_score: s, ready, why } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "ca818a53-f88e-4ff0-bd92-3c2ecadad556",
+      "name": "Normalise and score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT coalesce(c.crm_company_id, l.crm_company_id) AS crm_company_id,\n       coalesce(c.crm_contact_id, l.crm_contact_id) AS crm_contact_id,\n       coalesce(c.harvest_score, l.harvest_score, 0) AS previous_score\nFROM (SELECT 1) x\nLEFT JOIN customers c ON c.customer_id = nullif($1, '')\nLEFT JOIN leads l ON l.lead_id::text = nullif($2, '');",
+        "options": {
+          "queryReplacement": "={{ [ $json.customer_id ?? '', String($json.lead_id ?? '') ] }}"
+        }
+      },
+      "id": "582efcce-f746-4440-b169-2656c218e256",
+      "name": "Known CRM IDs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "7edbe80e-06cf-4183-93ca-0b4346f227b8",
+              "leftValue": "={{ $json.crm_company_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ab7450ba-14f3-4c63-a616-3c4edfd5c5bd",
+      "name": "Company known?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8469f451-ee12-467b-baaa-1a42c73a7e10",
+              "leftValue": "={{ $('Normalise and score').item.json.domain }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "02929ca1-2761-4ce6-8361-a36665be215f",
+      "name": "Has domain?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ filterGroups: [{ filters: [{ propertyName: 'domain', operator: 'EQ', value: $('Normalise and score').item.json.domain }] }], properties: ['name', 'domain'], limit: 1 }) }}",
+        "options": {}
+      },
+      "id": "a63f1e83-a8e2-4abe-bb0d-204b3758fe93",
+      "name": "Search company by domain",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        72
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ad00caa7-395f-4499-805b-b869f255df54",
+              "leftValue": "={{ $json.total ?? 0 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "21fe7ebb-1ab2-4274-94bb-69b16c1d5ffa",
+      "name": "Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        72
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/companies/{{ $json.results[0].id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { business_type: $('Normalise and score').item.json.business_type || undefined, delivery_zone: $('Normalise and score').item.json.delivery_zone || undefined } }) }}",
+        "options": {}
+      },
+      "id": "4f92ebe2-ef73-4824-add6-5d77fe93567c",
+      "name": "Update company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { name: $('Normalise and score').item.json.company || $('Normalise and score').item.json.domain, domain: $('Normalise and score').item.json.domain || undefined, business_type: $('Normalise and score').item.json.business_type || undefined, delivery_zone: $('Normalise and score').item.json.delivery_zone || undefined } }) }}",
+        "options": {}
+      },
+      "id": "c4b137d9-59de-4bc9-adc1-8f57404e152e",
+      "name": "Create company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        216
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d134e701-5f7f-4378-825d-57ac42ff7db0",
+              "name": "company_id",
+              "value": "={{ $json.id ?? $json.crm_company_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5650c26b-f007-4cc9-85b8-ddb5793a3373",
+      "name": "Company ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e05fbfa9-94cb-4204-8b34-9f88ff8b627b",
+              "leftValue": "={{ $('Normalise and score').item.json.email }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0a67d567-06d1-4269-98de-5ad7384e2a78",
+      "name": "Has email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/batch/upsert",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: [{ idProperty: 'email', id: $('Normalise and score').item.json.email, properties: { email: $('Normalise and score').item.json.email || undefined, firstname: $('Normalise and score').item.json.firstname || undefined, lastname: $('Normalise and score').item.json.lastname || undefined, phone: $('Normalise and score').item.json.phone || undefined, company: $('Normalise and score').item.json.company || undefined, lead_source: $('Normalise and score').item.json.lead_source, marketing_consent: $('Normalise and score').item.json.consent || 'unknown', consent_date: $('Normalise and score').item.json.consent === 'yes' ? $now.toFormat('yyyy-LL-dd') : undefined, harvest_score: $('Normalise and score').item.json.harvest_score } }] }) }}",
+        "options": {}
+      },
+      "id": "4bce532b-89b9-4436-8e3c-2cad96d25232",
+      "name": "Contact: create or update by email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -108
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e69e505c-3b4e-42eb-9e70-490c53a07a8c",
+              "leftValue": "={{ $('Known CRM IDs').item.json.crm_contact_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ee0bbb79-3316-49bd-8166-86f6e7955609",
+      "name": "Contact known?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Known CRM IDs').item.json.crm_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { email: $('Normalise and score').item.json.email || undefined, firstname: $('Normalise and score').item.json.firstname || undefined, lastname: $('Normalise and score').item.json.lastname || undefined, phone: $('Normalise and score').item.json.phone || undefined, company: $('Normalise and score').item.json.company || undefined, lead_source: $('Normalise and score').item.json.lead_source, marketing_consent: $('Normalise and score').item.json.consent || 'unknown', consent_date: $('Normalise and score').item.json.consent === 'yes' ? $now.toFormat('yyyy-LL-dd') : undefined, harvest_score: $('Normalise and score').item.json.harvest_score } }) }}",
+        "options": {}
+      },
+      "id": "2a546bf9-354f-4acd-a0ee-90e2f2c35462",
+      "name": "Update contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        54
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { email: $('Normalise and score').item.json.email || undefined, firstname: $('Normalise and score').item.json.firstname || undefined, lastname: $('Normalise and score').item.json.lastname || undefined, phone: $('Normalise and score').item.json.phone || undefined, company: $('Normalise and score').item.json.company || undefined, lead_source: $('Normalise and score').item.json.lead_source, marketing_consent: $('Normalise and score').item.json.consent || 'unknown', consent_date: $('Normalise and score').item.json.consent === 'yes' ? $now.toFormat('yyyy-LL-dd') : undefined, harvest_score: $('Normalise and score').item.json.harvest_score } }) }}",
+        "options": {}
+      },
+      "id": "c0462c42-9146-4d08-a79a-736d4a6c8e5c",
+      "name": "Create contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        198
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "291128eb-1827-41ca-ae3d-201804e20e65",
+              "name": "contact_id",
+              "value": "={{ $json.results?.[0]?.id ?? $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "5c7d5f37-c74d-4492-9515-75085f466619",
+              "name": "company_id",
+              "value": "={{ $('Company ID').item.json.company_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd5a2d0a-5a14-4aff-a855-1ec5f47ec8ba",
+      "name": "Contact ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/contacts/{{ $json.contact_id }}/associations/default/companies/{{ $json.company_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "id": "5040a55c-0791-45cb-bebf-5821d252d1b2",
+      "name": "Associate contact ↔ company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "5a112971-a8ec-4136-9856-b3ef63e9bfdf",
+              "leftValue": "={{ $('Normalise and score').item.json.ready }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "784d068f-a767-461e-9e1a-06ccbee9adc0",
+              "leftValue": "={{ Number($('Known CRM IDs').item.json.previous_score) }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              },
+              "rightValue": 65
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "84742f69-31b6-4d68-abb8-01b6b168458c",
+      "name": "Crossed call-first threshold?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Contact ID').item.json.contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { lifecyclestage: 'salesqualifiedlead' } }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "3a482a20-3aa9-465d-8e66-8374807f5c93",
+      "name": "Lifecycle → Sales qualified lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3300,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.set({ hour: 17, minute: 0 }).toISO(), hs_task_subject: 'Call today: ' + ($('Normalise and score').item.json.company || $('Normalise and score').item.json.name), hs_task_body: 'Score ' + $('Normalise and score').item.json.harvest_score + ' from ' + $('Normalise and score').item.json.lead_source + '. Asked about prices or a tasting.', hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hubspot_owner_id: 'YOUR_HUBSPOT_OWNER_ID' }, associations: [{ to: { id: $('Contact ID').item.json.contact_id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 204 }] }] }) }}",
+        "options": {}
+      },
+      "id": "eb9fd022-08f0-4f8a-9c55-e01c69c382bd",
+      "name": "Task: Call today",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=📞 Call first: {{ $('Normalise and score').item.json.company || $('Normalise and score').item.json.name }} scored {{ $('Normalise and score').item.json.harvest_score }} ({{ $('Normalise and score').item.json.lead_source }}). Task \"Call today\" is in HubSpot.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1660e150-af93-4afc-b09a-fc974a88e7a7",
+      "name": "Ping Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3740,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "2dd128cf-7ad5-4023-a30f-0245c04e7c0d",
+              "leftValue": "={{ $('Normalise and score').item.json.intent }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "buying"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b59a5864-9202-4a7b-acb7-f81403702543",
+      "name": "Buying intent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ filterGroups: [{ filters: [{ propertyName: 'associations.company', operator: 'EQ', value: $('Contact ID').item.json.company_id }, { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' }] }], properties: ['dealname', 'dealstage'], limit: 1 }) }}",
+        "options": {}
+      },
+      "id": "d2cbaed6-6fb4-4e93-bead-3a1ecb09964b",
+      "name": "Open deal for this company?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4180,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6b80ec1b-17e0-490a-b716-7d2c108233d2",
+              "leftValue": "={{ $json.total ?? 0 }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "48f05b37-de6b-4180-8dbd-f8f17f6a4b95",
+      "name": "No open deal?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { dealname: ($('Normalise and score').item.json.company || $('Normalise and score').item.json.name) + ' · supply', pipeline: 'YOUR_PIPELINE_ID', dealstage: 'YOUR_STAGE_NEW_ENQUIRY', hubspot_owner_id: 'YOUR_HUBSPOT_OWNER_ID' }, associations: [ { to: { id: $('Contact ID').item.json.company_id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 5 }] }, { to: { id: $('Contact ID').item.json.contact_id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] } ] }) }}",
+        "options": {}
+      },
+      "id": "5cacf1ef-6761-4e58-8108-65f52fb6dc52",
+      "name": "Create deal at New enquiry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4620,
+        -162
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH c AS (\n  UPDATE customers SET crm_company_id = $2, crm_contact_id = $3, crm_deal_id = coalesce(nullif($4, ''), crm_deal_id), harvest_score = $5\n  WHERE customer_id = nullif($1, '') RETURNING customer_id\n), l AS (\n  UPDATE leads SET crm_company_id = $2, crm_contact_id = $3, crm_deal_id = coalesce(nullif($4, ''), crm_deal_id), harvest_score = $5\n  WHERE lead_id::text = nullif($6, '') RETURNING lead_id\n)\nINSERT INTO events (workflow, lead_id, event, detail)\nVALUES ('GD·08', nullif($6, ''), 'crm_upsert', jsonb_build_object('company', $2, 'contact', $3, 'deal', nullif($4, ''), 'score', $5::int))\nRETURNING lead_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalise and score').item.json.customer_id ?? '', $('Contact ID').item.json.company_id, $('Contact ID').item.json.contact_id, String($('Create deal at New enquiry').isExecuted ? $('Create deal at New enquiry').item.json.id : ''), $('Normalise and score').item.json.harvest_score, String($('Normalise and score').item.json.lead_id ?? '') ] }}"
+        }
+      },
+      "id": "a56218fa-7b82-4323-871b-30f9b3c8464b",
+      "name": "Save CRM IDs in Supabase",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        4840,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9502a326-f3e1-4070-97e6-6e42f24d6247",
+              "name": "contact_id",
+              "value": "={{ $('Contact ID').item.json.contact_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b801a310-6852-45f6-86e5-1673ba51e3fb",
+              "name": "company_id",
+              "value": "={{ $('Contact ID').item.json.company_id }}",
+              "type": "string"
+            },
+            {
+              "id": "018df3f6-83f4-4c6d-a855-e72e1766ae71",
+              "name": "harvest_score",
+              "value": "={{ $('Normalise and score').item.json.harvest_score }}",
+              "type": "number"
+            },
+            {
+              "id": "f2cea722-62f8-45a4-a486-b8b79b919ac5",
+              "name": "ready",
+              "value": "={{ $('Normalise and score').item.json.ready }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e07b55c0-f046-46c5-844b-74f279632d25",
+      "name": "Return to caller",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5060,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Decision: no email, no domain\nA lead with neither (e.g. an Instagram comment) gets a new company and contact once; their CRM IDs are saved on the customer, so the next message from the same verified customer updates the same records. If the same business later writes from its domain, the Monday Ops Agent proposes the merge.",
+        "height": 180,
+        "width": 380
+      },
+      "id": "fdcedf81-c3d2-4756-af48-506edda9199e",
+      "name": "Sticky Note 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        880,
+        324
+      ]
+    }
+  ],
+  "connections": {
+    "Called by an engine": {
+      "main": [
+        [
+          {
+            "node": "Normalise and score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise and score": {
+      "main": [
+        [
+          {
+            "node": "Known CRM IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Known CRM IDs": {
+      "main": [
+        [
+          {
+            "node": "Company known?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company known?": {
+      "main": [
+        [
+          {
+            "node": "Company ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has domain?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has domain?": {
+      "main": [
+        [
+          {
+            "node": "Search company by domain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search company by domain": {
+      "main": [
+        [
+          {
+            "node": "Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found?": {
+      "main": [
+        [
+          {
+            "node": "Update company",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update company": {
+      "main": [
+        [
+          {
+            "node": "Company ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create company": {
+      "main": [
+        [
+          {
+            "node": "Company ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company ID": {
+      "main": [
+        [
+          {
+            "node": "Has email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has email?": {
+      "main": [
+        [
+          {
+            "node": "Contact: create or update by email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contact known?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact known?": {
+      "main": [
+        [
+          {
+            "node": "Update contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact: create or update by email": {
+      "main": [
+        [
+          {
+            "node": "Contact ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update contact": {
+      "main": [
+        [
+          {
+            "node": "Contact ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create contact": {
+      "main": [
+        [
+          {
+            "node": "Contact ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact ID": {
+      "main": [
+        [
+          {
+            "node": "Associate contact ↔ company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate contact ↔ company": {
+      "main": [
+        [
+          {
+            "node": "Crossed call-first threshold?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crossed call-first threshold?": {
+      "main": [
+        [
+          {
+            "node": "Lifecycle → Sales qualified lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buying intent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lifecycle → Sales qualified lead": {
+      "main": [
+        [
+          {
+            "node": "Task: Call today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task: Call today": {
+      "main": [
+        [
+          {
+            "node": "Ping Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ping Tolu": {
+      "main": [
+        [
+          {
+            "node": "Buying intent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buying intent?": {
+      "main": [
+        [
+          {
+            "node": "Open deal for this company?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save CRM IDs in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open deal for this company?": {
+      "main": [
+        [
+          {
+            "node": "No open deal?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No open deal?": {
+      "main": [
+        [
+          {
+            "node": "Create deal at New enquiry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save CRM IDs in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create deal at New enquiry": {
+      "main": [
+        [
+          {
+            "node": "Save CRM IDs in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save CRM IDs in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Return to caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,335 @@
+<template data-mod="1.6" id="tpl-1-6">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.6</span>
+    <h1>Agents, Copilot, MCP &amp; Knowing the Limits</h1>
+    <div class="kicker"><span class="pill">≈ 110 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Bolt, Sage, Nodo</span><span class="pill">Tools: Zapier Copilot, Agents, MCP</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">The last stop on Spark Street. You'll build a Zap by describing it, give an AI agent tools to answer customers, let an AI assistant act in your apps through MCP, and then do the maths that tells you when Zapier stops being the right tool.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Build with Copilot, then audit what it made.</span></div>
+  <div><b>02</b><span>Set up a Zapier Agent with instructions, tools and knowledge.</span></div>
+  <div><b>03</b><span>Connect an AI assistant to your apps through Zapier MCP, with tightly scoped tools.</span></div>
+  <div><b>04</b><span>Compare task, operation and execution costs, and know when to move platforms.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Bolt gulps</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu typing a plain-English request into a chat box that turns into Zap steps.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="156" height="60" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="162" y="44" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"When a supplier emails an</text>
+        <text x="162" y="62" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">invoice, save it to Drive"</text>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="176" y="98" width="104" height="24" rx="6" fill="var(--glitch)" opacity=".85"/><rect x="176" y="134" width="104" height="24" rx="6" fill="var(--volt)"/></g>
+        <path d="M228 80 V96 M228 122 V132" stroke="var(--ink)" stroke-width="2"/>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Copilot</b>Tolu describes a Zap in a sentence, and a draft appears. Magic, mostly.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage answering a customer question about delivery at 11 p.m.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="270" cy="36" r="18" fill="var(--ink)"/><circle cx="278" cy="30" r="16" fill="var(--paper2)"/>
+        <rect x="140" y="70" width="170" height="44" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="152" y="96" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Do una deliver to Apete?</text>
+        <rect x="140" y="124" width="170" height="44" rx="12" fill="var(--grape)"/>
+        <text x="152" y="150" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">Yes! ₦2,500 fee, next day.</text>
+        <use href="#sage" x="10" y="50" width="120" height="120"/>
+      </svg>
+      <div class="cap"><b>11 p.m.</b>A Zapier Agent answers delivery questions from Harvest Lane's own data while Tolu sleeps.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt staring at a rising bill chart showing 12,000 tasks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <line x1="150" y1="160" x2="300" y2="160" stroke="var(--line)" stroke-width="2"/>
+        <rect x="160" y="130" width="30" height="30" fill="var(--muted)" opacity=".45"/><rect x="200" y="100" width="30" height="60" fill="var(--sun)"/><rect x="240" y="40" width="30" height="120" fill="var(--glitch)"/>
+        <text x="255" y="32" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">12,000</text>
+        <use href="#bolt" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>December</b>At 3,000 orders a month, the task count climbs past 12,000. Bolt gulps.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo and Weave waiting at the end of Spark Street, waving.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M0 150 H320" stroke="var(--line)" stroke-width="3"/>
+        <rect x="118" y="60" width="84" height="40" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">NEXT STOP:</text><text x="160" y="92" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">WEAVE WORKSHOP</text>
+        <use href="#weave" x="10" y="60" width="110" height="110"/>
+        <use href="#nodo" x="200" y="60" width="110" height="110"/>
+      </svg>
+      <div class="cap"><b>The fork</b>"Zapier got you here fast," says Nodo. "Now let's see what it costs to stay."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Copilot: describe it, then audit it</h3>
+    <p>Zapier's <b>Copilot</b> builds a draft Zap (or fixes a step) from a plain-language description. It's fast, and it's a draft: it can pick the wrong trigger, the wrong sheet, or a text pill where a file is needed.</p>
+    <div class="vocab">
+      <div><b>Describe precisely</b>Name apps, labels, folders and fields: "Gmail label Invoices → Drive folder Supplier invoices, file name = sender + subject".</div>
+      <div><b>Audit every step</b>Check each card with the four questions from 1.1: app, event, account, fields.</div>
+      <div><b>Test before publishing</b>Use real test data, then read Zap history.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Zapier Agents: a teammate with tools</h3>
+    <p>A Zap follows fixed steps. A <b>Zapier Agent</b> gets <b>instructions</b> (its job and rules), <b>tools</b> (actions it may take in your apps), <b>knowledge</b> (documents or tables it can read) and <b>triggers</b> (what wakes it up), then decides for itself which tools to use for each request. This is the agent loop you'll study deeply in Track 4.</p>
+    <div class="analogy"><b>Usage is counted in activities, not tasks.</b> Each trigger, action, knowledge lookup, web search or browse counts as one activity. Zapier's help centre (Oct 2026) lists 400 activities a month on the free Agents plan (testing counts) and 1,500 on Agents Pro (testing doesn't count). Check current limits before you plan a client build.</div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Give an agent the <i>fewest</i> tools that do the job, and never a tool that can't be undone without a person approving it. Reading prices: fine. Sending refunds: ask a human.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Zapier MCP: your AI assistant, with hands</h3>
+    <p>The <b>Model Context Protocol (MCP)</b> is an open standard for connecting AI assistants to tools. <b>Zapier MCP</b> lets an assistant such as Claude, ChatGPT, Cursor or VS Code use actions in your connected apps. You can let tools be added automatically, or choose a fixed, tightly scoped set, which is the safer choice.</p>
+    <figure class="fig"><svg viewBox="0 0 640 170" role="img" aria-label="An AI assistant sends a tool call through Zapier MCP, which runs one approved action (look up an order row) in Google Sheets and returns the result.">
+      <defs><marker id="h1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="50" width="150" height="70" rx="14" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="85" y="82" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#fff">AI assistant</text><text x="85" y="102" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#fff">"Status of HL-0043?"</text>
+      <path d="M160 72 H236" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#h1)"/><text x="198" y="62" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">tool call</text>
+      <rect x="240" y="30" width="170" height="110" rx="14" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="325" y="56" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">Zapier MCP</text>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A"><text x="254" y="82">✓ Sheets: lookup row</text><text x="254" y="100">✓ Gmail: create draft</text><text x="254" y="118" opacity=".5">✗ Gmail: send</text><text x="254" y="134" opacity=".5">✗ Sheets: delete row</text></g>
+      <path d="M410 72 H486" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#h1)"/>
+      <rect x="490" y="50" width="140" height="70" rx="14" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="560" y="90" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">Google Sheets</text>
+      <path d="M486 104 H414" stroke="var(--spark)" stroke-width="2.5" marker-end="url(#h1)"/><path d="M236 104 H164" stroke="var(--spark)" stroke-width="2.5" marker-end="url(#h1)"/><text x="198" y="124" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">result</text>
+    </svg><figcaption>Only the ticked tools exist for the assistant. Read and draft: yes. Send and delete: not without you.</figcaption></figure>
+    <p style="font-size:.9rem;color:var(--muted)">Per Zapier's help centre, Zapier MCP runs on your existing plan (including Free), and each successful tool call uses two tasks; failed calls use none.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Three ways platforms count</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>What's counted</th><th>One Harvest Lane order costs roughly…</th></tr></thead>
+      <tbody>
+        <tr><td><b>Zapier</b></td><td>Tasks: each successful action (built-in tools like Formatter and Paths are free)</td><td>3–4 tasks (lookups, two sheet writes, an email)</td></tr>
+        <tr><td><b>Make</b> (Track 2)</td><td>Credits: each module action counts, once per bundle; filters and routers are free per Make's help centre (some guides disagree: check a run's credit count), and a polling trigger costs a credit even when it finds nothing</td><td>6–8 credits (most modules count)</td></tr>
+        <tr><td><b>n8n</b> (Track 3)</td><td>Cloud: executions (one per workflow run, however many steps). Self-hosted: your server cost</td><td>1 execution, or a share of a fixed server bill</td></tr>
+      </tbody>
+    </table></div>
+    <div class="analogy"><b>The pattern:</b> Zapier is quickest to build and charges per useful action. Make charges less per unit but counts more of them (and counts polling checks). n8n charges per run, or almost nothing if you host it, in exchange for more setup and maintenance. Always check each platform's current pricing page before advising a client.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>When to move off Zapier</h3>
+    <div class="why">
+      <div class="box"><h5>Stay on Zapier when</h5><ul><li>Volume is modest and the task bill is comfortable.</li><li>Speed of building matters more than cost.</li><li>You need a niche app only Zapier connects to.</li><li>The client wants the simplest thing to maintain.</li></ul></div>
+      <div class="box"><h5>Consider Make or n8n when</h5><ul><li>Many steps × high volume makes the task bill painful.</li><li>You need loops over lists, complex branching or detailed error handling.</li><li>Data must stay on your own server (n8n self-hosted).</li><li>Heavy AI work runs thousands of times a month.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://learn.zapier.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Academy: Zapier MCP and agents learning paths (free)</b><small>Look for: how tools are chosen, and how agents decide which to use.</small></span></a>
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/48308034391821-What-is-Zapier-MCP" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: What is Zapier MCP?</b><small>Read: supported clients, fixed tool sets, and billing per tool call.</small></span></a>
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/26559132765325-How-is-Zapier-Agents-usage-measured" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: how Agents usage is measured</b><small>Read: what counts as an activity, before you build the agent.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 40 MIN</span><h2>Solved problem: three new helpers, and a cost decision</h2></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Part A · Rebuild the invoice Zap with Copilot</h4>
+      <p>Open Copilot and type: <i>"When an email with an attachment arrives in Gmail with the label Invoices, upload the attachment to the Google Drive folder Supplier invoices, naming the file with the sender name, subject and attachment name."</i></p>
+      <p>Compare the draft with your hand-built Zap from 1.1, card by card. Typical things to fix: the trigger event (New Email instead of New Attachment), the File field mapped to a name instead of the file, or no <code>-in:sent</code>. Fix, test, and only then publish.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><p><b>The lesson:</b> Copilot saves typing, not thinking. Because you built this Zap by hand in 1.1, you can spot what's wrong in seconds. That's why this module comes last.</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part B · A price-and-delivery agent that drafts, never sends</h4>
+      <p>Create a Zapier Agent called <b>HL Customer Helper</b>.</p>
+<pre class="codebox"><span class="c"># INSTRUCTIONS</span>
+You answer customer questions for Harvest Lane, a produce delivery
+business in Ibadan. Answer only about prices, delivery areas, fees and
+delivery days.
+- Get prices ONLY from the Products table. Never guess a price.
+- Get delivery fees and areas ONLY from the Delivery Areas table.
+- If a question is about a refund, complaint or anything else,
+  write "HANDOVER" and a one-line summary for staff.
+- Write a short, friendly draft reply. Do not send anything.
+- Save the draft to HL Inbox with status "Draft ready" (add this option to the status dropdown from 1.5).
+
+<span class="c"># TRIGGER</span>   New HL Inbox record where category = question
+<span class="c"># TOOLS</span>     Tables: find record (Products, Delivery Areas)
+            Tables: update record (HL Inbox)
+<span class="c"># NOT GIVEN</span> Gmail send · Sheets delete · anything payment-related</pre>
+      <p>Test it with 10 questions from your 0.5 Silver list (the "question" ones plus a refund request). Check that every price matches the table, the refund becomes a HANDOVER, and nothing is sent. Kemi approves drafts with the button from 1.5 Gold.</p>
+      <p style="font-size:.9rem;color:var(--muted)">Activity estimate: 1 trigger + 1–2 lookups + 1 update ≈ 3–4 activities per question. 10 questions a day ≈ 1,000 a month, so plan for a paid Agents allowance at that volume.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part C · Let an AI assistant act through Zapier MCP</h4>
+      <p>Set up a Zapier MCP server with a <b>fixed</b> set of just two tools: <b>Google Sheets · Lookup Spreadsheet Row</b> (Orders) and <b>Gmail · Create Draft</b>. Connect it to your AI assistant using the steps Zapier shows for that client. Then ask:</p>
+      <div class="bubble"><b>Tolu:</b> What's the status of order HL-0043? Draft a short update email to the customer, but don't send it.</div>
+      <p>The assistant calls the lookup tool, reads the row, and creates a Gmail draft. Two successful tool calls = four tasks. Open Gmail: the draft is waiting for you to check and send.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part D · Do the December maths</h4>
+      <p>At about 3,000 orders a month, how much does each platform count? Change the numbers to match your own workflow; add prices from each platform's current pricing page for a rough cost.</p>
+      <div class="tokcalc" data-plat>
+        <div class="row">
+          <label>Workflow runs per month<input id="plat-runs" data-p="runs" type="number" value="3000" min="0"></label>
+          <label>Zapier tasks per run<input id="plat-zt" data-p="zt" type="number" value="4" min="0"></label>
+          <label>Make credits per run<input id="plat-mo" data-p="mo" type="number" value="7" min="0"></label>
+          <label>n8n executions per run<input id="plat-ne" data-p="ne" type="number" value="1" min="0"></label>
+          <label>Zapier $ per 1,000 tasks (optional)<input id="plat-zp" data-p="zp" type="number" value="" min="0" step="0.5" placeholder="from pricing page"></label>
+          <label>Make $ per 1,000 credits (optional)<input id="plat-mp" data-p="mp" type="number" value="" min="0" step="0.5" placeholder="from pricing page"></label>
+          <label>n8n Cloud $ per 1,000 executions (optional)<input id="plat-np" data-p="np" type="number" value="" min="0" step="0.5" placeholder="from pricing page"></label>
+          <label>Self-hosted server $ per month (optional)<input id="plat-vps" data-p="vps" type="number" value="" min="0" step="1" placeholder="e.g. a small VPS"></label>
+        </div>
+        <div class="stats"></div>
+      </div>
+      <p>For Harvest Lane, 12,000 Zapier tasks a month is a real cost, and the order line is exactly the kind of multi-step, high-volume flow that Make and n8n handle cheaply. The decision: keep simple, low-volume Zaps (invoices, the MCP helper) on Zapier; rebuild the order line in Make (Track 2) and later n8n (Track 3), and compare.</p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Copilot drafts; your 1.1–1.5 skills audit.</li><li>The agent reads data it's given and drafts; people approve.</li><li>A fixed MCP tool set keeps the assistant's reach small.</li><li>Counting units per platform turns "Zapier is expensive" into a decision with numbers.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Publishing a Copilot draft without testing it.</li><li>Giving an agent "send" or "delete" tools on day one.</li><li>Letting MCP add any tool automatically on a business account.</li><li>Comparing platforms by monthly plan price instead of units needed.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I gave my agents and assistants everything they could possibly need. Why is everyone upset?</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>Glitch's setup</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Agent instructions: "Help customers however you can."</td><td>It promised a 20% discount and free delivery.</td></tr>
+        <tr><td>B</td><td>Agent tools include Gmail · Send and Paystack refunds.</td><td>A polite-sounding message got a ₦40,000 refund, sent automatically.</td></tr>
+        <tr><td>C</td><td>MCP set to add tools automatically, on the owner's main account.</td><td>The assistant deleted old rows while "tidying" the Orders sheet.</td></tr>
+        <tr><td>D</td><td>A Copilot-built Zap published straight away.</td><td>Orders went into last year's sheet.</td></tr>
+        <tr><td>E</td><td>Budget assumed MCP calls are free.</td><td>The task allowance ran out mid-month.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> vague instructions. State the job, the allowed topics, where facts come from, and what to hand over.</li>
+        <li><b>B:</b> an irreversible, money-moving tool with no human approval. Remove it; draft and hand over instead (Track 4.5 goes deep on this).</li>
+        <li><b>C:</b> unscoped tools. Use a fixed tool set, read-and-draft only, ideally on a business account with limited sheet access.</li>
+        <li><b>D:</b> no audit. Check every card and test with real data before publishing.</li>
+        <li><b>E:</b> each successful MCP tool call uses two tasks. Include it in the budget.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Copilot audit</h4>
+    <ul><li>Describe one of your earlier Zaps (1.2 or 1.3) to Copilot in two sentences.</li><li>List every difference between its draft and your hand-built version.</li><li>Fix the draft until it passes your original tests.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You have a list of at least three differences and a working, tested Copilot version.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build and test the HL Customer Helper</h4>
+    <ul><li>Build the agent from Part B with Products and Delivery Areas tables.</li><li>Test with 12 questions: 8 about prices or delivery, 2 complaints, 1 refund request, 1 in Pidgin.</li><li>Record correct answers, correct handovers, and activities used.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every price and fee matches the tables, all 3 non-price messages are handed over, and nothing was sent automatically.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Your own MCP helper and a platform recommendation</h4>
+    <ul><li>Connect Zapier MCP to an AI assistant with 2–3 read-or-draft tools from your own work.</li><li>Complete five real tasks through it, logging tools called and tasks used.</li><li>Use the calculator with your busiest workflow and real prices from each pricing page. Write a half-page recommendation: which platform for which workflow, and why.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No tool can send, delete or pay, and your recommendation cites units per month and current prices.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. What should you always do with a Zap drafted by Copilot?</p><div class="opts">
+      <button type="button" data-opt="a">Publish it; Copilot is always right</button><button type="button" data-opt="b">Delete it and build by hand</button><button type="button" data-opt="c">Check every step and test with real data before publishing</button><button type="button" data-opt="d">Upgrade to Premium AI</button></div>
+      <p class="fb" hidden data-why="A draft is a head start, not a finished product."></p></div>
+    <div class="q" data-ans="a"><p>2. How is Zapier Agents usage counted?</p><div class="opts">
+      <button type="button" data-opt="a">In activities: triggers, actions, knowledge lookups, searches</button><button type="button" data-opt="b">In tasks, like Zaps</button><button type="button" data-opt="c">Per agent, per month</button><button type="button" data-opt="d">It's unlimited</button></div>
+      <p class="fb" hidden data-why="Each billable thing the agent does is one activity."></p></div>
+    <div class="q" data-ans="d"><p>3. Which tool set is safest for a first Zapier MCP connection?</p><div class="opts">
+      <button type="button" data-opt="a">Add tools automatically</button><button type="button" data-opt="b">Every Gmail and Sheets action</button><button type="button" data-opt="c">Send email and delete rows only</button><button type="button" data-opt="d">A fixed set of read and draft tools</button></div>
+      <p class="fb" hidden data-why="Small, fixed, reversible: the assistant can look things up and prepare drafts, and you decide."></p></div>
+    <div class="q" data-ans="b"><p>4. An AI assistant makes 50 successful Zapier MCP tool calls. How many tasks is that?</p><div class="opts">
+      <button type="button" data-opt="a">50</button><button type="button" data-opt="b">100</button><button type="button" data-opt="c">0</button><button type="button" data-opt="d">250</button></div>
+      <p class="fb" hidden data-why="Two tasks per successful call; failed calls use none."></p></div>
+    <div class="q" data-ans="c"><p>5. A 9-step workflow runs 3,000 times a month. Which platform counts the fewest units?</p><div class="opts">
+      <button type="button" data-opt="a">Zapier (tasks)</button><button type="button" data-opt="b">Make (credits)</button><button type="button" data-opt="c">n8n Cloud (executions)</button><button type="button" data-opt="d">They're all the same</button></div>
+      <p class="fb" hidden data-why="n8n counts one execution per run, however many steps. Fewer units doesn't automatically mean cheaper; check prices too."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-6">AUTOMANCY LOG · Lesson 1.6 · Agents, Copilot, MCP & Limits
+Date:
+Copilot: differences found and fixed:
+Agent: tools given / tools deliberately NOT given:
+Agent test: correct answers __/__  handovers __/__  activities used:
+MCP: client used, tools exposed, tasks used for 5 jobs:
+Platform maths for my busiest flow: Zapier __ tasks · Make __ credits · n8n __ runs
+My recommendation in one sentence:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-1-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Copilot drafts Zaps; you audit and test them.</li>
+      <li>Agents choose their own steps from the tools you give them; count activities.</li>
+      <li>Zapier MCP gives AI assistants hands in your apps: fixed tools, two tasks per successful call.</li>
+      <li>Read and draft freely; send, delete and pay only with a person's approval.</li>
+      <li>Zapier counts tasks, Make counts credits, n8n counts executions (or a server bill).</li>
+      <li>Choose the platform per workflow, with real numbers.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/" target="_blank" rel="noopener">Zapier Academy: AI Builder, agents and Zapier MCP paths</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/48308034391821-What-is-Zapier-MCP" target="_blank" rel="noopener">Zapier Help: What is Zapier MCP?</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/26559132765325-How-is-Zapier-Agents-usage-measured" target="_blank" rel="noopener">Zapier Help: how Agents usage is measured</a></li>
+    <li><span class="kind">Course</span><a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank" rel="noopener">Anthropic: Introduction to Model Context Protocol (for Track 4)</a></li>
+    <li><span class="kind">Text</span><a href="https://zapier.com/pricing" target="_blank" rel="noopener">Zapier pricing (check before any client quote)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a "Copilot vs. me" race: half the room builds from a description, half by hand, then swap and audit each other's Zaps. For MCP, demonstrate on your own screen with a practice account; don't have a whole class connect business accounts at once. Finish with the calculator on the projector and a group debate: "Should Tolu leave Zapier?"</p>
+  </div>
+</section>
+
+</article>
+</template>

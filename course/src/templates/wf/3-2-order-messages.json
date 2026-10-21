@@ -1,0 +1,320 @@
+{
+  "name": "HL · Tomorrow's order messages → Outbox",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Tomorrow's order messages → Outbox (Lesson 3.2)\nFor every order delivering tomorrow: look up the customer, build a WhatsApp-ready message and a one-tap wa.me link, and append them to the Outbox sheet. Nothing is sent.\n\n**Credential:** Google Sheets (OAuth2), selected in all three Sheets nodes.\n**Placeholder:** YOUR_SHEET_ID (one workbook with tabs Orders, Customers, Outbox).\n\nOrders and Find customer come with **pinned test data** (3 orders, 3 customers), so manual runs never call Google. Unpin both (pin icon in Output) to use your real sheet. Published runs always use real data.\n\nOnce it works, swap the Manual Trigger for a Schedule Trigger at 18:00.",
+        "height": 420,
+        "width": 420
+      },
+      "id": "208c678f-3863-436d-93da-0057f6b0bb08",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -180
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "20bf3619-77ab-461d-a2a9-15b6985b075b",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "delivery_date",
+              "lookupValue": "={{ $today.plus({ days: 1 }).toISODate() }}"
+            }
+          ]
+        }
+      },
+      "id": "b1e3fcc9-adf2-40ce-afcb-99ad03b69b45",
+      "name": "Orders",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Customers",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_id",
+              "lookupValue": "={{ $json.customer_id }}"
+            }
+          ]
+        }
+      },
+      "id": "1c79fae2-a957-4722-a280-7be13289702d",
+      "name": "Find customer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23a31705-e2db-41ce-8596-9b83d3b9c2a2",
+              "name": "order_id",
+              "value": "={{ $('Orders').item.json.order_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d9050f70-94b7-42ce-a16e-48995b9bac7a",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "d83b0276-e093-4621-89ac-eae8447426a6",
+              "name": "message",
+              "value": "=Hello {{ $json.name ?? 'Customer' }} 👋\nYour Harvest Lane order {{ $('Orders').item.json.order_id }} is confirmed:\n{{ $('Orders').item.json.items }}\nTotal: ₦{{ $('Orders').item.json.total.toLocaleString('en-NG') }}\nDelivery: {{ DateTime.fromISO($('Orders').item.json.delivery_date).toFormat('cccc d LLL') }}, {{ $json.area }}.\nReply 1 to confirm or 2 to change.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4a174f36-0a63-4cd6-b744-dcbbf571525b",
+      "name": "Build message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9abc7727-7e4b-4921-8b85-bf44b018f77b",
+              "name": "wa_link",
+              "value": "=https://wa.me/{{ ($json.phone ?? '').replace('+', '') }}?text={{ encodeURIComponent($json.message) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      },
+      "id": "582682cd-83c4-473d-b019-ef9dd45e3286",
+      "name": "Add WhatsApp link",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Outbox",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "820f00ba-462b-4edf-a9cb-dc9905b08bc5",
+      "name": "Outbox",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Why .item, not .first()\nBuild message's input is Find customer, so $json is the customer. The order is reached with $('Orders').item, which follows the item link back to *this* customer's order. .first() would give every message item 0's data.\n\nFind customer has **Always Output Data** on (Settings), so an order whose customer_id has no match still produces a message (\"Hello Customer\") instead of vanishing.\n\nStep through items 0, 1 and 2 in the Input panel: each preview must show a different customer.",
+        "height": 300,
+        "width": 420
+      },
+      "id": "9e1deaba-5690-40ea-af05-cc30c95ad52f",
+      "name": "Item linking",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        550,
+        144
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders": {
+      "main": [
+        [
+          {
+            "node": "Find customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find customer": {
+      "main": [
+        [
+          {
+            "node": "Build message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build message": {
+      "main": [
+        [
+          {
+            "node": "Add WhatsApp link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add WhatsApp link": {
+      "main": [
+        [
+          {
+            "node": "Outbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Orders": [
+      {
+        "json": {
+          "order_id": "HL-0071",
+          "customer_id": "C-014",
+          "items": "2 crates tomatoes, 1 bag tatashe",
+          "total": 34000,
+          "delivery_date": "2026-10-06"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0072",
+          "customer_id": "C-022",
+          "items": "1 bag onions",
+          "total": 4000,
+          "delivery_date": "2026-10-06"
+        }
+      },
+      {
+        "json": {
+          "order_id": "HL-0073",
+          "customer_id": "C-009",
+          "items": "10 bunches ugu, 2 crates eggs",
+          "total": 21000,
+          "delivery_date": "2026-10-06"
+        }
+      }
+    ],
+    "Find customer": [
+      {
+        "json": {
+          "customer_id": "C-014",
+          "name": "Mrs Adebayo",
+          "phone": "+2348000000001",
+          "area": "Bodija"
+        }
+      },
+      {
+        "json": {
+          "customer_id": "C-022",
+          "name": "Mr Okafor",
+          "phone": "+2348000000002",
+          "area": "Ring Road"
+        }
+      },
+      {
+        "json": {
+          "customer_id": "C-009",
+          "name": "Iya Basira",
+          "phone": "+2348000000003",
+          "area": "Mokola"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

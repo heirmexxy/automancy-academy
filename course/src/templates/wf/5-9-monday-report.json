@@ -1,0 +1,388 @@
+{
+ "name": "CRM · Monday pipeline report",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## CRM · Monday pipeline report (Lesson 5.9)\nMondays 08:00, to Telegram (the full dashboard stays in HubSpot): new deals by source, value by stage, won and lost this month with reasons, the weighted forecast (each open deal's weekly_value_ngn x its stage's win chance) and the three oldest stuck deals, each with an AI one-line summary that quotes only their notes and says 'not recorded' when something is missing. The AI never changes a stage.\n\nCredentials: HubSpot App Token credential (the \"n8n Growth Desk\" private app token, with only contact, company and deal read/write scopes, plus tasks if you create tasks); OpenAI; Telegram.\nPlaceholders: YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 320,
+    "width": 540
+   },
+   "id": "2f99ddf6-2e35-4da3-9a12-013493dd62bb",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -600,
+    -320
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "cdc106b9-ce48-4f13-9604-d6cf927f901b",
+   "name": "Mondays 08:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "https://api.hubapi.com/crm/v3/pipelines/deals",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "options": {}
+   },
+   "id": "f4cc6092-bf1c-44aa-a118-69c75efa2dc9",
+   "name": "Pipeline stages",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' } ] }, { filters: [ { propertyName: 'closedate', operator: 'GTE', value: String(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()) } ] }, { filters: [ { propertyName: 'createdate', operator: 'GTE', value: String(Date.now() - 7 * 864e5) } ] } ], properties: ['dealname', 'dealstage', 'weekly_value_ngn', 'createdate', 'closedate', 'hs_is_closed', 'hs_is_closed_won', 'lost_reason', 'hs_v2_date_entered_current_stage', 'hs_lastmodifieddate'], limit: 200 }) }}",
+    "options": {}
+   },
+   "id": "4ad5969b-f39b-41b3-870d-9e5fa412a2d9",
+   "name": "Deals",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ inputs: ($json.results || []).map(d => ({ id: d.id })) }) }}",
+    "options": {}
+   },
+   "id": "dffaf296-222a-4b01-b299-cd861b8578f1",
+   "name": "Deal contacts",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/contacts/batch/read",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ properties: ['lead_source'], inputs: [ ...new Set(($json.results || []).flatMap(r => r.to.map(t => String(t.toObjectId)))) ].map(id => ({ id })) }) }}",
+    "options": {}
+   },
+   "id": "5796c3fe-5538-4e9f-9009-beb240aed320",
+   "name": "Contacts' lead_source",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const DAY = 864e5, now = Date.now();\nconst stages = Object.fromEntries(($('Pipeline stages').first().json.results || []).flatMap(p => p.stages)\n  .map(s => [s.id, { label: s.label, p: Number(s.metadata?.probability || 0) }]));\nconst deals = $('Deals').first().json.results || [];\nconst dealContact = Object.fromEntries(($('Deal contacts').first().json.results || []).map(r => [String(r.from.id), String(r.to[0]?.toObjectId || '')]));\nconst source = Object.fromEntries(($json.results || []).map(c => [String(c.id), c.properties.lead_source || 'unknown']));\nconst val = (d) => Number(d.properties.weekly_value_ngn || 0);\nconst ngn = (n) => '₦' + Math.round(n).toLocaleString('en-NG');\nconst open = deals.filter(d => d.properties.hs_is_closed !== 'true');\nconst newDeals = deals.filter(d => now - new Date(d.properties.createdate) < 7 * DAY);\nconst bySource = {}; for (const d of newDeals) { const s = source[dealContact[d.id]] || 'unknown'; bySource[s] = (bySource[s] || 0) + 1; }\nconst byStage = {}; for (const d of open) { const s = stages[d.properties.dealstage]?.label || d.properties.dealstage; byStage[s] = (byStage[s] || 0) + val(d); }\nconst weighted = open.reduce((a, d) => a + val(d) * (stages[d.properties.dealstage]?.p || 0), 0);\nconst month = deals.filter(d => d.properties.hs_is_closed === 'true');\nconst won = month.filter(d => d.properties.hs_is_closed_won === 'true');\nconst lost = month.filter(d => d.properties.hs_is_closed_won !== 'true');\nconst entered = (d) => new Date(d.properties.hs_v2_date_entered_current_stage || d.properties.hs_lastmodifieddate).getTime();\nconst stuck = open.filter(d => now - entered(d) > 14 * DAY).sort((a, b) => entered(a) - entered(b)).slice(0, 3);\nconst summary = [\n  'Harvest Lane pipeline · Monday',\n  `New deals by source (7 days): ${Object.entries(bySource).map(([k, v]) => `${k} ${v}`).join(' · ') || 'none'}`,\n  `Open value by stage: ${Object.entries(byStage).map(([k, v]) => `${k} ${ngn(v)}`).join(' · ') || 'none'}`,\n  `Won this month: ${won.length} (${won.map(d => d.properties.dealname).join(', ') || '-'})`,\n  `Lost this month: ${lost.length} (${lost.map(d => `${d.properties.dealname}: ${d.properties.lost_reason || 'no reason!'}`).join('; ') || '-'})`,\n  `Weighted forecast (weekly): ${ngn(weighted)}`,\n].join('\\n');\nreturn stuck.length\n  ? stuck.map(d => ({ json: { summary, deal_id: d.id, dealname: d.properties.dealname, days: Math.floor((now - entered(d)) / DAY), stage: stages[d.properties.dealstage]?.label || '' } }))\n  : [{ json: { summary, deal_id: '', dealname: '', days: 0, stage: '' } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "8f5c8cc5-c7ff-40f7-81a0-1ff5212b0574",
+   "name": "Numbers",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "9ae7aa43-26f8-47c6-940c-a7add7cf1b56",
+       "leftValue": "={{ $json.deal_id }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "notEmpty",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "50f7253e-3ab5-4639-a981-301cb29ab965",
+   "name": "Has stuck deals?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.hubapi.com/crm/v3/objects/notes/search",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "hubspotAppToken",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ filterGroups: [ { filters: [ { propertyName: 'associations.deal', operator: 'EQ', value: $json.deal_id } ] } ], properties: ['hs_note_body', 'hs_timestamp'], sorts: [ { propertyName: 'hs_timestamp', direction: 'DESCENDING' } ], limit: 10 }) }}",
+    "options": {}
+   },
+   "id": "26837f25-726b-402e-ab7f-5fea4f770002",
+   "name": "Notes on the deal",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1540,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Deal: {{ $('Has stuck deals?').item.json.dealname }} ({{ $('Has stuck deals?').item.json.stage }}, {{ $('Has stuck deals?').item.json.days }} days)\nNotes:\n{{ ($json.results || []).map(n => (n.properties.hs_note_body || '').replace(/<[^>]+>/g, ' ')).join('\\n---\\n') || '(no notes)' }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "Summarise this deal in one line: where we are, what they want, next step. Use only what the notes say, quoting short phrases. Write 'not recorded' for anything missing. Never suggest changing the stage yourself."
+      }
+     ]
+    }
+   },
+   "id": "7f5b271f-706b-4bf6-bed7-44b04b9647ee",
+   "name": "One-line summary",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    1760,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "2c886007-c548-42f6-a0be-51e256ac162f",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    1760,
+    125
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "let stuck = [];\ntry {\n  stuck = $('One-line summary').all().map((i, k) => {\n    const d = $('Has stuck deals?').all()[k]?.json || {};\n    return `- ${d.dealname} (${d.days} days in ${d.stage}): ${String(i.json.text || '').trim()}`;\n  });\n} catch (e) {}\nconst summary = $('Numbers').first().json.summary;\nreturn [{ json: { text: summary + '\\n\\nOldest stuck deals:\\n' + (stuck.join('\\n') || '(none over 14 days)') } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "e194f861-d88a-4a6a-b6cd-ce1adbf735d4",
+   "name": "Report",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1980,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $json.text }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "1194370b-c341-479e-8a09-9755219da776",
+   "name": "Send to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2200,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Mondays 08:00": {
+   "main": [
+    [
+     {
+      "node": "Pipeline stages",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Pipeline stages": {
+   "main": [
+    [
+     {
+      "node": "Deals",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Deals": {
+   "main": [
+    [
+     {
+      "node": "Deal contacts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Deal contacts": {
+   "main": [
+    [
+     {
+      "node": "Contacts' lead_source",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Contacts' lead_source": {
+   "main": [
+    [
+     {
+      "node": "Numbers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Numbers": {
+   "main": [
+    [
+     {
+      "node": "Has stuck deals?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Has stuck deals?": {
+   "main": [
+    [
+     {
+      "node": "Notes on the deal",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Notes on the deal": {
+   "main": [
+    [
+     {
+      "node": "One-line summary",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One-line summary": {
+   "main": [
+    [
+     {
+      "node": "Report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Report": {
+   "main": [
+    [
+     {
+      "node": "Send to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "One-line summary",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

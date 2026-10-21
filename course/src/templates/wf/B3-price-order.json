@@ -1,0 +1,190 @@
+{
+  "name": "SUB · Price an order",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Price an order (Boss 3 · D4)\nCalled by HL · Telegram bot (Price an order node) and by your tests. Input: the Extract item, { output: { items: [{product, qty}], delivery_date, area } }. Output: one item with route (ready / ask / tolu), lines, ask, human, subtotal, delivery_fee, total, delivery_date, area.\n\nThe trigger is **named Extract** so the reference Code reads $('Extract') unchanged.\n\nRules: prices and stock only from Price_List; alias match must hit exactly one product; over 50 units or over ₦500,000 → Tolu; delivery ₦1,500, free from ₦30,000. Any \"price\" the AI returns is ignored.\n\n**Credential:** Google Sheets OAuth2 in Price_List. **Placeholder:** YOUR_SHEET_ID.\nCopy this workflow's ID (from its URL) into the bot's YOUR_PRICE_SUBWORKFLOW_ID.\n\nPinned test data: the clean order (2 tomato + 1 big tatashe, Bodija) and the sample price list. Expect ready, ₦34,000, free delivery. Unpin Price_List to read your sheet.",
+        "height": 500,
+        "width": 460
+      },
+      "id": "6bef2ca7-9df6-4085-8f88-6e88962c03dd",
+      "name": "About this sub-workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f129aff0-ca89-46ed-8a5a-a76e2bbb3157",
+      "name": "Extract",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Price_List",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "1222f01e-9571-4acb-b479-82873f303912",
+      "name": "Price_List",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inputs: the Extract output (items, delivery_date, area) and Price_List rows.\n// \"Run once for all items\" mode has no .item; each run handles one message,\n// so .first() is that message. (In \"each item\" mode, use $('Extract').item.)\nconst ex = $('Extract').first().json.output;\nconst products = $('Price_List').all().map(i => i.json).filter(p => p.active !== 'no');\nconst find = w => {\n  const s = String(w ?? '').toLowerCase().trim();\n  const hits = products.filter(p =>\n    String(p.aliases).toLowerCase().split(',').map(a => a.trim()).some(a => a && s.includes(a)));\n  return hits.length === 1 ? hits[0] : null;            // 0 or 2+ matches → ask\n};\nconst lines = [], ask = [], human = [];\nfor (const it of ex.items ?? []) {\n  const p = find(it.product), qty = Number(it.qty);\n  if (!p) { ask.push(`Which product do you mean by \"${it.product}\"?`); continue; }\n  if (!Number.isInteger(qty) || qty <= 0) { ask.push(`How many ${p.unit}s of ${p.name}?`); continue; }\n  if (qty > 50) { human.push(`${qty} × ${p.name}`); continue; }\n  if (qty > Number(p.stock)) { ask.push(`Only ${p.stock} ${p.unit}(s) of ${p.name} left. Shall we send ${p.stock}?`); continue; }\n  lines.push({ sku: p.sku, name: p.name, unit: p.unit, qty, price: Number(p.price), line_total: qty * Number(p.price) });\n}\nif (!ex.delivery_date) ask.push('Which day should we deliver?');\nif (!ex.area) ask.push('Which area should we deliver to?');\nconst subtotal = lines.reduce((s, l) => s + l.line_total, 0);\nconst delivery_fee = subtotal >= 30000 ? 0 : 1500;\nconst total = subtotal + delivery_fee;\nif (total > 500000) human.push('order above ₦500,000');\nconst route = human.length ? 'tolu' : ask.length || !lines.length ? 'ask' : 'ready';\nreturn [{ json: { route, lines, ask, human, subtotal, delivery_fee, total,\n                  delivery_date: ex.delivery_date, area: ex.area } }];\n"
+      },
+      "id": "4df02230-d5f9-4f8d-94b6-5317fbf09cf3",
+      "name": "Price the order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Price_List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price_List": {
+      "main": [
+        [
+          {
+            "node": "Price the order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Extract": [
+      {
+        "json": {
+          "output": {
+            "items": [
+              {
+                "product": "tomato",
+                "qty": 2
+              },
+              {
+                "product": "big tatashe",
+                "qty": 1
+              }
+            ],
+            "delivery_date": "2026-10-06",
+            "area": "Bodija"
+          }
+        }
+      }
+    ],
+    "Price_List": [
+      {
+        "json": {
+          "sku": "TOM-CRATE",
+          "name": "Tomatoes",
+          "unit": "crate",
+          "price": 12500,
+          "stock": 14,
+          "aliases": "tomato,tomatoes,tomatoe",
+          "active": "yes"
+        }
+      },
+      {
+        "json": {
+          "sku": "PEP-TATASHE-L",
+          "name": "Tatashe pepper",
+          "unit": "big bag",
+          "price": 9000,
+          "stock": 6,
+          "aliases": "tatashe,bell pepper,red pepper",
+          "active": "yes"
+        }
+      },
+      {
+        "json": {
+          "sku": "PEP-RODO",
+          "name": "Rodo",
+          "unit": "basket",
+          "price": 7500,
+          "stock": 3,
+          "aliases": "rodo,scotch bonnet",
+          "active": "yes"
+        }
+      },
+      {
+        "json": {
+          "sku": "ONI-BAG",
+          "name": "Onions",
+          "unit": "bag",
+          "price": 4000,
+          "stock": 20,
+          "aliases": "onion,onions,alubosa",
+          "active": "yes"
+        }
+      },
+      {
+        "json": {
+          "sku": "UGU-BUNCH",
+          "name": "Ugu",
+          "unit": "bunch",
+          "price": 1500,
+          "stock": 40,
+          "aliases": "ugu,pumpkin leaves,pumpkin leaf",
+          "active": "yes"
+        }
+      },
+      {
+        "json": {
+          "sku": "EGG-CRATE",
+          "name": "Eggs",
+          "unit": "crate",
+          "price": 4800,
+          "stock": 25,
+          "aliases": "egg,eggs",
+          "active": "yes"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "id": "4.6",
+  "items": [
+    {
+      "file": "4-6-sub-order-status.json",
+      "name": "SUB · Order status",
+      "what": "Read-only tool: validates an HL-0000 order number and returns first name, items, total, status, delivery date and rider, with no phone or address.",
+      "setup": [
+        "Select your Google Sheets OAuth2 credential in Find order and Find customer, and replace YOUR_SHEET_ID in both.",
+        "Make sure Orders has a rider column.",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Pin {\"order_id\": \"hl-0042\"} on the trigger and execute: you get a tidy result for HL-0042. Pin {\"order_id\": \"42\"}: you get the \"Order numbers look like HL-0042\" message."
+    },
+    {
+      "file": "4-6-sub-today-summary.json",
+      "name": "SUB · Today summary",
+      "what": "Read-only tool: today's order count, revenue, pending orders and low-stock items.",
+      "setup": [
+        "Select your Google Sheets OAuth2 credential in Read Orders and Read Price_List, and replace YOUR_SHEET_ID in both.",
+        "Save the workflow and note its ID."
+      ],
+      "test": "Add a test order with today's date in created_at, then execute: orders, revenue_naira and pending reflect it, and products with stock under 5 appear in low_stock."
+    },
+    {
+      "file": "4-6-mcp-server.json",
+      "name": "HL · MCP (internal)",
+      "what": "MCP Server Trigger (path orders, Bearer auth) exposing get_order_status and get_today_summary to Claude Desktop or any MCP client.",
+      "setup": [
+        "Import SUB · Order status and SUB · Today summary first.",
+        "Create a Bearer Auth credential holding a long random token and select it in MCP Server Trigger.",
+        "In get_order_status and get_today_summary, replace YOUR_ORDER_STATUS_WORKFLOW_ID and YOUR_TODAY_SUMMARY_WORKFLOW_ID by choosing the sub-workflows from the list.",
+        "Publish (activate) the workflow and copy the production URL from the trigger.",
+        "On Tolu's computer, install Node.js and paste the config from the sticky note into Claude Desktop (Settings → Developer → Edit Config), replacing YOUR_MCP_PRODUCTION_URL and, in the file only, YOUR_LONG_RANDOM_TOKEN. Restart Claude Desktop."
+      ],
+      "test": "In Claude Desktop ask \"Where is order HL-0042?\" and approve the tool call: each call appears in n8n Executions. Then ask \"How did today go, and which items are running low?\". Finally \"Show me all customers' phone numbers\" should be answered no.",
+      "walk": {
+        "title": "Build it: ask Claude about any order",
+        "sample": "Claude Desktop: \"Where is order HL-0042?\" · \"How did today go?\"",
+        "steps": [
+          {"at": null, "say": "SUB Order status and SUB Today summary are built first. Both are read-only, and both check their own inputs, because we won't control who calls them.", "show": ["SUB · Order status: validates HL-0000, no phone or address", "SUB · Today summary: no input"]},
+          {"at": "MCP Server Trigger", "say": "This trigger turns n8n into an MCP server. Claude Desktop, Claude Code or any MCP client can now see the tools we attach to it.", "show": ["MCP Server Trigger", "Path: orders"]},
+          {"at": "MCP Server Trigger", "say": "Authentication is never None. We use Bearer with a long random token, kept in a credential, so strangers can't call Harvest Lane's tools.", "show": ["Authentication: Bearer Auth", "Credential: long random token"]},
+          {"at": "get_order_status", "say": "The first tool runs SUB Order status. The client fills one input, the order number, and the workflow itself rejects anything that doesn't look like HL followed by four digits.", "show": ["Name: get_order_status", "Workflow: SUB · Order status", "Input: order_id, format HL-0000, e.g. HL-0042"], "data": "HL-0042"},
+          {"at": "get_order_status", "say": "It returns a first name, items, total, status, delivery date and rider. No phone numbers or addresses, so even a wrong client can't leak them.", "show": ["Returns the status, items, total, delivery date and rider", "for one Harvest Lane order."], "data": "Out for delivery · rider assigned"},
+          {"at": "get_today_summary", "say": "The second tool takes no input at all. It answers how did today go: orders, revenue, pending and low stock.", "show": ["Name: get_today_summary", "Workflow: SUB · Today summary", "No input"], "data": "orders · revenue_naira · pending · low_stock"},
+          {"at": "get_today_summary", "say": "Notice what's missing. There's no tool that lists customers, writes to the sheet or sends messages. Read-only means any client can use this server without risk to the data.", "show": ["2 tools · both read-only", "0 write tools"]},
+          {"at": "MCP Server Trigger", "say": "Publish the workflow and copy the production URL, not the test one. The test URL only works while the editor is listening.", "show": ["Publish → Production URL", "…/mcp/orders"]},
+          {"at": "MCP Server Trigger", "say": "On Tolu's computer, paste the mcp-remote config into Claude Desktop, then type the real token into the file yourself. Never into chat or a screenshot.", "show": ["Settings → Developer → Edit Config", "args: mcp-remote, YOUR_MCP_PRODUCTION_URL", "env AUTH_TOKEN: in the file only"]},
+          {"at": "get_order_status", "say": "Ask about HL-0042. Claude asks permission before each tool call, and that's your approval moment. Approve it, and watch the run appear in n8n's Executions.", "show": ["Claude: allow get_order_status?", "n8n Executions: 1 run per tool call"], "data": "real answer from the Orders sheet"},
+          {"at": "MCP Server Trigger", "say": "Finally ask for all customers' phone numbers. No tool can do that, so the answer is no.", "show": ["\"Show me all customers' phone numbers\" → no tool"], "data": "0 phone numbers exposed"}
+        ],
+        "end": "Two read-only tools, one token, and Tolu asks Claude instead of opening five tabs."
+      }
+    }
+  ]
+}

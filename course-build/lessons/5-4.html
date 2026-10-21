@@ -1,0 +1,337 @@
+<template data-mod="5.4" id="tpl-5-4">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.4</span>
+    <h1>The Social Media Manager Agent</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Echo</span><span class="pill">Tools: n8n or Make, Meta Graph API, LinkedIn, X API, TikTok, Google Sheets and Drive, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Small businesses post when they remember, so their pages go quiet for weeks. In this lesson you build an agent that plans a content calendar from the business's real products and seasons, drafts a version of each post for each platform, waits for the owner's approval, publishes on schedule within each platform's rules, and reports what worked, so next week's plan is better.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Turn goals, products and seasons into a content calendar an agent can work from.</span></div>
+  <div><b>02</b><span>Know what each platform's API lets you publish, what it costs, and what needs approval.</span></div>
+  <div><b>03</b><span>Adapt one idea into six platform-ready versions.</span></div>
+  <div><b>04</b><span>Keep a person in charge: approval, brand voice, true prices and image rights.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Twice a month vs every day</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A calendar with only two posts in a month.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="30" width="140" height="125" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--line)"><rect x="175" y="50" width="16" height="16"/><rect x="195" y="50" width="16" height="16"/><rect x="215" y="50" width="16" height="16"/><rect x="235" y="50" width="16" height="16"/><rect x="255" y="50" width="16" height="16"/><rect x="275" y="50" width="16" height="16"/><rect x="175" y="72" width="16" height="16"/><rect x="195" y="72" width="16" height="16"/><rect x="235" y="72" width="16" height="16"/><rect x="255" y="72" width="16" height="16"/><rect x="275" y="72" width="16" height="16"/><rect x="175" y="94" width="16" height="16"/><rect x="195" y="94" width="16" height="16"/><rect x="215" y="94" width="16" height="16"/><rect x="235" y="94" width="16" height="16"/><rect x="275" y="94" width="16" height="16"/><rect x="175" y="116" width="16" height="16"/><rect x="195" y="116" width="16" height="16"/><rect x="215" y="116" width="16" height="16"/><rect x="235" y="116" width="16" height="16"/><rect x="255" y="116" width="16" height="16"/><rect x="275" y="116" width="16" height="16"/></g>
+        <rect x="215" y="72" width="16" height="16" fill="var(--rose)"/><rect x="255" y="94" width="16" height="16" fill="var(--rose)"/>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"I posted twice this month. The new farm shop down the road posts every single day, and customers ask me if we've closed."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pressing one button that sends the same post to six platforms at 3 a.m.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="275" cy="36" r="14" fill="#FFF3C4"/>
+        <text x="235" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fff">03:00 · POST TO ALL ×6</text>
+        <rect x="185" y="95" width="100" height="34" rx="17" fill="var(--glitch)"/><text x="235" y="117" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">BLAST!</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"One caption, twelve hashtags, six platforms, 3 a.m. Efficiency!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Echo with six small platform cards, each a different shape.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="170" y="30" width="40" height="40" rx="6" fill="var(--sky)"/><rect x="218" y="30" width="40" height="50" rx="6" fill="var(--rose)"/><rect x="266" y="30" width="40" height="30" rx="6" fill="var(--card)"/><rect x="170" y="90" width="40" height="22" rx="6" fill="var(--ink)"/><rect x="218" y="90" width="28" height="50" rx="6" fill="var(--grape)"/><rect x="266" y="90" width="40" height="40" rx="12" fill="var(--volt)"/></g>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Same idea, six different shapes. Each platform has its own length, format, audience, and rules."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu approving next week's posts on her phone on Friday afternoon.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="22" width="105" height="150" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="8.5" fill="var(--ink)"><text x="192" y="45">Next week · 9 posts</text></g>
+        <g><rect x="190" y="55" width="85" height="18" rx="5" fill="var(--paper2)"/><rect x="190" y="78" width="85" height="18" rx="5" fill="var(--paper2)"/><rect x="190" y="101" width="85" height="18" rx="5" fill="var(--paper2)"/></g>
+        <rect x="190" y="130" width="85" height="22" rx="6" fill="var(--volt)"/><text x="232" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">Approve all 9</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Friday, 4 p.m.</b>Ten minutes on her phone: approve, tweak two captions, skip one. The pages stay alive all week.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>A calendar built from the business, not from thin air</h3>
+    <p>An agent writes good posts when it has real material. Give it <b>content pillars</b> (recurring themes) and the facts to fill them.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Pillar</th><th>Fed by</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Product of the week</td><td>Stock and price sheet</td><td>"Ugu is in season: ₦1,200 a bunch, delivered tomorrow morning."</td></tr>
+        <tr><td>Behind the scenes</td><td>Tolu's phone photos in a Drive folder</td><td>5 a.m. at the farm, loading the van.</td></tr>
+        <tr><td>Customer stories</td><td>Testimonials with written permission</td><td>A restaurant explains why they switched to Harvest Lane.</td></tr>
+        <tr><td>Kitchen tips</td><td>A recipe list</td><td>Three ways to keep tomatoes fresh for a week.</td></tr>
+        <tr><td>Offers and dates</td><td>A seasons-and-holidays sheet</td><td>Christmas pre-orders open on 1 December.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Cadence</b>Decide per platform: e.g. Instagram 4 a week, Facebook 3, LinkedIn 1, X daily, TikTok 2 videos, WhatsApp broadcast at most once a week to people who opted in.</div>
+      <div><b>Brand voice</b>A one-page guide the agent always reads: tone, words to use and avoid, emoji rules, and claims it must never make (health promises, "cheapest in Ibadan").</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>What each platform lets an agent publish</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Platform</th><th>How</th><th>What to know</th></tr></thead>
+      <tbody>
+        <tr><td>Facebook Page</td><td>Meta Graph API (n8n Facebook Graph API node; Make Facebook Pages app)</td><td>Text, link, photo and video posts to a Page you manage.</td></tr>
+        <tr><td>Instagram</td><td>Instagram API, Business or Creator account</td><td>Two steps: create a media container from a public image or video URL, then publish it. No text-only posts.</td></tr>
+        <tr><td>LinkedIn Page</td><td>LinkedIn Posts API (n8n's LinkedIn node: Post → Create)</td><td>Posting as an organisation needs a page admin or content admin role.</td></tr>
+        <tr><td>X</td><td>X API, pay per use (n8n's X node)</td><td>Each API post costs money: $0.015, or $0.20 if it contains a link (checked Oct 2026). Budget for it.</td></tr>
+        <tr><td>TikTok</td><td>Content Posting API</td><td>Until TikTok audits your app, posts made through the API are private (only visible to the account). Many teams send drafts and publish from the app.</td></tr>
+        <tr><td>WhatsApp</td><td>WhatsApp Cloud API (5.1)</td><td>Not a feed. Marketing messages go only to customers who opted in, as approved templates, and each one is charged.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Platform rules and prices change. Read each platform's current docs before building for a client, and put the date you checked in your handover pack.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Post lab: one idea, six platforms</h3>
+    <p>Glitch's post is below. Make it publishable everywhere you tick, without breaking any platform's rules. Write a separate short version for X, add the right media, and pick a sensible time.</p>
+    <div class="postlab" data-postlab>
+      <div class="two">
+        <label class="fld">Main caption<textarea data-pl="base" spellcheck="false">Fresh tomatoes, tatashe and ugu straight from our farm in Ibadan to your kitchen every morning! 🍅🌶️ Order by 8 p.m. and it's at your door by 7 a.m. Restaurants: ask about weekly supply. #freshfood #ibadan #farmtotable #naija #tomatoes #pepper #ugu #organic #restaurant #chef #delivery #harvestlane</textarea></label>
+        <label class="fld">Short version for X (optional)<textarea data-pl="xver" spellcheck="false" placeholder="Under 280 characters, 1–2 hashtags"></textarea></label>
+      </div>
+      <div class="ctl">
+        <label>Media <select data-pl="media" aria-label="Media"><option value="none" selected>None</option><option value="photo">Photo</option><option value="video">Short video</option></select></label>
+        <label>Link <input type="url" data-pl="link" value="https://harvestlane.example/order" aria-label="Link"></label>
+        <label>Time <select data-pl="time" aria-label="Posting time"><option>03:00</option><option>07:00</option><option>12:30</option><option>18:00</option></select></label>
+      </div>
+      <div class="ctl" role="group" aria-label="Platforms">
+        <label><input type="checkbox" data-pl="plat" value="facebook" checked> Facebook</label>
+        <label><input type="checkbox" data-pl="plat" value="instagram" checked> Instagram</label>
+        <label><input type="checkbox" data-pl="plat" value="linkedin" checked> LinkedIn</label>
+        <label><input type="checkbox" data-pl="plat" value="x" checked> X</label>
+        <label><input type="checkbox" data-pl="plat" value="tiktok" checked> TikTok</label>
+        <label><input type="checkbox" data-pl="plat" value="whatsapp"> WhatsApp</label>
+      </div>
+      <div class="tablewrap"><table><tbody></tbody></table></div>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>A person stays in charge</h3>
+    <div class="vocab">
+      <div><b>Approval</b>Every post is approved before it's scheduled. Approve-all is fine once the owner trusts the agent, but the button stays.</div>
+      <div><b>True facts only</b>Prices, stock and dates come from the sheet at publish time, not from the model's memory. If the price changed since approval, the post waits.</div>
+      <div><b>Image rights</b>Use the business's own photos. People in photos (customers, staff) need permission. Don't pass off AI-generated images as real produce or real customers.</div>
+      <div><b>Disclosure</b>Paid partnerships and sponsored posts must be labelled. Follow each platform's rules for branded content and AI-generated media.</div>
+      <div><b>Pause button</b>A single setting that stops all scheduled posts, for bad news days, outages or national events.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Learn from results, every week</h3>
+    <p>Each platform's insights API returns reach, engagement and clicks for your own posts. The agent stores them against each post and pillar, then next Friday's plan uses them:</p>
+<pre class="codebox">Last week · 9 posts · best: "5 a.m. loading the van" (Instagram reel, 3× usual reach)
+By pillar: behind the scenes ▲ · kitchen tips ● · offers ▼
+Comments that became leads: 7 (see 5.5)
+Plan change: two behind-the-scenes videos next week, one fewer offer post</pre>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://developers.facebook.com/docs/instagram-platform/overview/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Instagram Platform overview</b><small>Account types, login options and content publishing.</small></span></a>
+    <a class="wcard" href="https://developers.tiktok.com/doc/content-posting-api-get-started" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>TikTok Content Posting API</b><small>Read the audit rule before promising a client automated TikTok posts.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+social+media+content+calendar+automation" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: social media automation with n8n</b><small>Watch one build; check whether it has an approval step.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's posting week</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every Friday at 2 p.m., the agent drafts next week's posts from the calendar, the price sheet and last week's results. Tolu approves on Telegram. Approved posts publish at their scheduled times on each platform, and every Monday a short report shows what worked.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>The sheets</h4>
+      <p><b>Calendar</b> (<code>date, time, pillar, idea, platforms, media_file, status</code>), <b>Posts</b> (one row per platform version: <code>calendar_id, platform, caption, alt_text, status, approved_by, post_id, published_at</code>), <b>Brand voice</b> (one cell of rules) and the existing <b>Price list</b>.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Draft</h4>
+      <p>Schedule Trigger (Fridays 14:00) → read next week's Calendar rows → for each, an AI step with the brand voice, the idea, the product's current price and stock, and last week's top posts. Structured output, one object per platform:</p>
+<pre class="codebox">{ "platform": "instagram", "caption": "...", "hashtags": ["ibadanfood","farmtotable"],
+  "alt_text": "Crates of tomatoes being loaded into a van at dawn",
+  "uses_price": true }</pre>
+      <p>A Code node checks each version against the platform's rules (the Card 3 checks) and the brand voice's banned phrases. Failures go back to the AI once, then to Tolu marked "needs edit".</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Approve</h4>
+      <p>Telegram: one message per calendar item showing each platform version and the photo, with Approve, Edit and Skip. Edits come back as a reply and replace the caption. Approved rows get <code>status = approved</code>.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Publish on time</h4>
+      <p>A Schedule Trigger every 15 minutes picks approved posts that are due, checks the <code>posting_paused</code> setting, re-reads any price the post uses (and holds the post if it changed), then routes by platform:</p>
+      <ul>
+        <li><b>Facebook:</b> Graph API, POST a photo with a message to the Page.</li>
+        <li><b>Instagram:</b> create a media container (public image URL + caption), then publish it.</li>
+        <li><b>LinkedIn:</b> LinkedIn node, Post → Create as the organisation.</li>
+        <li><b>X:</b> X node, Create Post, within the monthly API budget.</li>
+        <li><b>TikTok:</b> send the video to Tolu as a draft to publish in the app (until the app is audited).</li>
+        <li><b>WhatsApp:</b> the weekly offer as an approved marketing template, only to opted-in customers (5.1).</li>
+      </ul>
+      <p>Save each platform's returned post ID. Attach the error workflow (3.6): a failed post alerts Tolu, never fails silently.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Report</h4>
+      <p>Monday 08:00: fetch insights for last week's post IDs, total them by platform and pillar in code, and let the AI suggest one change to the plan. Email plus a Telegram summary.</p>
+      <div class="stats">
+        <div class="stat"><b>10 min</b><span>of Tolu's time a week</span></div>
+        <div class="stat"><b>6</b><span>platform versions per idea</span></div>
+        <div class="stat"><b>0</b><span>posts without approval</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Posts come from real products, prices and photos.</li><li>Each platform gets a version that fits its rules and audience.</li><li>A person approves everything, and can pause it all.</li><li>Prices are re-checked at publish time.</li><li>Results feed next week's plan.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>The same caption everywhere.</li><li>Posting at times nobody's online.</li><li>Prices from the model's memory.</li><li>Promising automated TikTok posting before the audit.</li><li>Using people's photos without permission.</li><li>Ignoring the X API bill.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I ran Harvest Lane's social media for a week. Engagement is… interesting.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Every Instagram post failed. The log says the media was missing.</td></tr>
+        <tr><td>B</td><td>A post promised tatashe at ₦18,000 a bag. The price had gone up to ₦21,000 on Wednesday.</td></tr>
+        <tr><td>C</td><td>The X bill was much higher than planned: 14 posts a day, each with a link.</td></tr>
+        <tr><td>D</td><td>A happy customer's family photo appeared in an ad. Nobody had asked her.</td></tr>
+        <tr><td>E</td><td>Ten TikTok videos were "published", but nobody could see them.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> Instagram has no text-only posts. Every Instagram version needs a public image or video URL for the media container.</li>
+        <li><b>B:</b> the price came from the draft, not the sheet. Re-read prices at publish time and hold the post if anything changed.</li>
+        <li><b>C:</b> API posts with links cost more on X. Set a cadence and a monthly budget, and put links only where they earn their cost.</li>
+        <li><b>D:</b> no permission. Get written consent for people in photos, and record it next to the image.</li>
+        <li><b>E:</b> the TikTok app wasn't audited, so API posts were private. Send drafts to the owner to publish, or complete TikTok's audit first.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A four-week calendar</h4>
+    <ul><li>For a real business, write five pillars, a cadence per platform and a one-page brand voice.</li><li>Use AI to draft a four-week calendar of ideas from them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The owner approves the calendar and every idea is backed by a real product, photo or fact.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Draft → approve → publish, on two platforms</h4>
+    <ul><li>Build the workflow for Facebook and Instagram (or LinkedIn) with Telegram approval and the price re-check.</li><li>Publish five real posts on schedule.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All five published on time, each platform version passed its checks, and a changed price held a post.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run a real page for a month</h4>
+    <ul><li>Run the agent for a real business across at least three platforms for four weeks.</li><li>Present the results by pillar and the changes you made each week.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The page posted on cadence all month, the owner spent under 15 minutes a week, and reach or enquiries improved against the month before.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Why does every Instagram post need a photo or video?</p><div class="opts">
+      <button type="button" data-opt="a">It doesn't; text posts are fine</button><button type="button" data-opt="b">Instagram publishing creates a media container from an image or video; there are no text-only posts</button><button type="button" data-opt="c">Only for ads</button><button type="button" data-opt="d">Because of the X API</button></div>
+      <p class="fb" hidden data-why="Two steps: create the container from a public media URL, then publish it."></p></div>
+    <div class="q" data-ans="d"><p>2. Where should the price in a post come from?</p><div class="opts">
+      <button type="button" data-opt="a">The AI's draft from Friday</button><button type="button" data-opt="b">Last month's post</button><button type="button" data-opt="c">The model's general knowledge</button><button type="button" data-opt="d">The price sheet, re-read at publish time</button></div>
+      <p class="fb" hidden data-why="Prices change. Check them when the post goes out, and hold it if they changed."></p></div>
+    <div class="q" data-ans="a"><p>3. A client wants fully automatic TikTok posting next week. What do you tell them?</p><div class="opts">
+      <button type="button" data-opt="a">API posts stay private until TikTok audits the app; until then, drafts go to them to publish</button><button type="button" data-opt="b">No problem, it's instant</button><button type="button" data-opt="c">TikTok can't be automated at all</button><button type="button" data-opt="d">Use a password-sharing tool</button></div>
+      <p class="fb" hidden data-why="Be honest about platform limits before you promise."></p></div>
+    <div class="q" data-ans="c"><p>4. How should WhatsApp fit into the content plan?</p><div class="opts">
+      <button type="button" data-opt="a">Post to everyone in your contacts daily</button><button type="button" data-opt="b">Same as Instagram</button><button type="button" data-opt="c">Approved marketing templates, only to opted-in customers, sparingly</button><button type="button" data-opt="d">Not at all</button></div>
+      <p class="fb" hidden data-why="WhatsApp isn't a feed: it's messages to people who agreed to hear from you, and each one is charged."></p></div>
+    <div class="q" data-ans="b"><p>5. What does the weekly results report change?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing; it's for show</button><button type="button" data-opt="b">Next week's plan: more of what worked, less of what didn't</button><button type="button" data-opt="c">The brand voice, every week</button><button type="button" data-opt="d">The platform's algorithm</button></div>
+      <p class="fb" hidden data-why="Results feed the plan. That's what makes it a manager, not a scheduler."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-4">AUTOMANCY LOG · Lesson 5.4 · The Social Media Manager Agent
+Date:
+Pillars and cadence per platform:
+Platforms connected (and what each allows):
+Posts drafted · approved · published on time:
+Checks that caught problems (length, media, price, rights):
+Best post last week and why:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Plan from pillars fed by real products, photos and dates.</li>
+      <li>Write a version for each platform that fits its rules and audience.</li>
+      <li>Know each API's limits and costs before you promise anything.</li>
+      <li>A person approves; prices are re-checked at publish time; there's a pause button.</li>
+      <li>Results shape next week's plan.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api" target="_blank" rel="noopener">LinkedIn Posts API</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.linkedin/" target="_blank" rel="noopener">n8n Docs: LinkedIn node</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.x.com/x-api/getting-started/pricing" target="_blank" rel="noopener">X API pricing</a></li>
+    <li><span class="kind">Text</span><a href="https://www.make.com/en/integrations/instagram-business" target="_blank" rel="noopener">Make: Instagram for Business app</a></li>
+    <li><span class="kind">Course</span><a href="https://www.facebook.com/business/learn" target="_blank" rel="noopener">Meta Blueprint: free social media courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+social+media+content+calendar+automation" target="_blank" rel="noopener">YouTube: social media automation with n8n</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Give each group one product photo and one fact. They have ten minutes to produce six platform versions, then swap with another group, who run them through the Card 3 checks and the brand voice. The best set wins the "Echo" prize. Then show the same exercise done by the agent in 30 seconds, and discuss what the humans did better.</p>
+  </div>
+</section>
+
+</article>
+</template>

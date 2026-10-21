@@ -1,0 +1,39 @@
+{
+  "id": "6.4",
+  "items": [
+    {
+      "file": "6-4-hl07-books-sync.json",
+      "kind": "make",
+      "name": "HL·07 Books sync (Make)",
+      "what": "Every evening reads paid orders from the read-only Supabase view books_paid_orders, adds one sales entry per order to the accountant's Sales sheet (a data store makes sure no order is entered twice), then POSTs HL·07's heartbeat {workflow, entries, period} to n8n's /hl-heartbeat; every failing step POSTs {workflow, step, message, url, order_id, platform: \"Make\"} to /hl-errors with the x-hl-secret header so it reaches HL·00's one alert channel.",
+      "setup": [
+        "Import the n8n side first: HL·07 Books sync heartbeat (/hl-heartbeat) and HL·00 Errors (/hl-errors), both published, with HL_EDGE_SECRET set on the n8n server. Replace YOUR_N8N_DOMAIN in the three HTTP modules that call n8n.",
+        "In Supabase, create the read-only view (it reads orders, never writes them): create view books_paid_orders as select order_id, customer_id, total_ngn, paid_at, paystack_ref from orders where status in ('paid','dispatched','delivered'); Add it to the data contract as read by HL·07.",
+        "Keychain \"Supabase books\" (HTTP · Make an API Key Auth request in \"Read paid orders\"): key = your Supabase secret key, placement Header, name apikey. Replace YOUR_PROJECT_REF. The scenario only ever sends GET to the view.",
+        "Keychain \"HL edge secret\": key = the same HL_EDGE_SECRET value as n8n, placement Header, name x-hl-secret. Select it in \"Heartbeat to n8n\" and in all three \"Report error to HL·00\" modules. Keep the secret in this one keychain on the Make side.",
+        "Replace YOUR_MAKE_ZONE in the error bodies with your Make zone (e.g. eu2), so the alert links straight to the execution log.",
+        "Data store: create books_synced with fields paid_at (date), amount_ngn (number), synced_at (date); select it in \"Already in the books?\" and \"Remember synced order\". The key is the order_id.",
+        "Accountant's spreadsheet (replace YOUR_ACCOUNTANT_BOOKS_SHEET_ID): tab Sales = A date, B order_id, C customer_id, D amount_ngn, E paystack_ref, F source, G synced_at. Connect Google Sheets with the account the accountant shares the books from.",
+        "Organisation timezone Africa/Lagos. Scenario settings: Allow storing of incomplete executions. Schedule: every day at 21:00. On the n8n side the workflow_schedule row ('HL·07', 'Books sync', '1 day', 'heartbeat') lets the watchdog notice if this stops."
+      ],
+      "test": "With three test orders paid today, Run once (end-to-end test 8): three new rows in Sales matching the paid orders, and an HL·07 heartbeat event in events with entries 3 and today's period. Run again: no new Sales rows and a heartbeat with entries 0. Change the Supabase key in the keychain to a wrong value and run: \"Read paid orders\" fails, Tolu gets an HL·00 alert naming HL·07 Books sync, step Read paid orders and platform Make, and an incomplete execution waits to retry. Turn the scenario off for a day: the n8n watchdog alerts.",
+      "build": [
+        "1 · HTTP › Make an API Key Auth request \"Read paid orders (Supabase view)\": keychain Supabase books (header apikey); GET https://YOUR_PROJECT_REF.supabase.co/rest/v1/books_paid_orders; query select = order_id,customer_id,total_ngn,paid_at,paystack_ref; paid_at = gte.{{formatDate(addDays(now; -3); \"YYYY-MM-DD\")}} (three days back, so a missed night is caught up); order = paid_at.asc; Parse response Yes; Evaluate all states as errors Yes.",
+        "Error handler on 1 · \"Report error to HL·00\" (HTTP › Make an API Key Auth request, keychain HL edge secret → header x-hl-secret): POST https://YOUR_N8N_DOMAIN/webhook/hl-errors; raw JSON {\"workflow\": \"HL·07 Books sync\", \"step\": \"Read paid orders\", \"message\": \"{{replace(error.message; /\"/g; \"'\")}}\", \"url\": \"https://YOUR_MAKE_ZONE.make.com/{{var.team.id}}/scenarios/{{var.scenario.id}}/logs/{{var.scenario.executionId}}\", \"order_id\": \"\", \"platform\": \"Make\"} → Break: automatic completion Yes, 3 attempts, every 15 minutes.",
+        "4 · Router \"Sync, then heartbeat\": Make runs route 1 to the end before route 2.",
+        "Route 1 · 5 · Iterator \"Iterator · paid orders\": {{1.data}}.",
+        "6 · Data store › Check the existence of a record \"Already in the books?\": books_synced; key {{5.order_id}}.",
+        "Filter on 6→7 \"Not synced yet\": {{6.exists}} Boolean: Equal to false.",
+        "7 · Google Sheets › Add a Row \"Add sales entry\": Sales; date {{formatDate(5.paid_at; \"YYYY-MM-DD\")}}, order_id {{5.order_id}}, customer_id {{5.customer_id}}, amount_ngn {{5.total_ngn}}, paystack_ref {{5.paystack_ref}}, source HL·07 (Make), synced_at {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}.",
+        "Error handler on 7 · \"Report error to HL·00\": same body with step \"Add sales entry\" and order_id \"{{5.order_id}}\" → Break: 2 attempts, every 15 minutes.",
+        "10 · Data store › Add/replace a record \"Remember synced order\": books_synced; key {{5.order_id}}; paid_at, amount_ngn, synced_at {{now}}.",
+        "11 · Array aggregator \"Count entries\": source module 5; field order_id (only bundles that passed the filter and were written reach it).",
+        "12 · Tools › Set variable \"entries\": name entries; lifetime One execution; value {{length(11.array)}}.",
+        "Route 2 · 13 · Tools › Get variable \"Get entries\": name entries.",
+        "14 · HTTP › Make an API Key Auth request \"Heartbeat to n8n\": keychain HL edge secret (header x-hl-secret); POST https://YOUR_N8N_DOMAIN/webhook/hl-heartbeat; raw JSON {\"workflow\": \"HL·07\", \"entries\": {{ifempty(13.entries; 0)}}, \"period\": \"{{formatDate(now; \"YYYY-MM-DD\")}}\"} (the contract: entries a whole number, period YYYY-MM-DD); Evaluate all states as errors Yes.",
+        "Error handler on 14 · \"Report error to HL·00\" with step \"Heartbeat to n8n\" → Break: 3 attempts, every 15 minutes.",
+        "Scenario settings: Allow storing of incomplete executions Yes. Schedule daily 21:00 (Africa/Lagos)."
+      ]
+    }
+  ]
+}

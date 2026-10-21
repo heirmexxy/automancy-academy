@@ -1,0 +1,502 @@
+{
+ "items": [
+  {
+   "id": "0.1",
+   "title": "Think Like an Automator",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "0.2",
+   "title": "How Apps Talk: APIs &amp; Webhooks",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "0.3",
+   "title": "Data Is the Cargo: JSON &amp; Arrays",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "0.4",
+   "title": "Spreadsheets as Databases",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "0.5",
+   "title": "Talking to AI: LLM Essentials",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "0.6",
+   "title": "Keys, Logins &amp; Safety",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "lesson",
+   "free": true,
+   "sessions": 1
+  },
+  {
+   "id": "B0",
+   "title": "Boss 0: The Order Flood",
+   "track": 0,
+   "trackName": "Base Camp",
+   "kind": "boss",
+   "free": true,
+   "sessions": 2
+  },
+  {
+   "id": "1.1",
+   "title": "Your First Zap",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "1.2",
+   "title": "Multi-Step Zaps &amp; Formatter",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "1.3",
+   "title": "Filters &amp; Paths",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "1.4",
+   "title": "Webhooks &amp; Code Steps",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "1.5",
+   "title": "AI Steps, Tables &amp; Interfaces",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "1.6",
+   "title": "Agents, Copilot, MCP &amp; Knowing the Limits",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "B1",
+   "title": "Boss 1: The Lead Machine",
+   "track": 1,
+   "trackName": "Spark Street (Zapier)",
+   "kind": "boss",
+   "free": false,
+   "sessions": 2
+  },
+  {
+   "id": "2.1",
+   "title": "Scenarios, Modules &amp; Bundles",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.2",
+   "title": "Mapping &amp; Functions",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.3",
+   "title": "Routers &amp; Filters",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.4",
+   "title": "Iterators &amp; Aggregators",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.5",
+   "title": "HTTP, Webhooks &amp; Data Stores",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.6",
+   "title": "Error Handling &amp; Reliability",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "2.7",
+   "title": "AI Modules &amp; Make AI Agents",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "B2",
+   "title": "Boss 2: Receipt-to-Books",
+   "track": 2,
+   "trackName": "Weave Workshop (Make)",
+   "kind": "boss",
+   "free": false,
+   "sessions": 2
+  },
+  {
+   "id": "3.1",
+   "title": "Setup &amp; First Workflow",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.2",
+   "title": "Items &amp; Expressions",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.3",
+   "title": "Flow Control",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.4",
+   "title": "HTTP Request Mastery",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.5",
+   "title": "The Code Node",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.6",
+   "title": "Errors, Sub-workflows &amp; Logs",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.7",
+   "title": "AI Nodes",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "3.8",
+   "title": "Production Ready",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "B3",
+   "title": "Boss 3: The Telegram Order Bot",
+   "track": 3,
+   "trackName": "Nodo's Forge (n8n)",
+   "kind": "boss",
+   "free": false,
+   "sessions": 2
+  },
+  {
+   "id": "4.1",
+   "title": "What Makes an Agent",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.2",
+   "title": "Tools &amp; Function Calling",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.3",
+   "title": "Memory",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.4",
+   "title": "RAG: Answering From Your Documents",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.5",
+   "title": "Guardrails &amp; Human-in-the-Loop",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.6",
+   "title": "MCP: Plugging Agents Into Anything",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.7",
+   "title": "Multi-Agent Systems",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.8",
+   "title": "Code-First Agents",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "4.9",
+   "title": "Evals, Observability &amp; Cost",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "B4",
+   "title": "Boss 4: Sage Desk",
+   "track": 4,
+   "trackName": "Sage's Tower (AI agents)",
+   "kind": "boss",
+   "free": false,
+   "sessions": 2
+  },
+  {
+   "id": "5.1",
+   "title": "Channels: WhatsApp, Telegram &amp; Voice",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.2",
+   "title": "Prospecting Agents",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.3",
+   "title": "Social Listening &amp; Sentiment",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.4",
+   "title": "The Social Media Manager Agent",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.5",
+   "title": "The Social Inbox Agent",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.6",
+   "title": "Email Campaigns That Land",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.7",
+   "title": "One Inbox for Every Channel",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.8",
+   "title": "CRM Foundations: HubSpot and Zoho",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "5.9",
+   "title": "CRM Automation and Integration",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "B5",
+   "title": "Boss 5: Growth Desk",
+   "track": 5,
+   "trackName": "The Signal Tower (Growth)",
+   "kind": "boss",
+   "free": false,
+   "sessions": 2
+  },
+  {
+   "id": "6.1",
+   "title": "Discovery &amp; Scoping",
+   "track": 6,
+   "trackName": "Launchpad",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "6.2",
+   "title": "Pricing, Packaging &amp; Getting Paid",
+   "track": 6,
+   "trackName": "Launchpad",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "6.3",
+   "title": "Portfolio &amp; Templates",
+   "track": 6,
+   "trackName": "Launchpad",
+   "kind": "lesson",
+   "free": false,
+   "sessions": 1
+  },
+  {
+   "id": "6.4",
+   "title": "Grand Capstone: Harvest Lane on Autopilot",
+   "track": 6,
+   "trackName": "Launchpad",
+   "kind": "capstone",
+   "free": false,
+   "sessions": 3
+  }
+ ],
+ "lessons": 49,
+ "bosses": 6,
+ "total": 55
+}

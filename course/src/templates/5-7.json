@@ -1,0 +1,234 @@
+{
+  "id": "5.7",
+  "items": [
+    {
+      "file": "5-7-inbox-receive.json",
+      "name": "Inbox · Receive",
+      "what": "The one inbox: normalises and resolves each sender to one customer record (merging only on verified identifiers), threads the message into the right conversation, sets priority, owner and response target, and has one agent answer with the full cross-channel history on the latest channel, with refunds approved by Tolu.",
+      "setup": [
+        "Run the table SQL from the Tables sticky note in Supabase. Add your existing customers' verified phones and emails from checkout to identities with verified = true.",
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Import Inbox · Send and TOOL · get_customer_context first and note their IDs; replace YOUR_SEND_WORKFLOW_ID (twice) and YOUR_CONTEXT_WORKFLOW_ID.",
+        "Select your OpenAI credential in both model nodes and replace YOUR_MODEL.",
+        "Select your Telegram credential in Tolu approves decision? and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Click Test workflow with the pinned WhatsApp message: a customer, identity, conversation (order_ref HL-0412) and message are created and a reply goes to Inbox · Send. Then send the same order question by email from another address: it joins a new customer (no verified link), and typing the WhatsApp number in the email creates a link suggestion, not a merge. Two people with the same name are never linked.",
+      "walk": {
+        "title": "Build it: one customer, one timeline, one answer",
+        "sample": "WhatsApp from 0800 000 0000 · \"Good morning, where is my order HL-0412? It was meant to come by 9.\"",
+        "steps": [
+          {
+            "at": "When called by an adapter",
+            "say": "Three small doors, email, WhatsApp and the Meta webhook, each turn their event into the same shape and call this one sub-workflow.",
+            "show": [
+              "channel · thread_id · from_value · from_type",
+              "text · received_at · raw_id"
+            ],
+            "data": "1 WhatsApp message"
+          },
+          {
+            "at": "Normalise",
+            "say": "First we normalise. Oh eight oh three, two three four eight oh three and plus two three four are one number, and emails go lowercase. Skip this and one customer becomes three.",
+            "show": [
+              "phone → '+234' + digits without 234 or 0",
+              "email → trim().toLowerCase()"
+            ],
+            "data": "+2348000000000"
+          },
+          {
+            "at": "Find identity",
+            "say": "We look for that exact value in identities, verified ones first.",
+            "show": [
+              "where type = $1 and value = $2",
+              "order by verified desc"
+            ],
+            "data": "not found"
+          },
+          {
+            "at": "New customer + unverified identity",
+            "say": "No match means a new customer with an unverified identity. We never merge on a name alone: two Funkes are two people.",
+            "show": [
+              "insert customers, then identities",
+              "verified = false · source = first message on whatsapp"
+            ],
+            "data": "customer 57 · unverified"
+          },
+          {
+            "at": "Typed phone or email?",
+            "say": "If the customer typed a phone or email in the message, we pick it out and normalise it too.",
+            "show": [
+              "phone or email found in text → typed_value"
+            ],
+            "data": "nothing typed"
+          },
+          {
+            "at": "Create link suggestion",
+            "say": "If that typed value is verified on another customer, we only suggest a link, never merge. Anyone can type someone else's number, and a wrong merge shows a stranger her address.",
+            "show": [
+              "insert into link_suggestions",
+              "needs_verification = true"
+            ]
+          },
+          {
+            "at": "Message context",
+            "say": "We mark whether identity still needs verifying, and pull out the order number, so this message can join the right conversation.",
+            "show": [
+              "needs_verification: suggestion or not verified",
+              "order_ref: HL-0412"
+            ],
+            "data": "needs_verification true"
+          },
+          {
+            "at": "Upsert conversation",
+            "say": "One open conversation per customer per order, whichever channel it came from. We update the last message time and reply channel to the one she used most recently.",
+            "show": [
+              "same customer, open, same order_ref → reuse",
+              "reply_channel = latest channel"
+            ],
+            "data": "conversation for HL-0412"
+          },
+          {
+            "at": "Save message (once)",
+            "say": "The message is saved once, keyed on the platform's message ID, so a retry never doubles it.",
+            "show": [
+              "on conflict (raw_id) do nothing"
+            ]
+          },
+          {
+            "at": "Priority, owner, target",
+            "say": "Code sets priority, a named owner and a response target. Safety or legal first, then complaints, then order problems at 15 minutes for Bisi.",
+            "show": [
+              "1 safety/legal · 2 complaint/refund → Tolu, 60 min",
+              "3 order problem → Bisi, 15 min",
+              "5 question → agent, 5 min"
+            ],
+            "data": "priority 3 · Bisi · 15 min"
+          },
+          {
+            "at": "Priority, owner, target",
+            "say": "It also checks the channel's rule: email can always be answered, WhatsApp and Meta DMs only within 24 hours of her last message.",
+            "show": [
+              "allowed_reply: email, or ≤ 24 h since customer"
+            ],
+            "data": "allowed_reply true"
+          },
+          {
+            "at": "Sage Desk agent",
+            "say": "The agent calls get customer context first and reads the whole timeline and the decisions table, so email and WhatsApp never say different things.",
+            "show": [
+              "Tool: get_customer_context (timeline, orders, decisions)",
+              "Reply only on reply_channel, in its style",
+              "needs_verification → no order or payment details"
+            ],
+            "data": "short WhatsApp reply"
+          },
+          {
+            "at": "Tolu approves decision?",
+            "say": "The agent never promises a refund or credit. It asks, and Tolu approves or rejects on Telegram.",
+            "show": [
+              "Telegram · Send and Wait",
+              "Decision needed (refund: …) · Approve or Reject"
+            ]
+          },
+          {
+            "at": "Write decision",
+            "say": "An approved decision goes into the decisions table, so every channel sees it from now on.",
+            "show": [
+              "insert into decisions … decided_by 'Tolu'"
+            ]
+          },
+          {
+            "at": "Inbox · Send (reply)",
+            "say": "One reply goes out on the channel she used last, through Inbox Send, which checks the window again before sending.",
+            "show": [
+              "Execute Sub-workflow: Inbox · Send",
+              "channel = reply_channel"
+            ],
+            "data": "1 reply on WhatsApp"
+          },
+          {
+            "at": "Short note",
+            "say": "Any other open thread from the last two days gets one short note and closes, so she gets one answer, not three.",
+            "show": [
+              "We've replied on WhatsApp so everything's in one place."
+            ],
+            "data": "email thread: 1 note"
+          }
+        ],
+        "end": "Run the pinned WhatsApp message: one customer, one conversation for HL-0412, one reply; then type her number in an email from another address and see a link suggestion, not a merge."
+      }
+    },
+    {
+      "file": "5-7-inbox-send.json",
+      "name": "Inbox · Send",
+      "what": "Sends one reply or note through the right door (Gmail, WhatsApp, Instagram or Messenger) only if the channel's window allows it, and logs it.",
+      "setup": [
+        "Select Gmail (support inbox), WhatsApp API and Header Auth \"Meta page token\" (Name Authorization, Value Bearer followed by your Page token) credentials in their nodes.",
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Replace YOUR_PHONE_NUMBER_ID and YOUR_TELEGRAM_CHAT_ID, and select your Telegram credential."
+      ],
+      "test": "Put your verified WhatsApp number in the pinned thread_id and a last_customer_msg_at within the last hour, then click Test workflow: the message arrives and is logged. Change last_customer_msg_at to two days ago: nothing is sent and Tolu is told why."
+    },
+    {
+      "file": "5-7-customer-context.json",
+      "name": "TOOL · get_customer_context",
+      "what": "Returns a customer's cross-channel timeline, open orders and decisions for the agent, for the customer the workflow is answering only.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Adjust the Open orders query to your orders table (order_id, status, eta, total, phone)."
+      ],
+      "test": "Click Test workflow with customer_id 1 after the Receive test: the timeline lists the WhatsApp message and the reply."
+    },
+    {
+      "file": "5-7-gmail-adapter.json",
+      "name": "HL · One inbox · email door",
+      "what": "Turns each new support email into the shared shape and passes it to Inbox · Receive.",
+      "setup": [
+        "Select the Gmail credential for the support inbox.",
+        "Replace YOUR_RECEIVE_WORKFLOW_ID with the ID of Inbox · Receive."
+      ],
+      "test": "Email the support inbox from a test address: Inbox · Receive runs with channel email and you get one reply in the same thread."
+    },
+    {
+      "file": "5-7-whatsapp-adapter.json",
+      "name": "HL · One inbox · WhatsApp door",
+      "what": "Turns each incoming WhatsApp text into the shared shape and passes it to Inbox · Receive; receipts are filtered out.",
+      "setup": [
+        "Select your WhatsApp OAuth credential in the trigger.",
+        "Replace YOUR_RECEIVE_WORKFLOW_ID.",
+        "Deactivate the 5.1 WhatsApp adapter: one webhook per Meta app."
+      ],
+      "test": "Send a text to the test number from your verified phone: Inbox · Receive runs with channel whatsapp and a +234 normalised number."
+    },
+    {
+      "file": "5-7-meta-adapter.json",
+      "name": "HL · One inbox · Meta door",
+      "what": "Turns Messenger and Instagram DMs from the 5.5 Meta webhook into the shared shape and passes them to Inbox · Receive.",
+      "setup": [
+        "Replace YOUR_RECEIVE_WORKFLOW_ID.",
+        "In HL · Social inbox · Meta webhook, add an IF after Flatten events that sends kind = dm to an Execute Workflow node calling this workflow."
+      ],
+      "test": "Click Test workflow with the pinned Instagram DM: Inbox · Receive creates a link suggestion for the typed number if it belongs to another verified customer, and the agent doesn't share order details."
+    },
+    {
+      "file": "5-7-watchdog.json",
+      "name": "HL · One inbox · response-time watchdog",
+      "what": "Every 5 minutes, pings the assigned person at 80% of a conversation's response target and escalates to Tolu at 100%.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Select your Telegram credential in both Telegram nodes; replace YOUR_TELEGRAM_CHAT_ID and YOUR_BISI_TELEGRAM_CHAT_ID in Ping or escalate."
+      ],
+      "test": "Set a test conversation's assigned_to to Bisi and sla_due_at to 2 minutes from now with last_customer_msg_at 13 minutes ago, then click Test workflow: Bisi is pinged once; after the due time Tolu gets the escalation."
+    },
+    {
+      "file": "5-7-daily-digest.json",
+      "name": "HL · One inbox · daily digest",
+      "what": "At 18:00, sends Tolu conversations by channel, median response time, missed targets and open hand-overs.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details and select it in every Postgres node.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "After the other tests, click Test workflow: one Telegram message with today's numbers."
+    }
+  ]
+}

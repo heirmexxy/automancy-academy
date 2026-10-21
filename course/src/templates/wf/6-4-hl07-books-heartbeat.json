@@ -1,0 +1,223 @@
+{
+  "name": "HL·07 Books sync heartbeat (n8n side)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·07 Books sync: n8n side (lesson 6.4)\nThe books sync itself runs in MAKE (the accountant maintains it): every evening it reads paid orders from a read-only Supabase view and creates sales entries. Its last module POSTs a heartbeat here.\nEdge rules: secret header, fixed JSON shape, validate before trusting.\nContract: POST {\"workflow\":\"HL·07\",\"entries\":12,\"period\":\"2026-10-06\"} with header x-hl-secret.\n\n**Credentials:** Postgres (Supabase). **Environment:** HL_EDGE_SECRET.",
+        "height": 300,
+        "width": 400
+      },
+      "id": "6682c9e4-0382-466c-8c10-1df3177a3b75",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hl-heartbeat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "48639c3d-7228-4dec-93c6-da283e6716f0",
+      "name": "Heartbeat webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "e0f00e76-3308-48ae-81bd-96803e8e202a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\nconst b = j.body || {};\nconst secretOk = !!$env.HL_EDGE_SECRET && (j.headers || {})['x-hl-secret'] === $env.HL_EDGE_SECRET;\nconst shapeOk = b.workflow === 'HL·07' && Number.isInteger(b.entries) && b.entries >= 0 && /^\\d{4}-\\d{2}-\\d{2}$/.test(String(b.period || ''));\nreturn [{ json: { ok: secretOk && shapeOk, why: !secretOk ? 'bad secret' : !shapeOk ? 'bad shape' : 'ok', entries: b.entries, period: b.period } }];"
+      },
+      "id": "930c2a69-c460-47ba-87a0-135c7f6d7e81",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a3082889-43bc-4e4c-ba41-3fc9582dc6fb",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "34e123c3-553b-4310-a2d1-29c6132bcc28",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·07', $1, 'heartbeat', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ entries: $json.entries, period: $json.period, platform: 'Make' }) ] }}"
+        }
+      },
+      "id": "bc5ea7e6-bf66-4e6e-902f-03e83d43d052",
+      "name": "Log heartbeat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "acadee70-10d5-4293-833e-29b6f6323036",
+      "name": "Reply 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·07', $1, 'edge_rejected', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ why: $json.why }) ] }}"
+        }
+      },
+      "id": "745dba31-1fbe-4d73-b1ea-52d4dba26c27",
+      "name": "Log rejected",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "rejected",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "1f247838-3219-418a-a915-3f6ed2c35237",
+      "name": "Reply 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        90
+      ]
+    }
+  ],
+  "connections": {
+    "Heartbeat webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Log heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Reply 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rejected": {
+      "main": [
+        [
+          {
+            "node": "Reply 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

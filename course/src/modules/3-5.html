@@ -1,0 +1,394 @@
+<template data-mod="3.5" id="tpl-3-5">
+<article style="--c:var(--spark)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 3 · Nodo's Forge (n8n) · Lesson 3.5</span>
+    <h1>The Code Node</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Nodo</span><span class="pill">Tools: n8n Code node (JavaScript, optional Python), an AI assistant as helper</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Some jobs take ten nodes or one short piece of code. The Code node lets you write JavaScript (or Python) that reads every item, transforms it, and returns new items. You don't need to become a programmer. You need four patterns, one strict rule about what you return, and the habit of testing with messy data.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Read and write the four patterns: loop, <code>map</code>, <code>filter</code> and grouping with an object.</span></div>
+  <div><b>02</b><span>Return items in the shape n8n expects, and choose the right mode.</span></div>
+  <div><b>03</b><span>Handle numbers, phone numbers and dates without silent errors.</span></div>
+  <div><b>04</b><span>Use an AI assistant to draft code, then test and correct it yourself.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Who are our best customers?</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An investor asking Tolu who the top ten customers are.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="40" width="145" height="64" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="232" y="66" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">"Who are your</text>
+        <text x="232" y="84" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">top ten customers?"</text>
+        <use href="#tolu" x="15" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday</b>The investor from Boss 2 is back with a simple question. Tolu has no simple answer.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A list showing the same customer three times with differently formatted phone numbers.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="25" y="30" width="270" height="130" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">
+          <text x="40" y="60">Mrs Adebayo    0803 123 4567</text>
+          <text x="40" y="86">mrs adebayo    +2348031234567</text>
+          <text x="40" y="112">Mrs. Adebayo   2348031234567</text>
+        </g>
+        <text x="160" y="145" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--glitch)">1 customer, 3 rows</text>
+      </svg>
+      <div class="cap"><b>The mess</b>3,400 order rows, 1,200 of them repeat customers under different spellings and phone formats.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A tangle of twelve nodes compared with a single Code node.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="1.5" fill="var(--sky)"><rect x="20" y="40" width="24" height="18" rx="4"/><rect x="54" y="70" width="24" height="18" rx="4"/><rect x="20" y="100" width="24" height="18" rx="4"/><rect x="88" y="40" width="24" height="18" rx="4"/><rect x="88" y="100" width="24" height="18" rx="4"/><rect x="122" y="70" width="24" height="18" rx="4"/><rect x="54" y="130" width="24" height="18" rx="4"/><rect x="122" y="130" width="24" height="18" rx="4"/></g>
+        <text x="85" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">12 nodes</text>
+        <rect x="200" y="65" width="90" height="56" rx="12" fill="var(--spark)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="245" y="98" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="14" font-weight="700" fill="#fff">{ }</text>
+        <text x="245" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">1 Code node</text>
+      </svg>
+      <div class="cap"><b>Nodo</b>"You could build this with twelve nodes. Or write twenty lines in one Code node and read them in a minute."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding an error message saying Code doesn't return items properly.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="55" width="145" height="70" rx="10" fill="var(--glitch)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="232" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">Code doesn't return</text>
+        <text x="232" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">items properly</text>
+        <use href="#glitch" x="15" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Your code is fine. You just returned the wrong shape. n8n won't take it."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 30 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>What goes in, what must come out</h3>
+    <p>The Code node has two modes:</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>Run Once for All Items (default)</th><th>Run Once for Each Item</th></tr></thead>
+      <tbody>
+        <tr><td>Runs</td><td>Once, with every item</td><td>Once per item</td></tr>
+        <tr><td>Read input</td><td><code>$input.all()</code> → a list of items, each <code>{ json: {...} }</code></td><td><code>$json</code> (or <code>$input.item.json</code>) → this item's fields</td></tr>
+        <tr><td>Return</td><td>A <b>list</b> of items: <code>return [{ json: {...} }, …]</code></td><td><b>One</b> item: <code>return { json: {...} }</code></td></tr>
+        <tr><td>Use for</td><td>Totals, grouping, de-duplicating, sorting: anything that compares items</td><td>Cleaning or reshaping each item on its own</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> The one strict rule: in all-items mode, return an array of objects. Not a number, not a list of names, not nothing. If you see "Code doesn't return items properly", check your <code>return</code> line first.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Four patterns that do most of the work</h3>
+<pre class="codebox"><span class="c">// 1. Loop: visit every item</span>
+<span class="k">for (const item of $input.all()) { const o = item.json; … }</span>
+
+<span class="c">// 2. map: one new item for each old one</span>
+<span class="k">return $input.all().map(i =&gt; ({ json: { name: i.json.name.trim() } }));</span>
+
+<span class="c">// 3. filter: keep only some</span>
+<span class="k">return $input.all().filter(i =&gt; Number(i.json.total) &gt;= 30000);</span>
+
+<span class="c">// 4. Group with an object (the key is what you group by)</span>
+<span class="k">const byArea = {};</span>
+<span class="k">for (const { json: o } of $input.all()) {</span>
+<span class="k">  byArea[o.area] ??= { area: o.area, orders: 0, total: 0 };</span>
+<span class="k">  byArea[o.area].orders += 1;</span>
+<span class="k">  byArea[o.area].total += Number(o.total) || 0;</span>
+<span class="k">}</span>
+<span class="k">return Object.values(byArea).map(a =&gt; ({ json: a }));</span></pre>
+    <p><code>reduce</code> can do the same as pattern 4 in one expression; use whichever you can read. <code>??=</code> means "set it only if it isn't set yet". Note that <code>filter</code> returns the original items, already in <code>{ json }</code> shape, so they can be returned directly.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Numbers, phones and dates: the silent bugs</h3>
+    <div class="vocab">
+      <div><b>Numbers that are text</b>Sheets and forms often send <code>"45000"</code>. <code>0 + "45000"</code> gives <code>"045000"</code>, not 45000. Always convert: <code>Number(o.total) || 0</code>.</div>
+      <div><b>One phone, many formats</b>Strip non-digits, then normalise: <code>0803…</code> and <code>234803…</code> both become <code>+234803…</code>. Only then compare or group.</div>
+      <div><b>ISO dates compare as text</b><code>"2026-09-14" &gt; "2026-08-19"</code> is true, because <code>YYYY-MM-DD</code> sorts correctly. Other formats (<code>14/09/26</code>) don't: convert first.</div>
+      <div><b>Luxon in code</b><code>DateTime</code> works in the Code node too: <code>DateTime.fromISO(o.date).diffNow('days').days</code> gives days since an order (negative for the past).</div>
+      <div><b>Money</b>Do the maths in whole naira (or kobo); round only for display.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Try it: the Code node sandbox</h3>
+    <p>This runs your JavaScript in your browser against 12 sample order rows, the way the Code node would, and checks the return shape. The checker knows the right answer for the solved problem: one row per real customer, with order count, lifetime value and last order date.</p>
+    <div class="codelab" data-code="cd-3-5">
+      <details><summary class="crit">Input: 12 order items (click to view)</summary><pre class="indata" id="cd-3-5-view"></pre></details>
+      <div class="btns">
+        <label class="crit" for="cm-3-5">Mode</label>
+        <select id="cm-3-5" data-cm><option value="all" selected>Run Once for All Items</option><option value="each">Run Once for Each Item</option></select>
+      </div>
+      <textarea id="ct-3-5" spellcheck="false">// Run Once for All Items
+// Starter: returns every order unchanged. Make it one item per customer.
+const out = [];
+for (const item of $input.all()) {
+  const o = item.json;
+  out.push({ json: o });
+}
+return out;</textarea>
+      <div class="btns">
+        <button type="button" class="btn" data-run>▶ Execute step</button>
+        <button type="button" class="btn ghost" data-codeload="cs-glitch">Glitch's version</button>
+        <button type="button" class="btn ghost" data-codeload="cs-solved">Solution</button>
+        <button type="button" class="btn ghost" data-codeload="cs-each">Each-item example</button>
+      </div>
+      <span class="jl-status"></span>
+      <p class="mgoal" data-o="check"></p>
+      <div class="jl-out"></div>
+      <p style="font-size:.84rem;color:var(--muted)">A practice sandbox: it supports <code>$input.all()</code>, <code>$input.first()</code>, <code>$input.item</code>, <code>$json</code> and <code>console.log</code>, but not Luxon or other n8n helpers. Real n8n has more.</p>
+    </div>
+    <pre id="cs-glitch" hidden data-mode="all">// Glitch's version: three bugs. Fix them one at a time.
+const seen = {};
+for (const item of $input.all()) {
+  const o = item.json;
+  seen[o.phone] = seen[o.phone] || { phone: o.phone, name: o.name, orders: 0, lifetime_value: 0 };
+  seen[o.phone].orders += 1;
+  seen[o.phone].lifetime_value += o.total;
+}
+return Object.values(seen).map(c =&gt; c.name);</pre>
+    <pre id="cs-each" hidden data-mode="each">// Run Once for Each Item: tidy one item at a time
+const name = String($json.name).trim().toLowerCase()
+  .replace(/\b\w/g, ch =&gt; ch.toUpperCase());
+return { json: { ...$json, name } };</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Python, limits, and your AI pair programmer</h3>
+    <div class="vocab">
+      <div><b>Python</b>The Code node also runs Python. In n8n 2.x it uses native Python; the older browser-based (Pyodide) version was removed. Native Python reads items through <code>_items</code> (all-items mode) or <code>_item</code> (each-item mode), and doesn't support most of the <code>$</code> helpers. If you know Python, use it; otherwise JavaScript has more examples.</div>
+      <div><b>What code can't do</b>The Code node can't read files or make HTTP requests. Let HTTP Request and app nodes do the talking; let code calculate. On n8n Cloud, only a couple of libraries (such as <code>crypto</code>) are available; self-hosted n8n can allow more.</div>
+      <div><b>Asking an AI to write it</b>Describe the input (paste two <i>fake</i> sample items), the exact output you want, the mode, and the n8n return shape. Then run it against messy test data, read every line, and ask the AI to explain anything you don't understand.</div>
+    </div>
+<pre class="codebox"><span class="c">A prompt that works:</span>
+<span class="k">Write JavaScript for an n8n Code node, mode "Run Once for All Items".
+Input items look like: { json: { name, phone, total, date } } (sample below, fake data).
+Output: one item per unique phone number, normalised to +234 format,
+with fields phone, name, orders, lifetime_value (number), last_order (YYYY-MM-DD).
+Treat total as possibly text. Skip rows with no phone.
+Return an array of { json: {...} }. Explain each line in a comment.</span></pre>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> I'll write a good first draft in seconds. I'll also occasionally forget your edge cases or return the wrong shape. The sandbox and your test data are how you find out. You're the one responsible for what runs.</div></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Code node</b><small>Read: the two modes, supported languages, and what code can't do.</small></span></a>
+    <a class="wcard" href="https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures-v8/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>freeCodeCamp: JavaScript (free, interactive)</b><small>Do the sections on arrays, objects and loops. That's all this module needs.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+code+node+javascript+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n Code node tutorials</b><small>Pick one from 2025 or later; the return rules haven't changed.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: one row per customer, ranked by value</h2></div>
+  <div class="prose"><p><b>The goal.</b> From the Orders sheet (every order ever, messy names and phone formats), produce a <b>Customers</b> sheet with one row per real customer: normalised phone, latest name, number of orders, lifetime value, first and last order dates, and a rank. Rows with no phone go to a separate check.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Read the orders and pin them</h4>
+      <p><b>Manual Trigger</b> → <b>Google Sheets · Get Row(s)</b> on Orders (all rows). Pin the output, and add the 12 sample rows from the sandbox to it if your sheet is still small.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the Code node</h4>
+      <p>Add a <b>Code</b> node, JavaScript, <b>Run Once for All Items</b>:</p>
+<pre class="codebox" id="cs-solved" data-mode="all">// 1. One phone format for everyone
+const normPhone = p =&gt; {
+  const d = String(p ?? '').replace(/\D/g, '');       // keep digits only
+  if (!d) return null;
+  if (d.startsWith('234')) return '+' + d;
+  if (d.startsWith('0')) return '+234' + d.slice(1);
+  return '+234' + d;
+};
+
+// 2. Group orders by phone
+const byPhone = {};
+for (const item of $input.all()) {
+  const o = item.json;
+  const phone = normPhone(o.phone);
+  if (!phone) continue;                               // no phone: handled by an IF before this node
+  const c = byPhone[phone] ??= {
+    phone, name: String(o.name).trim(), orders: 0,
+    lifetime_value: 0, first_order: o.date, last_order: o.date,
+  };
+  c.orders += 1;
+  c.lifetime_value += Number(o.total) || 0;           // "45000" → 45000
+  if (o.date &lt; c.first_order) c.first_order = o.date;
+  if (o.date &gt; c.last_order) { c.last_order = o.date; c.name = String(o.name).trim(); }
+}
+
+// 3. Rank by value and return items
+return Object.values(byPhone)
+  .sort((a, b) =&gt; b.lifetime_value - a.lifetime_value)
+  .map((c, i) =&gt; ({ json: { ...c, rank: i + 1 } }));</pre>
+      <p>Try it in the sandbox above (the <b>Solution</b> button loads this code). Twelve rows in, six customers out: Chef Tunde first with ₦164,000 over three orders.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Catch the rows with no phone</h4>
+      <p>Code that silently skips data is a trap. Put an <b>IF</b> before the Code node: phone is not empty → Code; false → append to a <b>Fix list</b> sheet (the 3.3 pattern). The <code>continue</code> stays as a safety net.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Save, and answer the investor</h4>
+      <p><b>Google Sheets · Append or Update Row</b> on Customers, matching on <code>phone</code>. Then the top ten is simply the first ten rows by rank. Schedule it nightly, and the Customers sheet stays current for every later workflow, including the AI agents in Track 4.</p>
+      <div class="stats">
+        <div class="stat"><b>12 → 6</b><span>rows in, real customers out (sample)</span></div>
+        <div class="stat"><b>1</b><span>Code node instead of about 10 nodes</span></div>
+        <div class="stat"><b>₦164,000</b><span>top lifetime value: Chef Tunde</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Normalising phones before grouping turns three "customers" into one.</li><li><code>Number(…) || 0</code> protects every sum from text and blanks.</li><li>ISO dates compare correctly as text, so first and last orders need no library.</li><li>The return is a ranked array of <code>{ json }</code> items: exactly what n8n expects.</li><li>An IF in front means nothing disappears without a trace.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Returning names or numbers instead of objects.</li><li>Putting <code>return</code> inside the loop.</li><li>Grouping by the raw phone or the name.</li><li>Adding text numbers without converting them.</li><li>Using all-items code in each-item mode (or the reverse).</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Load my version in the sandbox. Then explain these six results.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>"Code doesn't return items properly: item 0 is "Mrs Adebayo", not an object."</td></tr>
+        <tr><td>B</td><td>The same error, with "nothing was returned".</td></tr>
+        <tr><td>C</td><td>Chef Tunde's lifetime value is <code>"11900045000"</code>.</td></tr>
+        <tr><td>D</td><td>Mrs Adebayo appears three times, Mr Okafor twice.</td></tr>
+        <tr><td>E</td><td>Only one customer comes out, though the loop clearly runs.</td></tr>
+        <tr><td>F</td><td>In "Run Once for Each Item" mode, the code outputs 12 identical totals.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> <code>.map(c =&gt; c.name)</code> returns a list of strings. Return objects: <code>.map(c =&gt; ({ json: c }))</code>.</li>
+        <li><b>B:</b> the code has no <code>return</code> statement (or it's inside an <code>if</code> that didn't run).</li>
+        <li><b>C:</b> one total arrived as the text <code>"45000"</code>, so <code>+=</code> joined text instead of adding. Use <code>Number(o.total) || 0</code>.</li>
+        <li><b>D:</b> grouped by the raw phone, so <code>0803 123 4567</code> and <code>+2348031234567</code> look different. Normalise first.</li>
+        <li><b>E:</b> the <code>return</code> is inside the loop, so the code stops after the first customer. Move it after the loop.</li>
+        <li><b>F:</b> all-items code (<code>$input.all()</code> plus a total) is running once per item. Switch the mode to Run Once for All Items.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Tidy names, one item at a time</h4>
+    <ul><li>In "Run Once for Each Item" mode, write code that trims names, converts them to Title Case and fixes double spaces.</li><li>Test on: <code>"  mrs   adebayo "</code>, <code>"CHEF TUNDE"</code>, <code>"iya basira"</code>, and an empty name.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All four come out clean, the empty name doesn't crash the node, and every other field is kept.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Group orders by product</h4>
+    <ul><li>From an order list where each row has <code>product</code>, <code>qty</code> and <code>line_total</code>, write all-items code that outputs one item per product: total quantity, total revenue, number of orders and average order value.</li><li>Sort by revenue and add a <code>share_of_revenue</code> percentage.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The revenue totals match a SUMIF in Sheets exactly, and the shares add up to 100% (allowing for rounding).</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Hire an AI, then audit it</h4>
+    <ul><li>Using the prompt pattern in Card 5, ask an AI assistant for a Code node that flags "at-risk" customers: two or more orders, but none in the last 45 days. Use fake sample data only.</li><li>Before running it, predict three edge cases it may get wrong (text totals, odd date formats, missing phones). Build test items for each.</li><li>Run, record what failed, fix it (yourself or with the AI), and comment each line.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your log shows the AI's first draft, at least one bug you found with test data, and the final working code, with every line explained in your own words.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. In "Run Once for All Items" mode, what must the code return?</p><div class="opts">
+      <button type="button" data-opt="a">One object</button><button type="button" data-opt="b">A list of names</button><button type="button" data-opt="c">An array of objects, such as [{ json: {...} }]</button><button type="button" data-opt="d">Nothing; n8n reads the variables</button></div>
+      <p class="fb" hidden data-why="One object per output item, in an array."></p></div>
+    <div class="q" data-ans="b"><p>2. <code>0 + "45000"</code> in JavaScript gives…</p><div class="opts">
+      <button type="button" data-opt="a">45000</button><button type="button" data-opt="b">"045000"</button><button type="button" data-opt="c">An error</button><button type="button" data-opt="d">NaN</button></div>
+      <p class="fb" hidden data-why="Adding text joins text. Convert with Number() first."></p></div>
+    <div class="q" data-ans="d"><p>3. Which job suits "Run Once for Each Item"?</p><div class="opts">
+      <button type="button" data-opt="a">Total revenue for the month</button><button type="button" data-opt="b">Removing duplicate customers</button><button type="button" data-opt="c">Ranking customers by value</button><button type="button" data-opt="d">Trimming and capitalising each name</button></div>
+      <p class="fb" hidden data-why="Each-item mode can't compare items; it's for changes that only need the item itself."></p></div>
+    <div class="q" data-ans="a"><p>4. Why normalise phone numbers before grouping?</p><div class="opts">
+      <button type="button" data-opt="a">So different formats of the same number count as one customer</button><button type="button" data-opt="b">Because n8n requires it</button><button type="button" data-opt="c">To make them shorter</button><button type="button" data-opt="d">To hide them</button></div>
+      <p class="fb" hidden data-why="0803…, +234803… and 234803… are the same customer once normalised."></p></div>
+    <div class="q" data-ans="c"><p>5. An AI writes a Code node for you. What comes next?</p><div class="opts">
+      <button type="button" data-opt="a">Publish it straight away</button><button type="button" data-opt="b">Paste in real customer data to test it</button><button type="button" data-opt="c">Run it against messy fake test data and read every line</button><button type="button" data-opt="d">Ask a second AI whether it's fine</button></div>
+      <p class="fb" hidden data-why="Test with edge cases you designed, never with real customer data, and understand what you run."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-3-5">AUTOMANCY LOG · Lesson 3.5 · The Code Node
+Date:
+Mode used and why:
+Rows in → customers out:
+Top 3 customers by lifetime value:
+Bugs I hit (and the fix):
+AI-assisted code: what it got wrong, how I found out:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-3-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>All-items mode for comparing items; each-item mode for changing one item.</li>
+      <li>Return an array of <code>{ json }</code> objects (or one object in each-item mode).</li>
+      <li>Four patterns: loop, map, filter, group with an object.</li>
+      <li><code>Number(x) || 0</code> before any maths; normalise phones before grouping.</li>
+      <li>ISO dates compare as text; other formats need converting.</li>
+      <li>Code calculates; HTTP Request and app nodes do the talking.</li>
+      <li>AI drafts, you test and understand.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code" target="_blank" rel="noopener">n8n Docs: Code node</a></li>
+    <li><span class="kind">Course</span><a href="https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures-v8/" target="_blank" rel="noopener">freeCodeCamp: JavaScript (free, interactive)</a></li>
+    <li><span class="kind">Text</span><a href="https://javascript.info/array-methods" target="_blank" rel="noopener">javascript.info: array methods (map, filter, reduce, sort)</a></li>
+    <li><span class="kind">Course</span><a href="https://www.py4e.com/" target="_blank" rel="noopener">Python for Everybody (free) for the Python route</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+code+node+javascript+tutorial" target="_blank" rel="noopener">YouTube: n8n Code node tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Learners who've never coded freeze at a blank editor. Start everyone from Glitch's version in the sandbox: fixing three bugs one at a time is far less scary than writing from nothing, and by the end they've read every line of a working program. Only then do Bronze from scratch.</p>
+  </div>
+</section>
+
+<script type="application/json" id="cd-3-5">{"items": [{"order_id": "HL-0101", "name": "Mrs Adebayo", "phone": "0803 123 4567", "total": 34000, "date": "2026-08-02"}, {"order_id": "HL-0102", "name": "Mr Okafor", "phone": "08059876543", "total": 4000, "date": "2026-08-03"}, {"order_id": "HL-0104", "name": "Iya Basira", "phone": "0802 222 3344", "total": 21000, "date": "2026-08-05"}, {"order_id": "HL-0106", "name": "Mama Nkechi", "phone": "08167778888", "total": 12500, "date": "2026-08-09"}, {"order_id": "HL-0108", "name": "mrs adebayo ", "phone": "+2348031234567", "total": 21000, "date": "2026-08-19"}, {"order_id": "HL-0110", "name": "Chef Tunde", "phone": "+234 809 111 2222", "total": 58000, "date": "2026-08-22"}, {"order_id": "HL-0112", "name": "Walk-in customer", "phone": "", "total": 3000, "date": "2026-08-25"}, {"order_id": "HL-0115", "name": "Mrs. Adebayo", "phone": "2348031234567", "total": 18500, "date": "2026-09-14"}, {"order_id": "HL-0117", "name": "Chef Tunde", "phone": "08091112222", "total": 61000, "date": "2026-09-16"}, {"order_id": "HL-0120", "name": "Mr Okafor", "phone": "0805-987-6543", "total": 6500, "date": "2026-09-21"}, {"order_id": "HL-0124", "name": "Hotel Grace", "phone": "0701 555 0000", "total": 96000, "date": "2026-09-28"}, {"order_id": "HL-0123", "name": "Chef Tunde", "phone": "08091112222", "total": "45000", "date": "2026-09-30"}], "expect": [{"phone": "+2348031234567", "orders": 3, "lifetime_value": 73500, "last_order": "2026-09-14"}, {"phone": "+2348059876543", "orders": 2, "lifetime_value": 10500, "last_order": "2026-09-21"}, {"phone": "+2348022223344", "orders": 1, "lifetime_value": 21000, "last_order": "2026-08-05"}, {"phone": "+2348167778888", "orders": 1, "lifetime_value": 12500, "last_order": "2026-08-09"}, {"phone": "+2348091112222", "orders": 3, "lifetime_value": 164000, "last_order": "2026-09-30"}, {"phone": "+2347015550000", "orders": 1, "lifetime_value": 96000, "last_order": "2026-09-28"}]}</script>
+</article>
+</template>

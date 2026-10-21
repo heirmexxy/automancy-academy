@@ -1,0 +1,344 @@
+{
+  "name": "GD·01 Find · send approved (max 20 a day)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·01 Send (Boss 5 · D3)\nWeekdays 09:00: up to 20 approved emails a day in total (first emails + one follow-up after 5 working days with no reply), from the OUTREACH SUBDOMAIN mailbox. The suppression list is checked in the query AND again right before each send. A random 3–9 minute wait between sends.\nWrites lead first_touch events for GD·07.\n\n**Credentials:** Postgres, Gmail (the outreach subdomain mailbox, e.g. tolu@go.harvestlane.example). Nothing else sends outreach.",
+        "height": 300,
+        "width": 400
+      },
+      "id": "18d07f01-b2ca-43e1-887c-f78466522c01",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "f949f1e8-9cee-4ebf-a6a7-ff3e94566a52",
+      "name": "Weekdays 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH sent_today AS (\n  SELECT count(*) AS n FROM events WHERE workflow = 'GD·01' AND event IN ('sent', 'followup_sent') AND at::date = current_date\n), due AS (\n  SELECT lead_id, company, email, draft, 'first' AS kind, approved_at AS sort_at FROM leads\n  WHERE source = 'outreach' AND status = 'approved' AND sent_at IS NULL\n  UNION ALL\n  SELECT lead_id, company, email, draft, 'followup', sent_at FROM leads\n  WHERE source = 'outreach' AND status = 'sent' AND reply_type IS NULL AND followup_sent_at IS NULL\n    AND sent_at < now() - interval '7 days'\n)\nSELECT d.* FROM due d\nWHERE coalesce((SELECT value FROM settings WHERE key = 'outreach_paused'), 'false') <> 'true'\n  AND NOT EXISTS (SELECT 1 FROM suppression s WHERE s.value = lower(d.email))\nORDER BY d.kind, d.sort_at\nLIMIT GREATEST(0, 20 - (SELECT n FROM sent_today));",
+        "options": {}
+      },
+      "id": "64724291-bb62-4b57-8cf1-f2c0644e4785",
+      "name": "Today's sends (cap 20)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "9bd80d5e-e94b-4be8-a355-222ecfcfb738",
+              "leftValue": "={{ $json.lead_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "891b09e6-a02a-4b31-9929-7b4f5963f4dc",
+      "name": "Has sends",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "67188e61-3057-45de-ac50-c0d8c1d3a387",
+      "name": "One at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT (EXISTS (SELECT 1 FROM suppression WHERE value = lower($1))\n     OR coalesce((SELECT value FROM settings WHERE key = 'outreach_paused'), 'false') = 'true') AS blocked;",
+        "options": {
+          "queryReplacement": "={{ [ $json.email ] }}"
+        }
+      },
+      "id": "6aa69af2-53e3-4727-8235-23e2e80547f5",
+      "name": "Suppression check",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "58fa26cb-b747-43df-940b-ae201f823286",
+              "leftValue": "={{ $json.blocked }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0b130163-2895-4346-8e75-ba37da92735d",
+      "name": "Clear to send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('One at a time').item.json.email }}",
+        "subject": "={{ $('One at a time').item.json.kind === 'first' ? 'Fresh produce for ' + $('One at a time').item.json.company + \"'s kitchen\" : 'Re: Fresh produce for ' + $('One at a time').item.json.company + \"'s kitchen\" }}",
+        "emailType": "text",
+        "message": "={{ $('One at a time').item.json.kind === 'first' ? $('One at a time').item.json.draft : 'Hello again,\\n\\nJust checking you saw my note last week. Would a free tasting crate this week be useful?\\n\\nTolu Adebayo\\nHarvest Lane · harvestlane.example\\nNot interested? Reply STOP and we will never email you again.' }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d6e6a485-4521-45af-b7ca-d0f5a491df81",
+      "name": "Send from outreach subdomain",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (\n  UPDATE leads SET status = 'sent',\n    sent_at = CASE WHEN $2 = 'first' THEN now() ELSE sent_at END,\n    followup_sent_at = CASE WHEN $2 = 'followup' THEN now() ELSE followup_sent_at END\n  WHERE lead_id = $1 RETURNING lead_id\n)\nINSERT INTO events (workflow, lead_id, event, detail)\nSELECT 'GD·01', lead_id, CASE WHEN $2 = 'first' THEN 'sent' ELSE 'followup_sent' END, jsonb_build_object('channel', 'outreach') FROM u\nUNION ALL\nSELECT 'GD·01', lead_id, 'first_touch', jsonb_build_object('source', 'outreach') FROM u WHERE $2 = 'first';",
+        "options": {
+          "queryReplacement": "={{ [ $('One at a time').item.json.lead_id, $('One at a time').item.json.kind ] }}"
+        }
+      },
+      "id": "8ed920ae-066d-46cb-9441-78ec01a8a129",
+      "name": "Log sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "amount": "={{ 3 + Math.floor(Math.random() * 7) }}",
+        "unit": "minutes"
+      },
+      "id": "86faf51c-c2af-4e3b-a9ca-ef2d36c20fc5",
+      "name": "Wait 3–9 minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        -180
+      ],
+      "webhookId": "d6ad7b14-78cc-40b2-9921-e97347208cf5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, lead_id, event, detail) VALUES ('GD·01', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ step: 'send' }) ] }}"
+        }
+      },
+      "id": "b48db235-68c4-4eca-9262-734aaeb8d2be",
+      "name": "Log run",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        144
+      ],
+      "executeOnce": true
+    }
+  ],
+  "connections": {
+    "Weekdays 09:00": {
+      "main": [
+        [
+          {
+            "node": "Today's sends (cap 20)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today's sends (cap 20)": {
+      "main": [
+        [
+          {
+            "node": "Has sends",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has sends": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One at a time": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Suppression check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suppression check": {
+      "main": [
+        [
+          {
+            "node": "Clear to send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear to send?": {
+      "main": [
+        [
+          {
+            "node": "Send from outreach subdomain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send from outreach subdomain": {
+      "main": [
+        [
+          {
+            "node": "Log sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log sent": {
+      "main": [
+        [
+          {
+            "node": "Wait 3–9 minutes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3–9 minutes": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

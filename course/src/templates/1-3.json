@@ -1,0 +1,166 @@
+{
+  "id": "1.3",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Form order → routed (Filter + Paths)",
+      "what": "The 1.2 order Zap with a junk filter and a junction: test orders stop before any task is used, orders over ₦50,000 go to Tolu at once as PRIORITY (with a Logistics row if out of zone), out-of-zone orders go to the Logistics tab, and everything else takes the standard route. Every order takes exactly one branch.",
+      "steps": [
+        "1 · Trigger · Google Forms › New Form Response: Form = the order form from 1.1 Bronze with the Area dropdown from 1.2 (name, phone, product, quantity, delivery date, area).",
+        "2 · Filter by Zapier (rename \"Drop test orders\"): Only continue if… [1. Name] (Text) Does not contain test. Test orders stop here and show as Filtered in Zap history.",
+        "3 · Formatter by Zapier › Numbers › Format Phone Number (\"Clean phone\"): Input = [1. Phone]; Country code = Nigeria (NG); To Format = international without spaces (E.164 or similar, e.g. +2348031234567).",
+        "4 · Formatter by Zapier › Date/Time › Format (\"Clean date\"): Input = [1. Delivery date]; To Format = YYYY-MM-DD; To Timezone = Africa/Lagos.",
+        "5 · Google Sheets › Lookup Spreadsheet Row (\"Price from Products\"): Spreadsheet = your 0.4 workbook; Worksheet = Products; Lookup Column = name; Lookup Value = [1. Product]; tick the option to stop or flag the Zap if nothing is found. Returns sku and price_ngn.",
+        "6 · Formatter by Zapier › Utilities › Lookup Table (\"Delivery fee\"): Lookup Key = [1. Area]; rows Bodija = 1500, Mokola = 1500, Ring Road = 1500, Challenge = 2000; Fallback Value = 2500.",
+        "7 · Formatter by Zapier › Utilities › Lookup Table (\"Zone\"): Lookup Key = [1. Area]; rows Bodija = inside, Mokola = inside, Ring Road = inside, Challenge = inside; Fallback Value = outside.",
+        "8 · Formatter by Zapier › Numbers › Spreadsheet-Style Formula (\"Total\"): Formula = [1. Quantity] * [5. price_ngn] + [6. Value].",
+        "9 · Formatter by Zapier › Numbers › Format Currency (\"Total for email\"): Input = [8. Output]; Currency = NGN; Currency Locale = English (Nigeria) if listed. Used only in emails.",
+        "10 · Paths by Zapier (\"Route order\"), three branches, checked left to right:",
+        "10A · Path A · Priority: Only continue if… [8. Output] (Number) Greater than 50000. (Always the plain number from step 8, never step 9's ₦ text.)",
+        "10A.1 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Orders; name = [1. Name]; phone = [3. Output]; delivery date = [4. Output]; sku = [5. sku]; unit price = [5. price_ngn]; quantity = [1. Quantity]; area = [1. Area]; delivery fee = [6. Value]; total = [8. Output] (the plain number); status = New.",
+        "10A.2 · Gmail › Send Email: To = Tolu (e.g. tolu@harvestlane.example); Subject = PRIORITY · New order · [1. Name] · [4. Output] · [9. Output]; Body = each order field on its own line (name, phone from step 3, product, quantity, delivery date from step 4, area, zone from step 7, fee from step 6, total from step 9).",
+        "10A.3 · Filter by Zapier (\"Out of zone?\"): Only continue if… [7. Value] (Text) Exactly matches outside.",
+        "10A.4 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Logistics; name = [1. Name]; phone = [3. Output]; delivery date = [4. Output]; area = [1. Area]; zone = [7. Value]; product = [1. Product]; quantity = [1. Quantity]; total = [8. Output].",
+        "10B · Path B · Outside zone: Only continue if… [8. Output] (Number) Less than 50001 AND [7. Value] (Text) Exactly matches outside. (\"Less than 50001\" = 50,000 or less, so a big out-of-zone order can't match both A and B.)",
+        "10B.1 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Orders; name = [1. Name]; phone = [3. Output]; delivery date = [4. Output]; sku = [5. sku]; unit price = [5. price_ngn]; quantity = [1. Quantity]; area = [1. Area]; delivery fee = [6. Value]; total = [8. Output] (the plain number); status = New.",
+        "10B.2 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Logistics; name = [1. Name]; phone = [3. Output]; delivery date = [4. Output]; area = [1. Area]; zone = [7. Value]; product = [1. Product]; quantity = [1. Quantity]; total = [8. Output].",
+        "10C · Path C · Standard: set as the fallback branch (rightmost; runs only when A and B didn't match).",
+        "10C.1 · Google Sheets › Create Spreadsheet Row: Spreadsheet = your 0.4 workbook; Worksheet = Orders; name = [1. Name]; phone = [3. Output]; delivery date = [4. Output]; sku = [5. sku]; unit price = [5. price_ngn]; quantity = [1. Quantity]; area = [1. Area]; delivery fee = [6. Value]; total = [8. Output] (the plain number); status = New.",
+        "10C.2 · Gmail › Send Email: To = Tolu; Subject = New order · [1. Name] · [4. Output] · [9. Output]; Body = each order field on its own line, as in 1.2."
+      ],
+      "setup": [
+        "Filters are on every plan; Paths and multi-step Zaps need a paid plan or a trial of paid features. Set your Zapier account time zone to Africa/Lagos.",
+        "Start from your 1.2 Zap (duplicate it) or build fresh. Insert the Filter as step 2, right after the trigger, and the Zone lookup table next to the fee lookup.",
+        "In the 0.4 workbook, add a Logistics tab with headers in row 1: name, phone, delivery date, area, zone, product, quantity, total.",
+        "Write the truth table first (≤ 50,000 inside → C; ≤ 50,000 outside → B; > 50,000 inside → A; > 50,000 outside → A with its own Logistics row; missing area → C via the fee/zone fallbacks). Decide now that Priority handles its own logistics.",
+        "Connect Google Forms, Google Sheets and Gmail with the Harvest Lane business Google account. Rename every Formatter, Filter and Path step as listed so the Zap reads like a recipe.",
+        "Test each step, then publish. Share it from the Zap's menu → Share to get the template link."
+      ],
+      "test": "Submit one form per truth-table row: a ₦26,500 Bodija order (C · Standard), a ₦13,500 Oyo town order (B · Outside zone: Orders + Logistics rows, no email), a ₦92,000 Bodija order (A · Priority, PRIORITY email, no Logistics row), a ₦92,000 Oyo order (A only, PRIORITY email plus a Logistics row, never two Orders rows), and one with \"Test\" in the name (Filtered, no rows, no task). In Zap history each real order shows exactly one branch taken.",
+      "tasks": "About three tasks per order (the Products lookup plus two app steps in the branch taken), four for a big out-of-zone order, and none for a filtered test order; Filter, Formatter and Paths use no tasks.",
+      "walk": {
+        "title": "Build it: route every order to the right place",
+        "sample": "Five orders: ₦26,500 Bodija · ₦13,500 Oyo town · ₦92,000 Bodija · ₦92,000 Oyo · \"Test\" order",
+        "steps": [
+          {
+            "at": "1",
+            "say": "We start from the 1.2 order Zap. Same trigger, the order form with its Area dropdown. Every order still enters on one track; we're adding a junction.",
+            "show": [
+              "Google Forms › New Form Response",
+              "Form: order form + Area dropdown"
+            ],
+            "data": "1 form response"
+          },
+          {
+            "at": "2",
+            "say": "Right after the trigger, a filter drops test orders. They stop here, before any task is used, and show as Filtered in Zap history.",
+            "show": [
+              "Filter by Zapier · \"Drop test orders\"",
+              "[1. Name] (Text) Does not contain test"
+            ],
+            "data": "test order → Filtered"
+          },
+          {
+            "at": "5",
+            "say": "The cleaning and pricing steps from 1.2 stay as they were: clean phone, clean date, then the price from the Products sheet.",
+            "show": [
+              "Steps 3–4: Clean phone · Clean date",
+              "Step 5: Lookup Products by name"
+            ],
+            "data": "sku · price_ngn"
+          },
+          {
+            "at": "7",
+            "say": "Next to the fee lookup, add a second lookup table that turns the area into one clean word, inside or outside. The fallback means a new area is always outside.",
+            "show": [
+              "Lookup Table · \"Zone\"",
+              "Bodija, Mokola, Ring Road, Challenge → inside",
+              "Fallback Value: outside"
+            ],
+            "data": "Oyo town → outside"
+          },
+          {
+            "at": "8",
+            "say": "The total is still a plain number. That matters, because the path rules compare numbers, and a naira-formatted total is text.",
+            "show": [
+              "[1. Quantity] * [5. price_ngn] + [6. Value]",
+              "Step 9 formats ₦ for emails only"
+            ],
+            "data": "92000"
+          },
+          {
+            "at": "10",
+            "say": "Before building the paths, write the truth table. A big order from outside the zone goes to Priority, which logs its own logistics, so nothing alerts twice.",
+            "show": [
+              "> 50,000 → A · Priority",
+              "≤ 50,000 + outside → B · Outside zone",
+              "everything else → C · Standard"
+            ]
+          },
+          {
+            "at": "11",
+            "say": "Branch A, Priority: the total, the plain number from step eight, greater than fifty thousand.",
+            "show": [
+              "[8. Output] (Number) Greater than 50000"
+            ],
+            "data": "₦92,000 orders"
+          },
+          {
+            "at": "13",
+            "say": "Inside Priority we save the order row, then email Tolu with PRIORITY in the subject so it's read now, not in three hours.",
+            "show": [
+              "Create Spreadsheet Row · Orders",
+              "Subject: PRIORITY · New order · name · date · total"
+            ],
+            "data": "PRIORITY email"
+          },
+          {
+            "at": "14",
+            "say": "A small filter inside the branch adds a Logistics row only when the big order is outside the zone.",
+            "show": [
+              "Filter · \"Out of zone?\"",
+              "[7. Value] (Text) Exactly matches outside"
+            ],
+            "data": "₦92,000 Oyo → Logistics row"
+          },
+          {
+            "at": "16",
+            "say": "Branch B, Outside zone, needs both conditions. Less than fifty thousand and one means fifty thousand or less, so a big outside order can't match A and B together.",
+            "show": [
+              "[8. Output] (Number) Less than 50001",
+              "AND [7. Value] Exactly matches outside"
+            ]
+          },
+          {
+            "at": "18",
+            "say": "Branch B saves the order, then adds a Logistics row, so the rider plan for Oyo town is known the night before.",
+            "show": [
+              "Orders row + Logistics row"
+            ],
+            "data": "₦13,500 Oyo → B"
+          },
+          {
+            "at": "19",
+            "say": "Branch C is the fallback. It runs only when no other branch matched, so surprising data never disappears silently.",
+            "show": [
+              "Path C · Standard: set as fallback",
+              "Orders row · normal email"
+            ],
+            "data": "₦26,500 Bodija → C"
+          },
+          {
+            "at": "21",
+            "say": "Now test every row of the truth table. In Zap history, each real order must show exactly one branch, and the test order shows Filtered. Then publish.",
+            "show": [
+              "5 test submissions",
+              "Exactly one branch each",
+              "Publish"
+            ]
+          }
+        ],
+        "end": "Five orders, five right answers, and not one double alert. Write your truth table, then build it yourself."
+      }
+    }
+  ]
+}

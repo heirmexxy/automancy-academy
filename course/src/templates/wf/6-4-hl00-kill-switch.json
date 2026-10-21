@@ -1,0 +1,164 @@
+{
+  "name": "HL·00 Kill switch",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·00 Kill switch (lesson 6.4)\nsettings row agent_enabled = 'true' / 'false'. HL·01 reads it on every message: off means a holding reply (\"a person will reply shortly\") and every message goes to Tolu.\nChange \"Set switch\" to false (pause) or true (resume), then run.\n\n**Credentials:** Postgres (Supabase), Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID.\nTable: settings(key text pk, value text).",
+        "height": 280,
+        "width": 380
+      },
+      "id": "54474f7a-07de-44d6-96e0-47e49eeab257",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "61c193ca-253a-4d1d-8b34-21279a0b9684",
+      "name": "Run by hand",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3db1bba-952d-49b2-93de-30c6d7c15880",
+              "name": "agent_enabled",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "c6a31a63-ea8b-4f69-87e7-859139eff15d",
+              "name": "changed_by",
+              "value": "Tolu",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d7aab20e-2c04-486d-8664-9bf10d9a2104",
+      "name": "Set switch",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO settings (key, value) VALUES ('agent_enabled', $1)\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value\nRETURNING value;",
+        "options": {
+          "queryReplacement": "={{ [ $json.agent_enabled ] }}"
+        }
+      },
+      "id": "3388a939-1063-4b53-aff8-cf105f4c9628",
+      "name": "Save setting",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·00', $1, 'kill_switch', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ agent_enabled: $('Set switch').item.json.agent_enabled, by: $('Set switch').item.json.changed_by }) ] }}"
+        }
+      },
+      "id": "5961aa6c-d04a-4e6a-bc57-19de24574e81",
+      "name": "Log switch",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $('Set switch').item.json.agent_enabled === 'false' ? '🛑 Agent OFF. Customers get \"a person will reply shortly\" and every message comes to you.' : '✅ Agent ON again. HL·01 routes messages as normal.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dce2143f-c299-4e7a-b2b3-5d81c1fb4bdd",
+      "name": "Confirm to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Run by hand": {
+      "main": [
+        [
+          {
+            "node": "Set switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set switch": {
+      "main": [
+        [
+          {
+            "node": "Save setting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save setting": {
+      "main": [
+        [
+          {
+            "node": "Log switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log switch": {
+      "main": [
+        [
+          {
+            "node": "Confirm to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

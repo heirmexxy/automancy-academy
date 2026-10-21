@@ -1,0 +1,131 @@
+{
+ "name": "HL · Social inbox · response-time watchdog",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Social inbox: watchdog (Lesson 5.5)\nEvery 10 minutes: find messages still waiting beyond their target (questions 5 minutes; complaints and urgent items 60 minutes for a person) and alert Tolu once per message.\n\nCredentials: Postgres (Supabase); Telegram.\nPlaceholders: YOUR_TELEGRAM_CHAT_ID.",
+    "height": 240,
+    "width": 480
+   },
+   "id": "604e5adc-0e64-4006-97a3-13bab067bb2a",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 10
+      }
+     ]
+    }
+   },
+   "id": "493a63ee-9457-4797-a5f7-55a592818694",
+   "name": "Every 10 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select item_id, platform, kind, intent, urgent, author_handle, text, source_link,\n       round(extract(epoch from (now() - received_at)) / 60) as minutes_waiting\nfrom inbox\nwhere status in ('new', 'awaiting_approval', 'handed_over')\n  and not alarm_sent\n  and coalesce(intent, '') <> 'spam'\n  and (\n    ((intent = 'complaint' or urgent) and received_at < now() - interval '60 minutes')\n    or (coalesce(intent, '') <> 'complaint' and not coalesce(urgent, false) and received_at < now() - interval '5 minutes')\n  );",
+    "options": {}
+   },
+   "id": "c70adfee-57a7-40ec-adfb-dc6dec1d2eeb",
+   "name": "Waiting too long",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Waiting {{ $json.minutes_waiting }} min ({{ $json.intent }}{{ $json.urgent ? ', urgent' : '' }}) on {{ $json.platform }}: \"{{ $json.text }}\" {{ $json.source_link || '' }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "e2807b05-41ce-4fca-a469-d6b07cda17c0",
+   "name": "Alert Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "update inbox set alarm_sent = true where item_id = $1;",
+    "options": {
+     "queryReplacement": "={{ [ $('Waiting too long').item.json.item_id ] }}"
+    }
+   },
+   "id": "5ee070a1-2c34-451c-a897-7fb8f1673053",
+   "name": "Mark alarm sent",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "Every 10 minutes": {
+   "main": [
+    [
+     {
+      "node": "Waiting too long",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Waiting too long": {
+   "main": [
+    [
+     {
+      "node": "Alert Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Alert Tolu": {
+   "main": [
+    [
+     {
+      "node": "Mark alarm sent",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

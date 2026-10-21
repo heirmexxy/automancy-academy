@@ -1,0 +1,140 @@
+{
+ "name": "HL · One inbox · WhatsApp door",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · One inbox: WhatsApp door (Lesson 5.7)\nThe 5.1 WhatsApp webhook, now feeding the one inbox. Receipts and non-text messages are filtered out before anything else runs.\nOne webhook per Meta app: deactivate HL · WhatsApp adapter (5.1) when you activate this.\n\nCredentials: WhatsApp OAuth (Meta app ID + secret).\nPlaceholders: YOUR_RECEIVE_WORKFLOW_ID.",
+    "height": 280,
+    "width": 500
+   },
+   "id": "bcf6be6f-b304-442a-a56e-82e66e3f98a5",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -280
+   ]
+  },
+  {
+   "parameters": {
+    "updates": [
+     "messages"
+    ],
+    "options": {}
+   },
+   "id": "ed81388c-cdd8-4652-884b-c1eff3c74add",
+   "name": "WhatsApp Trigger",
+   "type": "n8n-nodes-base.whatsAppTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "8efbb2e5-8a27-4933-891a-2431911bd6ef"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "685cafef-fbdf-461d-83bc-8d4c31abdd4c",
+       "leftValue": "={{ $json.messages?.[0]?.type }}",
+       "rightValue": "text",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "e3d79275-39f1-4107-8b0f-8debbfa02f3e",
+   "name": "Text messages only",
+   "type": "n8n-nodes-base.filter",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const msg = $json.messages[0];\nreturn { channel: 'whatsapp', thread_id: msg.from, from_value: msg.from, from_type: 'phone',\n  text: msg.text.body, received_at: new Date(Number(msg.timestamp) * 1000).toISOString(), raw_id: msg.id };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "7271efa3-3881-4fec-a575-f16d922d300f",
+   "name": "One shape",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_RECEIVE_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "e9e8f3c1-1b98-43fb-a311-21405c14935c",
+   "name": "Inbox · Receive",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    660,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "WhatsApp Trigger": {
+   "main": [
+    [
+     {
+      "node": "Text messages only",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Text messages only": {
+   "main": [
+    [
+     {
+      "node": "One shape",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One shape": {
+   "main": [
+    [
+     {
+      "node": "Inbox · Receive",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

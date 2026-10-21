@@ -1,0 +1,232 @@
+{
+  "id": "5.5",
+  "items": [
+    {
+      "file": "5-5-handle.json",
+      "name": "SUB · Social inbox · handle",
+      "what": "The shared queue: saves each comment, mention or DM once, labels it, computes the allowed actions in code, lets the agent choose among them, rejects anything not allowed, then sends (private first, then public), asks Tolu to approve, or hands over.",
+      "setup": [
+        "Import the two TOOL workflows first and note their IDs, plus your Boss 4 get_price and check_delivery_zone tool workflows.",
+        "In Supabase's SQL editor, run the table definitions shown in the Tables sticky note.",
+        "Create a Postgres credential with your Supabase database connection details (Project settings, Database) and select it in every Postgres node.",
+        "Create an OpenAI credential, select it in both model nodes and replace YOUR_MODEL.",
+        "Create a Header Auth credential \"Meta page token\": Name Authorization, Value Bearer followed by your Page access token. Select it in Hide comment, Send private reply or DM and Public reply (Meta).",
+        "Create an X OAuth2 credential (with tweet.write) and select it in X reply (HTTP Request, Predefined credential type).",
+        "Create a Telegram credential, select it in both Telegram nodes and replace YOUR_TELEGRAM_CHAT_ID.",
+        "Replace YOUR_GET_PRICE_WORKFLOW_ID, YOUR_DELIVERY_ZONE_WORKFLOW_ID, YOUR_SAVE_LEAD_WORKFLOW_ID and YOUR_HANDOVER_WORKFLOW_ID in the tool nodes."
+      ],
+      "test": "Point the HTTP nodes at a test Page first. Click Test workflow with the pinned items: the Instagram price question is answered automatically (private reply, then public); the Facebook DM from two days ago can't be DMed (window closed) so it goes to Tolu; the spam comment is hidden, never answered. Run again: duplicates are skipped.",
+      "walk": {
+        "title": "Build it: one social inbox, inside the rules",
+        "sample": "Instagram comment \"how much for the veggie basket?\" · a Facebook DM from two days ago · a spam comment \"Earn N50k daily!!!\"",
+        "steps": [
+          {
+            "at": null,
+            "say": "Each door feeds this queue. The Meta webhook answers Meta's verification once, then checks every event's signature against your app secret, and a wrong signature gets a 401 and nothing else.",
+            "show": [
+              "Meta webhook: verify token, then HMAC SHA256",
+              "X: every 15 minutes, with a read budget",
+              "LinkedIn, TikTok: a forward-a-comment form"
+            ]
+          },
+          {
+            "at": "When called by a door",
+            "say": "Every door calls this one sub-workflow with the same shape: platform, kind, item ID, thread, handle, text and two timestamps.",
+            "show": [
+              "platform · kind · item_id · thread_id",
+              "received_at · last_customer_msg_at"
+            ],
+            "data": "3 events"
+          },
+          {
+            "at": "Save to inbox (skip duplicates)",
+            "say": "Each event becomes one row in the inbox table. If the item ID is already there, nothing comes back, so a duplicate stops here.",
+            "show": [
+              "insert into inbox …",
+              "on conflict (item_id) do nothing returning *"
+            ],
+            "data": "3 new rows"
+          },
+          {
+            "at": "Label (5.3 labeller)",
+            "say": "The 5.3 labeller adds intent and urgent, with the same local examples, so spam is spotted as spam, not thanked as praise.",
+            "show": [
+              "intent: praise, complaint, question, lead, spam",
+              "urgent: needs a person today"
+            ],
+            "data": "question · question · spam"
+          },
+          {
+            "at": "Allowed actions",
+            "say": "Before the agent writes a word, code works out what the platform rules allow. A private reply only on a Meta comment, within 7 days, and only once.",
+            "show": [
+              "public: kind is not dm",
+              "private: Meta comment && ≤ 7 days && !private_sent"
+            ],
+            "data": "IG comment: public + private"
+          },
+          {
+            "at": "Allowed actions",
+            "say": "A DM only inside 24 hours of the customer's last message. And only questions, praise and leads that aren't urgent may go out automatically.",
+            "show": [
+              "dm: kind dm && ≤ 24 h since customer",
+              "auto: question, praise, lead && !urgent"
+            ],
+            "data": "FB DM, 2 days old: dm false"
+          },
+          {
+            "at": "Sage Desk agent",
+            "say": "The Sage Desk agent chooses among the allowed actions. Replies are short, and public replies never hold names with addresses, order numbers or phones.",
+            "show": [
+              "Tools: get_price, check_delivery_zone",
+              "save_lead, handover_to_tolu",
+              "Out: action, public_text, private_text, lead"
+            ],
+            "data": "IG: public_and_private"
+          },
+          {
+            "at": "save_lead",
+            "say": "Buyers become leads with their source link. Ask, don't assume: consent to follow up is true only if they said yes.",
+            "show": [
+              "wants · size_estimate",
+              "consent_followup: true only if they said yes"
+            ]
+          },
+          {
+            "at": "Reject actions not allowed",
+            "say": "Code has the last word. Any action not in allowed, or a public reply with personal details, becomes a hand-over instead.",
+            "show": [
+              "needs[action] not allowed → handover",
+              "personal details in public → handover",
+              "auto false → approve · handover → tolu"
+            ],
+            "data": "FB DM → tolu (window closed)"
+          },
+          {
+            "at": "Who sends?",
+            "say": "Now three routes: send automatically, ask Tolu to approve, or hand over to her.",
+            "show": [
+              "auto · approve · tolu"
+            ]
+          },
+          {
+            "at": "Tolu approves?",
+            "say": "Anything not safe to send alone waits for Tolu's Approve or Reject on Telegram, with the planned public and private text.",
+            "show": [
+              "Telegram · Send and Wait",
+              "Approve · Reject"
+            ]
+          },
+          {
+            "at": "Restore message",
+            "say": "Approval can take hours, so the windows are checked again before anything is sent. If one closed, it stops and Tolu replies by hand.",
+            "show": [
+              "private reply: still ≤ 7 days?",
+              "dm: still ≤ 24 h?"
+            ]
+          },
+          {
+            "at": "Hand over to Tolu",
+            "say": "Complaints, refunds, anger and closed windows go to Tolu with a summary and a suggested reply, so she answers in one go.",
+            "show": [
+              "Needs you: platform, kind, handle",
+              "Wants · Said · Suggested reply · Link"
+            ],
+            "data": "Akobo DM → Tolu"
+          },
+          {
+            "at": "Hide comment",
+            "say": "Spam is hidden through the API and never answered, so the scam link gets no extra attention.",
+            "show": [
+              "POST graph.facebook.com/…/{item_id}",
+              "Instagram hide: true · Facebook is_hidden: true"
+            ],
+            "data": "spam hidden"
+          },
+          {
+            "at": "Send private reply or DM",
+            "say": "The private reply goes first, then we mark private sent. Only after it succeeds does the public reply say details are in your inbox.",
+            "show": [
+              "POST graph.facebook.com/v21.0/me/messages",
+              "recipient: comment_id or thread id",
+              "then: private_sent = true"
+            ],
+            "data": "price + order link, privately"
+          },
+          {
+            "at": "Public reply (Meta)",
+            "say": "Then a short public reply under the comment, and the row is marked answered. A watchdog alerts Tolu if anything waits past 5 minutes, or 60 for complaints.",
+            "show": [
+              "POST …/{item_id}/replies (Instagram)",
+              "status = answered, answered_at = now()"
+            ],
+            "data": "answered in under 2 min"
+          }
+        ],
+        "end": "Run the pinned items on a test Page: the price question gets a private reply then a public one, the old DM goes to Tolu, the spam is hidden, and a second run skips all three."
+      }
+    },
+    {
+      "file": "5-5-meta-webhook.json",
+      "name": "HL · Social inbox · Meta webhook",
+      "what": "Answers Meta's verification request, checks the signature of every event, and passes Page comments, Messenger messages and Instagram comments and messages to the shared queue.",
+      "setup": [
+        "Replace YOUR_META_VERIFY_TOKEN with a long random string you also enter in the Meta app's webhook settings.",
+        "Replace YOUR_META_APP_SECRET with your Meta app secret (App settings, Basic).",
+        "Replace YOUR_HANDLE_WORKFLOW_ID with the ID of SUB · Social inbox · handle.",
+        "Activate the workflow, then in the Meta app set the callback URL to https://YOUR_N8N_DOMAIN/webhook/hl-social-inbox and subscribe to Page feed, messages and Instagram comments and messages. Use a test app and Page first."
+      ],
+      "test": "Comment on a test Page post: the execution shows Signature valid? true and one flattened comment sent to the handler. Send a POST with a wrong signature (for example from curl): it gets 401 and nothing is processed."
+    },
+    {
+      "file": "5-5-x-mentions.json",
+      "name": "HL · Social inbox · X mentions",
+      "what": "Every 15 minutes, within a monthly read budget, fetches new X mentions, logs the reads and passes them to the shared queue.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details (Project settings, Database) and select it in every Postgres node.",
+        "Create a Header Auth credential \"X bearer token\": Name Authorization, Value Bearer followed by your X app bearer token. Select it in X mentions.",
+        "Replace YOUR_X_USER_ID and YOUR_HANDLE_WORKFLOW_ID, and set the budget number in Under budget?."
+      ],
+      "test": "Mention your account from a test account and click Test workflow: the mention reaches the handler, and api_budget gets a row with the number of posts read."
+    },
+    {
+      "file": "5-5-forward-form.json",
+      "name": "HL · Social inbox · forward a comment",
+      "what": "A phone-friendly form the team uses to forward LinkedIn and TikTok comments into the same queue until API access is approved.",
+      "setup": [
+        "Replace YOUR_FORM_PASSCODE with a team passcode and YOUR_HANDLE_WORKFLOW_ID with the ID of SUB · Social inbox · handle.",
+        "Activate the workflow and share https://YOUR_N8N_DOMAIN/webhook/hl-forward-comment with the team."
+      ],
+      "test": "Open the form link on your phone, paste a test LinkedIn comment with the passcode: you see Forwarded, and Tolu gets the agent's draft on Telegram to post herself."
+    },
+    {
+      "file": "5-5-save-lead.json",
+      "name": "TOOL · save_lead",
+      "what": "Saves a lead with platform, source link, what they want, size and follow-up consent, once per person per platform, and alerts Tolu for big accounts.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details (Project settings, Database) and select it in every Postgres node.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Click Test workflow with the pinned lead: a leads row appears with consent_followup true and Tolu gets a big-account alert. Run again: 'already has an open lead' and no second row."
+    },
+    {
+      "file": "5-5-handover-tool.json",
+      "name": "TOOL · handover_to_tolu",
+      "what": "Records why a conversation needs Tolu; the handler then sends her the summary.",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details (Project settings, Database) and select it in every Postgres node."
+      ],
+      "test": "Click Test workflow: the tool returns its instruction (the pinned item_id doesn't exist, so no row changes)."
+    },
+    {
+      "file": "5-5-watchdog.json",
+      "name": "HL · Social inbox · response-time watchdog",
+      "what": "Every 10 minutes, alerts Tolu once about any message waiting longer than its target (5 minutes for questions, 60 for complaints and urgent items).",
+      "setup": [
+        "Create a Postgres credential with your Supabase database connection details (Project settings, Database) and select it in every Postgres node.",
+        "Select your Telegram credential and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "Insert a test inbox row with status new and received_at 10 minutes ago, then click Test workflow: Tolu gets one alert and alarm_sent becomes true; a second run sends nothing."
+    }
+  ]
+}

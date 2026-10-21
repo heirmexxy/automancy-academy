@@ -1,0 +1,272 @@
+
+<!-- ======================= DASHBOARD ======================= -->
+<div class="view" data-view="dashboard" hidden>
+  <div class="vhead"><span class="kicker2">My dashboard</span><h1 id="dashHello">Welcome</h1><p class="lede" id="dashSub">Your XP, level, streak, badges and schedule. Everything updates as you finish lessons, missions and quizzes.</p></div>
+  <div class="dash">
+    <div style="display:grid;gap:16px;min-width:0">
+      <div class="panel2">
+        <div class="profile"><div class="av" id="dAv">Y</div><div style="min-width:0;display:grid;gap:4px"><h2 id="dName">You</h2><span class="note" id="dLevelLine">Apprentice · 0 XP</span></div></div>
+        <div class="lvbar" aria-hidden="true"><i id="dLvFill"></i></div>
+        <p class="note" id="dLvNext">500 XP to Tinkerer</p>
+        <div class="kpis">
+          <div class="kpi"><b id="kXp">0</b><span>total XP</span></div>
+          <div class="kpi"><b id="kWeek">0</b><span>XP this week</span></div>
+          <div class="kpi"><b id="kStreak">0</b><span>day streak</span></div>
+          <div class="kpi"><b id="kDone">0</b><span>of 46 lessons and bosses</span></div>
+        </div>
+        <div class="ctarow"><a class="cta" id="dNext" href="#m-0-1">Continue: lesson 0.1</a><button type="button" class="cta alt sm" data-share="progress">Share my progress</button></div>
+      </div>
+
+      <div class="panel2">
+        <h3>Streak <span class="note" id="dStreakNote">Learn on any day to start a streak</span></h3>
+        <div class="week7" id="week7"></div>
+        <p class="note" id="dFreeze">Streak freezes: 2. A freeze protects your streak when you miss one day.</p>
+        <p class="note" id="dWeekGoal"></p>
+      </div>
+
+      <div class="panel2">
+        <h3>Badges <span class="note" id="dBadgeCount">0 earned</span></h3>
+        <div class="badges" id="badgeGrid"></div>
+      </div>
+
+      <div class="panel2">
+        <h3>My pace</h3>
+        <div class="tabs" role="tablist" aria-label="Pace" id="paceTabs">
+          <button type="button" role="tab" aria-selected="true" data-pace="standard">Standard · 10–11 weeks</button>
+          <button type="button" role="tab" aria-selected="false" data-pace="custom">Set my own pace</button>
+        </div>
+        <div class="formgrid">
+          <label class="fld">Start date<input type="date" id="paceStart"></label>
+          <label class="fld">Learning days a week<select id="paceDays"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select></label>
+          <label class="fld">Minutes a session<select id="paceMin"><option>45</option><option>60</option><option selected>90</option><option>120</option></select></label>
+          <div class="fld">Finish date<div id="paceEnd" style="font-family:var(--display);font-size:1.4rem;font-weight:800">–</div></div>
+        </div>
+        <p id="paceStatus"></p>
+        <div class="sched" id="sched"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:16px;min-width:0">
+      <div class="panel2">
+        <h3>Leaderboard <span class="sample">sample learners</span></h3>
+        <div class="tabs" role="tablist" aria-label="Leaderboard period" id="lbTabs">
+          <button type="button" role="tab" aria-selected="true" data-lb="week">This week</button>
+          <button type="button" role="tab" aria-selected="false" data-lb="all">All time</button>
+          <button type="button" role="tab" aria-selected="false" data-lb="streak">Streaks</button>
+        </div>
+        <div class="scroll"><table class="lb" id="lbTable"></table></div>
+        <p class="note" id="lbLeague">Weekly league: the top 5 move up a league on Monday.</p>
+      </div>
+      <div class="panel2">
+        <h3>Live activity <span class="sample">sample</span></h3>
+        <ul class="feed" id="feed" aria-live="polite"></ul>
+      </div>
+      <div class="panel2">
+        <h3>Invite friends</h3>
+        <p class="note">Your friend gets 20% off any paid plan. You get a free template pack for each friend who joins.</p>
+        <div class="reflink" id="refLink">Referral link appears here</div>
+        <div class="sharelinks" id="refShare"></div>
+      </div>
+      <div class="panel2">
+        <h3>Settings</h3>
+        <label class="fld">Display name (shown on leaderboards)<input id="setName" type="text" maxlength="40" placeholder="e.g. Ada O."></label>
+        <label class="fld">City<input id="setCity" type="text" maxlength="40" placeholder="e.g. Ibadan"></label>
+        <label class="switch"><input type="checkbox" id="setPublic" checked> Show me on public leaderboards and the activity feed</label>
+        <label class="switch"><input type="checkbox" id="setInstructor"> Instructor view (shows facilitator notes in every lesson)</label>
+        <div class="ctarow"><button type="button" class="cta alt sm" id="demoFill">Preview with demo progress</button><button type="button" class="cta alt sm" id="resetAll">Reset my progress</button></div>
+        <p class="note" id="resetNote"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= COMMUNITY ======================= -->
+<div class="view" data-view="community" hidden>
+  <div class="vhead"><span class="kicker2">Community</span><h1>Learn out loud, with people building the same things</h1><p class="lede">Chat by track, log what you build in your learning journal, and ask for help when you're stuck. Helping someone else earns XP too.</p></div>
+  <div class="tabs" role="tablist" aria-label="Community sections" id="comTabs">
+    <button type="button" role="tab" aria-selected="true" data-com="chat">Chat rooms</button>
+    <button type="button" role="tab" aria-selected="false" data-com="journal">Learning journal</button>
+    <button type="button" role="tab" aria-selected="false" data-com="help">Help board</button>
+    <button type="button" role="tab" aria-selected="false" data-com="cases">Case studies</button>
+  </div>
+  <div style="margin-top:16px" data-compane="chat">
+    <div class="chat">
+      <div class="rooms" id="rooms" role="tablist" aria-label="Rooms"></div>
+      <div class="chatmain">
+        <div class="chathead"><b id="roomName">#general</b><p id="roomDesc"></p></div>
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <form class="composer" id="chatForm"><input id="chatInput" type="text" maxlength="400" placeholder="Write a message" aria-label="Message"><button type="submit" class="cta sm">Send</button></form>
+      </div>
+    </div>
+    <p class="note" style="margin-top:8px">In the live app, messages reach everyone in real time. In this prototype, your messages stay in your browser.</p>
+  </div>
+  <div style="margin-top:16px;display:grid;gap:16px" data-compane="journal" hidden>
+    <form class="panel2" id="jForm">
+      <h3>New journal entry <span class="note">+10 XP</span></h3>
+      <div class="formgrid">
+        <label class="fld">Lesson<select id="jMod"></select></label>
+        <label class="fld">Time it saves (optional)<input id="jSaved" type="text" maxlength="60" placeholder="e.g. 3 hours a week"></label>
+      </div>
+      <label class="fld">Review: what did you build?<textarea id="jReview" maxlength="1200" required placeholder="What it does, which tools, what happened when you tested it"></textarea></label>
+      <div class="formgrid">
+        <label class="fld">Reflect: what was hard, what did you learn?<textarea id="jReflect" maxlength="800" placeholder="The bug that took longest, the idea that clicked"></textarea></label>
+        <label class="fld">Recommend: a tip for the next learner<textarea id="jRec" maxlength="600" placeholder="Something you wish you'd known"></textarea></label>
+      </div>
+      <label class="switch"><input type="checkbox" id="jStuck"> I'm stuck and want help from peers</label>
+      <label class="fld" id="jStuckWrap" hidden>What are you stuck on?<textarea id="jStuckTxt" maxlength="600" placeholder="What you tried, what you expected, what happened instead (paste the error message)"></textarea></label>
+      <div class="ctarow"><button type="submit" class="cta">Post to journal</button><span class="note">Never paste API keys, passwords or real customer data.</span></div>
+    </form>
+    <div class="tabs" id="jFilter" aria-label="Filter journal">
+      <button type="button" aria-selected="true" data-jf="all">All posts</button>
+      <button type="button" aria-selected="false" data-jf="mine">Mine</button>
+    </div>
+    <div class="jlist" id="jList"></div>
+  </div>
+  <div style="margin-top:16px;display:grid;gap:14px" data-compane="help" hidden>
+    <p class="lede">Posts from learners who are stuck, oldest first. Reply with a hint (not the full answer) and earn 15 XP when they mark it helpful.</p>
+    <div class="jlist" id="helpList"></div>
+  </div>
+  <div style="margin-top:16px;display:grid;gap:14px" data-compane="cases" hidden>
+    <p class="lede">With the learner's permission, the strongest journal entries with real numbers become case studies, shown here and on the home page.</p>
+    <div class="jlist" id="caseList"></div>
+  </div>
+</div>
+
+<!-- ======================= CHALLENGES ======================= -->
+<div class="view" data-view="challenges" hidden>
+  <div class="vhead"><span class="kicker2">Weekly challenges</span><h1>A real business problem, every Monday</h1><p class="lede">Build a solution by Sunday night. Peers vote, a judge scores, winners are featured and the best solutions become templates. Included with every paid plan and with Membership after you graduate.</p></div>
+  <div class="chal" id="chalCard"></div>
+  <section aria-labelledby="ch-lb"><div class="sec-head"><h2 id="ch-lb" style="font-size:1.6rem">This week's entries <span class="sample">sample</span></h2></div><div class="scroll"><table class="lb" id="chalTable"></table></div></section>
+  <section aria-labelledby="ch-past"><div class="sec-head"><h2 id="ch-past" style="font-size:1.6rem">Past challenges <span class="sample">sample</span></h2></div><div class="grid3" id="chalPast"></div></section>
+  <section aria-labelledby="ch-how"><div class="sec-head"><h2 id="ch-how" style="font-size:1.6rem">How scoring works</h2></div>
+    <div class="grid4">
+      <div class="tile"><h3>Works (40)</h3><p>Every test case in the brief passes.</p></div>
+      <div class="tile"><h3>Safe (20)</h3><p>Verifies inputs, protects keys, asks a human before money moves.</p></div>
+      <div class="tile"><h3>Simple (20)</h3><p>The fewest steps and the lowest running cost that do the job.</p></div>
+      <div class="tile"><h3>Explained (20)</h3><p>A 2-minute video and a write-up a business owner understands.</p></div>
+    </div>
+  </section>
+</div>
+
+<!-- ======================= HIRE ======================= -->
+<div class="view" data-view="hire" hidden>
+  <div class="vhead"><span class="kicker2">Hire talent</span><h1>Hire automation builders who've proven it</h1><p class="lede">Every graduate on this page has passed five practical projects and a reviewed capstone. See their builds, check their certificate, and hire them full-time or for a contract.</p>
+    <div class="ctarow"><a class="cta" href="#hire-post">Post a role</a><a class="cta alt" href="#hire-talent">Browse graduates</a></div></div>
+  <div class="plan3" style="margin-top:10px">
+    <div style="--c:var(--sky)"><span class="stp">1</span><h3>Search</h3><p>Filter by platform, skills, availability, location and rate.</p></div>
+    <div style="--c:var(--grape)"><span class="stp">2</span><h3>Check the work</h3><p>Open a profile to see capstone results, journal entries, badges and a verifiable certificate.</p></div>
+    <div style="--c:var(--volt)"><span class="stp">3</span><h3>Request an intro</h3><p>We connect you within two working days. Pay per role, monthly, or a placement fee.</p></div>
+  </div>
+  <section id="hire-talent" aria-labelledby="ht-h">
+    <div class="sec-head"><h2 id="ht-h" style="font-size:1.6rem">Graduates available now <span class="sample">sample profiles</span></h2></div>
+    <div class="filters" id="talentFilters">
+      <label class="fld">Search<input id="tfQ" type="search" placeholder="Name, skill or city"></label>
+      <label class="fld">Platform<select id="tfP"><option value="">Any</option><option>Zapier</option><option>Make</option><option>n8n</option><option>AI agents</option><option>WhatsApp</option></select></label>
+      <label class="fld">Availability<select id="tfA"><option value="">Any</option><option>Full-time</option><option>Contract</option></select></label>
+      <label class="fld">Location<select id="tfL"><option value="">Anywhere</option><option>Remote</option><option>Lagos</option><option>Abuja</option><option>Ibadan</option><option>Accra</option><option>Nairobi</option></select></label>
+    </div>
+    <p class="note" id="tfCount" style="margin:10px 0"></p>
+    <div class="talent" id="talentList"></div>
+  </section>
+  <section id="hire-post" aria-labelledby="hp-h">
+    <div class="sec-head"><h2 id="hp-h" style="font-size:1.6rem">Employer plans <span class="draft">DRAFT PRICES</span></h2></div>
+    <div class="grid3" id="employerPlans"></div>
+    <form class="panel2" id="roleForm" style="margin-top:16px">
+      <h3>Post a role</h3>
+      <div class="formgrid">
+        <label class="fld">Company<input id="rfCo" type="text" required maxlength="80"></label>
+        <label class="fld">Role title<input id="rfTitle" type="text" required maxlength="80" placeholder="e.g. Automation Specialist"></label>
+        <label class="fld">Type<select id="rfType"><option>Full-time</option><option>Contract</option></select></label>
+        <label class="fld">Location<input id="rfLoc" type="text" maxlength="60" placeholder="Remote, Lagos…"></label>
+      </div>
+      <label class="fld">What will they automate?<textarea id="rfDesc" maxlength="1000" placeholder="The processes, tools and volume"></textarea></label>
+      <div class="ctarow"><button type="submit" class="cta">Post role</button><span class="note" id="rfNote">Your first post is free.</span></div>
+    </form>
+  </section>
+  <section aria-labelledby="hg-h">
+    <div class="sec-head"><h2 id="hg-h" style="font-size:1.6rem">Graduates: get listed</h2><p class="lede">Your profile is built automatically from your badges, certificate, capstone and journal. Keep it live, and get weekly challenges and job alerts, with Membership after the course.</p></div>
+    <a class="cta alt" href="#pricing">See Membership</a>
+  </section>
+</div>
+
+<!-- ======================= PRICING ======================= -->
+<div class="view" data-view="pricing" hidden>
+  <div class="vhead"><span class="kicker2">Pricing</span><h1>Start free. Pay when you're sure.</h1><p class="lede">Prices in naira or US dollars. Pay with Paystack or Flutterwave in naira, or by international card in dollars. <span class="draft">DRAFT PRICES</span></p>
+    <div class="cur" role="group" aria-label="Currency"><button type="button" data-cur="NGN" aria-pressed="true">₦ Naira</button><button type="button" data-cur="USD" aria-pressed="false">$ US dollar</button></div></div>
+  <div class="plans" id="planGrid"></div>
+  <section aria-labelledby="addon-h"><div class="sec-head"><h2 id="addon-h" style="font-size:1.6rem">Add-ons</h2></div><div class="grid3" id="addonGrid"></div></section>
+  <section aria-labelledby="cmp-h"><div class="sec-head"><h2 id="cmp-h" style="font-size:1.6rem">Compare plans</h2></div><div class="scroll"><table class="cmp2" id="cmpTable"></table></div></section>
+  <section class="faq" aria-labelledby="pf-h">
+    <div class="sec-head"><h2 id="pf-h" style="font-size:1.6rem">Payment questions</h2></div>
+    <details><summary>Which payment methods can I use?</summary><p>In naira: cards, bank transfer and USSD through Paystack or Flutterwave. In US dollars: international Visa and Mastercard.</p></details>
+    <details><summary>Can I get a refund?</summary><p>Self-paced: full refund within 7 days if you've completed fewer than 5 lessons. Cohort: full refund until the second live call.</p></details>
+    <details><summary>Do prices change with the exchange rate?</summary><p>Naira and dollar prices are set separately and reviewed every quarter. The price you pay is locked when you pay.</p></details>
+    <details><summary>Can I upgrade later?</summary><p>Yes. What you've paid counts towards the higher plan.</p></details>
+  </section>
+</div>
+
+<!-- ======================= BUSINESS ======================= -->
+<div class="view" data-view="business" hidden>
+  <div class="vhead"><span class="kicker2">For business</span><h1>Automate your business, or train your team to</h1><p class="lede">Start with a free automation audit. Then train your staff in a 2-day workshop, buy team seats, or hire a graduate to build it for you.</p></div>
+  <div class="panel2" id="audit">
+    <h3>Free automation audit</h3>
+    <p class="note">Describe one task your team repeats. See what it costs you now and what automating it could save.</p>
+    <div class="formgrid">
+      <label class="fld">The task<input id="auTask" type="text" value="Typing WhatsApp orders into a spreadsheet" maxlength="100"></label>
+      <label class="fld">Times a week<input id="auTimes" type="number" min="0" value="120"></label>
+      <label class="fld">Minutes each time<input id="auMin" type="number" min="0" value="6"></label>
+      <label class="fld">Staff cost per hour (₦)<input id="auRate" type="number" min="0" step="100" value="1500"></label>
+      <label class="fld">Mistakes a week<input id="auErr" type="number" min="0" value="8"></label>
+      <label class="fld">Cost of each mistake (₦)<input id="auErrCost" type="number" min="0" step="500" value="3000"></label>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><b id="auHrs">–</b><span>staff hours a month</span></div>
+      <div class="kpi"><b id="auCost">–</b><span>cost a month now</span></div>
+      <div class="kpi"><b id="auSave">–</b><span>likely saving a month (≈80% automated)</span></div>
+      <div class="kpi"><b id="auYear">–</b><span>saving over a year</span></div>
+    </div>
+    <p id="auAdvice"></p>
+    <div class="ctarow"><a class="cta" href="#hire">Get matched with a graduate</a><a class="cta alt sm" id="auShare" href="#" target="_blank" rel="noopener">Share this audit on WhatsApp</a></div>
+  </div>
+  <section aria-labelledby="ws-h">
+    <div class="sec-head"><h2 id="ws-h" style="font-size:1.6rem">2-day team workshop <span class="draft">DRAFT PRICES</span></h2><p class="lede">Day 1: Base Camp (automation thinking, APIs, data, AI, safety). Day 2: one platform of your choice (Zapier, Make or n8n), building one of your real processes live.</p></div>
+    <div class="grid3" id="corpPlans"></div>
+  </section>
+  <form class="panel2" id="bizForm">
+    <h3>Book a call</h3>
+    <div class="formgrid">
+      <label class="fld">Name<input id="bzName" type="text" required maxlength="80"></label>
+      <label class="fld">Company<input id="bzCo" type="text" required maxlength="80"></label>
+      <label class="fld">Team size<select id="bzSize"><option>1–5</option><option>6–20</option><option>21–100</option><option>100+</option></select></label>
+      <label class="fld">Interested in<select id="bzWhat"><option>Team workshop</option><option>Team seats</option><option>Hiring a graduate</option><option>Sponsoring a weekly challenge</option></select></label>
+    </div>
+    <div class="ctarow"><button type="submit" class="cta">Request a call</button><span class="note" id="bzNote"></span></div>
+  </form>
+</div>
+
+<!-- ======================= CERTIFICATE ======================= -->
+<div class="view" data-view="certificate" hidden>
+  <div class="vhead"><span class="kicker2">Certification</span><h1>Certificate in AI Automation</h1><p class="lede">Earned by building, not by guessing. Finish the course, pass every boss project and the reviewed capstone, and you receive a certificate with an ID anyone can verify.</p></div>
+  <div class="dash">
+    <div class="panel2"><h3>Your progress to the certificate</h3><div class="crit2" id="certCrit"></div><div class="ctarow"><a class="cta sm" id="certLinkedIn" href="#" target="_blank" rel="noopener" aria-disabled="true">Add to LinkedIn</a><button type="button" class="cta alt sm" data-share="cert">Share</button></div><p class="note" id="certNote"></p></div>
+    <div class="panel2"><h3>Verify a certificate</h3><form id="verifyForm" class="composer" style="padding:0;border:0"><input id="verifyId" type="text" placeholder="e.g. AA-26-00117" aria-label="Certificate ID"><button type="submit" class="cta sm">Verify</button></form><div id="verifyOut" aria-live="polite"></div><p class="note">Try the sample ID AA-26-00117.</p></div>
+  </div>
+  <div class="certwrap" style="margin-top:18px"><div class="cert" id="certCard"></div></div>
+  <section aria-labelledby="cc-h"><div class="sec-head"><h2 id="cc-h" style="font-size:1.6rem">The criteria</h2></div>
+    <div class="grid3">
+      <div class="tile"><h3>Every lesson</h3><p>All 41 lessons complete, each checkpoint quiz passed at 4 of 5 or better, and a journal entry for each.</p></div>
+      <div class="tile"><h3>Five boss projects</h3><p>Each scored 80/100 or more on its rubric, with every must-have passing.</p></div>
+      <div class="tile"><h3>Reviewed capstone</h3><p>The Harvest Lane capstone (or your own business) scored 80+ by a mentor and two peers, plus a 4-minute presentation.</p></div>
+    </div>
+  </section>
+</div>
+
+</div><!-- /hub -->
+<div id="lesson" hidden></div>
+<footer class="site-foot">
+  <nav aria-label="Footer"><a href="#course">Course</a><a href="#pricing">Pricing</a><a href="#community">Community</a><a href="#challenges">Challenges</a><a href="#hire">Hire talent</a><a href="#business">For business</a><a href="#certificate">Verify a certificate</a></nav>
+  <p>© 2026 Automancy Academy. Characters and story are original. Zapier, Make, n8n and other product names belong to their owners; Automancy Academy is independent and not affiliated with them.</p>
+</footer>
+</div><!-- /wrap -->
+<div id="toastHost"></div>
+<div id="modalHost"></div>

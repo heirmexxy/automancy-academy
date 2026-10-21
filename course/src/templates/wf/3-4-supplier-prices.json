@@ -1,0 +1,260 @@
+{
+  "name": "HL · Supplier prices → Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Supplier prices → Sheet (Lesson 3.4)\nEvery morning at 07:00: fetch the whole product list from DummyJSON (practice stand-in for Agro Depot), every page, then one row per product in Supplier prices, updated in place by sku.\n\n**No API key needed** for DummyJSON. For a real supplier, set Authentication to a Header Auth credential (never type the key into a header field) and delete any Authorization header that came in with Import cURL.\n\n**Credential:** Google Sheets (OAuth2) in the last node.\n**Placeholder:** YOUR_SHEET_ID (tab Supplier prices: sku · name · price · stock · category · fetched_at).",
+        "height": 380,
+        "width": 420
+      },
+      "id": "106bb5ab-e5fc-41f9-94e9-09e8b7cff4b2",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "ea954b30-131c-4b23-8b0f-be8ed2590fc3",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://dummyjson.com/products",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "50"
+            },
+            {
+              "name": "select",
+              "value": "title,price,stock,category"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "paginationMode": "updateAParameterInEachRequest",
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "qs",
+                    "name": "skip",
+                    "value": "={{ $pageCount * 50 }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.products.length < 50 }}",
+              "limitPagesFetched": true,
+              "maxRequests": 20,
+              "requestInterval": 500
+            }
+          }
+        }
+      },
+      "id": "f30b3751-2c27-42f5-9b72-713f975f40fd",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "products",
+        "options": {}
+      },
+      "id": "7ab266d4-7d65-475e-b01c-ecf12ea2a21f",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b3d384a-65d4-4a2f-a576-226abd205d62",
+              "name": "sku",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "c61bb9dd-efeb-4dec-b600-e865acfd9dca",
+              "name": "name",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "03ef818c-8089-4590-8fe1-ea78ca1b4cfe",
+              "name": "price",
+              "value": "={{ $json.price }}",
+              "type": "number"
+            },
+            {
+              "id": "6e070c63-3ee7-4616-9dc1-e5b942072ddc",
+              "name": "stock",
+              "value": "={{ $json.stock }}",
+              "type": "number"
+            },
+            {
+              "id": "99e23c34-08df-434f-86d0-c36d78456e88",
+              "name": "category",
+              "value": "={{ $json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "53801120-fb92-459a-9a4d-fca5025fa384",
+              "name": "fetched_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "58c62940-b901-4238-b611-bb2a8383ad76",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Supplier prices",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "sku"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "c58d008e-4320-45fd-8c4a-68bb16fedd23",
+      "name": "Supplier prices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## HTTP Request settings\nQuery: limit=50, select=title,price,stock,category. No skip here: pagination adds it.\nOptions → Pagination:\n- Update a Parameter in Each Request · Query · skip = expression $pageCount * 50\n- Complete when Other, expression: $response.body.products.length < 50\n- Limit Pages Fetched: 20 · Interval 500 ms\nSettings: Retry On Fail, 3 tries, 2,000 ms.\n\nAppend or Update on **sku** means a second run updates the same rows instead of adding more.",
+        "height": 300,
+        "width": 440
+      },
+      "id": "79c35671-c890-4c0e-b954-66f241ab7994",
+      "name": "Pagination",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        110,
+        144
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Supplier prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

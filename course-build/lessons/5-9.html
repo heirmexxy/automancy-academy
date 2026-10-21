@@ -1,0 +1,404 @@
+<template data-mod="5.9" id="tpl-5-9">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.9</span>
+    <h1>CRM Automation and Integration</h1>
+    <div class="kicker"><span class="pill">≈ 2.5 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Nodo</span><span class="pill">Tools: n8n (or Make), HubSpot Free CRM (or Zoho CRM), Supabase, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Tolu now has a clean CRM. But nobody wants to type every comment, email and WhatsApp lead into it, and a CRM that relies on typing falls behind within a week. In this lesson your automations do the typing: leads from Growth Desk arrive in the CRM with their company, source and consent; a score decides who Tolu should call first; stage changes create the right tasks; stuck deals get flagged; Monday's pipeline report writes itself, and a CRM Ops Agent checks the CRM's health every week and proposes fixes for Tolu to approve. You'll do it on the free plans, where the CRM's own automation is limited, by putting the logic in n8n.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Decide what to automate inside the CRM and what to run in n8n or Make.</span></div>
+  <div><b>02</b><span>Sync leads into the CRM safely: upsert, associate, never loop.</span></div>
+  <div><b>03</b><span>Build and calibrate a lead score against real outcomes.</span></div>
+  <div><b>04</b><span>Automate follow-ups and reports, and build a CRM Ops Agent that proposes fixes a person approves.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The CRM that fell behind</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A CRM dashboard last updated twelve days ago.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="35" width="145" height="100" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--line)"><rect x="172" y="55" width="40" height="8" rx="3"/><rect x="172" y="72" width="90" height="8" rx="3"/><rect x="172" y="89" width="70" height="8" rx="3"/></g>
+        <text x="232" y="122" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--glitch)">last updated: 12 days ago</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Two weeks later</b>Tolu updated the CRM every evening for four days. Then a busy week came.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Arrows from Instagram, WhatsApp, email and outreach flowing into one CRM box.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" text-anchor="middle">
+          <rect x="160" y="22" width="60" height="22" rx="6" fill="var(--rose)"/><text x="190" y="37" fill="#fff">Instagram</text>
+          <rect x="160" y="52" width="60" height="22" rx="6" fill="var(--volt)"/><text x="190" y="67" fill="#fff">WhatsApp</text>
+          <rect x="160" y="82" width="60" height="22" rx="6" fill="var(--sky)"/><text x="190" y="97" fill="#fff">email</text>
+          <rect x="160" y="112" width="60" height="22" rx="6" fill="var(--sun)"/><text x="190" y="127" fill="#13233A">outreach</text>
+          <rect x="250" y="60" width="58" height="40" rx="8" fill="var(--ink)"/><text x="279" y="84" fill="var(--paper)">CRM</text>
+        </g>
+        <g stroke="var(--ink)" stroke-width="1.5" fill="none"><path d="M220 33 L250 70"/><path d="M220 63 L250 76"/><path d="M220 93 L250 84"/><path d="M220 123 L250 92"/></g>
+        <use href="#nodo" x="0" y="50" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"People shouldn't type what a machine already knows. Every lead your agents capture can land in the CRM by itself."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch caught in a loop between n8n and the CRM, with a counter spinning up.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <circle cx="232" cy="90" r="45" fill="none" stroke="var(--glitch)" stroke-width="5" stroke-dasharray="12 8"/>
+        <text x="232" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fff">48,112 updates</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"When a deal changes, n8n updates it. When n8n updates it, the deal changes. I've made a perpetual motion machine!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu's phone showing three leads to call first, ranked by score.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="185" y="20" width="100" height="155" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="8.5" fill="var(--ink)"><text x="195" y="44">Call first today:</text><text x="195" y="64">1. Bodija Suites · 85</text><text x="195" y="80">2. Grill Yard · 75</text><text x="195" y="96">3. Kakanfo Inn · 65</text><text x="195" y="120">Stuck 9 days:</text><text x="195" y="136">Mama Put Express</text></g>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"I open my phone at 8 a.m. and it tells me who to call and which deal is going cold. That, I'll use."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 55 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 6</span>
+    <h3>Where the automation lives</h3>
+    <p>CRMs have their own automation, but on free plans it's thin. Put each job where it fits the client's plan and skills.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Job</th><th>Inside the CRM</th><th>In n8n or Make</th></tr></thead>
+      <tbody>
+        <tr><td>Create a task when a deal reaches a stage</td><td>Zoho Free workflow rules; HubSpot from Starter</td><td>Any plan, via the API</td></tr>
+        <tr><td>Lead scoring</td><td>HubSpot: Professional or Enterprise only</td><td>Any plan: score in code, write to a property</td></tr>
+        <tr><td>Bring in leads from WhatsApp, Instagram, outreach</td><td>Only from the CRM's own forms and chat</td><td>Yes: every channel from 5.1–5.7</td></tr>
+        <tr><td>AI summaries, Telegram alerts, payments</td><td>Limited or paid</td><td>Yes</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Rule of thumb</b>If the client will pay for a higher CRM plan and has an admin, use the CRM's workflows: they're easier for the client to maintain. Otherwise run logic in n8n, and document it so it isn't a mystery box.</div>
+      <div><b>Access</b>HubSpot: create a <i>private app</i> (free plans included) and use its access token, with only the scopes you need. Zoho and the Make HubSpot app use OAuth; in Make, a HubSpot Super Admin must approve the app first.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 6</span>
+    <h3>Syncing without duplicates or loops</h3>
+    <div class="vocab">
+      <div><b>Upsert, don't create</b>"Create or update" by a unique key: email for contacts, domain for companies. n8n's HubSpot node has a <i>Create or Update</i> contact operation; the Zoho CRM node has <i>Upsert</i>.</div>
+      <div><b>Associate every time</b>After upserting, link contact ↔ company ↔ deal. A deal with no company is invisible in most reports.</div>
+      <div><b>Remember the CRM's ID</b>Store <code>crm_contact_id</code> and <code>crm_deal_id</code> in your Supabase tables (5.7), so later updates go straight to the right record.</div>
+      <div><b>No loops</b>When the CRM triggers n8n and n8n writes back, the write can trigger n8n again. Only react to the fields you care about, ignore changes made by your own integration user, and never write a value that's already there.</div>
+      <div><b>Rate limits</b>HubSpot's free plan allows about 100 API requests every 10 seconds per private app. For big imports, use batch endpoints or slow the loop (n8n's batching settings).</div>
+    </div>
+<pre class="codebox">Supabase (conversations, consent, events)  →  CRM (people, companies, deals, tasks)
+          system of record for messages            system of record for sales
+          one-way: new lead / stage facts           people work here every day</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 6</span>
+    <h3>Lead scoring lab: calibrate against what really happened</h3>
+    <p>A score is only useful if high scores really buy. Here are eight leads from last quarter and whether each became a customer. Set the points and the threshold so Tolu's "call first" list catches all four buyers, without sending her any of the others.</p>
+    <script type="application/json" id="sc-5-9">{"signals":[["zone","In the delivery zone",5],["type","Restaurant, hotel or caterer",10],["asked","Asked for prices or a tasting",15],["opens","Opened 3 or more emails",20],["size","20 or more staff",10],["ig","Follows on Instagram",10]],
+     "threshold":40,
+     "leads":[
+      {"n":"Bodija Suites","s":["zone","type","asked","size"],"won":true},
+      {"n":"The Grill Yard","s":["zone","type","asked"],"won":true},
+      {"n":"Kakanfo Inn","s":["zone","type","size","opens"],"won":true},
+      {"n":"Mama Put Express","s":["zone","type","asked"],"won":true},
+      {"n":"Food blogger (student)","s":["opens","ig"],"won":false},
+      {"n":"A hotel in Lagos","s":["type","size","asked","opens"],"won":false},
+      {"n":"Household fan","s":["zone","ig","opens"],"won":false},
+      {"n":"Competitor's staff member","s":["asked","opens"],"won":false}]}</script>
+    <div class="deliv" data-score="sc-5-9">
+      <div class="two">
+        <div data-o="weights"></div>
+        <div>
+          <label>Call-first threshold<input type="number" data-sc="threshold" min="0" max="200" step="5"></label>
+          <label class="inl"><input type="checkbox" data-sc="knock"> Outside the delivery zone = not ready, whatever the score (a rule, not points)</label>
+          <ul data-o="leads"></ul>
+        </div>
+      </div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Email opens feel like interest, but Apple Mail and some security tools "open" emails automatically. Weight what people <i>do</i> (ask for prices, book a tasting) above what software reports.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 6</span>
+    <h3>Follow-ups that happen by themselves</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>When</th><th>Automation</th></tr></thead>
+      <tbody>
+        <tr><td>Score crosses the threshold</td><td>Lifecycle → Sales qualified lead; task "Call today" for the owner; Telegram ping</td></tr>
+        <tr><td>Deal moves to Tasting booked</td><td>Task the day before; WhatsApp reminder to the customer (template, with consent)</td></tr>
+        <tr><td>Proposal sent, no reply in 3 days</td><td>Task "Follow up" for the owner; AI drafts a short follow-up for approval</td></tr>
+        <tr><td>Deal won</td><td>Lifecycle → Customer; onboarding flow (6.2); welcome series (5.6)</td></tr>
+        <tr><td>Deal lost</td><td>Lost reason required; nurture list if they consented; task in 6 months if "current supplier"</td></tr>
+        <tr><td>No activity for 7 days on an open deal</td><td>Morning alert: "going cold" list</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Log conversations, don't copy them</b>Write a short note on the contact ("WhatsApp, 3 Oct: asked for Saturday delivery; answered") with a link to the full conversation in Supabase. Don't paste whole chats or payment details into the CRM.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 6</span>
+    <h3>Reports people trust, and AI that stays honest</h3>
+    <div class="vocab">
+      <div><b>Weighted pipeline</b>Each open deal's value × its stage's win chance, added up. A forecast, not a promise; compare it with what actually closed each month and adjust the win chances.</div>
+      <div><b>Monday report</b>New deals by source, value by stage, stuck deals, won and lost with reasons, and the weighted forecast. Sent to Telegram; the full dashboard stays in the CRM.</div>
+      <div><b>AI deal summaries</b>An AI can summarise a deal's notes into "where we are, what they want, next step". It must quote only what's in the notes, say "not recorded" when something's missing, and never change a stage by itself: a person moves deals.</div>
+    </div>
+  </div>
+  <div class="concept">
+    <span class="num">CARD 6 OF 6</span>
+    <h3>The CRM Ops Agent: it proposes, a person approves</h3>
+    <p>Workflows follow fixed rules. An agent can look at the whole CRM, notice what's wrong and suggest what to do about it. Every Monday, Harvest Lane's CRM Ops Agent runs a health check:</p>
+    <div class="vocab">
+      <div><b>Data</b>Duplicate companies and contacts, empty required fields, values outside the dropdowns ("IG", "insta").</div>
+      <div><b>Pipeline</b>Deals stuck past their stage's time limit, deals with no owner or next step, stages nobody uses.</div>
+      <div><b>Score</b>Did last month's buyers score above the threshold? If not, the score needs re-calibrating (Card 3).</div>
+      <div><b>Adoption</b>Who logged activity this week, and whose deals have none.</div>
+    </div>
+    <p>It then writes a short report and a list of <b>proposals</b>. It can read anything, but it can't change anything. Changes happen only when Tolu approves, and then a plain workflow (not the agent) carries them out from a fixed list of allowed actions.</p>
+<pre class="codebox">The agent may PROPOSE     merge duplicate companies (same verified domain)
+                          clean dropdown values in bulk
+                          create a task for a deal's owner
+                          make a field required at a stage
+                          a new score weight (tested on last quarter first)
+The agent may NEVER       delete records · change a deal stage · send messages
+                          to customers · change permissions or consent</pre>
+    <p><b>Approval lab.</b> This Monday's proposals. For each one, decide what Tolu should do.</p>
+    <script type="application/json" id="ops-5-9">{"label":"Decision for proposal","hint":"Ask: is it proven, reversible, and within the allowed list?","opts":[["approve","Approve as it is"],["change","Approve only with a change"],["reject","Reject"]],
+     "items":[
+      {"t":"Merge “Bodija Suites” and “Bodija Suites Hotel”: both have the website bodijasuites.example.","best":"approve","why":"Same verified domain: it's proof, it's on the allowed list, and the executor logs both records so the merge can be checked."},
+      {"t":"Merge two contacts called “Funke A.”: different emails, different companies.","best":"reject","why":"A name proves nothing (5.7). Merging would show one Funke the other's deals and orders."},
+      {"t":"Change lead_source from “IG” and “insta” to “Instagram” on 46 contacts.","best":"approve","why":"A safe, reversible clean-up of dropdown values, and the source report becomes accurate."},
+      {"t":"Delete 212 contacts with no activity in 12 months.","best":"change","why":"Deleting is permanent and isn't on the allowed list. Move them to a “dormant” list for a person to review, and keep anyone with orders or consent records."},
+      {"t":"Move Mama Put Express to Lost: no reply to the proposal in 21 days.","best":"change","why":"People move stages. Turn it into a task for the owner: call them this week, then decide."},
+      {"t":"Raise “asked for prices” from 25 to 30 points: 3 of last month's buyers asked.","best":"change","why":"Three buyers is a small sample. Test the new weight against last quarter's outcomes (Card 3) before switching it on."},
+      {"t":"Send a WhatsApp promotion to all 400 contacts to revive the pipeline.","best":"reject","why":"Messaging customers isn't allowed for this agent, and most contacts haven't agreed to WhatsApp marketing (5.1)."},
+      {"t":"Make “next step date” required for deals in Proposal sent.","best":"approve","why":"It's on the allowed list, reversible, and stops deals from going quiet without anyone noticing."}],
+     "ok":"✓ All correct. In five minutes Tolu approved three proposals, made three safer, and rejected two. Nothing irreversible happened, and the CRM is cleaner than last week.",
+     "bad":"An agent that acts on every proposal will eventually delete, merge or message the wrong people. The approval step and the allowed list are the safety system."}</script>
+    <div class="ident" data-pick="ops-5-9">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.hubspot/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: HubSpot node</b><small>Contacts, companies, deals, engagements; Create or Update.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.zohocrm/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Zoho CRM node</b><small>Leads, contacts, accounts, deals; Upsert.</small></span></a>
+    <a class="wcard" href="https://developers.hubspot.com/docs/apps/legacy-apps/private-apps/overview" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot: private apps and limits</b><small>Access tokens, scopes and API limits by plan.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Growth Desk feeds the CRM</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every business lead captured in 5.2–5.7 lands in HubSpot with company, contact, deal, source and consent; it's scored; Tolu gets a "call first" list and follow-up tasks; stuck deals are flagged; and the Monday pipeline report arrives on Telegram. Free HubSpot plan; all logic in n8n.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Connect safely</h4>
+      <p>In HubSpot: <i>Settings → Integrations → Private apps</i> (HubSpot may list these under legacy apps). Create "n8n Growth Desk" with only contact, company and deal read/write scopes. Paste the token into an n8n HubSpot credential, never into a node or a sheet. Use a test portal or a few test records first.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>One sub-workflow: CRM · Upsert lead</h4>
+      <p>Called by every engine when a business lead appears (outreach reply, Instagram comment, WhatsApp, email). Input: name, email, phone, company, domain, business_type, lead_source, consent, intent.</p>
+<pre class="codebox">1  Code: normalise email (lowercase), phone (+234…), domain (no www.)
+2  HubSpot · Company: search by domain → found? update : create
+3  HubSpot · Contact: Create or Update (by email) with lead_source, consent
+4  HubSpot · associate contact ↔ company
+5  IF intent is buying and no open deal for this company
+     → HubSpot · Deal: create at "New enquiry", owner Tolu, associate both
+6  Supabase: save crm_contact_id, crm_deal_id on the customer row</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Score in code, write it back</h4>
+<pre class="codebox">// Code node: weights calibrated in the Card 3 lab against last quarter
+const W = { type: 20, asked: 25, opens: 5, size: 10 };
+const L = $json;
+if (L.delivery_zone !== 'in')
+  return { ...L, harvest_score: 0, ready: false, why: 'outside delivery zone' };
+let s = 30; // in zone
+if (['restaurant','hotel','caterer'].includes(L.business_type)) s += W.type;
+if (L.asked_price_or_tasting) s += W.asked;
+if (L.email_opens >= 3) s += W.opens;
+if (L.staff >= 20) s += W.size;
+return { ...L, harvest_score: s, ready: s >= 65 };</pre>
+      <p>Write <code>harvest_score</code> to a custom contact property (one of the 2 spare from 5.8). If <code>ready</code> and the lifecycle stage is below Sales qualified lead, move it up and create a "Call today" task for the owner.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>React to stage changes, without looping</h4>
+      <p>A <b>HubSpot Trigger</b> on "deal property changed: dealstage" (or a 15-minute schedule that searches recently modified deals, if the trigger isn't available on your setup). A Switch on the new stage creates the Card 4 tasks. The workflow only <i>creates tasks and notes</i>; it never changes the deal stage, so it can't trigger itself.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Morning list and Monday report</h4>
+      <p>Every day at 7:30: search open deals; "call first" = ready contacts without a call logged; "going cold" = no activity for 7 days. One Telegram message to Tolu. Every Monday at 8:00: new deals by source, value by stage, won and lost with reasons, weighted forecast, and the three oldest stuck deals with an AI one-line summary from their notes.</p>
+      <div class="stats">
+        <div class="stat"><b>0</b><span>leads typed by hand</span></div>
+        <div class="stat"><b>1</b><span>morning list for Tolu</span></div>
+        <div class="stat"><b>0</b><span>changes without Tolu's approval</span></div>
+      </div>
+    </div></div>
+    <div class="step"><div>
+      <h4>The CRM Ops Agent (every Monday, 7:00)</h4>
+      <p>An n8n <b>AI Agent</b> node with <b>read-only</b> tools: search companies, contacts and deals; get the pipeline and properties; get last quarter's won and lost deals. Plus one write tool, <code>propose_change</code>, which only adds a row to a Supabase <code>crm_proposals</code> table:</p>
+<pre class="codebox">{ action: "merge_companies" | "bulk_update_property" | "create_task"
+          | "require_field" | "score_weight",
+  target_ids, details, evidence, expected_effect, reversible: true|false }</pre>
+      <p>The system message: "Find problems in data, pipeline, score and adoption. Propose only actions on the allowed list, each with evidence. Never propose deleting, changing a stage, messaging customers or changing permissions." The agent ends with a five-line health report.</p>
+      <p>A Telegram message shows each proposal with <b>Approve</b> and <b>Reject</b> buttons (Wait node, as in 4.5). A separate <b>executor</b> workflow takes approved rows, checks the action is on the allow-list <i>in code</i>, saves the before-values, calls HubSpot (the n8n HubSpot node, or an HTTP Request node for merges), and logs the result. Next Monday, the agent's report starts with what last week's changes achieved.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Zoho or Make instead?</h4>
+      <p>Zoho: the n8n <b>Zoho CRM</b> node upserts leads; convert to contact, account and deal when qualified. Zoho Free's workflow rules can create the stage-change tasks, so n8n only does scoring, channels and reports. Make: the <b>HubSpot CRM</b> and <b>Zoho CRM</b> apps have the same building blocks (watch, search, create, update).</p>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>One upsert sub-workflow, used by every channel.</li><li>Keys (email, domain) stop duplicates.</li><li>The score is calibrated against real outcomes.</li><li>Automation creates tasks; people move deals.</li><li>The agent proposes; code checks; a person approves.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>"Create contact" instead of "create or update".</li><li>Deals with no company association.</li><li>Workflows that write back the field that triggered them.</li><li>Scores that reward email opens.</li><li>Whole chats and payment details pasted into notes.</li><li>Giving the agent write access to the CRM.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> The CRM is fully automatic now. Possibly too automatic.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The workflow ran 48,000 times overnight and hit HubSpot's daily API limit.</td></tr>
+        <tr><td>B</td><td>Every Instagram comment from the same restaurant created a new contact.</td></tr>
+        <tr><td>C</td><td>The "call first" list is full of students and a Lagos hotel Harvest Lane can't deliver to.</td></tr>
+        <tr><td>D</td><td>The AI moved a deal to "Won" because the customer wrote "sounds great".</td></tr>
+        <tr><td>E</td><td>The HubSpot token is in a Set node, visible in every shared screenshot.</td></tr>
+        <tr><td>F</td><td>The Ops Agent "tidied up" by deleting 300 old contacts, including 40 with paid orders.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> a loop: the stage-change workflow wrote to the deal, which triggered it again. React only to the field you need, ignore your integration's own changes, and never write the triggering field.</li>
+        <li><b>B:</b> "create" instead of "create or update", and no key. Upsert contacts by email (or phone in a custom property) and companies by domain.</li>
+        <li><b>C:</b> a score that rewards opens and follows, with no zone rule. Recalibrate on real outcomes and make "outside the zone" a knock-out rule.</li>
+        <li><b>D:</b> AI changing stages. AI may summarise and suggest; people move deals.</li>
+        <li><b>E:</b> secrets in a node. Store the token as an n8n credential, rotate it now, and limit its scopes.</li>
+        <li><b>F:</b> the agent had write tools. Give it read-only tools and <code>propose_change</code> only; the executor accepts approved actions from the allow-list, and deletion is never on it. Restore from HubSpot's recently deleted records quickly, while they can still be recovered.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Map the CRM automations</h4>
+    <ul><li>For the business from 5.8, list every lead source and every follow-up rule, and decide for each: inside the CRM, or in n8n/Make, and why.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Each rule has a trigger, an action, an owner, and a note on the plan it needs.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Upsert, score and follow up</h4>
+    <ul><li>Build the CRM · Upsert lead sub-workflow and connect at least two channels to it.</li><li>Add the score and one stage-change follow-up.</li><li>Add the CRM Ops Agent with read-only tools and Telegram approval.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The same test lead sent twice from two channels gives one contact, one company and one deal, no workflow runs more than once per change, and a rejected proposal changes nothing.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run it for a real business for a month</h4>
+    <ul><li>Connect the client's real channels to their CRM, calibrate the score on their last quarter, and send the Monday report and the Ops Agent's health check for four weeks.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Leads arrive with no typing, the client can name a deal won or saved because of a follow-up or "going cold" alert, and the health report shows fewer data problems in week 4 than in week 1.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. A client is on HubSpot Free and wants lead scoring. What do you do?</p><div class="opts">
+      <button type="button" data-opt="a">Turn on HubSpot's lead scoring tool</button><button type="button" data-opt="b">Tell them it's impossible</button><button type="button" data-opt="c">Score in n8n and write the result to a custom property</button><button type="button" data-opt="d">Score by hand once a year</button></div>
+      <p class="fb" hidden data-why="HubSpot's own lead scoring is on Professional and Enterprise. n8n can score on any plan through the API."></p></div>
+    <div class="q" data-ans="a"><p>2. How do you stop the same restaurant becoming five contacts?</p><div class="opts">
+      <button type="button" data-opt="a">Upsert by email, and companies by domain</button><button type="button" data-opt="b">Create a new contact each time and clean up monthly</button><button type="button" data-opt="c">Only accept leads by email</button><button type="button" data-opt="d">Turn off Instagram</button></div>
+      <p class="fb" hidden data-why="A unique key with create-or-update keeps one record per person and company."></p></div>
+    <div class="q" data-ans="d"><p>3. A stage-change workflow is running thousands of times. The most likely cause?</p><div class="opts">
+      <button type="button" data-opt="a">Too many customers</button><button type="button" data-opt="b">HubSpot is broken</button><button type="button" data-opt="c">The token expired</button><button type="button" data-opt="d">It writes to the deal, which triggers itself again</button></div>
+      <p class="fb" hidden data-why="A loop. React only to the field you need and never write the field that triggered you."></p></div>
+    <div class="q" data-ans="b"><p>4. Why weight "asked for prices" above "opened 3 emails"?</p><div class="opts">
+      <button type="button" data-opt="a">Emails are old-fashioned</button><button type="button" data-opt="b">Actions predict buying better, and some opens are automatic</button><button type="button" data-opt="c">HubSpot can't count opens</button><button type="button" data-opt="d">It doesn't matter</button></div>
+      <p class="fb" hidden data-why="Calibrate on outcomes: what people do beats what software reports."></p></div>
+    <div class="q" data-ans="c"><p>5. What should the CRM Ops Agent be able to do?</p><div class="opts">
+      <button type="button" data-opt="a">Fix anything it finds, straight away</button><button type="button" data-opt="b">Delete inactive contacts to keep the CRM tidy</button><button type="button" data-opt="c">Read everything and propose changes with evidence; a person approves, and code applies only allowed actions</button><button type="button" data-opt="d">Move deals to Lost when customers go quiet</button></div>
+      <p class="fb" hidden data-why="Read-only tools plus proposals. Approval and an allow-list in code keep mistakes from becoming disasters."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-9">AUTOMANCY LOG · Lesson 5.9 · CRM Automation and Integration
+Date:
+CRM and plan; where the logic runs (CRM / n8n / Make):
+Channels connected to the upsert sub-workflow:
+Score weights and threshold; buyers caught / false alarms on last quarter:
+Follow-up rules built:
+Duplicate and loop tests passed:
+Ops Agent: problems found / proposals approved / rejected:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-9">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>On free plans, put the logic in n8n or Make; on paid plans, consider the CRM's own workflows.</li>
+      <li>Upsert by key, associate every record, store the CRM's IDs.</li>
+      <li>Never write the field that triggered you.</li>
+      <li>Calibrate scores against real outcomes; use knock-out rules for must-haves.</li>
+      <li>Automation creates tasks and reports; people move deals.</li>
+      <li>A CRM Ops Agent reads everything, proposes with evidence, and changes nothing until a person approves.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.hubspottrigger/" target="_blank" rel="noopener">n8n Docs: HubSpot Trigger</a></li>
+    <li><span class="kind">Text</span><a href="https://apps.make.com/hubspotcrm" target="_blank" rel="noopener">Make: HubSpot CRM app</a></li>
+    <li><span class="kind">Text</span><a href="https://apps.make.com/zohocrm" target="_blank" rel="noopener">Make: Zoho CRM app</a></li>
+    <li><span class="kind">Text</span><a href="https://knowledge.hubspot.com/scoring/understand-the-lead-scoring-tool" target="_blank" rel="noopener">HubSpot: lead scoring (which plans)</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/courses/hubspot-reporting" target="_blank" rel="noopener">HubSpot Academy: Reporting (free certification)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run the scoring lab as a competition: each table gets last quarter's eight leads plus four new ones they haven't seen, sets weights on the first eight, then reveals the four. The team whose score still sorts the new leads correctly wins. Then show one live loop on a test portal and stop it together.</p>
+  </div>
+</section>
+
+</article>
+</template>

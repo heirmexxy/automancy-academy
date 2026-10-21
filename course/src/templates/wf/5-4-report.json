@@ -1,0 +1,375 @@
+{
+ "name": "HL · Posting week · Monday report",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Posting week: Monday report (Lesson 5.4)\nMondays 08:00: fetch insights for last week's Facebook and Instagram post IDs, store reach, engagement and clicks on each Posts row, total them by platform and pillar in code, and let the AI suggest one change to next week's plan. Email plus a Telegram summary. (Add LinkedIn and X insights the same way if your API access allows.)\n\nCredentials: Google Sheets; Header Auth \"Meta page token\"; OpenAI; Gmail; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL, YOUR_TOLU_EMAIL, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 320,
+    "width": 500
+   },
+   "id": "d7c16605-e39f-4ca5-946f-2c223bb59e08",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -320
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "0 8 * * 1"
+      }
+     ]
+    }
+   },
+   "id": "db38c627-dbad-4f66-baff-391c9be9bcf2",
+   "name": "Mondays 08:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "d4f0468c-05bf-4647-929b-b4080eeccd05",
+   "name": "Read Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const since = Date.now() - 7 * 864e5;\nreturn $input.all().map(i => i.json)\n  .filter(p => p.status === 'published' && ['facebook', 'instagram'].includes(p.platform) && p.post_id && new Date(p.published_at).getTime() >= since)\n  .map(p => ({ json: p }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "2e2fd554-4397-4136-9957-ca5565afd00c",
+   "name": "Last week's Meta posts",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://graph.facebook.com/v21.0/{{ $json.post_id }}/insights",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "metric",
+       "value": "={{ $json.platform === 'instagram' ? 'reach,total_interactions' : 'post_impressions_unique,post_engaged_users,post_clicks' }}"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "8655b396-d833-4f16-8693-c7ee08683233",
+   "name": "Get insights",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    0
+   ],
+   "onError": "continueRegularOutput"
+  },
+  {
+   "parameters": {
+    "jsCode": "const p = $('Last week\\'s Meta posts').item.json;\nconst v = Object.fromEntries((($json.data) || []).map(m => [m.name, m.values?.[0]?.value ?? m.total_value?.value ?? 0]));\nreturn { post_key: p.post_key,\n  reach: v.reach ?? v.post_impressions_unique ?? 0,\n  engagement: v.total_interactions ?? v.post_engaged_users ?? 0,\n  clicks: v.post_clicks ?? 0 };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "9a6716f6-ba9b-430b-94cc-080a919e6403",
+   "name": "Metrics",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "post_key"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "862459df-2bb0-48bf-826e-e051c9ea24b9",
+   "name": "Save metrics",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const keys = new Set($('Metrics').all().map(i => i.json.post_key));\nconst posts = $('Read Posts').all().map(i => i.json).filter(p => keys.has(p.post_key));\nconst m = Object.fromEntries($('Metrics').all().map(i => [i.json.post_key, i.json]));\nconst add = (acc, k, x) => { acc[k] = acc[k] || { posts: 0, reach: 0, engagement: 0, clicks: 0 };\n  acc[k].posts++; acc[k].reach += +x.reach || 0; acc[k].engagement += +x.engagement || 0; acc[k].clicks += +x.clicks || 0; return acc; };\nconst byPlatform = {}, byPillar = {};\nfor (const p of posts) { add(byPlatform, p.platform, m[p.post_key]); add(byPillar, p.pillar, m[p.post_key]); }\nconst best = posts.map(p => ({ ...p, ...m[p.post_key] })).sort((a, b) => b.reach - a.reach)[0];\nreturn [{ json: { count: posts.length, byPlatform, byPillar, best: best ? `${best.platform} · ${best.pillar} · reach ${best.reach}: ${String(best.caption).slice(0, 100)}` : 'none' } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "5e52b6e6-20a6-442f-9525-fd028173cc1a",
+   "name": "Totals by platform and pillar",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "promptType": "define",
+    "text": "=Last week's results (computed in code, do not recalculate):\nBy pillar: {{ JSON.stringify($json.byPillar) }}\nBy platform: {{ JSON.stringify($json.byPlatform) }}\nBest post: {{ $json.best }}",
+    "messages": {
+     "messageValues": [
+      {
+       "message": "Suggest exactly one change to next week's content plan (more of what worked, less of what didn't), in one or two sentences, based only on these numbers."
+      }
+     ]
+    }
+   },
+   "id": "4830f9e2-dcbb-4971-ad00-53f3029cb8fe",
+   "name": "One change to the plan",
+   "type": "@n8n/n8n-nodes-langchain.chainLlm",
+   "typeVersion": 1.5,
+   "position": [
+    1540,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "9a3679a1-bffa-4722-b769-9acc1f439312",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    1540,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const t = $('Totals by platform and pillar').first().json;\nconst lines = Object.entries(t.byPillar).map(([k, v]) => `${k}: ${v.posts} posts, reach ${v.reach}, clicks ${v.clicks}`);\nconst text = [`Last week · ${t.count} Facebook/Instagram posts measured`, `Best: ${t.best}`, 'By pillar:', ...lines, '', 'Plan change: ' + String($json.text || '').trim()].join('\\n');\nreturn [{ json: { text } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "9a601537-4440-447a-9620-e0aab10c2f73",
+   "name": "Report",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1760,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "sendTo": "YOUR_TOLU_EMAIL",
+    "subject": "Harvest Lane · last week's posts",
+    "emailType": "text",
+    "message": "={{ $json.text }}",
+    "options": {
+     "appendAttribution": false
+    }
+   },
+   "id": "6bf67abe-5d81-4700-ae7e-6b46d9ec502d",
+   "name": "Email Tolu",
+   "type": "n8n-nodes-base.gmail",
+   "typeVersion": 2.1,
+   "position": [
+    1980,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "={{ $json.text }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "6607377c-55fa-4578-b547-5cbccccb3518",
+   "name": "Telegram summary",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1980,
+    90
+   ]
+  }
+ ],
+ "connections": {
+  "Mondays 08:00": {
+   "main": [
+    [
+     {
+      "node": "Read Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Posts": {
+   "main": [
+    [
+     {
+      "node": "Last week's Meta posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Last week's Meta posts": {
+   "main": [
+    [
+     {
+      "node": "Get insights",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Get insights": {
+   "main": [
+    [
+     {
+      "node": "Metrics",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Metrics": {
+   "main": [
+    [
+     {
+      "node": "Save metrics",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Save metrics": {
+   "main": [
+    [
+     {
+      "node": "Totals by platform and pillar",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Totals by platform and pillar": {
+   "main": [
+    [
+     {
+      "node": "One change to the plan",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One change to the plan": {
+   "main": [
+    [
+     {
+      "node": "Report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Report": {
+   "main": [
+    [
+     {
+      "node": "Email Tolu",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Telegram summary",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "One change to the plan",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

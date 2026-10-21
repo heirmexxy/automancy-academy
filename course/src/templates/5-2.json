@@ -1,0 +1,206 @@
+{
+  "id": "5.2",
+  "items": [
+    {
+      "file": "5-2-find-research.json",
+      "name": "HL · Prospects · find, research, score, draft",
+      "what": "Finds restaurants in the delivery zone with Google Places, reads each website, verifies the personal fact in code, scores fit from the ICP sheet in code, drafts and lints an email, and saves it as drafted. Sends nothing.",
+      "setup": [
+        "Create a Google Sheet with tabs ICP (rule, points), Prospects (place_id, status, fit_score, reasons, fact, fact_source, draft, subject, business_email, approved_at, sent_at, followup_sent_at, reply_type), Manual list (place_id, reason, date) and Suppression (email, reason, date). Fill ICP with rating_4 20, reviews_100 20, delivery 25, office_lunch 15, in_zone 20.",
+        "Enable the Places API (New) in Google Cloud, create an API key and set a budget alert.",
+        "Create a Header Auth credential called \"Google Places key\": Name X-Goog-Api-Key, Value your API key. Select it in Places Text Search.",
+        "Create a Google Sheets credential and select it in every Google Sheets node; replace YOUR_SHEET_ID in each.",
+        "Create an OpenAI credential, select it in both OpenAI Chat Model nodes and replace YOUR_MODEL."
+      ],
+      "test": "Edit Areas to one area (for example Bodija) and run it. Check Prospects: each row has a place_id and no copied Google data, fit_score and reasons, a draft ending with the signature and STOP line, and fact empty unless its quote was found on the page. Places with no published email are in Manual list.",
+      "walk": {
+        "title": "Build it: a prospecting agent that asks first",
+        "sample": "Areas: Bodija · Amala Corner, 4.3 stars, 212 reviews, website with a menu page and a published email",
+        "steps": [
+          {
+            "at": "Read ICP",
+            "say": "We start by reading the ICP sheet. Each rule has points, so the agent scores against rules you wrote, not a feeling.",
+            "show": [
+              "Sheet: ICP (rule, points)",
+              "rating_4 20 · reviews_100 20 · delivery 25",
+              "office_lunch 15 · in_zone 20"
+            ],
+            "data": "5 rules"
+          },
+          {
+            "at": "Read Prospects",
+            "say": "We also read the Prospects sheet, so we never research the same place twice.",
+            "show": [
+              "Sheet: Prospects",
+              "Key column: place_id"
+            ],
+            "data": "places already known"
+          },
+          {
+            "at": "Areas",
+            "say": "Our delivery zone becomes a list of areas, one search each. For your first test, cut it to just Bodija.",
+            "show": [
+              "areas = Bodija, Mokola, Ring Road, Akobo, Dugbe"
+            ],
+            "data": "5 areas → 5 items"
+          },
+          {
+            "at": "Places Text Search",
+            "say": "Google Places is an allowed source, unlike scraping LinkedIn or buying a list. The API key sits in a Header Auth credential, never pasted into the node.",
+            "show": [
+              "POST places.googleapis.com/v1/places:searchText",
+              "Auth: Header Auth · Google Places key",
+              "Body: restaurants in Bodija, Ibadan · pageSize 20"
+            ],
+            "data": "up to 20 places"
+          },
+          {
+            "at": "Places Text Search",
+            "say": "The field mask decides what you pay for. A star asks for everything at the top price, so list only what you need, and set a budget alert in Google Cloud.",
+            "show": [
+              "X-Goog-FieldMask: places.id,places.displayName,",
+              "places.rating,places.userRatingCount,",
+              "places.websiteUri,places.formattedAddress"
+            ]
+          },
+          {
+            "at": "New places with a website",
+            "say": "We keep only new places with a website. Google's terms say we may store the place ID, so that's the only Google data that ever reaches our sheet.",
+            "show": [
+              "skip: no websiteUri, already known, duplicate",
+              "Only place_id is written to the sheet"
+            ],
+            "data": "8 new places"
+          },
+          {
+            "at": "Get home page",
+            "say": "One business at a time, we read its own website, the home page and then the menu page, with a two-second pause between businesses so we don't hammer anyone.",
+            "show": [
+              "GET {{ $json.websiteUri }}",
+              "Then: /menu · Wait 2 seconds per business"
+            ],
+            "data": "Amala Corner pages"
+          },
+          {
+            "at": "Extract facts",
+            "say": "The extractor reads the page text and returns delivery, office lunch, a published business email, one fact, and the exact quote that proves it.",
+            "show": [
+              "offers_delivery, office_lunch: boolean",
+              "business_email: only if published on the site",
+              "fact, fact_quote: exact words from the page"
+            ],
+            "data": "fact: opens at 7 a.m. for office lunch orders"
+          },
+          {
+            "at": "Verify fact",
+            "say": "This is the most important node. Code checks the quote really appears on the page. If not, the fact becomes empty and the email uses a general line, never an invented one.",
+            "show": [
+              "verified = q.length > 12 && page.includes(q)",
+              "fact: verified ? $json.fact : null"
+            ],
+            "data": "fact_verified true"
+          },
+          {
+            "at": "Score (ICP)",
+            "say": "The score is code: same input, same score, every time. Outside the zone means skip, no published email goes to the manual list, and under 60 is not a fit.",
+            "show": [
+              "Points from the ICP sheet",
+              "!inZone → skip · no email → manual",
+              "score < 60 → skip"
+            ],
+            "data": "fit 85 · route draft"
+          },
+          {
+            "at": "Route",
+            "say": "The switch sends each place down its route: draft, manual list for a contact form or a call, or marked not a fit.",
+            "show": [
+              "draft · manual · skip"
+            ],
+            "data": "Amala Corner → draft"
+          },
+          {
+            "at": "Draft email",
+            "say": "The AI fills only the business name and the verified fact into a fixed template. No branches, awards or compliments it can't prove.",
+            "show": [
+              "Fill only [business] and [fact]",
+              "No fact → one general line about their area",
+              "Never invent a detail"
+            ],
+            "data": "short body, one question"
+          },
+          {
+            "at": "Lint draft",
+            "say": "Code lints the draft: under 120 words, exactly one question, no spam words. Then it adds Tolu's signature and the STOP line itself, so the AI can't forget them.",
+            "show": [
+              "≤ 120 words · exactly one ?",
+              "No spam words · no unfilled placeholders",
+              "Appends: Reply STOP and we will never email you again."
+            ],
+            "data": "status drafted"
+          },
+          {
+            "at": "Save draft to Prospects",
+            "say": "The draft is saved as drafted, matched on place ID. This workflow sends nothing at all.",
+            "show": [
+              "Append or update · match on place_id",
+              "status = drafted"
+            ],
+            "data": "1 row drafted"
+          },
+          {
+            "at": "Done: drafts wait for approval",
+            "say": "At 7:30 every weekday, Tolu gets each draft on Telegram with the score, reasons, fact and source. Approve, Edit or Skip. Nothing sends without her.",
+            "show": [
+              "Morning approval: Telegram Send and Wait",
+              "Approve · Edit · Skip"
+            ]
+          },
+          {
+            "at": "Done: drafts wait for approval",
+            "say": "Then the 9 a.m. sender takes at most 20 approved emails, from the outreach subdomain, checks the suppression list before every send, and waits three to nine minutes between them. Test mode sends only to your own inbox.",
+            "show": [
+              "Max 20 a day · outreach subdomain",
+              "Suppression checked before every send",
+              "test_mode true → your test inbox"
+            ]
+          }
+        ],
+        "end": "Run it on Bodija alone: drafts land in Prospects with a STOP line, places without an email go to the manual list, and nothing reaches a real business."
+      }
+    },
+    {
+      "file": "5-2-approve.json",
+      "name": "HL · Prospects · morning approval",
+      "what": "Every weekday at 07:30, sends Tolu each drafted prospect on Telegram with name, score, reasons, fact and source, and the draft, and records Approve, Edit or Skip.",
+      "setup": [
+        "Select the \"Google Places key\" Header Auth credential in Fresh place details.",
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID in both sheet nodes.",
+        "Create a Telegram credential, select it in Ask Tolu and replace YOUR_TELEGRAM_CHAT_ID."
+      ],
+      "test": "With at least one drafted row, click Test workflow. Telegram shows the draft with a form; choose Approve and the row becomes approved with approved_at. Try Edit with new text and Skip on two other rows."
+    },
+    {
+      "file": "5-2-send.json",
+      "name": "HL · Prospects · send (max 20 a day)",
+      "what": "Weekdays at 09:00, sends up to 20 approved emails (and one follow-up after 5 working days with no reply), checking the suppression list before every single send and waiting 3 to 9 minutes between sends.",
+      "setup": [
+        "Create a Gmail credential for the outreach subdomain mailbox (not Harvest Lane's main address) and select it in Send from outreach inbox.",
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID in every sheet node.",
+        "In Config, replace YOUR_TEST_INBOX with your own second email address. Leave test_mode true until the client approves the rules."
+      ],
+      "test": "Approve two prospects, add one of their emails to Suppression, and run it. One email arrives in your test inbox; the suppressed prospect is marked suppressed and gets nothing. Run again: nothing more is sent until the follow-up is due."
+    },
+    {
+      "file": "5-2-replies.json",
+      "name": "HL · Prospects · sort replies",
+      "what": "Classifies every reply in the outreach inbox; STOP and bounces go straight to Suppression, interested replies alert Tolu with a booking link, and every outcome updates Prospects.",
+      "setup": [
+        "Select the outreach mailbox Gmail credential in Gmail Trigger.",
+        "Select your OpenAI credential and replace YOUR_MODEL.",
+        "Select your Google Sheets credential and replace YOUR_SHEET_ID in both sheet nodes.",
+        "Select your Telegram credential, replace YOUR_TELEGRAM_CHAT_ID and YOUR_BOOKING_LINK."
+      ],
+      "test": "From your test inbox, reply STOP to one test email: the address appears in Suppression and the prospect's reply_type is stop. Reply 'Yes, send the sample' to another: Tolu gets a Telegram alert with the thread link."
+    }
+  ]
+}

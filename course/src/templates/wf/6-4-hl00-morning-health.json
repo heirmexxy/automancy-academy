@@ -1,0 +1,280 @@
+{
+  "name": "HL·00 Morning health",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·00 Morning health (lesson 6.4, Card 3)\n07:30 every day: one short Telegram message Tolu reads in ten seconds.\nCode calculates every line; no AI.\n\nReads: orders, deliveries, refunds, events, workflow_schedule, settings (ai_cap_ngn), HubSpot (call-first contacts, going-cold deals), WhatsApp template quality.\n\n**Credentials:** Postgres (Supabase), HubSpot App Token (private app, read scopes), WhatsApp (Meta access token) for the HTTP node, Telegram.\n**Replace:** YOUR_WABA_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 360,
+        "width": 400
+      },
+      "id": "36f47f88-b752-4e92-9789-56e0350843b6",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a0f317ff-cab9-433c-b5c7-72854aae0cb6",
+      "name": "Every day 07:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT count(*) FROM orders WHERE created_at::date = current_date - 1) AS orders,\n  (SELECT count(*) FROM orders WHERE paid_at::date = current_date - 1) AS paid,\n  (SELECT count(*) FROM deliveries WHERE delivered_at::date = current_date - 1) AS delivered,\n  (SELECT count(*) FROM refunds WHERE status = 'awaiting_tolu') AS refunds_waiting,\n  (SELECT count(*) FROM workflow_schedule WHERE active) AS workflows,\n  (SELECT count(*) FROM workflow_schedule w WHERE w.active AND NOT EXISTS (\n      SELECT 1 FROM events e WHERE e.workflow = w.workflow AND e.event = w.success_event\n        AND e.at > now() - w.expected_every)) AS overdue,\n  (SELECT coalesce(sum((detail->>'cost_ngn')::numeric), 0) FROM events\n     WHERE event = 'ai_usage' AND at >= date_trunc('month', now())) AS ai_spend,\n  (SELECT value::numeric FROM settings WHERE key = 'ai_cap_ngn') AS ai_cap,\n  (SELECT count(*) FROM events WHERE workflow = 'HL·00' AND event IN ('error','outcome_alert','watchdog_alert')\n     AND at > now() - interval '24 hours') AS alerts_24h;",
+        "options": {}
+      },
+      "id": "f26fe776-6257-4fea-856d-3ef31a4a8290",
+      "name": "Yesterday's numbers",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [\n    { propertyName: 'harvest_score', operator: 'GTE', value: '65' },\n    { propertyName: 'notes_last_contacted', operator: 'NOT_HAS_PROPERTY' }\n  ]}],\n  properties: ['firstname', 'lastname', 'company', 'harvest_score'],\n  sorts: [{ propertyName: 'harvest_score', direction: 'DESCENDING' }],\n  limit: 10\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b362e7be-2d43-4a84-b6fc-9c1752f12e44",
+      "name": "HubSpot: call first",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  filterGroups: [{ filters: [\n    { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' },\n    { propertyName: 'notes_last_updated', operator: 'LT', value: String(Date.now() - 7 * 864e5) }\n  ]}],\n  properties: ['dealname', 'dealstage', 'notes_last_updated'],\n  limit: 10\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "cc1f590c-5416-4ac8-8bcc-d4a8a6044339",
+      "name": "HubSpot: going cold",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://graph.facebook.com/v21.0/YOUR_WABA_ID/message_templates",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "name,status,quality_score"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "26b05520-42ff-49ca-b17f-5143b5a23df8",
+      "name": "WhatsApp template quality",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const n = $('Yesterday\\'s numbers').first().json;\nconst call = ($('HubSpot: call first').first().json.results || []);\nconst cold = ($('HubSpot: going cold').first().json.results || []);\nconst tpl = ($('WhatsApp template quality').first().json.data || []);\nconst naira = x => '₦' + Math.round(Number(x || 0)).toLocaleString('en-NG');\nconst day = $now.setZone('Africa/Lagos').toFormat('ccc HH:mm');\nconst lines = [`☀️ Harvest Lane · health · ${day}`];\nlines.push(`Yesterday: ${n.orders} orders · ${n.paid} paid · ${n.delivered} delivered` + (Number(n.refunds_waiting) ? ` · ${n.refunds_waiting} refunds awaiting you` : ''));\nlines.push(Number(n.overdue) === 0 ? `All ${n.workflows} workflows ran on schedule ✓` : `⚠️ ${n.overdue} of ${n.workflows} workflows overdue (see watchdog alert)`);\nconst coldNames = cold.slice(0, 2).map(d => d.properties.dealname).join(', ');\nlines.push(`CRM: ${call.length} leads to call first · ${cold.length} deal${cold.length === 1 ? '' : 's'} going cold` + (coldNames ? ` (${coldNames})` : ''));\nconst weak = tpl.filter(t => t.status !== 'APPROVED' || ['MEDIUM', 'LOW', 'RED', 'YELLOW'].includes(String(t.quality_score?.score || '').toUpperCase()));\nlines.push(weak.length ? 'Watch: ' + weak.map(t => `WhatsApp template \"${t.name}\" ${t.status === 'APPROVED' ? 'quality: ' + String(t.quality_score?.score).toLowerCase() : 'status: ' + t.status} ⚠️`).join(' · ') : 'WhatsApp templates: all approved, quality fine ✓');\nlines.push(`AI spend this month: ${naira(n.ai_spend)} of ${naira(n.ai_cap)} cap` + (Number(n.ai_spend) > 0.8 * Number(n.ai_cap) ? ' ⚠️' : ''));\nconst needs = Number(n.refunds_waiting) > 0 || Number(n.overdue) > 0 || weak.length > 0 || Number(n.alerts_24h) > 0;\nlines.push(needs ? (Number(n.refunds_waiting) > 0 ? 'Needs you this morning: refunds waiting.' : 'Needs a look this morning: see the ⚠️ lines.') : 'Nothing needs you before 10 a.m.');\nreturn [{ json: { text: lines.join('\\n') } }];"
+      },
+      "id": "3541d3f1-4c9c-40b9-a7d0-6ed0ccadba09",
+      "name": "Write health message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7d843fa2-a8c7-4514-9425-115885f94c15",
+      "name": "Send to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·00', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ check: 'morning_health' }) ] }}"
+        }
+      },
+      "id": "32bba433-0bac-4cc8-9171-224de97449c6",
+      "name": "Health heartbeat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every day 07:30": {
+      "main": [
+        [
+          {
+            "node": "Yesterday's numbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Yesterday's numbers": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: call first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: call first": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: going cold",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: going cold": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp template quality",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp template quality": {
+      "main": [
+        [
+          {
+            "node": "Write health message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write health message": {
+      "main": [
+        [
+          {
+            "node": "Send to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Health heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

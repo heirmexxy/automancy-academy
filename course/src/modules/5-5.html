@@ -1,0 +1,347 @@
+<template data-mod="5.5" id="tpl-5-5">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.5</span>
+    <h1>The Social Inbox Agent</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Echo</span><span class="pill">Tools: n8n, Meta webhooks and Graph API, Instagram API, X API, Supabase or Sheets, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Every "how much?" under a post is a customer with money in hand. Most go unanswered for hours, and by then the customer has bought elsewhere. In this lesson you build an agent that reads comments, mentions and messages across platforms, answers simple questions straight away, turns buyers into leads with their permission, hides spam, and hands complaints to a person, all inside each platform's messaging rules.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Turn comments, mentions and messages from several platforms into one queue.</span></div>
+  <div><b>02</b><span>Match each message to the right action: public reply, private reply, DM, hide, or hand over.</span></div>
+  <div><b>03</b><span>Respect messaging windows and private-reply rules, and never promise what you can't send.</span></div>
+  <div><b>04</b><span>Capture leads with source and consent, and hand over gracefully.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Forty "how much?"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An Instagram post with many comments asking how much, all unanswered.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="20" width="125" height="155" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="180" y="30" width="105" height="50" rx="6" fill="var(--rose)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="8.5" fill="var(--ink)"><text x="182" y="96">how much? 😍</text><text x="182" y="110">price pls</text><text x="182" y="124">HM for basket?</text><text x="182" y="138">how much?</text><text x="182" y="152">deliver to Akobo?</text></g>
+        <text x="232" y="168" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="var(--glitch)">40 comments · 0 replies</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"The reel went viral. Forty people asked the price. By the time I answered that night, most had bought from someone else."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch typing 'DM sent!' publicly while a padlock blocks the message.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="165" y="55" width="130" height="36" rx="10" fill="var(--card)"/><text x="230" y="78" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"DM sent! 💌"</text>
+        <rect x="205" y="105" width="50" height="40" rx="6" fill="var(--glitch)"/><path d="M215 105 V95 Q230 80 245 95 V105" stroke="var(--glitch)" stroke-width="5" fill="none"/>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I told an angry customer 'DM sent!' in public. The DM was blocked because the window had closed. She is now angrier. In public."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Echo sorting messages into lanes: answer, lead, hide, Tolu.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" text-anchor="middle">
+          <rect x="165" y="28" width="62" height="28" rx="8" fill="var(--volt)"/><text x="196" y="47" fill="#fff">Answer</text>
+          <rect x="235" y="28" width="62" height="28" rx="8" fill="var(--sun)"/><text x="266" y="47" fill="#13233A">Lead</text>
+          <rect x="165" y="66" width="62" height="28" rx="8" fill="var(--line)"/><text x="196" y="85" fill="var(--ink)">Hide</text>
+          <rect x="235" y="66" width="62" height="28" rx="8" fill="var(--glitch)"/><text x="266" y="85" fill="#fff">Tolu</text>
+        </g>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Four lanes. Simple questions get answered in a minute, buyers become leads, spam disappears, and anything hard goes to a person."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A clock showing replies in under two minutes.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="235" cy="90" r="52" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M235 90 V55 M235 90 L255 98" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+        <text x="235" y="165" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)">replies in &lt; 2 min</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>A week later</b>Price questions are answered in under two minutes, day and night. Tolu only sees the conversations that need her.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>One queue, many doors, different rules</h3>
+    <div class="vocab">
+      <div><b>Comment</b>Public, under your post. Anyone can see your reply.</div>
+      <div><b>Mention</b>Public, on someone else's post or on X. You may not be able to reply where it was posted.</div>
+      <div><b>DM</b>A private conversation the customer started. Messaging windows apply.</div>
+      <div><b>Private reply</b>On Facebook and Instagram, a business can send <i>one</i> private message to someone who commented, within 7 days of the comment.</div>
+    </div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Platform</th><th>What the agent can do</th><th>Rules to respect</th></tr></thead>
+      <tbody>
+        <tr><td>Facebook Page and Messenger</td><td>Read and reply to comments, hide spam, private replies, reply in Messenger</td><td>Reply freely within 24 hours of the customer's last message. After that, only a person may reply, for up to 7 days, using Meta's human agent tag.</td></tr>
+        <tr><td>Instagram</td><td>Read, reply to and hide comments; private replies; reply to DMs (Business or Creator account)</td><td>The same 24-hour window for DMs. Check Meta's current Instagram rules for replies after 24 hours.</td></tr>
+        <tr><td>X</td><td>Read mentions, reply, DMs (X API, pay per use)</td><td>Every read and post is charged. Poll on a schedule with a budget.</td></tr>
+        <tr><td>LinkedIn Page</td><td>Read and reply to page comments with the Community Management API</td><td>Needs LinkedIn's approval. Until then, the agent drafts and a person posts.</td></tr>
+        <tr><td>TikTok</td><td>Mostly assisted: the agent drafts, a person replies in the app</td><td>Comment and messaging APIs are limited and need approval.</td></tr>
+        <tr><td>WhatsApp</td><td>Reply within the 24-hour customer service window (5.1)</td><td>Outside it, only approved templates.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>From intent to action</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Intent</th><th>Best action</th><th>Who sends</th></tr></thead>
+      <tbody>
+        <tr><td>Simple question (price, hours, delivery area)</td><td>Short public reply, plus a private reply with details and the order link</td><td>Agent, automatically</td></tr>
+        <tr><td>Buying signal ("I want 2 baskets", "weekly supply?")</td><td>Private reply or DM; save as a lead</td><td>Agent; big accounts go to Tolu</td></tr>
+        <tr><td>Complaint or refund</td><td>A short public acknowledgement, then a person in private</td><td>Tolu, with the agent's summary</td></tr>
+        <tr><td>Praise</td><td>A warm thank-you</td><td>Agent</td></tr>
+        <tr><td>Spam or scam links</td><td>Hide; never reply</td><td>Agent</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Prices and opening hours can be public. Addresses, phone numbers, order numbers and refunds never are. When in doubt, move it to private, or to a person.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Inbox lab: triage eight messages</h3>
+    <p>It's 2 p.m. on Wednesday. Choose an action for each message and decide whether it's a lead, then check your choices against the rules.</p>
+    <script type="application/json" id="ib-5-5">{"items":[
+      {"platform":"Instagram","kind":"comment","age":"2 hours ago","text":"How much for a basket of tomatoes? 😍","ok":["private"],"lead":true,"why":"A buyer within 7 days of commenting: send one private reply with the price and order link (a short public “Sent you the price in DM!” is fine once it's actually sent)."},
+      {"platform":"Facebook","kind":"comment","age":"9 days ago","text":"Do you deliver to Akobo? I want weekly supply for my restaurant.","ok":["public"],"lead":true,"no":{"private":"Private replies are only allowed within 7 days of the comment."},"why":"Reply publicly and invite them to message you. A restaurant asking about weekly supply is a strong lead."},
+      {"platform":"Instagram","kind":"DM","age":"customer's last message 30 hours ago","text":"Still waiting for my refund. This is the third time I'm asking.","ok":["human"],"lead":false,"no":{"dm":"The 24-hour window has closed, so the agent can't reply automatically."},"why":"A refund complaint outside the window: Tolu handles it, with the agent's summary of the history."},
+      {"platform":"Facebook","kind":"comment","age":"20 minutes ago","text":"Get 10,000 followers cheap!!! Click bit.ly/xx-boost","ok":["hide"],"lead":false,"no":{"public":"Replying boosts the spam."},"why":"Hide it. Never reply to, or click, spam links."},
+      {"platform":"X","kind":"mention","age":"1 hour ago","text":"@harvestlane your delivery guy was so rude this morning","ok":["human"],"lead":false,"why":"A public complaint about a person: Tolu replies, acknowledges, and moves the details to private."},
+      {"platform":"LinkedIn","kind":"page comment","age":"5 hours ago","text":"We run three hotels in Ibadan. Who do I speak to about produce supply?","ok":["human","public"],"lead":true,"why":"A high-value lead. The agent drafts a reply and saves the lead; Tolu replies personally (and LinkedIn's API needs approval anyway)."},
+      {"platform":"TikTok","kind":"comment","age":"3 hours ago","text":"Recipe for that pepper sauce pls 🙏","ok":["public"],"lead":false,"why":"A friendly public reply with the recipe link. On TikTok the agent drafts and a person posts it in the app."},
+      {"platform":"Instagram","kind":"DM","age":"customer's last message 1 hour ago","text":"Can I order 2 baskets of tomatoes for tomorrow morning?","ok":["dm"],"lead":true,"why":"Inside the 24-hour window: the agent replies in the thread with the price, delivery slot and payment link, and records the order lead."}]}</script>
+    <div class="inbox" data-inbox="ib-5-5">
+      <div data-o="queue" style="display:grid;gap:10px"></div>
+      <div><button type="button" class="btn" data-ibcheck>Check my choices</button></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Leads, with consent</h3>
+    <p>A lead is a person who showed buying interest, plus what you're allowed to do next. Save only what you need:</p>
+<pre class="codebox">leads: id, created_at, platform, handle_or_thread_id, source_link,
+       wants ("weekly supply, restaurant, Akobo"), size_estimate,
+       consent_followup (true only if they said yes),
+       status (new → contacted → quoted → won / lost), owner</pre>
+    <div class="vocab">
+      <div><b>Ask, don't assume</b>"Can we message you next week with the supply price list?" A yes is consent to follow up; record it.</div>
+      <div><b>No silent harvesting</b>Don't scrape commenters' profiles for phone numbers or emails. Ask for contact details in the conversation.</div>
+      <div><b>One person, one lead</b>The same customer may comment, DM and WhatsApp. Match them (5.7) instead of creating three leads.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Hand-over and honesty</h3>
+    <div class="vocab">
+      <div><b>Say it's automated</b>Where the law or platform requires it, and as good practice everywhere: "I'm Harvest Lane's assistant. Tolu sees everything and will step in if needed."</div>
+      <div><b>Hand over when</b>Complaints, refunds, anger, anything legal or safety-related, big accounts, two failed answers, or the customer asks for a person.</div>
+      <div><b>A useful summary</b>Who, which platform, what they want, what's been said, and a suggested reply, so Tolu answers in one go (B4).</div>
+      <div><b>Response targets</b>Questions: under 5 minutes. Complaints: a person within an hour during working hours. An alarm fires if a message waits longer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/policy" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Meta: Messenger Platform policy</b><small>The 24-hour window, the human agent tag and private replies, from the source.</small></span></a>
+    <a class="wcard" href="https://developers.facebook.com/docs/instagram-platform/comment-moderation" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Instagram: comment moderation</b><small>Reading, replying to and hiding comments through the API.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=instagram+comment+DM+auto+reply+n8n" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: Instagram comment and DM automation</b><small>Watch one build; check that it respects the messaging window.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's social inbox</h2></div>
+  <div class="prose"><p><b>The goal.</b> Comments and messages from Facebook and Instagram arrive in real time; X mentions every 15 minutes; LinkedIn and TikTok through a quick "forward to inbox" form. The agent answers simple questions, sends private replies to buyers, saves leads with consent, hides spam and hands everything else to Tolu, with an alarm if anything waits too long.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Receive</h4>
+      <ul>
+        <li><b>Meta webhooks:</b> one n8n Webhook for Page feed comments, Messenger, and Instagram comments and messages. Answer Meta's verification request once, then check every event's signature (as with Paystack in 2.5).</li>
+        <li><b>X:</b> a Schedule Trigger every 15 minutes searches mentions, with a monthly read budget.</li>
+        <li><b>LinkedIn and TikTok:</b> an n8n Form ("forward a comment") Tolu's team can fill from their phones until API access is approved.</li>
+      </ul>
+      <p>Every event becomes one row in <code>inbox</code>: <code>platform, kind, item_id, thread_id, author_handle, text, received_at, last_customer_msg_at, status</code>. Skip duplicates by <code>item_id</code>.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Classify, then work out what's allowed</h4>
+      <p>The 5.3 labeller adds <code>intent</code> and <code>urgent</code>. Then a Code node decides which actions the rules allow, before the agent writes a word:</p>
+<pre class="codebox">const h = (Date.now() - new Date($json.received_at)) / 36e5;
+const sinceCustomer = (Date.now() - new Date($json.last_customer_msg_at)) / 36e5;
+const meta = ['facebook','instagram'].includes($json.platform);
+return { ...$json, allowed: {
+  public:  $json.kind !== 'dm',
+  private: meta &amp;&amp; $json.kind === 'comment' &amp;&amp; h &lt;= 24*7 &amp;&amp; !$json.private_sent,
+  dm:      $json.kind === 'dm' &amp;&amp; sinceCustomer &lt;= 24,
+  auto:    ['question','praise','lead'].includes($json.intent) &amp;&amp; !$json.urgent
+}};</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Answer</h4>
+      <p>The Sage Desk agent (B4) with tools <code>get_price</code>, <code>check_delivery_zone</code>, <code>save_lead</code> and <code>handover_to_tolu</code>, and a system message that says: short replies, public replies never contain personal details, only use actions listed in <code>allowed</code>. Its output is structured: <code>{ action, public_text, private_text, lead }</code>.</p>
+      <p>A Code node rejects any action not in <code>allowed</code>. If <code>auto</code> is true, send; otherwise Tolu approves on Telegram first.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Send, through each platform</h4>
+      <ul>
+        <li><b>Public reply:</b> Graph API reply to the comment (Facebook or Instagram); X node reply.</li>
+        <li><b>Private reply:</b> Meta's private reply to the comment, once; mark <code>private_sent</code>.</li>
+        <li><b>DM:</b> send in the thread while the window is open.</li>
+        <li><b>Hide:</b> hide the comment through the API.</li>
+        <li><b>Hand over:</b> Telegram summary to Tolu, with a draft reply and the link.</li>
+      </ul>
+    </div></div>
+    <div class="step"><div>
+      <h4>Leads and response times</h4>
+      <p><code>save_lead</code> writes to the leads table with source link and consent flag, and alerts Tolu for big accounts. A watchdog every 10 minutes finds rows still <code>waiting</code> beyond their target (5 minutes for questions, 60 for complaints) and alerts. Monday's report (5.3) now includes leads by platform and median response time.</p>
+      <div class="stats">
+        <div class="stat"><b>&lt; 2 min</b><span>to answer a price question</span></div>
+        <div class="stat"><b>0</b><span>replies outside the rules</span></div>
+        <div class="stat"><b>100%</b><span>of leads saved with their source</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's reminder:</b> the agent never decides what's allowed. Code computes the allowed actions from timestamps and platform rules; the agent only chooses among them.</p></div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>One queue for every platform, with no duplicates.</li><li>Allowed actions are computed in code from the rules.</li><li>Simple, safe messages are answered automatically; the rest are approved.</li><li>Leads are saved with their source and consent.</li><li>Response-time alarms stop messages being forgotten.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Promising a DM you can't send.</li><li>Personal details in public replies.</li><li>Arguing with angry customers by bot.</li><li>Replying to spam.</li><li>Three leads for one person.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I'm a great listener. I reply to everything, everywhere, instantly.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The bot replied "DM sent! 💌" under a complaint. The DM failed: the window had closed.</td></tr>
+        <tr><td>B</td><td>A public reply said: "Hi Mrs Adeyemi, your order HL-0412 to 14 Bodija Road is on its way."</td></tr>
+        <tr><td>C</td><td>The bot and an angry customer exchanged eleven messages. Screenshots are circulating.</td></tr>
+        <tr><td>D</td><td>The same restaurant appears as three leads: one from Instagram, one from Messenger, one from WhatsApp.</td></tr>
+        <tr><td>E</td><td>The bot thanked a spam account for its "great offer" and the link got more clicks.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the public reply promised an action that wasn't allowed. Compute allowed actions first; only say "sent" after the send succeeds; complaints go to a person.</li>
+        <li><b>B:</b> personal details in public. Public replies never include names with addresses, order numbers or phones. Move to private.</li>
+        <li><b>C:</b> no hand-over rule for anger. Hand over on complaint intent or after one negative exchange, with a summary.</li>
+        <li><b>D:</b> no identity matching. Match by phone, email or handle and merge into one person (5.7).</li>
+        <li><b>E:</b> spam classified as praise. Add spam examples and link checks; hide spam, never reply.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Reply rules for ten real messages</h4>
+    <ul><li>Collect ten real comments or messages from a business page (remove names).</li><li>For each, write the intent, the allowed actions under the rules, the best action and the reply.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every reply is allowed on its platform, and no public reply contains personal details.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A working inbox for Instagram and Facebook</h4>
+    <ul><li>Build receive → classify → allowed actions → answer → send, with Telegram approval and hand-over.</li><li>Test with planted comments and DMs, including an expired window and a spam link.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Price questions are answered in under 5 minutes, the expired-window DM goes to a person, and spam is hidden.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Two weeks on a real page</h4>
+    <ul><li>Run the inbox agent for a real business for two weeks.</li><li>Report median response time, leads captured by platform, and hand-overs.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Response time fell compared with the two weeks before, with no complaints about the bot.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Someone commented on your Instagram post 9 days ago asking for prices. What can you do?</p><div class="opts">
+      <button type="button" data-opt="a">Send them a private reply</button><button type="button" data-opt="b">Send them five DMs</button><button type="button" data-opt="c">Reply publicly and invite them to message you</button><button type="button" data-opt="d">Find their number and WhatsApp them</button></div>
+      <p class="fb" hidden data-why="Private replies are only allowed within 7 days of the comment, and only once."></p></div>
+    <div class="q" data-ans="b"><p>2. Who decides which actions are allowed for a message?</p><div class="opts">
+      <button type="button" data-opt="a">The AI agent</button><button type="button" data-opt="b">Code, from timestamps and platform rules</button><button type="button" data-opt="c">The customer</button><button type="button" data-opt="d">Nobody</button></div>
+      <p class="fb" hidden data-why="Rules are enforced in code; the agent chooses only among allowed actions."></p></div>
+    <div class="q" data-ans="d"><p>3. Which can safely go in a public reply?</p><div class="opts">
+      <button type="button" data-opt="a">The customer's address</button><button type="button" data-opt="b">Their order number and phone</button><button type="button" data-opt="c">Their refund amount</button><button type="button" data-opt="d">The price of a basket and the opening hours</button></div>
+      <p class="fb" hidden data-why="Public: general information. Private: anything about a specific person or order."></p></div>
+    <div class="q" data-ans="a"><p>4. An angry customer complains on X. What should the agent do?</p><div class="opts">
+      <button type="button" data-opt="a">Hand over to Tolu with a summary and a suggested reply</button><button type="button" data-opt="b">Argue until they calm down</button><button type="button" data-opt="c">Delete the post</button><button type="button" data-opt="d">Ignore it</button></div>
+      <p class="fb" hidden data-why="Complaints need a person. The agent's job is a fast, useful summary."></p></div>
+    <div class="q" data-ans="c"><p>5. What makes a saved lead useful and lawful?</p><div class="opts">
+      <button type="button" data-opt="a">As much personal data as you can collect</button><button type="button" data-opt="b">A phone number scraped from their profile</button><button type="button" data-opt="c">What they want, where they came from, and whether they agreed to a follow-up</button><button type="button" data-opt="d">Their date of birth</button></div>
+      <p class="fb" hidden data-why="Minimal data, clear source, recorded consent."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-5">AUTOMANCY LOG · Lesson 5.5 · The Social Inbox Agent
+Date:
+Platforms connected (API / assisted):
+Allowed-action rules implemented in code:
+Test results: price question · expired window · spam · complaint:
+Median response time · leads captured · hand-overs:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Comments, mentions and DMs each have their own rules; bring them into one queue.</li>
+      <li>Compute the allowed actions in code before the agent writes anything.</li>
+      <li>Answer simple questions instantly; private details stay private.</li>
+      <li>Save leads with source and consent, one person at a time.</li>
+      <li>Complaints go to a person, fast, with a good summary.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/policy" target="_blank" rel="noopener">Meta Messenger Platform policy</a></li>
+    <li><span class="kind">Text</span><a href="https://developers.facebook.com/docs/instagram-platform/overview/" target="_blank" rel="noopener">Instagram Platform overview</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.twitter/" target="_blank" rel="noopener">n8n Docs: X (Twitter) node</a></li>
+    <li><span class="kind">Text</span><a href="https://www.make.com/en/integrations/instagram-business" target="_blank" rel="noopener">Make: Instagram for Business (watch comments and messages)</a></li>
+    <li><span class="kind">Course</span><a href="https://www.facebook.com/business/learn" target="_blank" rel="noopener">Meta Blueprint: free courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=instagram+comment+DM+auto+reply+n8n" target="_blank" rel="noopener">YouTube: Instagram comment and DM automation</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run "rush hour": project a fake post and have the room flood it with comments and DMs from their phones for five minutes (prices, complaints, spam, a big buyer). Teams triage on paper using the Card 2 table and the window rules. Then replay the same flood through the agent and compare response times and mistakes.</p>
+  </div>
+</section>
+
+</article>
+</template>

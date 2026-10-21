@@ -1,0 +1,540 @@
+{
+  "name": "HL·04 Dispatch",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·04 Dispatch (lesson 6.4)\nCalled by HL·03 with {order_id}. Nearest free rider (zone table) → Telegram job with Accept, then Delivered → customer gets approved WhatsApp templates (the 24-hour window may have closed).\nOwns: deliveries, riders.free. Never writes orders (one owner per table); \"dispatched\"/\"delivered\" are events + deliveries rows.\n\nTables: riders(rider_id, name, telegram_chat_id, zone, free bool, last_job_at), deliveries(order_id pk, rider_id, assigned_at, accepted_at, delivered_at).\nTemplates (approved in Meta): out_for_delivery and delivered, each with one body variable = order_id.\n\n**Credentials:** Postgres, Telegram (rider bot), WhatsApp (HTTP). **Replace:** YOUR_WHATSAPP_PHONE_NUMBER_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 420,
+        "width": 420
+      },
+      "id": "41dca868-6aac-44d1-9573-450cfad54aa7",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -324
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "04145955-59f4-4374-9b5c-16b5bae64ed5",
+      "name": "From HL·03",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT o.order_id, o.items, o.total_ngn, c.wa_phone, c.name, c.zone\nFROM orders o JOIN customers c ON c.customer_id = o.customer_id\nWHERE o.order_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.order_id ] }}"
+        }
+      },
+      "id": "706cb547-adef-4cc5-bf48-42fe88f4bb96",
+      "name": "Get order and customer",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH r AS (\n  SELECT rider_id FROM riders\n  WHERE free\n  ORDER BY (zone = $2) DESC, last_job_at NULLS FIRST\n  LIMIT 1 FOR UPDATE SKIP LOCKED\n), upd AS (\n  UPDATE riders SET free = false, last_job_at = now() FROM r\n  WHERE riders.rider_id = r.rider_id\n  RETURNING riders.rider_id, riders.name, riders.telegram_chat_id\n), d AS (\n  INSERT INTO deliveries (order_id, rider_id, assigned_at)\n  SELECT $1, rider_id, now() FROM upd\n  ON CONFLICT (order_id) DO UPDATE SET rider_id = EXCLUDED.rider_id, assigned_at = now()\n)\nSELECT * FROM upd;",
+        "options": {
+          "queryReplacement": "={{ [ $json.order_id, $json.zone ] }}"
+        }
+      },
+      "id": "5f96a8bf-4f1f-4d29-b17e-c59a9d9452b8",
+      "name": "Assign nearest free rider",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6d290437-4d32-4617-a046-ac41c7fb4216",
+              "leftValue": "={{ $json.rider_id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "0a2c9f3f-e16c-4fba-b3dd-4decc89607bb",
+      "name": "Rider found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🛵 No free rider for {{ $('Get order and customer').item.json.order_id }} ({{ $('Get order and customer').item.json.zone }}). Please assign one by hand.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "22e2f9a8-274d-445a-8e8c-e1c448858b34",
+      "name": "No rider: tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $json.telegram_chat_id }}",
+        "message": "=🛵 Job {{ $('Get order and customer').item.json.order_id }} · {{ $('Get order and customer').item.json.zone }}\n{{ $('Get order and customer').item.json.items.map(l => l.quantity + ' × ' + l.name).join('\\n') }}\nCustomer: {{ $('Get order and customer').item.json.name }} {{ $('Get order and customer').item.json.wa_phone }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "single",
+            "approveLabel": "Accept"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 15,
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "id": "6d430c5c-0910-4bcc-95d9-da9e380c7f8b",
+      "name": "Job to rider: Accept",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -90
+      ],
+      "webhookId": "b5232070-beac-4869-a19f-4b168601436e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ec1ac3b5-5247-4c0c-ba3d-a3ef2af4218b",
+              "leftValue": "={{ $json.data?.approved === true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "6a0ba7e2-4b57-4c74-8d3c-19e95df64564",
+      "name": "Accepted?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH d AS (UPDATE deliveries SET accepted_at = now() WHERE order_id = $1 RETURNING order_id)\nINSERT INTO events (workflow, order_id, event, detail)\nSELECT 'HL·04', order_id, 'dispatched', jsonb_build_object('rider', $2) FROM d;",
+        "options": {
+          "queryReplacement": "={{ [ $('Get order and customer').item.json.order_id, $('Assign nearest free rider').item.json.name ] }}"
+        }
+      },
+      "id": "e70a236f-17ca-48fd-81f2-4c514fed6510",
+      "name": "Log dispatched",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/YOUR_WHATSAPP_PHONE_NUMBER_ID/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $('Get order and customer').item.json.wa_phone.replace('+', ''), type: 'template', template: { name: 'out_for_delivery', language: { code: 'en' }, components: [{ type: 'body', parameters: [{ type: 'text', text: $('Get order and customer').item.json.order_id }] }] } }) }}",
+        "options": {}
+      },
+      "id": "24ee45ae-09be-44f8-b216-f4e07d93f1de",
+      "name": "WhatsApp: send template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        -180
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Assign nearest free rider').item.json.telegram_chat_id }}",
+        "message": "=Tap when {{ $('Get order and customer').item.json.order_id }} is in the customer's hands.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "single",
+            "approveLabel": "Delivered"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 6,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "0a117321-9baa-484f-a4a9-bc6d519d561e",
+      "name": "Rider: Delivered",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -180
+      ],
+      "webhookId": "043e2ec5-e182-4d2c-8ad2-ac0fc1c16d9a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "390330c9-6c6a-4d30-b9e1-6930da314331",
+              "leftValue": "={{ $json.data?.approved === true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "cf098162-0b75-4c41-8243-24373018bdb0",
+      "name": "Delivered?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH d AS (UPDATE deliveries SET delivered_at = now() WHERE order_id = $1 RETURNING order_id, rider_id),\nr AS (UPDATE riders SET free = true FROM d WHERE riders.rider_id = d.rider_id)\nINSERT INTO events (workflow, order_id, event, detail)\nSELECT 'HL·04', order_id, 'delivered', '{}'::jsonb FROM d;",
+        "options": {
+          "queryReplacement": "={{ [ $('Get order and customer').item.json.order_id ] }}"
+        }
+      },
+      "id": "dee9b527-fd12-4288-95a7-368f22c68cfa",
+      "name": "Log delivered, free rider",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        -270
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/YOUR_WHATSAPP_PHONE_NUMBER_ID/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $('Get order and customer').item.json.wa_phone.replace('+', ''), type: 'template', template: { name: 'delivered', language: { code: 'en' }, components: [{ type: 'body', parameters: [{ type: 'text', text: $('Get order and customer').item.json.order_id }] }] } }) }}",
+        "options": {}
+      },
+      "id": "13ddb484-18a2-4881-990e-15394c6b2b34",
+      "name": "WhatsApp: delivered template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -270
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⏳ {{ $('Get order and customer').item.json.order_id }}: rider {{ $('Assign nearest free rider').item.json.name }} hasn't tapped Delivered after 6 hours. Please check.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5ec9b358-1704-466b-b8a9-0e278d83690d",
+      "name": "Not confirmed: tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2200,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE riders SET free = true WHERE rider_id = $1 RETURNING rider_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Assign nearest free rider').item.json.rider_id ] }}"
+        }
+      },
+      "id": "2fd492ab-8439-45fb-8f55-550a1c0d925c",
+      "name": "Not accepted: free rider",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🛵 {{ $('Assign nearest free rider').item.json.name }} didn't accept {{ $('Get order and customer').item.json.order_id }} within 15 minutes. Please assign it by hand.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0d185bf3-a236-4ea6-8b3c-cec82e11adee",
+      "name": "Not accepted: tell Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        90
+      ]
+    }
+  ],
+  "connections": {
+    "From HL·03": {
+      "main": [
+        [
+          {
+            "node": "Get order and customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get order and customer": {
+      "main": [
+        [
+          {
+            "node": "Assign nearest free rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign nearest free rider": {
+      "main": [
+        [
+          {
+            "node": "Rider found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rider found?": {
+      "main": [
+        [
+          {
+            "node": "Job to rider: Accept",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No rider: tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job to rider: Accept": {
+      "main": [
+        [
+          {
+            "node": "Accepted?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accepted?": {
+      "main": [
+        [
+          {
+            "node": "Log dispatched",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not accepted: free rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not accepted: free rider": {
+      "main": [
+        [
+          {
+            "node": "Not accepted: tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log dispatched": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp: send template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp: send template": {
+      "main": [
+        [
+          {
+            "node": "Rider: Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rider: Delivered": {
+      "main": [
+        [
+          {
+            "node": "Delivered?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delivered?": {
+      "main": [
+        [
+          {
+            "node": "Log delivered, free rider",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not confirmed: tell Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log delivered, free rider": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp: delivered template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

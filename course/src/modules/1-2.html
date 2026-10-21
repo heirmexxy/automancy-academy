@@ -1,0 +1,349 @@
+<template data-mod="1.2" id="tpl-1-2">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.2</span>
+    <h1>Multi-Step Zaps &amp; Formatter</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt</span><span class="pill">Needs: multi-step Zaps (paid plan or trial)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Real orders arrive messy: phone numbers in five styles, dates in three, prices nowhere. Today you build one Zap that cleans the order, looks up the price, adds the delivery fee, calculates the total, saves it and tells Tolu, in nine steps.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Chain several steps, using any earlier step's data in later ones.</span></div>
+  <div><b>02</b><span>Clean phone numbers, dates, text and money with Formatter.</span></div>
+  <div><b>03</b><span>Look values up in a table or a sheet, with a safe fallback.</span></div>
+  <div><b>04</b><span>Keep machine values (35500) separate from display values (₦35,500).</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Five ways to write one phone number</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Five versions of the same phone number written differently.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="12" fill="var(--ink)">
+          <rect x="150" y="14" width="160" height="28" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="160" y="33">08031234567</text>
+          <rect x="150" y="48" width="160" height="28" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="160" y="67">+234 803 123 4567</text>
+          <rect x="150" y="82" width="160" height="28" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="160" y="101">2348031234567</text>
+          <rect x="150" y="116" width="160" height="28" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="160" y="135">0803-123-4567</text>
+          <rect x="150" y="150" width="160" height="28" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="160" y="169">803 123 4567</text>
+        </g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The form</b>Customers type their numbers however they like. The riders' dialler only works with one of these.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two Zaps chained through a sheet, with a slow clock between them.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="20" y="70" width="80" height="50" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/><text x="60" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">Zap 1</text>
+        <rect x="120" y="70" width="80" height="50" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/><text x="160" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">sheet</text>
+        <rect x="220" y="70" width="80" height="50" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/><text x="260" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">Zap 2</text>
+        <circle cx="210" cy="40" r="18" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/><path d="M210 40 V28 M210 40 L218 44" stroke="var(--glitch)" stroke-width="3" stroke-linecap="round"/>
+        <text x="160" y="150" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--muted)">2 Zaps · 2 tasks · up to 15 min wait</text>
+      </svg>
+      <div class="cap"><b>Last module</b>Two Zaps chained through a sheet worked, but slowly, and the total still had to be done by hand.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pouring tangled text into a funnel.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M170 40 L290 40 L250 110 L250 160 L210 160 L210 110 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)"><text x="184" y="30">"06/10"</text><text x="236" y="22">"₦9,000"</text><text x="226" y="60">"mrs ADE"</text></g>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Garbage in, garbage out. I'll keep the garbage coming."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt holding a tall stack of connected step cards.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="190" y="14" width="110" height="24" rx="6" fill="var(--glitch)" opacity=".85"/><rect x="190" y="46" width="110" height="24" rx="6" fill="var(--sun)"/><rect x="190" y="78" width="110" height="24" rx="6" fill="var(--sun)"/><rect x="190" y="110" width="110" height="24" rx="6" fill="var(--sun)"/><rect x="190" y="142" width="110" height="24" rx="6" fill="var(--volt)"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A"><text x="198" y="30" fill="#fff">1 Form</text><text x="198" y="62">2 Format phone</text><text x="198" y="94">3 Format date</text><text x="198" y="126">4 Look up price</text><text x="198" y="158">… Save + tell Tolu</text></g>
+        <use href="#bolt" x="20" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Bolt</b>"One Zap. Clean it, price it, total it, save it, announce it."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Multi-step Zaps: data flows downhill</h3>
+    <p>A multi-step Zap has one trigger and any number of actions. Each step can use the output of <b>any step above it</b>, not just the one directly above. Steps are numbered, and pills show which step they came from (for example "2. Output").</p>
+    <div class="analogy"><b>Think of a production line.</b> The order enters at the top. Each station does one job and passes the tray down. Any station can look at what every earlier station added to the tray.</div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><div class="bubble"><b>Bolt:</b> Multi-step Zaps need a paid plan. New accounts usually get a free trial of paid features; check your account. If you're on the free plan, read along and use the chaining trick from 1.1, or come back when you're ready to upgrade.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Formatter: Zapier's cleaning station</h3>
+    <p><b>Formatter by Zapier</b> is a built-in app. Pick an event (Text, Numbers, Date/Time or Utilities), then a <b>transform</b>. Formatter steps don't use tasks.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Family</th><th>Useful transforms</th><th>Harvest Lane example</th></tr></thead>
+      <tbody>
+        <tr><td><b>Text</b></td><td>Capitalize, Trim Whitespace, Replace, Split Text, Extract Pattern, Default Value</td><td>"mrs ADEBAYO " → "Mrs Adebayo"</td></tr>
+        <tr><td><b>Numbers</b></td><td>Format Phone Number, Format Currency, Format Number, Spreadsheet-Style Formula</td><td>0803… → +234803…; qty × price + fee</td></tr>
+        <tr><td><b>Date/Time</b></td><td>Format (with time zones), Add/Subtract Time</td><td>"6/10/2026" → "2026-10-06"; delivery = order + 1 day</td></tr>
+        <tr><td><b>Utilities</b></td><td>Lookup Table, Line Itemizer, Pick from List</td><td>Area → delivery fee</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Dates and time zones, again</h3>
+    <p>Most data from apps carries a time zone, and Zapier converts using your account's time zone setting unless you say otherwise. Set your Zapier account time zone to <b>Africa/Lagos</b> first; then, in a Date/Time Format step, set the output format to <code>YYYY-MM-DD</code> for dates you'll store (Module 0.3).</p>
+    <div class="analogy"><b>A quick sanity test:</b> submit a test form at a time you note down, then check the timestamp Zapier shows. If it's an hour off, the time zone setting is the culprit.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Lookups: a table inside the Zap, or a sheet outside it</h3>
+    <div class="why">
+      <div class="box"><h5>Formatter Lookup Table</h5><ul><li>A small key → value list typed into the step.</li><li>Always set a <b>fallback</b> for unknown keys.</li><li>Best for short lists that rarely change: area → delivery fee.</li></ul></div>
+      <div class="box"><h5>Google Sheets · Lookup Spreadsheet Row</h5><ul><li>Searches a column in your sheet and returns the whole row.</li><li>Best for data that changes: product prices, stock.</li><li>Tolu updates the sheet; the Zap always uses today's price.</li></ul></div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Store for machines, format for humans</h3>
+    <p>Remember from 0.3: money is stored as a plain number. So calculate and save <code>35500</code>, and only create <code>₦35,500.00</code> with Format Currency for the email a person reads. Store the formatted version and the sheet can't add it up.</p>
+    <div class="vocab">
+      <div><b>Delay by Zapier</b>Wait a set time, or until a date, before continuing. E.g. a thank-you message the day after delivery.</div>
+      <div><b>Digest by Zapier</b>Collect items over time and release them together, e.g. one 6 p.m. summary instead of 40 alerts. Check it's included in your plan.</div>
+      <div><b>Name your steps</b>Rename "Formatter" to "Clean phone". Future-you will read this Zap at midnight.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://learn.zapier.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Academy · AI Builder Path: "Building Intermediate Zaps"</b><small>Look for: utility steps (Formatter, Search, Paths) and how data passes between steps.</small></span></a>
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/8496288404877-Modify-number-formats-in-Zaps" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: modify number formats (phone, currency, numbers)</b><small>Read: Format Phone Number and Format Currency, which you'll use today.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Zapier+Formatter+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A recent "Zapier Formatter tutorial"</b><small>Look for: the Date/Time Format transform and the Lookup Table fallback.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 35 MIN</span><h2>Solved problem: the one-Zap order line</h2></div>
+  <div class="prose"><p><b>The goal.</b> A customer submits the order form. One Zap cleans the data, looks up the product's price in the Products sheet, adds the delivery fee for their area, calculates the total, saves a clean row to Orders, and emails Tolu a readable summary. Use the form from 1.1 Bronze, with an <b>Area</b> dropdown added.</p></div>
+
+  <figure class="fig"><svg viewBox="0 0 440 460" style="min-width:0" role="img" aria-label="The nine-step Zap as a vertical flow: form response; clean phone; clean date; look up product in sheet; delivery fee lookup table; total formula; format currency; create Orders row; send email to Tolu. Steps 4, 8 and 9 use tasks.">
+    <g font-family="Atkinson Hyperlegible,sans-serif" font-size="13">
+      <g><rect x="0" y="8" width="340" height="40" rx="10" fill="var(--glitch)" opacity=".9"/><text x="12" y="33" fill="#fff" font-weight="700">1 · Google Forms · New Form Response</text></g>
+      <g><rect x="0" y="58" width="340" height="40" rx="10" fill="var(--sun)"/><text x="12" y="83" fill="#13233A">2 · Formatter · Numbers · Format Phone Number</text></g>
+      <g><rect x="0" y="108" width="340" height="40" rx="10" fill="var(--sun)"/><text x="12" y="133" fill="#13233A">3 · Formatter · Date/Time · Format</text></g>
+      <g><rect x="0" y="158" width="340" height="40" rx="10" fill="var(--volt)"/><text x="12" y="183" fill="#13233A">4 · Sheets · Lookup Spreadsheet Row (Products)</text></g>
+      <g><rect x="0" y="208" width="340" height="40" rx="10" fill="var(--sun)"/><text x="12" y="233" fill="#13233A">5 · Formatter · Utilities · Lookup Table (fee)</text></g>
+      <g><rect x="0" y="258" width="340" height="40" rx="10" fill="var(--sun)"/><text x="12" y="283" fill="#13233A">6 · Formatter · Numbers · Spreadsheet Formula</text></g>
+      <g><rect x="0" y="308" width="340" height="40" rx="10" fill="var(--sun)"/><text x="12" y="333" fill="#13233A">7 · Formatter · Numbers · Format Currency</text></g>
+      <g><rect x="0" y="358" width="340" height="40" rx="10" fill="var(--volt)"/><text x="12" y="383" fill="#13233A">8 · Sheets · Create Spreadsheet Row (Orders)</text></g>
+      <g><rect x="0" y="408" width="340" height="40" rx="10" fill="var(--volt)"/><text x="12" y="433" fill="#13233A">9 · Gmail · Send Email to Tolu</text></g>
+    </g>
+    <g font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">
+      <text x="350" y="83">no task</text><text x="350" y="133">no task</text><text x="350" y="183" fill="var(--volt)">app step</text><text x="350" y="233">no task</text><text x="350" y="283">no task</text><text x="350" y="333">no task</text><text x="350" y="383" fill="var(--volt)">app step</text><text x="350" y="433" fill="var(--volt)">app step</text>
+    </g>
+    <text x="0" y="456" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">yellow = Formatter (no tasks) · green = app steps</text>
+  </svg><figcaption>Nine steps, but only the app steps count toward your task allowance. Check exact task counting for searches on Zapier's pricing page.</figcaption></figure>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Trigger and a real test response</h4>
+      <p>Trigger: <b>Google Forms · New Form Response</b>. Submit a deliberately messy test: name "mrs ADEBAYO ", phone "0803 123 4567", product "Tomatoes (crate)", quantity 2, date 6 October, area Bodija. Messy test data proves your cleaning steps work.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Clean the phone number</h4>
+      <p>Add <b>Formatter · Numbers · Format Phone Number</b>. Input: the phone pill. Country code: Nigeria (NG). Output format: the international format without spaces (shown as E.164 or similar, e.g. <code>+2348031234567</code>). Rename the step "Clean phone".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Clean the delivery date</h4>
+      <p>Add <b>Formatter · Date/Time · Format</b>. Input: the date pill. To Format: <code>YYYY-MM-DD</code>. To Timezone: Africa/Lagos. Result: <code>2026-10-06</code>. Rename it "Clean date".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Look up today's price in the Products sheet</h4>
+      <p>Add <b>Google Sheets · Lookup Spreadsheet Row</b>. Spreadsheet: your 0.4 workbook; Worksheet: Products; Lookup column: <code>name</code>; Lookup value: the product pill. The step returns the whole row, so you now have <code>sku</code> and <code>price_ngn</code> (12500). Tick the option to stop or flag the Zap if nothing is found, so an unknown product never slips through with no price.</p>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><p><b>Why the sheet, not a lookup table?</b> Prices change. Tolu edits one cell in Products, and every future order uses the new price, while old orders keep what they paid (0.4).</p></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Delivery fee from a lookup table</h4>
+      <p>Add <b>Formatter · Utilities · Lookup Table</b>. Lookup key: the Area pill.</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Key</th><th class="n">Value</th></tr></thead><tbody>
+        <tr><td>Bodija</td><td class="n">1500</td></tr><tr><td>Mokola</td><td class="n">1500</td></tr><tr><td>Ring Road</td><td class="n">1500</td></tr><tr><td>Challenge</td><td class="n">2000</td></tr><tr><td><i>Fallback value</i></td><td class="n">2500</td></tr>
+      </tbody></table></div>
+      <p>The fallback charges a safe default for any new area instead of leaving the fee blank.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Calculate the total</h4>
+      <p>Add <b>Formatter · Numbers · Spreadsheet-Style Formula</b>. Build it from pills:</p>
+<pre class="codebox">[quantity pill] * [price_ngn pill from step 4] + [value pill from step 5]
+<span class="c">→ 2 * 12500 + 1500 = 26500</span></pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Make a display version of the total</h4>
+      <p>Add <b>Formatter · Numbers · Format Currency</b>. Input: step 6's output. Currency: NGN, locale English (Nigeria) if listed. Result: something like <code>₦26,500.00</code>. This is only for the email.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Save the clean row</h4>
+      <p>Add <b>Google Sheets · Create Spreadsheet Row</b> into Orders. Map the <i>clean</i> values: phone from step 2, date from step 3, sku and unit price from step 4, fee from step 5, <b>total from step 6</b> (the plain number), status "New".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Tell Tolu, then publish</h4>
+      <p>Add <b>Gmail · Send Email</b>. Subject: <code>New order · [name] · [date from step 3] · [currency from step 7]</code>. Body: each field on its own line. Test each step top to bottom, name the Zap <b>HL · Form order → Sheet + alert</b>, and publish.</p>
+      <div class="stats">
+        <div class="stat"><b>1 Zap</b><span>instead of two chained ones</span></div>
+        <div class="stat"><b>0</b><span>manual steps from form to sheet to alert</span></div>
+        <div class="stat"><b>26500</b><span>stored as a number; ₦26,500 shown to Tolu</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Cleaning happens once, at the top, so every later step gets good data.</li><li>Prices come from the sheet Tolu controls.</li><li>Fallbacks mean new areas and typos never create blank fees.</li><li>Machine and human versions of the total are kept apart.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Mapping the raw phone pill (step 1) instead of the cleaned one (step 2).</li><li>Saving the currency-formatted total in the sheet.</li><li>No fallback in the lookup table.</li><li>Leaving steps named "Formatter", "Formatter", "Formatter".</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I copied your Zap and "tidied" it. Five rows came out wrong. Diagnose each.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>Field in the Orders sheet</th><th>What's there</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>created_at</td><td>2026-10-06 07:14</td><td>2026-10-06 08:14</td></tr>
+        <tr><td>B</td><td>phone</td><td>0803 123 4567</td><td>+2348031234567</td></tr>
+        <tr><td>C</td><td>total</td><td>₦26,500.00</td><td>26500</td></tr>
+        <tr><td>D</td><td>delivery_fee</td><td>(blank) for area "Apete"</td><td>2500</td></tr>
+        <tr><td>E</td><td>unit_price</td><td>12500 for an order placed after Tolu raised tomatoes to 14000</td><td>14000</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> one hour behind: the Zapier account time zone isn't Africa/Lagos, or the Format step's To Timezone is UTC.</li>
+        <li><b>B:</b> the raw phone pill from step 1 was mapped instead of step 2's output.</li>
+        <li><b>C:</b> the display value from Format Currency (step 7) was saved instead of step 6's plain number.</li>
+        <li><b>D:</b> the lookup table has no fallback value.</li>
+        <li><b>E:</b> Glitch swapped the Sheets lookup for a lookup table with prices typed in, so price changes in the sheet are ignored.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A name-cleaning line</h4>
+    <ul><li>Add Formatter steps to your 1.1 Bronze Zap (or a new one) that trim spaces and capitalise names, then split them into first and last name.</li><li>Test with "  mrs ADEBAYO ", "tunde bakare", and "MAMA KEMI".</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All three come out neatly capitalised with no stray spaces, in separate first and last name columns.</li></ul>
+    <details class="reveal"><summary>Hint</summary><div><p>Order matters: Trim Whitespace, then Capitalize, then Split Text on a space. For "Split Text", choose which segment you want (first or last) in each step, or return all segments.</p></div></details>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Rebuild the solved Zap and prove the maths</h4>
+    <ul><li>Build the nine-step Zap with your own products and areas.</li><li>Submit three test orders: a normal one, one from a new area (fallback fee), and one after you change a price in Products.</li><li>Check each total by hand, and confirm the sheet stores numbers while the email shows naira.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All three totals are correct, and the price change shows up only in the order placed after it.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>The 6 p.m. summary</h4>
+    <ul><li>Build a daily summary for Tolu: at 6 p.m., one email listing today's order count and total value.</li><li>Option 1: <b>Digest by Zapier</b>, adding each new order to a digest released daily at 18:00.</li><li>Option 2: <b>Schedule by Zapier</b> at 18:00, then read today's rows from the sheet (or a small Summary tab using COUNTIFS and SUMIFS from 0.4), then send the email.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>One email arrives at 6 p.m. with the right count and total, and you've written two lines on which option you'd give a client, and why.</li></ul>
+    <details class="reveal"><summary>See a model answer for option 2</summary><div><p>Add a Summary tab with <code>=COUNTIFS(Orders!B:B, "&gt;="&amp;TODAY())</code> for today's count and a matching SUMIFS for the total. The 6 p.m. Zap does a <b>Lookup Spreadsheet Row</b> on Summary and emails both values. It's robust, cheap in tasks, and Tolu can see the same numbers in the sheet any time.</p></div></details>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. In a multi-step Zap, which data can step 7 use?</p><div class="opts">
+      <button type="button" data-opt="a">Only step 6's output</button><button type="button" data-opt="b">Only the trigger's data</button><button type="button" data-opt="c">Output from any step above it</button><button type="button" data-opt="d">Any step, including step 9</button></div>
+      <p class="fb" hidden data-why="Data flows downhill: any earlier step, never a later one."></p></div>
+    <div class="q" data-ans="a"><p>2. Which Formatter family turns 0803 123 4567 into +2348031234567?</p><div class="opts">
+      <button type="button" data-opt="a">Numbers · Format Phone Number</button><button type="button" data-opt="b">Text · Capitalize</button><button type="button" data-opt="c">Date/Time · Format</button><button type="button" data-opt="d">Utilities · Lookup Table</button></div>
+      <p class="fb" hidden data-why="Format Phone Number, with Nigeria as the country code."></p></div>
+    <div class="q" data-ans="d"><p>3. Product prices change every few weeks. Where should the Zap get them?</p><div class="opts">
+      <button type="button" data-opt="a">A Formatter lookup table</button><button type="button" data-opt="b">Typed into the formula</button><button type="button" data-opt="c">From the customer</button><button type="button" data-opt="d">A Lookup Spreadsheet Row step on the Products sheet</button></div>
+      <p class="fb" hidden data-why="Changing data belongs in the sheet Tolu controls; the Zap reads today's value."></p></div>
+    <div class="q" data-ans="b"><p>4. Which total should be saved in the Orders sheet?</p><div class="opts">
+      <button type="button" data-opt="a">₦26,500.00</button><button type="button" data-opt="b">26500</button><button type="button" data-opt="c">"26,500 naira"</button><button type="button" data-opt="d">Both, in one cell</button></div>
+      <p class="fb" hidden data-why="Store plain numbers so formulas work; format only for people."></p></div>
+    <div class="q" data-ans="c"><p>5. A new delivery area appears that isn't in your lookup table. What prevents a blank fee?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing; you must add every area in advance</button><button type="button" data-opt="b">A Filter step</button><button type="button" data-opt="c">The lookup table's fallback value</button><button type="button" data-opt="d">Formatting the fee as currency</button></div>
+      <p class="fb" hidden data-why="The fallback applies whenever the key isn't found."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-2">AUTOMANCY LOG · Lesson 1.2 · Multi-Step Zaps & Formatter
+Date:
+Zap name and number of steps:
+Formatter transforms used:
+Lookup used (table or sheet) and its fallback:
+Test orders: hand total vs. Zap total
+  1.            2.            3.
+Tasks per order (from Zap history):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-1-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Any step can use data from any step above it.</li>
+      <li>Clean data once, near the top, and map the cleaned version afterwards.</li>
+      <li>Formatter: Text, Numbers, Date/Time, Utilities. Built-in, and free of tasks.</li>
+      <li>Short, stable lists go in a lookup table with a fallback; changing data comes from the sheet.</li>
+      <li>Store 35500; show ₦35,500.</li>
+      <li>Name every step so the Zap reads like a recipe.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/" target="_blank" rel="noopener">Zapier Academy: Building Intermediate Zaps</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8496288404877-Modify-number-formats-in-Zaps" target="_blank" rel="noopener">Zapier Help: modify number formats in Zaps</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+Formatter+tutorial" target="_blank" rel="noopener">YouTube: Zapier Formatter tutorials</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+multi+step+zap+tutorial" target="_blank" rel="noopener">YouTube: multi-step Zap tutorials</a></li>
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/path/zapier-basics-from-a-to-zap" target="_blank" rel="noopener">Zapier: Basics from A to Zap (the "Customize your Zap" course)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand learners a card of ten messy test inputs (names, phones, dates) and make "clean all ten" the goal of the Formatter steps. Build the nine-step Zap live but let learners choose the fallback fee and the currency format. If some learners are on the free plan, pair them with someone on a trial so both can see multi-step building.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -1,0 +1,137 @@
+{
+ "name": "Books · 1a Receipts mail → Drive",
+ "flow": [
+  {
+   "id": 1,
+   "module": "google-email:TriggerWatchEmails",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "folder": "Receipts",
+    "criteria": "ALL",
+    "searchType": "simple",
+    "markSeen": false,
+    "maxResults": 10
+   },
+   "metadata": {
+    "designer": {
+     "x": 0,
+     "y": 0,
+     "name": "Watch Receipts label"
+    }
+   }
+  },
+  {
+   "id": 2,
+   "module": "builtin:BasicFeeder",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "array": "{{1.attachments}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 300,
+     "y": 0,
+     "name": "Iterator · attachments"
+    }
+   },
+   "filter": {
+    "name": "Has attachments",
+    "conditions": [
+     [
+      {
+       "a": "{{length(1.attachments)}}",
+       "b": "0",
+       "o": "number:greater"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "id": 3,
+   "module": "google-drive:uploadAFile",
+   "version": 1,
+   "parameters": {},
+   "mapper": {
+    "select": "value",
+    "folderId": "YOUR_SUPPLIER_INVOICES_FOLDER_ID",
+    "filename": "receipt - {{formatDate(1.date; \"YYYY-MM-DD\")}} - {{2.fileName}}",
+    "data": "{{2.data}}"
+   },
+   "metadata": {
+    "designer": {
+     "x": 600,
+     "y": 0,
+     "name": "Upload to Supplier invoices"
+    }
+   },
+   "onerror": [
+    {
+     "id": 4,
+     "module": "google-sheets:addRow",
+     "version": 2,
+     "parameters": {},
+     "mapper": {
+      "from": "drive",
+      "mode": "select",
+      "spreadsheetId": "YOUR_BOOKS_SHEET_ID",
+      "sheetId": "Errors",
+      "includesHeaders": true,
+      "insertUnformatted": false,
+      "valueInputOption": "USER_ENTERED",
+      "insertDataOption": "INSERT_ROWS",
+      "values": {
+       "0": "{{formatDate(now; \"YYYY-MM-DD HH:mm\")}}",
+       "1": "B2 · 1a Receipts mail",
+       "2": "Upload to Drive",
+       "3": "{{2.fileName}} · {{1.subject}}",
+       "4": "{{error.type}}",
+       "5": "{{error.message}}"
+      }
+     },
+     "metadata": {
+      "designer": {
+       "x": 600,
+       "y": 250,
+       "name": "Log to Errors"
+      }
+     }
+    },
+    {
+     "id": 5,
+     "module": "builtin:Ignore",
+     "version": 1,
+     "parameters": {},
+     "mapper": {},
+     "metadata": {
+      "designer": {
+       "x": 900,
+       "y": 250,
+       "name": "Ignore"
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "instant": false,
+  "version": 1,
+  "scenario": {
+   "roundtrips": 1,
+   "maxErrors": 3,
+   "autoCommit": true,
+   "autoCommitTriggerLast": true,
+   "sequential": false,
+   "confidential": false,
+   "dataloss": false,
+   "dlq": false,
+   "freshVariables": false
+  },
+  "designer": {
+   "orphans": []
+  }
+ }
+}

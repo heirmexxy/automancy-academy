@@ -1,0 +1,332 @@
+<template data-mod="4.2" id="tpl-4-2">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.2</span>
+    <h1>Tools &amp; Function Calling</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: n8n AI Agent, Call n8n Workflow tool, Calculator, Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">An agent without tools can only talk. Tools are its hands: look up a price, check a date, call an API, run a workflow. The surprising part is that the model never runs a tool itself. It <i>asks</i> for one, in a precise format, and your system decides whether and how to run it. Learn that exchange, and how to describe tools so the model picks the right one, and agents stop guessing.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain the tool-calling exchange: definitions in, a call out, a result back.</span></div>
+  <div><b>02</b><span>Write tool names, descriptions and inputs that models use correctly.</span></div>
+  <div><b>03</b><span>Let the model fill tool inputs with <code>$fromAI()</code>, and return small, clear results.</span></div>
+  <div><b>04</b><span>Expose any n8n workflow as a tool, so agents use your tested logic instead of improvising.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"₦8,000, I think?"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer asking the agent how much for three crates.">
+        <rect width="320" height="190" fill="#DCE8F2"/>
+        <rect x="140" y="40" width="160" height="40" rx="12" fill="#FFFFFF"/>
+        <text x="152" y="65" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">How much for 3 crates of tomatoes?</text>
+        <rect x="20" y="100" width="190" height="40" rx="12" fill="#FFFFFF"/>
+        <text x="32" y="125" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--glitch)">About ₦8,000 per crate, so ₦24,000!</text>
+      </svg>
+      <div class="cap"><b>Monday</b>The FAQ agent from 4.1 gets a price question. It answers confidently, and wrongly. Tomatoes are ₦12,500 a crate.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu holding a printed price list, frowning at the phone.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="180" y="35" width="110" height="130" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)"><text x="190" y="58">PRICE LIST</text><text x="190" y="80">Tomatoes  12,500</text><text x="190" y="98">Tatashe    9,000</text><text x="190" y="116">Onions     4,000</text><text x="190" y="134">Ugu        1,500</text></g>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"The price list is right there in the sheet. Why is it making numbers up?"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage reading a label on a toolbox that says tool1: gets data.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="185" y="80" width="110" height="60" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="200" y="96" width="80" height="26" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="240" y="113" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">tool1: gets data</text>
+        <use href="#sage" x="10" y="40" width="150" height="150"/>
+      </svg>
+      <div class="cap"><b>Sage</b>"I did have a tool. Its label says 'tool1: gets data'. How would I know that means prices?"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch peeling labels off a row of tools.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="170" y="70" width="36" height="56" rx="6" fill="var(--sky)"/><rect x="214" y="70" width="36" height="56" rx="6" fill="var(--volt)"/><rect x="258" y="70" width="36" height="56" rx="6" fill="var(--spark)"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="8" fill="#fff" text-anchor="middle"><text x="188" y="102">?</text><text x="232" y="102">?</text><text x="276" y="102">?</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Labels are for people. The AI will figure it out." (It won't.)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>How tool calling works</h3>
+    <figure class="fig"><svg viewBox="0 0 640 260" role="img" aria-label="Step 1: n8n sends the model the instructions, the question and tool definitions. Step 2: the model replies with a tool call, a name and arguments, not an answer. Step 3: n8n runs the tool. Step 4: n8n sends the result back. Step 5: the model answers, or asks for another tool.">
+      <defs><marker id="tc1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="20" y="20" width="150" height="220" rx="14" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="95" y="50" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="#fff">The model</text>
+      <text x="95" y="70" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">reads and decides</text>
+      <rect x="470" y="20" width="150" height="220" rx="14" fill="var(--spark)" stroke="var(--ink)" stroke-width="2.5"/>
+      <text x="545" y="50" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="15" fill="#fff">n8n</text>
+      <text x="545" y="70" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">runs the tools</text>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">
+        <path d="M466 92 H174" stroke="var(--ink)" stroke-width="2" marker-end="url(#tc1)"/><text x="320" y="86" text-anchor="middle">① instructions + question + tool list</text>
+        <path d="M174 132 H466" stroke="var(--ink)" stroke-width="2" marker-end="url(#tc1)"/><text x="320" y="126" text-anchor="middle">② call get_price {"product":"tomatoes"}</text>
+        <text x="545" y="160" text-anchor="middle" fill="#fff">③ runs it</text>
+        <path d="M466 182 H174" stroke="var(--ink)" stroke-width="2" marker-end="url(#tc1)"/><text x="320" y="176" text-anchor="middle">④ {"price":12500,"unit":"crate"}</text>
+        <path d="M174 222 H466" stroke="var(--ink)" stroke-width="2" marker-end="url(#tc1)" stroke-dasharray="5 4"/><text x="320" y="216" text-anchor="middle">⑤ answer (or another call)</text>
+      </g>
+    </svg><figcaption>The model only ever <i>asks</i>. Your system holds the keys, so a tool you didn't connect can't be used, whatever the model wants.</figcaption></figure>
+    <p>Each tool is described to the model with a <b>name</b>, a <b>description</b> and an <b>input schema</b> (the arguments and their types). The model chooses a tool almost entirely from those words, which is why writing them well is the core skill of this module.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Tools in n8n</h3>
+    <div class="vocab">
+      <div><b>App tools</b>Many app nodes (Google Sheets, Gmail, Telegram…) can be attached as tools. Click the ✨ button beside a field, or write <code>$fromAI('key', 'description', 'type')</code>, and the model fills that field.</div>
+      <div><b>HTTP Request tool</b>Call any API (3.4), with the model filling chosen parameters.</div>
+      <div><b>Code tool</b>A small piece of code the agent can run. (<code>$fromAI()</code> doesn't work inside it; it receives a single input.)</div>
+      <div><b>Calculator</b>Exact arithmetic. Models are surprisingly bad at sums; never let them do money in their heads.</div>
+      <div><b>Call n8n Workflow tool</b>Runs one of your workflows (with a "When Executed by Another Workflow" trigger) and returns its last node's output. Your tested logic, as a tool.</div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> The best tools are your own workflows. The Boss 3 pricing sub-workflow already handles aliases, stock and delivery rules. Give the agent that, and it can't invent a price even if it tries.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Write tools the model can't misunderstand</h3>
+    <p>Treat the description like a note to a new colleague: what it does, <b>when to use it</b>, what comes back, and what it's <b>not</b> for. Then describe every input with a format or example. Try the checker: load Glitch's tool, then Sage's, then write your own.</p>
+    <div class="dock" data-toollint>
+      <div class="btns"><button type="button" class="btn ghost" data-tlset="tl-glitch">Glitch's tool</button><button type="button" class="btn ghost" data-tlset="tl-sage">Sage's tool</button></div>
+      <label>Tool name<input data-tl="name" type="text" value="tool1" spellcheck="false" style="font-family:var(--mono);font-size:.88rem;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--paper);color:var(--ink);width:100%"></label>
+      <label>Description<textarea data-tl="desc" spellcheck="false">Gets data.</textarea></label>
+      <label>Inputs, one per line, as <code>name: description</code><textarea data-tl="params" spellcheck="false">q: query</textarea></label>
+      <div class="stats"><div class="stat"><b data-o="score">–</b><span>checks passed</span></div></div>
+      <ul data-o="checks" aria-live="polite"></ul>
+      <label class="crit">The inputs as <code>$fromAI()</code> expressions</label>
+      <pre data-o="fromai"></pre>
+      <p style="font-size:.84rem;color:var(--muted)">A writing checklist, not a test of the model: a description can pass and still confuse it. Your test set (4.1, 4.9) is the real judge.</p>
+    </div>
+    <script type="application/json" id="tl-glitch">{"name":"tool1","desc":"Gets data.","params":"q: query"}</script>
+    <script type="application/json" id="tl-sage">{"name":"get_price","desc":"Looks up today's official Harvest Lane price and stock for one product. Use this whenever a customer asks about a price, a total or availability, before giving any number. Returns found (true/false), name, unit, price in naira and stock. If found is false, ask the customer which product they mean. Don't use it for delivery fees; those are fixed in your instructions.","params":"product: the product as the customer wrote it, one product per call, e.g. tatashe, ugu, ata rodo"}</script>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Good tool results</h3>
+    <div class="vocab">
+      <div><b>Small and structured</b>Return the five fields the agent needs, not the whole sheet. Every byte goes back into the model's context, on every later loop.</div>
+      <div><b>Explicit when nothing's found</b><code>{"found": false, "suggestions": ["Tatashe pepper", "Rodo"]}</code> beats an empty result, which models tend to fill with guesses.</div>
+      <div><b>Errors as messages</b>If the tool fails, return <code>{"error": "Price list unavailable, try again later"}</code> so the agent can tell the customer, rather than crashing the run.</div>
+      <div><b>Read-only by default</b>Lookup tools are safe to call many times. Tools that <i>change</i> things (create an order, send money) need approval steps: 4.5.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>How many tools?</h3>
+    <p>Each tool's definition is sent with every model call, and similar tools confuse the choice. Start with the fewest tools that do the job, with clearly different purposes. If you're past roughly 10, group them behind sub-agents or sub-workflows (4.7), or split the agent by job.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Confusing pair</th><th>Clearer design</th></tr></thead>
+      <tbody>
+        <tr><td><code>get_price</code> and <code>get_product</code>, which both return prices</td><td>One tool, <code>get_price</code>, that returns price and stock</td></tr>
+        <tr><td><code>search_orders</code> and <code>find_order</code></td><td><code>get_order_status</code> (by order ID) and <code>list_customer_orders</code> (by phone)</td></tr>
+        <tr><td><code>calculate</code> plus six separate maths steps</td><td><code>quote_order</code>: one workflow tool that does the whole sum in code</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/build/integrate-ai/ai-examples/use-ai-for-parameters" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: let AI specify tool parameters ($fromAI)</b><small>Read: the four arguments, the allowed types, and which tools support it.</small></span></a>
+    <a class="wcard" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Claude Docs: tool use overview</b><small>Read: how tool definitions, tool calls and tool results flow. The same idea behind every provider.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+AI+agent+tools+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n AI agent tools tutorials</b><small>Watch one that uses a workflow as a tool.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: exact quotes, every time</h2></div>
+  <div class="prose"><p><b>The goal.</b> The agent answers "How much for 3 crates of tomatoes and 2 bags of tatashe?" with the exact total, using the live price list and real arithmetic. It has two tools: <code>get_price</code> (a workflow tool) and a calculator.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Build the price lookup as a sub-workflow</h4>
+      <p>New workflow <b>SUB · Get price</b>: trigger <b>When Executed by Another Workflow</b> with one input field, <code>product</code> (string). Then Google Sheets reads Price_List, and a <b>Code</b> node matches by aliases (reuse the Boss 3 matching) and returns one small item:</p>
+<pre class="codebox">// found
+{ "found": true, "name": "Tomatoes", "unit": "crate", "price": 12500, "stock": 14 }
+// not found
+{ "found": false, "suggestions": ["Tatashe pepper", "Rodo"] }</pre>
+      <p>Test it on its own with "tomato", "big tatashe", "pepper" (ambiguous: not found, with suggestions) and "yam".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Attach it as a tool</h4>
+      <p>In the 4.1 agent, add a <b>Call n8n Workflow</b> tool. Choose SUB · Get price. Name it <code>get_price</code> and paste Sage's description from Card 3. For the <code>product</code> input, click ✨ (or write <code>{{ $fromAI('product', 'the product as the customer wrote it, one product per call, e.g. tatashe', 'string') }}</code>).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the calculator and update the instructions</h4>
+      <p>Attach the <b>Calculator</b> tool. Add to the system message:</p>
+<pre class="codebox">Prices: always call get_price for every product before giving any price or total.
+Arithmetic: always use the calculator for totals. Never do sums in your head.
+Delivery: ₦1,500, free when the goods total is ₦30,000 or more.
+Show totals as: item lines, delivery, total. Prices are today's and may change.
+If get_price returns found: false, ask which product they mean, using the suggestions.</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test, and read the trace</h4>
+      <p>Ask: <i>"How much for 3 crates of tomatoes and 2 bags of tatashe delivered to Bodija?"</i> In the execution log you should see two <code>get_price</code> calls, one calculator call (37,500 + 18,000), and an answer of <b>₦55,500, with free delivery</b>. Then try "2 baskets of pepper": the agent should ask whether you mean rodo or tatashe.</p>
+      <div class="stats">
+        <div class="stat"><b>2</b><span>tools, each with one clear job</span></div>
+        <div class="stat"><b>₦0</b><span>difference between the quote and the price list</span></div>
+        <div class="stat"><b>1</b><span>question back when the product is ambiguous</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's upgrade:</b> even better is one tool, <code>quote_order</code>, that calls the Boss 3 pricing sub-workflow with the whole list of items and returns lines, delivery and total. Then the arithmetic and delivery rules live in tested code, not in my instructions. Fewer, smarter tools usually beat more, simpler ones.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The description says exactly when to call the tool: "before giving any number".</li><li>The tool returns small, explicit results, including "not found" with suggestions.</li><li>Arithmetic is done by a calculator (or code), never by the model.</li><li>The lookup is a tested sub-workflow, reusable by the bot, the agent and your tests.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Vague names and descriptions ("tool1: gets data").</li><li>Returning the whole price sheet on every call.</li><li>Empty results that invite guessing.</li><li>Letting the model calculate money totals itself.</li><li>Lots of overlapping tools "just in case".</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Five tool troubles. Each has a one-line cause.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The agent quotes prices without ever calling the price tool.</td></tr>
+        <tr><td>B</td><td>The agent calls <code>get_price</code> with <code>"3 crates of tomatoes and 2 bags of tatashe"</code> as one product, and gets "not found".</td></tr>
+        <tr><td>C</td><td>The quote is ₦54,500. The prices it fetched were right.</td></tr>
+        <tr><td>D</td><td>Each answer is slow and expensive. The tool returns all 120 rows of the price sheet.</td></tr>
+        <tr><td>E</td><td>When the sheet was briefly unavailable, the whole run crashed and the customer got nothing.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the tool's name and description don't say when to use it. Rename it (<code>get_price</code>) and say "use this whenever a customer asks about a price or total, before giving any number".</li>
+        <li><b>B:</b> the input description doesn't say "one product per call" or give an example. Add both (or build a <code>quote_order</code> tool that accepts a list).</li>
+        <li><b>C:</b> the model did the sum in its head. Require the calculator for all arithmetic, or move the total into a code-based tool.</li>
+        <li><b>D:</b> the tool returns too much. Filter to the one product and return five fields.</li>
+        <li><b>E:</b> tool errors weren't handled. Give the tool node retries and an error output that returns <code>{"error": "…"}</code>, so the agent can apologise and continue.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A "check delivery date" tool</h4>
+    <ul><li>Build a sub-workflow tool <code>check_delivery_date</code>: input a date (YYYY-MM-DD) and an area; return whether Harvest Lane delivers there that day (Monday–Saturday, listed areas, not public holidays you list).</li><li>Describe it with the Card 3 checklist (all checks passing) and attach it to the agent.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>"Can you bring it to Akobo on Sunday?" and "…to Lekki tomorrow?" both get correct answers, and the trace shows the tool call each time.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Turn a workflow into a tool</h4>
+    <ul><li>Pick one Track 3 workflow (customer lookup from 3.5, supplier prices from 3.4, or Boss 3 pricing) and give it a "When Executed by Another Workflow" trigger with defined inputs.</li><li>Attach it to an agent as a Call n8n Workflow tool, with a description that passes all checks.</li><li>Ask five questions that need it and two that don't.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The tool is called on all five relevant questions and on neither of the other two.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Four tools for your own business</h4>
+    <ul><li>Design an agent for your own business (or a client's) with exactly four tools, at least two of them your own workflows. Write each description and input schema first, on paper.</li><li>Build it, then run 12 questions: three aimed at each tool.</li><li>Record whether the right tool was chosen each time, and fix descriptions until it is.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Right tool chosen at least 11 of 12 times, with before-and-after descriptions in your log showing what you changed.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Who actually runs a tool?</p><div class="opts">
+      <button type="button" data-opt="a">The model</button><button type="button" data-opt="b">The customer</button><button type="button" data-opt="c">Your system (n8n), after the model asks</button><button type="button" data-opt="d">The AI provider's server</button></div>
+      <p class="fb" hidden data-why="The model outputs a request (name + arguments). n8n decides and runs it."></p></div>
+    <div class="q" data-ans="a"><p>2. What does the model mostly use to choose a tool?</p><div class="opts">
+      <button type="button" data-opt="a">The tool's name, description and input schema</button><button type="button" data-opt="b">The order the tools were added</button><button type="button" data-opt="c">The node's colour</button><button type="button" data-opt="d">The tool's speed</button></div>
+      <p class="fb" hidden data-why="Those words are all the model sees. Write them for a new colleague."></p></div>
+    <div class="q" data-ans="d"><p>3. What does <code>$fromAI('product', 'e.g. tatashe', 'string')</code> do?</p><div class="opts">
+      <button type="button" data-opt="a">Calls an AI model directly</button><button type="button" data-opt="b">Translates the product name</button><button type="button" data-opt="c">Reads the price list</button><button type="button" data-opt="d">Lets the agent fill that tool input, guided by the description</button></div>
+      <p class="fb" hidden data-why="It marks a tool field for the model to fill, with a key, description and type."></p></div>
+    <div class="q" data-ans="b"><p>4. A lookup finds nothing. What should the tool return?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing at all</button><button type="button" data-opt="b">An explicit "found: false", ideally with suggestions</button><button type="button" data-opt="c">A random product</button><button type="button" data-opt="d">An error that stops the run</button></div>
+      <p class="fb" hidden data-why="Empty results invite guesses; explicit ones invite good questions."></p></div>
+    <div class="q" data-ans="c"><p>5. Where should a money total be calculated?</p><div class="opts">
+      <button type="button" data-opt="a">In the model's reasoning</button><button type="button" data-opt="b">By the customer</button><button type="button" data-opt="c">In a calculator or code-based tool</button><button type="button" data-opt="d">In the system message</button></div>
+      <p class="fb" hidden data-why="Models are unreliable at arithmetic. Tools are exact."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-2">AUTOMANCY LOG · Lesson 4.2 · Tools & Function Calling
+Date:
+Tools attached (name · type · one-line purpose):
+Checklist score for each description:
+Test question → tools called → answer correct?:
+A description I rewrote, before → after:
+Tokens per answer, before vs. after slimming tool results:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>The model asks; your system runs. Unconnected tools can't be used.</li>
+      <li>Name tools verb_noun; describe what, when, what comes back, and what not.</li>
+      <li>Describe every input with a format or example; use <code>$fromAI()</code> to let the model fill it.</li>
+      <li>Return small, explicit results, including "not found" and errors.</li>
+      <li>Money maths happens in tools, never in the model's head.</li>
+      <li>Your tested workflows make the best tools.</li>
+      <li>Fewer, clearly different tools beat many similar ones.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/build/integrate-ai/ai-examples/use-ai-for-parameters" target="_blank" rel="noopener">n8n Docs: let AI specify tool parameters</a></li>
+    <li><span class="kind">Text</span><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview" target="_blank" rel="noopener">Claude Docs: tool use overview</a></li>
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/agents-course" target="_blank" rel="noopener">Hugging Face AI Agents Course: tools unit</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.claude.com/" target="_blank" rel="noopener">Claude Academy: AI Fluency and Claude API courses</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+AI+agent+tools+tutorial" target="_blank" rel="noopener">YouTube: n8n AI agent tools tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand out "tool cards" with only a name and description, and pose customer questions. Learners must pick a card without asking anything. Then reveal Glitch's cards ("tool1", "tool2"). The room immediately understands why descriptions are the whole game.</p>
+  </div>
+</section>
+
+</article>
+</template>

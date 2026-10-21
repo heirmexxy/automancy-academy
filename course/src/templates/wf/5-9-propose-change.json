@@ -1,0 +1,216 @@
+{
+ "name": "TOOL · propose_change",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## TOOL · propose_change (Lesson 5.9)\nThe Ops Agent's only write tool. It checks the action is on the allowed list and inserts a row in crm_proposals with status proposed. It never touches HubSpot.\n\nCredentials: Postgres (Supabase).",
+    "height": 220,
+    "width": 480
+   },
+   "id": "7ce5c081-e5f8-44ad-b188-5997d6101b34",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -540,
+    -260
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "9b54e6b3-2ce1-42a9-b5b0-71eaf24b9fd9",
+   "name": "When called by the agent",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const ALLOWED = ['merge_companies', 'bulk_update_property', 'create_task', 'require_field', 'score_weight'];\nconst parse = (v, fb) => { if (typeof v !== 'string') return v ?? fb; try { return JSON.parse(v); } catch (e) { return fb; } };\nconst p = $json;\nconst target_ids = parse(p.target_ids, []);\nconst details = parse(p.details, {});\nlet error = '';\nif (!ALLOWED.includes(p.action)) error = `\"${p.action}\" is not on the allowed list (${ALLOWED.join(', ')}). Deleting, changing stages, messaging customers and changing permissions can never be proposed.`;\nelse if (!p.evidence) error = 'Every proposal needs evidence.';\nreturn { valid: !error, error, action: p.action, target_ids, details, evidence: p.evidence || '', expected_effect: p.expected_effect || '',\n  reversible: p.reversible === true || String(p.reversible) === 'true' };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "67cf3f16-6d17-47b4-aa39-b4b8c57449a8",
+   "name": "Validate proposal",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "53a23a39-7a28-4817-be84-6ac928bdc2c7",
+       "leftValue": "={{ $json.valid }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "62e6a41d-f205-4bdc-871d-0d399d4802a9",
+   "name": "Valid?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "insert into crm_proposals (action, target_ids, details, evidence, expected_effect, reversible)\nvalues ($1, $2::jsonb, $3::jsonb, $4, $5, $6)\nreturning id;",
+    "options": {
+     "queryReplacement": "={{ [ $json.action, JSON.stringify($json.target_ids), JSON.stringify($json.details), $json.evidence, $json.expected_effect, $json.reversible ] }}"
+    }
+   },
+   "id": "fe15301c-9d2d-40ea-912a-9c6c5830f2ae",
+   "name": "Save proposal",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "92d27ab5-db99-491a-a165-5a5c1dbe0d21",
+       "name": "result",
+       "value": "=Proposal #{{ $json.id }} saved. Nothing has changed in HubSpot; Tolu will approve or reject it.",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "4008c155-1808-4697-a8b9-192934a8f1ae",
+   "name": "Saved",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "779bfbcd-3c83-4a24-b6fe-6e01a3e4a845",
+       "name": "result",
+       "value": "=Not saved: {{ $json.error }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "02779b37-25c5-4351-8330-d56f9f207864",
+   "name": "Refused",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    660,
+    125
+   ]
+  }
+ ],
+ "connections": {
+  "When called by the agent": {
+   "main": [
+    [
+     {
+      "node": "Validate proposal",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Validate proposal": {
+   "main": [
+    [
+     {
+      "node": "Valid?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Valid?": {
+   "main": [
+    [
+     {
+      "node": "Save proposal",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Refused",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Save proposal": {
+   "main": [
+    [
+     {
+      "node": "Saved",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by the agent": [
+   {
+    "json": {
+     "action": "bulk_update_property",
+     "target_ids": "[\"101\",\"102\"]",
+     "details": "{\"object_type\":\"contacts\",\"property\":\"lead_source\",\"from_values\":[\"IG\",\"insta\"],\"to_value\":\"Instagram\"}",
+     "evidence": "2 contacts have lead_source IG or insta",
+     "expected_effect": "lead source report shows one Instagram row",
+     "reversible": true
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

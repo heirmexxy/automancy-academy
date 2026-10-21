@@ -1,0 +1,343 @@
+<template data-mod="4.3" id="tpl-4-3">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.3</span>
+    <h1>Memory</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: n8n memory sub-nodes (Simple, Postgres), Supabase or Postgres, Google Sheets</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">A model on its own remembers nothing: every message is its first. "Memory" is something your system adds, by deciding what to send back to the model each time. Done well, the agent follows a conversation and knows a returning customer. Done badly, it forgets mid-sentence, or worse, tells one customer about another's order.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Tell short-term chat memory apart from long-term knowledge, and choose the right one.</span></div>
+  <div><b>02</b><span>Choose a session key that keeps every customer's conversation separate.</span></div>
+  <div><b>03</b><span>Store memory in Postgres or Supabase so it survives restarts.</span></div>
+  <div><b>04</b><span>Decide what an agent should never remember, and how long to keep the rest.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Same as last time"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer messaging: same as last time please.">
+        <rect width="320" height="190" fill="#DCE8F2"/>
+        <rect x="140" y="50" width="160" height="40" rx="12" fill="#FFFFFF"/>
+        <text x="152" y="75" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="#13233A">Same as last time, please 🙏</text>
+        <rect x="20" y="110" width="200" height="40" rx="12" fill="#FFFFFF"/>
+        <text x="32" y="135" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--glitch)">Sorry, what did you order last time?</text>
+      </svg>
+      <div class="cap"><b>Tuesday</b>Mama Ronke has ordered every Tuesday for a year. The agent treats her like a stranger.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer reminding the agent of an address given two messages ago.">
+        <rect width="320" height="190" fill="#DCE8F2"/>
+        <rect x="140" y="30" width="160" height="34" rx="10" fill="#FFFFFF"/><text x="150" y="52" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Deliver to 14 Ring Road.</text>
+        <rect x="20" y="74" width="140" height="34" rx="10" fill="#FFFFFF"/><text x="30" y="96" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Noted! ✔</text>
+        <rect x="140" y="118" width="160" height="34" rx="10" fill="#FFFFFF"/><text x="150" y="140" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">So where are you bringing it?</text>
+        <text x="90" y="175" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--glitch)">"What address would you like?"</text>
+      </svg>
+      <div class="cap"><b>Worse</b>Within one chat, the agent forgets an address given two messages earlier.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two customers named Funmi receiving each other's order details.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">
+          <rect x="20" y="40" width="130" height="80" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="32" y="64" font-weight="700">Funmi A.</text><text x="32" y="86">"Your 3 crates of</text><text x="32" y="102">eggs go to Akobo"</text>
+          <rect x="170" y="40" width="130" height="80" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="182" y="64" font-weight="700">Funmi O.</text><text x="182" y="86">"…and 14 Ring</text><text x="182" y="102">Road, as you said"</text>
+        </g>
+        <text x="160" y="160" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--glitch)">Each sees the other's order</text>
+      </svg>
+      <div class="cap"><b>Worst</b>Two customers called Funmi start receiving each other's details.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a single key labelled first name that opens many locks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g transform="translate(180 70)"><circle cx="20" cy="25" r="22" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/><rect x="40" y="19" width="80" height="12" rx="4" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/><text x="20" y="30" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="700" fill="#13233A">name</text></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I keyed memory by first name. Names are unique, aren't they?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Two kinds of memory</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th></th><th>Short-term: chat memory</th><th>Long-term: knowledge about the customer</th></tr></thead>
+      <tbody>
+        <tr><td>Holds</td><td>The last few messages of this conversation</td><td>Profile, past orders, preferences</td></tr>
+        <tr><td>Answers</td><td>"Where are you delivering it?" (said 2 messages ago)</td><td>"Same as last time"</td></tr>
+        <tr><td>In n8n</td><td>A memory sub-node on the AI Agent (Simple Memory, Postgres Chat Memory…)</td><td>A <b>tool</b> that reads your Orders and Customers data (4.2)</td></tr>
+        <tr><td>Size</td><td>A window of recent interactions</td><td>Fetched only when needed</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Don't stuff a year of chats into my memory window. It's slow, expensive and confusing. Give me a short window for the conversation, and a tool like <code>get_last_order</code> for the history. Your Orders sheet is already the best long-term memory you have.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>How chat memory works</h3>
+    <figure class="fig"><svg viewBox="0 0 640 190" role="img" aria-label="A new message arrives with a session key. The memory store looks up that key's recent messages, the last N interactions are added to the prompt with the new message, the model answers, and the new exchange is saved back under the same key.">
+      <defs><marker id="me1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" text-anchor="middle">
+        <rect x="10" y="60" width="120" height="56" rx="12" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="70" y="84" fill="#fff">New message</text><text x="70" y="102" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="10">key: 512349876</text>
+        <rect x="180" y="20" width="150" height="56" rx="12" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="255" y="44" fill="#13233A">Memory store</text><text x="255" y="62" fill="#13233A" font-family="JetBrains Mono,monospace" font-weight="400" font-size="10">rows for key 512349876</text>
+        <rect x="180" y="110" width="150" height="56" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="255" y="134" fill="var(--ink)">Prompt</text><text x="255" y="152" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="10">last N + new message</text>
+        <rect x="380" y="110" width="110" height="56" rx="12" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="435" y="143" fill="#fff">Model</text>
+        <rect x="530" y="60" width="100" height="56" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="580" y="92" fill="#13233A">Reply</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M132 78 C155 78 155 48 176 48" marker-end="url(#me1)"/><path d="M255 78 V106" marker-end="url(#me1)"/><path d="M332 138 H376" marker-end="url(#me1)"/><path d="M492 138 C515 138 515 92 526 92" marker-end="url(#me1)"/></g>
+      <path d="M580 58 C580 26 400 26 334 40" stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="5 4" marker-end="url(#me1)"/>
+      <text x="470" y="13" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">save this exchange under the same key</text>
+    </svg><figcaption>The <b>session key</b> decides whose history is loaded. The <b>context window length</b> decides how much of it.</figcaption></figure>
+    <div class="vocab">
+      <div><b>Simple Memory</b>Keeps history inside n8n itself. Quick for testing; per n8n's docs it doesn't work in an active production workflow when n8n runs in queue mode, so use a database for anything real.</div>
+      <div><b>Postgres Chat Memory</b>Stores history in a Postgres table (Supabase gives you a free Postgres database). It survives restarts and can be cleaned up on a schedule.</div>
+      <div><b>Session key</b>An expression such as <code>{{ $json.message.chat.id }}</code>: one unique, stable value per conversation.</div>
+      <div><b>Context window length</b>How many past interactions are sent with each new message. Too few and the agent forgets; too many and every reply costs more.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Try it: who sees what?</h3>
+    <p>Three customers message the bot at the same time. Two are both called Funmi. Pick a session key and a window length, then choose a message to see exactly what the agent "remembers" when it answers.</p>
+    <div class="memsim" data-mem="mem-4-3">
+      <details><summary class="crit">The conversation, in order (click to view)</summary><ol class="memlog"></ol></details>
+      <div class="row">
+        <label>Session key<select data-mk="key"><option value="const">"harvest-lane" (one key for everyone)</option><option value="name" selected>{{ $json.message.from.first_name }}</option><option value="chat">{{ $json.message.chat.id }}</option></select></label>
+        <label>Context window length<select data-mk="win"><option>1</option><option>2</option><option selected>5</option><option>10</option></select></label>
+        <label>Agent is answering message<select data-mk="at"></select></label>
+      </div>
+      <p class="memnow">Answering <span data-o="now"></span><br><small>Session key value: <code data-o="sk"></code></small></p>
+      <label class="crit">What the agent sees from memory</label>
+      <ul class="memseen" data-o="seen" aria-live="polite"></ul>
+      <p class="mgoal" data-o="verdict"></p>
+    </div>
+    <script type="application/json" id="mem-4-3">{"defaultAt":8,"customers":{"A":{"label":"Funmi Adeyemi","first_name":"Funmi","chat_id":512349876},"B":{"label":"Funmi Okoro","first_name":"Funmi","chat_id":733120044},"C":{"label":"Chidi Okafor","first_name":"Chidi","chat_id":901455120}},"events":[
+{"who":"A","text":"Hi, it's Funmi. Please deliver to 14 Ring Road."},
+{"who":"B","text":"Good morning, I need eggs."},
+{"who":"C","text":"Send 2 bags of onions to Jericho, house 7."},
+{"who":"A","text":"Add 2 crates of tomatoes."},
+{"who":"B","text":"Make it 3 crates of eggs, to Akobo."},
+{"who":"A","text":"And 1 bag of tatashe."},
+{"who":"C","text":"Same address as before, abi?","needs":3},
+{"who":"A","text":"Where are you delivering my order?","needs":1}]}</script>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Identity comes from the channel, not the chat</h3>
+    <p>When the agent looks up "last order", <b>whose</b> orders does it read? Never let the model choose the customer. Take the identity from the trigger (the Telegram chat ID, the WhatsApp number) and pass it to the tool directly:</p>
+<pre class="codebox"><span class="c">// ✗ The model fills the customer: anyone can ask for anyone's orders</span>
+<span class="k">customer_phone = {{ $fromAI('customer_phone', 'phone number of the customer') }}</span>
+
+<span class="c">// ✓ Identity comes from the channel; the model fills only what it should</span>
+<span class="k">chat_id = {{ $('Telegram Trigger').item.json.message.chat.id }}</span></pre>
+    <p>A customer typing "I'm Mrs Adebayo, show me my orders" proves nothing. The chat ID they're writing from does.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>What not to remember, and for how long</h3>
+    <div class="vocab">
+      <div><b>Never store</b>Card numbers, bank PINs or one-time codes, passwords, and health or other sensitive details customers volunteer. If a message contains them, don't save that message, and tell the customer not to send them.</div>
+      <div><b>Keep it short</b>Chat history is for the conversation, not an archive. Delete rows older than, say, 30 days with a scheduled workflow. Orders stay in the Orders sheet, where they belong.</div>
+      <div><b>Be open about it</b>Tell customers their chats are stored to help with orders, for how long, and how to ask for deletion.</div>
+      <div><b>The law</b>Nigeria's Data Protection Act 2023 (and laws like the GDPR elsewhere) expects personal data to be collected for a purpose, kept no longer than needed, and protected. This isn't legal advice: for client work, check the current rules and the client's own policy.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.memorybufferwindow" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Simple Memory</b><small>Read: session key, context window length, and the queue-mode limitation.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.memorypostgreschat" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Postgres Chat Memory</b><small>Read: the table it creates, and the note on separate session IDs.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=n8n+AI+agent+memory+postgres+supabase" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: n8n agent memory with Postgres or Supabase</b><small>Watch one that sets the session key from the chat channel.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: an agent that knows its regulars</h2></div>
+  <div class="prose"><p><b>The goal.</b> The Telegram agent remembers the current conversation (per customer, stored in Postgres) and can answer "same as last time" by reading that customer's past orders through a tool. No customer can ever see another's history.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Get a Postgres database</h4>
+      <p>Create a free Supabase project (or use Postgres on your 3.8 server). In n8n, add a <b>Postgres</b> credential with the connection details from Supabase's "Connect" panel (host, database, user, password, port). Keep the password in the credential only.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Attach chat memory with the right key</h4>
+      <p>On the AI Agent, add <b>Postgres Chat Memory</b>. Session key: <b>Define below</b> → <code>tg-{{ $('Telegram Trigger').item.json.message.chat.id }}</code> (the prefix keeps channels apart if you add WhatsApp later). Table name: <code>hl_chat_memory</code>. Context window length: <b>8</b>.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add long-term memory as a tool</h4>
+      <p>Sub-workflow <b>SUB · Last order</b>: input <code>chat_id</code>; reads Orders where <code>chat_id</code> matches, sorted newest first; returns the latest order's items and date, or <code>{"found": false}</code>. Attach it as a <b>Call n8n Workflow</b> tool named <code>get_last_order</code>, and map <code>chat_id</code> from the <b>trigger</b> (Card 4), not with <code>$fromAI</code>. Description: <i>"Returns this customer's most recent order (items, quantities, date). Use it when they refer to a past order: 'same as last time', 'my usual'. Takes no input from you; the customer is identified automatically."</i></p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Teach the agent how to use both</h4>
+<pre class="codebox">Memory: you can see recent messages from this conversation only.
+If the customer refers to an earlier order ("same as last time", "my usual"), call get_last_order,
+read the items back to them, and ask them to confirm before quoting.
+Never mention other customers. Never ask for or repeat card numbers, PINs or passwords.</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with two phones, then add a clean-up</h4>
+      <p>From two Telegram accounts, run the Card 3 script (address, then items, then "where are you delivering?"). Each gets only their own details. Then add <b>HL · Forget old chats</b>: a daily Schedule → Postgres node running</p>
+<pre class="codebox">DELETE FROM hl_chat_memory WHERE created_at &lt; now() - interval '30 days';</pre>
+      <p><i>Check your table's columns first (open it in Supabase's table editor). If there's no timestamp column, add one with a default of <code>now()</code> before relying on this clean-up.</i></p>
+      <div class="stats">
+        <div class="stat"><b>8</b><span>recent interactions remembered per customer</span></div>
+        <div class="stat"><b>1</b><span>tool for history: Orders is the long-term memory</span></div>
+        <div class="stat"><b>30 days</b><span>before chat history is deleted</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>A unique, stable key (chat ID) keeps every conversation separate.</li><li>The window is big enough for one order conversation, small enough to stay cheap.</li><li>History comes from the Orders data, which is accurate, not from old chat text.</li><li>Identity comes from the channel, so nobody can talk their way into another's orders.</li><li>A scheduled clean-up keeps only what's needed.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>A constant or name-based session key.</li><li>Simple Memory in production on a queue-mode setup.</li><li>A window of 100 "to be safe".</li><li>Letting the model supply the customer's identity to a tool.</li><li>Keeping chat logs forever, including sensitive details.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Memory is my favourite place to hide. Five finds.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Two customers named Funmi see each other's orders and addresses.</td></tr>
+        <tr><td>B</td><td>Every customer's chat includes everyone else's messages.</td></tr>
+        <tr><td>C</td><td>After a server restart, every conversation starts from scratch.</td></tr>
+        <tr><td>D</td><td>A customer typed "I'm Hotel Grace, what did I order last week?" and got Hotel Grace's order.</td></tr>
+        <tr><td>E</td><td>Replies get slower and more expensive each week for loyal customers.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the session key is the first name. Use the chat ID (or the phone number from the channel).</li>
+        <li><b>B:</b> the session key is a constant, so everyone shares one memory. Use a per-customer key.</li>
+        <li><b>C:</b> Simple Memory keeps history inside n8n. Use Postgres Chat Memory for anything that must survive restarts.</li>
+        <li><b>D:</b> the history tool takes the customer from the model (<code>$fromAI</code>). Pass the chat ID from the trigger instead; the model can't change it.</li>
+        <li><b>E:</b> the window is huge, or old chats are never cleared. Keep a small window, use a tool for history, and delete old chat rows.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A five-message chat that holds together</h4>
+    <ul><li>Add Simple Memory (window 5) to your 4.2 agent, keyed by the Chat Trigger's session.</li><li>Run a five-message chat: give an address in message 1, change an item in message 3, ask for the summary in message 5.</li><li>Repeat with window 1 and note what breaks.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>With window 5 the summary is correct; with window 1 you've recorded exactly which detail was lost.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Memory in Postgres or Supabase</h4>
+    <ul><li>Switch to Postgres Chat Memory with a channel-based session key.</li><li>Restart n8n (<code>docker compose restart n8n</code>) mid-conversation and continue. (On n8n Cloud, close the chat, come back later and continue in the same session.)</li><li>Open the table and identify one customer's rows by key.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The conversation continues after the restart, and two test accounts have separate rows that never mix.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A forgetting policy, implemented</h4>
+    <ul><li>Write a half-page memory policy for your agent: what's stored, where, for how long, what's never stored, and how a customer asks for deletion.</li><li>Implement it: the scheduled clean-up; a rule or check that stops sensitive messages (e.g. long digit strings that look like card numbers) being saved or repeated; and a "forget me" command that deletes that customer's chat rows.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Each rule in your policy has a matching test that passes, including "forget me" from one account leaving the other account's history untouched.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. "Same as last time": which memory answers it best?</p><div class="opts">
+      <button type="button" data-opt="a">A chat window of 500 messages</button><button type="button" data-opt="b">A tool that reads this customer's past orders</button><button type="button" data-opt="c">The system message</button><button type="button" data-opt="d">The model's training</button></div>
+      <p class="fb" hidden data-why="Long-term facts come from your data through a tool, not from old chat text."></p></div>
+    <div class="q" data-ans="d"><p>2. Which session key is safest for a Telegram bot?</p><div class="opts">
+      <button type="button" data-opt="a">"harvest-lane"</button><button type="button" data-opt="b">The customer's first name</button><button type="button" data-opt="c">Today's date</button><button type="button" data-opt="d">The chat ID from the trigger</button></div>
+      <p class="fb" hidden data-why="Unique and stable per conversation, and supplied by Telegram, not typed by the customer."></p></div>
+    <div class="q" data-ans="a"><p>3. Why avoid a very large context window?</p><div class="opts">
+      <button type="button" data-opt="a">Every reply re-sends it, so cost and delay grow, and old details can confuse</button><button type="button" data-opt="b">n8n forbids it</button><button type="button" data-opt="c">It deletes older messages</button><button type="button" data-opt="d">It changes the session key</button></div>
+      <p class="fb" hidden data-why="Memory is sent with every call. Keep it as small as the conversation needs."></p></div>
+    <div class="q" data-ans="c"><p>4. Your history tool should get the customer's identity from…</p><div class="opts">
+      <button type="button" data-opt="a">$fromAI, so the model can fill it</button><button type="button" data-opt="b">Whatever name the customer types</button><button type="button" data-opt="c">The channel's trigger data (chat ID or phone)</button><button type="button" data-opt="d">A random number</button></div>
+      <p class="fb" hidden data-why="Identity must come from the channel; otherwise anyone can claim to be anyone."></p></div>
+    <div class="q" data-ans="b"><p>5. A customer sends their card number in chat. Best response?</p><div class="opts">
+      <button type="button" data-opt="a">Save it for faster checkout next time</button><button type="button" data-opt="b">Don't store or repeat it, and tell them not to send card details</button><button type="button" data-opt="c">Read it back to confirm</button><button type="button" data-opt="d">Email it to Tolu</button></div>
+      <p class="fb" hidden data-why="Never keep payment secrets in chat memory. Payments go through the payment provider."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-3">AUTOMANCY LOG · Lesson 4.3 · Memory
+Date:
+Memory type and where it's stored:
+Session key expression:
+Context window length, and why:
+Long-term memory tool(s) and how identity is passed:
+Two-account test: any leaks? (yes/no):
+Retention rule and clean-up schedule:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Models remember nothing; your system chooses what to send back.</li>
+      <li>Short-term: a small chat window. Long-term: tools that read your data.</li>
+      <li>The session key decides whose history loads. Make it unique and channel-supplied.</li>
+      <li>Use a database (Postgres, Supabase) for memory that must survive restarts.</li>
+      <li>Identity comes from the trigger, never from the model.</li>
+      <li>Never store secrets; delete old chats on a schedule; tell customers.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.memorybufferwindow" target="_blank" rel="noopener">n8n Docs: Simple Memory</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.memorypostgreschat" target="_blank" rel="noopener">n8n Docs: Postgres Chat Memory</a></li>
+    <li><span class="kind">Text</span><a href="https://supabase.com/docs/guides/database/overview" target="_blank" rel="noopener">Supabase Docs: database overview</a></li>
+    <li><span class="kind">Course</span><a href="https://huggingface.co/learn/agents-course" target="_blank" rel="noopener">Hugging Face AI Agents Course</a></li>
+    <li><span class="kind">Course</span><a href="https://www.kaggle.com/learn" target="_blank" rel="noopener">Kaggle Learn: free short courses (intro to SQL is useful here)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+AI+agent+memory+postgres" target="_blank" rel="noopener">YouTube: n8n AI agent memory with Postgres</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run Card 3 as a role-play: three learners are customers, one is "the agent" who may only read sticky notes filed under the session key the group chose. With "first name" as the key, two Funmis share one envelope. The privacy lesson lands in about thirty seconds.</p>
+  </div>
+</section>
+
+</article>
+</template>

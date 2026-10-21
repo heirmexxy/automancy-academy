@@ -1,0 +1,343 @@
+<template data-mod="0.6" id="tpl-0-6">
+<article style="--c:var(--teal)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 0 · Base Camp · Lesson 0.6</span>
+    <h1>Keys, Logins &amp; Safety</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt, with Nodo</span><span class="pill">Tools: a password manager, your Google account</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">Automations hold the keys to your email, your customers' details and your payment accounts. This module makes sure the only person using those keys is you, and that you know exactly what to do on the day something leaks.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Tell API keys, passwords and OAuth tokens apart, and handle each safely.</span></div>
+  <div><b>02</b><span>Read an OAuth consent screen and grant the least access that works.</span></div>
+  <div><b>03</b><span>Respond to a leaked key in the right order, within minutes.</span></div>
+  <div><b>04</b><span>Handle customer data in line with Nigeria's data protection law.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The screenshot</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu posts a screenshot of a dashboard, with a secret key visible, into a group chat.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="16" width="156" height="160" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="162" y="38" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">Automation Builders NG · 412</text>
+        <rect x="162" y="48" width="132" height="84" rx="8" fill="var(--ink)"/>
+        <text x="172" y="72" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--paper)">Settings › API keys</text>
+        <rect x="170" y="84" width="116" height="18" rx="4" fill="var(--glitch)"/>
+        <text x="176" y="97" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">sk-live-8f2a91c…</text>
+        <text x="162" y="152" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">"Why won't my Zap work??"</text>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Thursday night</b>Stuck on a Zap, Tolu posts a screenshot to a 412-member group chat. The secret key is right there in the picture.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch typing on many laptops at once, using the leaked key.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2.5"><rect x="170" y="30" width="60" height="40" rx="4" fill="var(--card)"/><rect x="240" y="30" width="60" height="40" rx="4" fill="var(--card)"/><rect x="170" y="90" width="60" height="40" rx="4" fill="var(--card)"/><rect x="240" y="90" width="60" height="40" rx="4" fill="var(--card)"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--glitch)"><text x="178" y="54">sk-live…</text><text x="248" y="54">sk-live…</text><text x="178" y="114">sk-live…</text><text x="248" y="114">sk-live…</text></g>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Friday, 3 a.m.</b>Someone copies the key. Thousands of AI requests run on Tolu's account overnight.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An email showing a large unexpected bill.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="24" width="240" height="140" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="58" y="52" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">Your usage this month</text>
+        <text x="160" y="104" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="40" fill="var(--glitch)">$412.80</text>
+        <text x="160" y="136" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">Usual month: $3.20</text>
+      </svg>
+      <div class="cap"><b>Friday, 8 a.m.</b>The bill arrives. And while checking, Tolu finds a former rider can still edit the Orders sheet.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Nodo holding a key ring with labelled keys, speaking.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="120" y="16" width="190" height="84" rx="16" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M150 98 L138 116 L172 98" fill="var(--card)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <text x="134" y="42" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">A key is cash. You don't</text>
+        <text x="134" y="62" font-family="Atkinson Hyperlegible,sans-serif" font-size="13" fill="var(--ink)">show cash to 412 strangers.</text>
+        <text x="134" y="84" font-family="Atkinson Hyperlegible,sans-serif" font-weight="700" font-size="13" fill="var(--ink)">First: kill that key. Now.</text>
+        <use href="#nodo" x="6" y="50" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Friday, 8:05 a.m.</b>Nodo arrives with a plan: stop the bleeding first, then find every other open door.</div>
+    </div>
+  </div>
+  <div class="prose"><p>Nothing Tolu did was unusual. Screenshots of settings pages leak keys every day, and old access is rarely removed. The fix isn't to be afraid of automation; it's a few habits that take minutes to set up and save you from very bad days.</p></div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Passwords, API keys and tokens</h3>
+    <div class="vocab">
+      <div><b>Password</b>Proves a <i>person</i> is you. Used with two-factor authentication (2FA), it's the front door to an account.</div>
+      <div><b>API key</b>A long secret that lets <i>software</i> act as your account. Often lasts until you delete it. Whoever has it can spend your money.</div>
+      <div><b>Access token</b>Issued after you approve access (OAuth). Usually expires and can be revoked. Platforms store and refresh these for you.</div>
+      <div><b>Test vs. live keys</b>Many providers give two sets. Paystack, for example, labels keys <code>sk_test_…</code> and <code>sk_live_…</code>. Build with test keys; switch to live only when ready.</div>
+      <div><b>Public vs. secret</b>A <i>public</i> (publishable) key can sit in a web page. A <i>secret</i> key never leaves your server or automation platform.</div>
+    </div>
+    <div class="analogy"><b>The cash rule:</b> treat every secret key like a bundle of naira notes. You wouldn't paste cash into a group chat, a spreadsheet, a screenshot or an AI prompt.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>OAuth: "Sign in with Google", explained</h3>
+    <p>When Zapier, Make or n8n asks to "connect your Gmail", you're using <b>OAuth</b>. You never give the app your password. You approve specific permissions, called <b>scopes</b>, and Google hands the app a token for just those.</p>
+    <figure class="fig"><svg viewBox="0 0 660 190" role="img" aria-label="OAuth flow: the automation app sends you to Google; you see the consent screen listing scopes and approve; Google gives the app a token; the app uses the token to access only what you approved; you can revoke it any time.">
+      <defs><marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Atkinson Hyperlegible,sans-serif" font-size="12">
+        <rect x="10" y="60" width="130" height="70" rx="12" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="75" y="90" text-anchor="middle" font-weight="700" fill="#13233A">Automation app</text><text x="75" y="108" text-anchor="middle" fill="#13233A" font-size="11">"Connect Gmail"</text>
+        <rect x="190" y="20" width="170" height="150" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="275" y="44" text-anchor="middle" font-weight="700" fill="var(--ink)">Google consent screen</text>
+        <text x="204" y="72" fill="var(--ink)" font-size="11">This app wants to:</text>
+        <text x="204" y="94" fill="var(--volt)" font-size="11">✓ Read your email labels</text>
+        <text x="204" y="114" fill="var(--glitch)" font-size="11">! Send and delete email</text>
+        <rect x="236" y="132" width="78" height="26" rx="13" fill="var(--sky)"/><text x="275" y="150" text-anchor="middle" fill="#fff" font-size="11">Allow</text>
+        <rect x="410" y="60" width="110" height="70" rx="12" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="465" y="92" text-anchor="middle" fill="#fff" font-weight="700">Token</text><text x="465" y="110" text-anchor="middle" fill="#fff" font-size="11">scoped, revocable</text>
+        <rect x="560" y="60" width="90" height="70" rx="12" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="605" y="92" text-anchor="middle" fill="#13233A" font-weight="700">Gmail</text><text x="605" y="110" text-anchor="middle" fill="#13233A" font-size="11">only what's allowed</text>
+      </g>
+      <path d="M140 95 H186" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#e1)"/>
+      <path d="M360 95 H406" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#e1)"/>
+      <path d="M520 95 H556" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#e1)"/>
+    </svg><figcaption>Read the consent screen before you click Allow. If a tool asks for more than the job needs, look for a narrower option or use a separate account.</figcaption></figure>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#bolt"/></svg><div class="bubble"><b>Bolt:</b> You can see and remove every app connected to your Google account under <b>Google Account → Security → Your connections to third-party apps &amp; services</b>. Check it once a quarter.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Where secrets live, and where they never go</h3>
+    <div class="why">
+      <div class="box"><h5>Safe homes</h5><ul><li>The platform's credential store: Zapier connections, Make connections and keys, n8n credentials (stored encrypted).</li><li>A password manager (Bitwarden has a free plan).</li><li>Server environment variables, for self-hosted tools (Module 3.8).</li></ul></div>
+      <div class="box"><h5>Never here</h5><ul><li>A spreadsheet cell, doc or note.</li><li>Group chats, emails, screenshots, screen recordings.</li><li>AI prompts or chat assistants.</li><li>Code shared on GitHub or pasted in forums.</li></ul></div>
+    </div>
+    <div class="analogy"><b>One key, one home.</b> Store each key in exactly one credential, and let every workflow reuse it. Then rotating a key means changing it in one place, not hunting through 20 workflows.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Least privilege: give only what's needed</h3>
+    <p>Every person, app and key should have the smallest access that still does the job, and lose it when they no longer need it.</p>
+    <div class="vocab">
+      <div><b>A business account for automations</b>Connect tools through a dedicated business Google account, not your personal one.</div>
+      <div><b>Editors vs. viewers</b>Riders need to see today's deliveries, not edit prices. Share views or filtered tabs.</div>
+      <div><b>Offboarding</b>When someone leaves, remove their access that day. Keep a list so you know where they had access.</div>
+      <div><b>2FA everywhere</b>Turn on two-factor authentication for email, automation platforms, AI providers and banking.</div>
+      <div><b>Spending caps</b>Set monthly budget limits and alerts at every AI and API provider that offers them.</div>
+      <div><b>No "anyone with the link can edit"</b>Share sheets with named people only.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Customer data and the law</h3>
+    <p>Names, phone numbers and addresses are <b>personal data</b>. In Nigeria, the <b>Nigeria Data Protection Act 2023</b> governs how you collect and use it, overseen by the Nigeria Data Protection Commission. If you serve customers in the EU, the GDPR applies too. The core principles are the same and easy to follow:</p>
+    <div class="never">
+      <div><b>Collect the minimum</b>Only what the job needs. A delivery needs an address; it doesn't need a birthday.</div>
+      <div><b>Use it for the stated purpose</b>Order data is for orders. Don't add customers to marketing without their agreement.</div>
+      <div><b>Protect it and let it go</b>Limit access, keep it secure, and delete what you no longer need. Customers can ask to see or remove their data.</div>
+    </div>
+    <div class="analogy"><b>Sending data to AI:</b> before any customer data goes to an AI provider, send only the fields the task needs, and read the provider's data-use terms for its API (they differ from its free chat app). While practising, use sample data like the messages in 0.5. <i>This is general guidance, not legal advice; for a client project involving sensitive data, check with a qualified adviser.</i></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=OAuth+2.0+explained+simply" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A short "OAuth explained simply" video</b><small>Look for: why the app never sees your password, and what a scope is.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=API+key+security+best+practices" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>An "API key security best practices" video</b><small>Look for: rotation, and why keys don't belong in code or screenshots.</small></span></a>
+    <a class="wcard" href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>OWASP Top 10 for LLM Applications (skim the list)</b><small>Look for: "sensitive information disclosure". You'll return to this list in Track 4.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 25 MIN</span><h2>Solved problem: the leaked-key response, and closing every open door</h2></div>
+  <div class="prose"><p><b>The problem.</b> Tolu's AI provider key is public and being used. A former rider can edit the Orders sheet. Nobody knows what else is exposed. Here's what Nodo does, in order, and why the order matters.</p></div>
+
+  <div class="timeline">
+    <div class="tl" style="--tc:var(--glitch)"><span class="when">FIRST 10 MIN</span><div><ul><li><b>Revoke the key</b> in the provider's dashboard (API keys → delete). This stops the spending instantly. Don't wait to find out who used it.</li><li><b>Create a new key</b> and paste it into the one credential your automations use.</li><li><b>Delete the screenshot</b> from the group, knowing it may already be copied. Revoking, not deleting, is what protects you.</li></ul></div></div>
+    <div class="tl" style="--tc:var(--sun)"><span class="when">FIRST HOUR</span><div><ul><li><b>Check usage and billing</b> for unfamiliar activity, and contact provider support with the dates; some will review abuse charges.</li><li><b>Set a monthly spending limit and an alert</b> at 50% of normal spend.</li><li><b>Turn on 2FA</b> on the provider account, email and automation platform.</li></ul></div></div>
+    <div class="tl" style="--tc:var(--sky)"><span class="when">SAME DAY</span><div><ul><li><b>Remove the former rider</b> from the Orders sheet. Change "anyone with the link" sharing to named people.</li><li><b>Review connected apps</b> on the Google account; remove anything unused.</li><li><b>Check the payment account:</b> confirm automations use test keys where they're still being built.</li></ul></div></div>
+    <div class="tl" style="--tc:var(--volt)"><span class="when">THIS WEEK</span><div><ul><li><b>Create an access register:</b> every tool, who has access, what level, which key.</li><li><b>Move automations</b> to a dedicated business Google account.</li><li><b>Write the rules down</b> in a one-page policy (below) and share it with staff.</li></ul></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Build the access register</h4>
+      <p>A simple sheet, built with the rules from 0.4. It's how you'll know what to remove when someone leaves and what to rotate when something leaks.</p>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>tool</th><th>account_used</th><th>person_or_app</th><th>access_level</th><th>secret_stored_in</th><th>2fa</th><th>last_reviewed</th></tr></thead>
+        <tbody>
+          <tr><td>Google Sheets · Orders</td><td>ops@harvestlane</td><td>Tolu</td><td>Owner</td><td>n/a</td><td>TRUE</td><td>2026-10-09</td></tr>
+          <tr><td>Google Sheets · Orders</td><td>ops@harvestlane</td><td>Rider team</td><td>Viewer (separate "Today's deliveries" file, no customer data)</td><td>n/a</td><td>n/a</td><td>2026-10-09</td></tr>
+          <tr><td>AI provider</td><td>ops@harvestlane</td><td>Zapier connection</td><td>API key, $10 monthly cap</td><td>Zapier connection only</td><td>TRUE</td><td>2026-10-09</td></tr>
+          <tr><td>Paystack</td><td>ops@harvestlane</td><td>Make scenario</td><td>Test secret key</td><td>Make keychain</td><td>TRUE</td><td>2026-10-09</td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the one-page policy</h4>
+      <p>Short enough that staff actually read it. Here's Harvest Lane's; the Gold mission asks you to write yours.</p>
+      <div class="logbox">
+<pre id="pol-0-6">HARVEST LANE · SECURITY & DATA RULES (v1, Oct 2026)
+
+KEYS AND PASSWORDS
+1. Secret keys live only in the automation platform or the password manager.
+2. Never paste a key into chats, sheets, docs, AI tools or screenshots.
+3. Build with test keys. Only Tolu switches anything to live.
+4. Every AI/API provider has a monthly spending cap and an alert.
+5. 2FA is on for email, automation tools, AI providers and banking.
+
+ACCESS
+6. Sheets are shared with named people only, at the lowest level needed.
+7. When someone leaves, their access is removed the same day.
+8. Connected apps and the access register are reviewed every quarter.
+
+CUSTOMER DATA
+9. We collect only what an order needs: name, phone, address, items.
+10. Customer data is used for orders and delivery only, unless the customer agrees otherwise.
+11. Only needed fields go to AI tools; practice uses sample data.
+12. Customers can ask to see or delete their data; Tolu replies within 7 days.
+
+IF SOMETHING LEAKS
+Revoke first → replace → check usage → tell Tolu → fix the cause.</pre>
+        <div><button type="button" class="btn" data-copy="pol-0-6">Copy template</button></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this order works</h5><ul><li>Revoking first limits the damage while you investigate.</li><li>One credential per key makes replacement a one-minute job.</li><li>Caps and alerts turn the next leak into a small problem.</li><li>A register and policy turn one scare into lasting habits.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Deleting the message but not revoking the key.</li><li>Investigating for hours while the key is still live.</li><li>Pasting the new key into five places "for convenience".</li><li>Fixing the key but not the habit that leaked it.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt: safe or risky?</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I set up security for a friend's shop. Sort my choices into safe and risky. I'm sure they're all fine.</div></div>
+    <div class="sorter">
+      <div class="sitem" data-ans="risky"><span>The AI key is saved in cell B1 of the Orders sheet so every Zap can read it.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="Anyone with sheet access, now or later, can copy it. Store it in the platform's credentials."></span></div>
+      <div class="sitem" data-ans="safe"><span>The Paystack test key is stored in Make's keychain and reused by three scenarios.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="One secure home, reused everywhere, and a test key while building."></span></div>
+      <div class="sitem" data-ans="risky"><span>The Orders sheet is shared as "Anyone with the link can edit" so riders don't need accounts.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="Links get forwarded. Share with named people, and give riders view-only access."></span></div>
+      <div class="sitem" data-ans="risky"><span>Zapier is connected to the owner's personal Gmail with full send-and-delete access.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="Use a business account and the narrowest permissions the Zap needs."></span></div>
+      <div class="sitem" data-ans="safe"><span>The AI provider account has a monthly cap and an alert at half the usual spend.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="A leak becomes a small bill instead of a disaster."></span></div>
+      <div class="sitem" data-ans="risky"><span>To practise prompting, they pasted 200 real customer messages with phone numbers into a free chat app.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="Real personal data doesn't belong in practice tools. Use sample or anonymised messages."></span></div>
+      <div class="sitem" data-ans="risky"><span>Everyone uses the same password for the email, the automation tool and the bank, without 2FA.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="One leak opens every door. Unique passwords from a manager, plus 2FA."></span></div>
+      <div class="sitem" data-ans="safe"><span>When the delivery supervisor left, their access was removed that afternoon using the access register.</span><span class="sb"><button type="button" data-v="safe">Safe</button><button type="button" data-v="risky">Risky</button></span><span class="why" hidden data-t="Same-day offboarding, made easy by knowing where access exists."></span></div>
+      <p class="qscore sscore" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 17 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Lock your own front doors</h4>
+    <ul><li>Open your Google Account's list of connected third-party apps. Remove at least three you no longer use.</li><li>Turn on 2FA for your email and one other important account.</li><li>Find one sheet shared as "anyone with the link" and change it to named people.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You can list what you removed and which accounts now have 2FA. (Don't screenshot any keys or codes.)</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Run a leak drill with a real key</h4>
+    <ul><li>Set up a password manager if you don't have one.</li><li>Create an API key with an AI provider you'll use in this course. Set a spending limit and an alert, if the provider offers them.</li><li>Store the key in the password manager. Then practise the drill: revoke it, create a new one, update it in its one home, and time yourself.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The old key no longer works, the new one is stored in exactly one place, and your drill took under 10 minutes.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Write your business's security and data rules</h4>
+    <ul><li>Build an access register for your own business (or one you know) using the columns in the solved problem.</li><li>Adapt the one-page policy to fit, including what personal data you collect and why.</li><li>Add an incident card: the five steps to take in the first hour, with who does each one.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The register covers every tool that holds customer data or money, and the policy fits on one page.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. You spot your secret key in a public chat. What's the first thing to do?</p><div class="opts">
+      <button type="button" data-opt="a">Delete the message</button><button type="button" data-opt="b">Ask the group not to use it</button><button type="button" data-opt="c">Revoke the key and create a new one</button><button type="button" data-opt="d">Check the bill at month end</button></div>
+      <p class="fb" hidden data-why="Revoking stops the damage immediately. Deleting the message doesn't un-copy the key."></p></div>
+    <div class="q" data-ans="a"><p>2. Where should an automation's API key be stored?</p><div class="opts">
+      <button type="button" data-opt="a">In the platform's credential store, in one place</button><button type="button" data-opt="b">In a sheet so every workflow can read it</button><button type="button" data-opt="c">Inside the AI prompt</button><button type="button" data-opt="d">In a note on your phone</button></div>
+      <p class="fb" hidden data-why="Credential stores keep keys encrypted and let every workflow reuse one copy."></p></div>
+    <div class="q" data-ans="d"><p>3. A Zap only needs to read emails with one label, but the consent screen asks to send and delete email. Best move?</p><div class="opts">
+      <button type="button" data-opt="a">Allow it; it's a trusted company</button><button type="button" data-opt="b">Allow it, then change your password</button><button type="button" data-opt="c">Give up on automation</button><button type="button" data-opt="d">Look for a narrower option, or connect a separate business account</button></div>
+      <p class="fb" hidden data-why="Least privilege: grant only what the job needs, and limit what a single token could reach."></p></div>
+    <div class="q" data-ans="b"><p>4. You're still building a payment automation. Which key should it use?</p><div class="opts">
+      <button type="button" data-opt="a">The live secret key</button><button type="button" data-opt="b">The test secret key</button><button type="button" data-opt="c">The public key</button><button type="button" data-opt="d">No key; payments don't need one</button></div>
+      <p class="fb" hidden data-why="Test keys let you run real-looking payments without moving real money."></p></div>
+    <div class="q" data-ans="c"><p>5. Before sending customer messages to an AI provider's API, you should…</p><div class="opts">
+      <button type="button" data-opt="a">Send the full customer record for context</button><button type="button" data-opt="b">Nothing special; it's just text</button><button type="button" data-opt="c">Send only the needed fields and check the provider's API data terms</button><button type="button" data-opt="d">Ask the AI to promise to keep it private</button></div>
+      <p class="fb" hidden data-why="Minimise the personal data you share, and know how the provider handles API data."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-0-6">AUTOMANCY LOG · Lesson 0.6 · Keys, Logins & Safety
+Date:
+Connected apps removed:
+Accounts with 2FA now on:
+Leak drill time (revoke → replace → store):
+Spending caps set (provider + amount):
+Tools in my access register:
+The policy rule I most needed:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold
+(Never paste keys or codes into this log.)</pre>
+    <div><button type="button" class="btn" data-copy="log-0-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>A secret key is cash: never in chats, sheets, prompts, screenshots or code.</li>
+      <li>Each key lives in one secure place and is reused from there.</li>
+      <li>Read OAuth consent screens; grant the least access that works.</li>
+      <li>2FA everywhere, spending caps on every provider, test keys while building.</li>
+      <li>On a leak: revoke first, replace, check usage, fix the cause.</li>
+      <li>Collect the minimum personal data, use it only for its purpose, and protect it.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and tools</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noopener">OWASP Top 10 for LLM Applications</a></li>
+    <li><span class="kind">Tool</span><a href="https://myaccount.google.com/connections" target="_blank" rel="noopener">Google Account: third-party connections</a></li>
+    <li><span class="kind">Tool</span><a href="https://bitwarden.com/" target="_blank" rel="noopener">Bitwarden password manager (free plan)</a></li>
+    <li><span class="kind">Text</span><a href="https://ndpc.gov.ng/" target="_blank" rel="noopener">Nigeria Data Protection Commission</a></li>
+    <li><span class="kind">Course</span><a href="https://academy.claude.com/" target="_blank" rel="noopener">Claude Academy: AI Fluency (the "Diligence" lessons on responsible use)</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=OAuth+2.0+explained+simply" target="_blank" rel="noopener">YouTube: OAuth 2.0 explained simply</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Open with a show of hands: "Who has ever posted a screenshot of a settings page?" Most hands go up. Run the Silver leak drill live with a stopwatch; the fastest time wins. When teaching businesses, spend extra time on the data-protection card and invite a local expert for client-facing cohorts.</p>
+  </div>
+</section>
+
+</article>
+</template>

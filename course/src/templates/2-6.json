@@ -1,0 +1,165 @@
+{
+  "id": "2.6",
+  "items": [
+    {
+      "file": "2-6-8pm-run-hardened.json",
+      "kind": "make",
+      "name": "HL · 8 p.m. run (hardened)",
+      "what": "The 2.3 tomorrow run with a plan for every failure: the weather lookup resumes with \"unknown\", each courier booking alerts Tolu and retries 3 times every 15 minutes, a failed customer text is logged to the Errors tab and skipped, and the Deliveries write retries twice.",
+      "setup": [
+        "Scenario settings: turn on \"Allow storing of incomplete executions\" (the blueprint sets it, but check). Without it, Break can't save failed runs.",
+        "Schedule: every day at 20:00 (Africa/Lagos).",
+        "Fake courier: on webhook.site create a URL, set its default response status to 503 for the failure test and 201 with body {\"booking_id\": \"CR-1001\"} for recovery; paste it in place of YOUR_WEBHOOK_SITE_URL.",
+        "Message customer: replace YOUR_SMS_API_URL with your SMS (or WhatsApp) provider's send endpoint and add a keychain (HTTP · Make an API Key Auth request) with your test API key in the header the provider expects. In class you can point it at a second webhook.site URL that returns 400 for one number.",
+        "Connections: open each Google Sheets and Gmail module and choose your Harvest Lane business Google connection (0.6), then pick the spreadsheet (replace YOUR_SHEET_ID) and tab. Replace YOUR_ORDERS_SHEET_ID, YOUR_DELIVERIES_SHEET_ID and YOUR_ERRORS_SHEET_ID (they can all be the same spreadsheet).",
+        "Column letters: the blueprint assumes Orders = A order_id, B customer_id, C customer_name, D delivery_date, E fee, F status, G items_total, H total (0.4), I phone_clean, J first_name, K delivery_day, L receipt_text (2.2), M paid_at, N channel, O area, P email, Q delivery_window. If yours differ, open each Google Sheets module after import and re-pick the columns.",
+        "Tabs: Deliveries = A delivery_date, B order_id, C customer_name, D area, E phone, F courier_ref, G rain_chance. Errors = A time, B scenario, C module, D order_id, E error. Needs checking = A order_id, B status, C channel, D total, E reason.",
+        "Replace YOUR_PAYMENT_LINK and tolu@harvestlane.example. Open the Profile → Notifications page and turn on emails for errors and warnings."
+      ],
+      "test": "Add three test orders for tomorrow (two Paid, one New), set webhook.site to 503 and Run once: Tolu gets one alert per paid order, the run shows Warning and two incomplete executions are stored. Switch webhook.site to 201: within the next retry they complete and two Deliveries rows appear. Break the weather URL (e.g. latitude=abc): rider rows say \"unknown\". Give one order an invalid phone so the SMS endpoint returns 400: one Errors row, the other customers still get their texts.",
+      "build": [
+        "1 · HTTP › Make a request \"HTTP · Weather (Open-Meteo)\": GET https://api.open-meteo.com/v1/forecast; query latitude 7.3775, longitude 3.9470, daily precipitation_probability_max, timezone Africa/Lagos, forecast_days 2; Parse response Yes; Evaluate all states as errors Yes. (First module so it runs once a night, not once per order.)",
+        "Error handler on 1 · Resume: Status code 200; data.daily.precipitation_probability_max = [unknown, unknown].",
+        "3 · Google Sheets › Search Rows \"Tomorrow's orders\": Orders; filter delivery_date (D) Equal to {{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}.",
+        "Filter on 3→4 \"Not cancelled\": status Text operators: Not equal to (case insensitive) Cancelled.",
+        "4 · Router \"Sort the orders\" with four routes (from 2.3).",
+        "Route 1 · filter on 4→5 \"Paid or standing\": status Equal to Paid OR channel Equal to standing.",
+        "5 · HTTP › Make a request \"HTTP · Book courier\": POST YOUR_WEBHOOK_SITE_URL; Body raw JSON {\"order_id\": \"{{3.order_id}}\", \"customer\": \"{{3.customer_name}}\", \"area\": \"{{3.area}}\", \"phone\": \"{{3.phone_clean}}\", \"delivery_date\": \"{{3.delivery_date}}\"}; Parse response Yes; Evaluate all states as errors Yes.",
+        "Error handler on 5 · Gmail › Send an email \"Gmail · Alert Tolu (courier)\": To tolu@harvestlane.example; Subject Courier booking failed · {{3.order_id}}; Body {{error.type}}: {{error.message}} / Order {{3.order_id}} for {{3.customer_name}}, {{3.area}}. / Make will retry automatically. Check incomplete executions if this repeats. → Break: Automatically complete execution Yes, Number of attempts 3, Interval 15 minutes.",
+        "8 · Google Sheets › Add a Row \"Google Sheets · Add to Deliveries\": Deliveries; delivery_date {{3.delivery_date}}, order_id {{3.order_id}}, customer_name {{3.customer_name}}, area {{3.area}}, phone {{3.phone_clean}}, courier_ref {{ifempty(5.data.booking_id; \"booked\")}}, rain_chance {{get(1.data.daily.precipitation_probability_max; 2)}}{{if(get(1.data.daily.precipitation_probability_max; 2) = \"unknown\"; emptystring; \"%\")}}.",
+        "Error handler on 8 · Break: automatic completion Yes, 2 attempts, 15 minutes.",
+        "10 · HTTP › Make an API Key Auth request \"Message customer\": POST YOUR_SMS_API_URL; raw JSON {\"to\": \"{{3.phone_clean}}\", \"message\": \"Hi {{3.first_name}}, your Harvest Lane order {{3.order_id}} arrives tomorrow, {{ifempty(3.delivery_window; \"time to be confirmed\")}}. Rain chance: …\"}; Evaluate all states as errors Yes.",
+        "Error handler on 10 · Google Sheets › Add a Row \"Log to Errors tab\": Errors; time {{formatDate(now; \"YYYY-MM-DD HH:mm\")}}, scenario HL · 8 p.m. run, module Message customer, order_id {{3.order_id}}, error {{error.type}}: {{error.message}} → Ignore.",
+        "Route 2 · filter on 4→13 \"Unpaid customer order\": status Equal to New AND channel Not equal to standing → 13 · Gmail › Send an email \"Gmail · Payment reminder\" to {{3.email}} with the payment link.",
+        "Route 3 · filter on 4→14 \"Big order\": total Numeric operators: Greater than 50000 → 14 · Gmail › Send an email \"Gmail · Alert Tolu (big order)\".",
+        "Route 4 · fallback: in the route's settings tick \"Fallback route\" (the blueprint carries the equivalent filter: status ≠ Paid AND channel ≠ standing AND status ≠ New AND total ≤ 50000) → 15 · Google Sheets › Add a Row \"Sheets · Add to Needs checking\": order_id, status, channel, total, reason Matched no route.",
+        "Scenario settings: Allow storing of incomplete executions = Yes. Schedule daily 20:00."
+      ],
+      "walk": {
+        "title": "Build it: an 8 p.m. run that survives Friday",
+        "sample": "Three orders for tomorrow · two Paid, one New · fake courier on webhook.site returning 503, then 201",
+        "steps": [
+          {
+            "at": null,
+            "say": "We plan on paper first: for each module, how much does it matter if it fails? Then switch on storing of incomplete executions, or Break can't save anything for later.",
+            "show": [
+              "Scenario settings: Allow storing of incomplete executions ✓",
+              "Schedule: daily 20:00"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "The weather lookup goes first, so it runs once a night, not once per order. It asks Open-Meteo for tomorrow's rain chance in Ibadan.",
+            "show": [
+              "HTTP › Make a request · GET api.open-meteo.com/v1/forecast",
+              "daily: precipitation_probability_max · forecast_days: 2"
+            ],
+            "data": "rain chance 60"
+          },
+          {
+            "at": "2",
+            "say": "Weather is nice to have, so its handler is Resume. If it fails, we substitute unknown and the run carries on.",
+            "show": [
+              "Error handler: Resume",
+              "precipitation_probability_max: [unknown, unknown]"
+            ],
+            "data": "Rain chance: unknown"
+          },
+          {
+            "at": "3",
+            "say": "Then the same search as 2.3: tomorrow's orders, with cancelled ones filtered off before the router.",
+            "show": [
+              "Search Rows · delivery_date = tomorrow",
+              "Filter: Not cancelled"
+            ],
+            "data": "3 bundles"
+          },
+          {
+            "at": "4",
+            "say": "The router keeps its four routes from 2.3: rider list, reminder, big order, and the fallback.",
+            "show": [
+              "Router: Sort the orders · 4 routes"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "On the rider route, each paid order is booked with the courier's API. Tonight that's a fake on webhook.site, so we can choose when it fails.",
+            "show": [
+              "HTTP › POST YOUR_WEBHOOK_SITE_URL",
+              "Body: order_id, customer, area, phone, delivery_date"
+            ],
+            "data": "503 Service unavailable"
+          },
+          {
+            "at": "6",
+            "say": "A booking must happen tonight, so its error route first emails Tolu exactly what broke and for which order.",
+            "show": [
+              "Gmail: Courier booking failed · {{3.`0`}}",
+              "{{error.type}}: {{error.message}}"
+            ],
+            "data": "1 alert per failed booking"
+          },
+          {
+            "at": "7",
+            "say": "Then Break, with automatic retries: three attempts, fifteen minutes apart. A short outage fixes itself, with no orders lost.",
+            "show": [
+              "Break · Automatically complete: Yes",
+              "Attempts: 3 · Interval: 15 minutes"
+            ],
+            "data": "run status: Warning"
+          },
+          {
+            "at": "8",
+            "say": "A booked order goes on the Deliveries tab with the courier reference and the rain chance.",
+            "show": [
+              "Add a Row · Deliveries",
+              "courier_ref: {{ifempty(5.data.booking_id; \"booked\")}}"
+            ],
+            "data": "CR-1001 · 60%"
+          },
+          {
+            "at": "9",
+            "say": "A sheet write rarely fails, usually a quota blip, so it gets Break with two retries.",
+            "show": [
+              "Error handler: Break · 2 attempts · 15 minutes"
+            ]
+          },
+          {
+            "at": "10",
+            "say": "Then we text the customer. The provider's key sits in a keychain, never in a header field.",
+            "show": [
+              "HTTP › API Key Auth request · POST YOUR_SMS_API_URL",
+              "Hi {{3.`9`}}, your Harvest Lane order … arrives tomorrow"
+            ]
+          },
+          {
+            "at": "11",
+            "say": "One bad phone number shouldn't stop everyone else, so the error route logs it to the Errors tab.",
+            "show": [
+              "Add a Row · Errors",
+              "time, scenario, module, order_id, error"
+            ],
+            "data": "1 Errors row"
+          },
+          {
+            "at": "12",
+            "say": "Then Ignore. The bad one is recorded, and the other customers still get their texts. Never use Ignore on something that matters, like payments.",
+            "show": [
+              "Directive: Ignore"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "Now break it on purpose. With the courier on 503, you'll see Tolu's alerts and stored incomplete executions. Switch webhook.site to 201, and the next retry books them by itself.",
+            "show": [
+              "webhook.site: 503 → 201",
+              "Incomplete executions → completed"
+            ],
+            "data": "0 orders lost"
+          }
+        ],
+        "end": "Run once with the courier down, read the alerts and the Warning status, then bring it back up and watch the bookings complete on their own."
+      }
+    }
+  ]
+}

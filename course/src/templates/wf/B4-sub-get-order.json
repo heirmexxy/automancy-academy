@@ -1,0 +1,143 @@
+{
+  "name": "SUB · Get order (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## SUB · Get order\nLesson Boss 4 (from 4.5). The get_order tool. Inputs: chat_id (mapped from the trigger by the agent workflow, never from the model) and order_id (optional, from the model). Reads only this chat's orders; an order number from another customer gets the same \"no order\" answer as a missing one.\n\n**Credential:** Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID.\nOrders columns: order_id, chat_id, items_json, subtotal, delivery_fee, total, delivery_date, area, status, created_at, rider, refunded, paystack_ref.",
+        "height": 400,
+        "width": 380
+      },
+      "id": "d303b37b-df7d-409f-bfbf-767956a9aced",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a02178eb-f2ed-4a98-8807-6d931258709d",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "chat_id",
+              "lookupValue": "={{ $('When Executed by Another Workflow').first().json.chat_id }}"
+            }
+          ]
+        }
+      },
+      "id": "b9957b36-61e0-4562-9b6b-4846ec0a2a78",
+      "name": "Orders for this chat",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Identity comes from the channel: only this chat's orders are ever visible.\nconst t = $('When Executed by Another Workflow').first().json;\nconst chatId = String(t.chat_id ?? '');\nconst wanted = String(t.order_id ?? '').toUpperCase().trim();\nconst mine = $input.all().map(i => i.json)\n  .filter(r => r.order_id && String(r.chat_id) === chatId)\n  .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));\nconst tidy = o => {\n  let items;\n  try { items = JSON.parse(o.items_json).map(l => ({ product: l.name, qty: l.qty, unit: l.unit })); } catch (e) { items = o.items_json; }\n  return { order_id: o.order_id, items, total: Number(o.total), status: o.status, delivery_date: o.delivery_date,\n           rider: o.rider || undefined, refunded: o.refunded || 'no' };\n};\nif (!chatId) return [{ json: { found: false, error: 'No customer identity' } }];\nif (wanted) {\n  const o = mine.find(r => String(r.order_id).toUpperCase() === wanted);\n  // Same answer whether the order doesn't exist or belongs to someone else: nothing leaks.\n  if (!o) return [{ json: { found: false, message: `No order ${wanted} on this customer's account.` } }];\n  return [{ json: { found: true, ...tidy(o) } }];\n}\nif (!mine.length) return [{ json: { found: false, message: 'This customer has no orders yet.' } }];\nreturn [{ json: { found: true, orders: mine.slice(0, 3).map(tidy) } }];"
+      },
+      "id": "88e9bc46-c6cb-43af-9520-dad6949afac6",
+      "name": "Pick order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d5f009c4-abab-4bc1-bf4e-6f10cb8775b9",
+              "name": "error",
+              "value": "Order list unavailable, try again later",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96ec866c-a8ea-4448-aa62-669990c4f364",
+      "name": "Return error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Orders for this chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders for this chat": {
+      "main": [
+        [
+          {
+            "node": "Pick order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

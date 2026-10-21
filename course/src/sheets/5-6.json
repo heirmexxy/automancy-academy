@@ -1,0 +1,38 @@
+{
+ "id": "5.6",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Harvest Lane authenticates <code>mail.harvestlane.example</code> in Brevo. (Mailchimp: Website → Domains → authenticate, same idea.)</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Record</th><th>Host</th><th>Value</th></tr></thead><tbody><tr><td>Brevo code (TXT)</td><td>as Brevo shows</td><td>brevo-code:… (copied from Brevo)</td></tr><tr><td>DKIM</td><td>as Brevo shows</td><td>copied from Brevo, not typed</td></tr><tr><td>SPF (TXT)</td><td>harvestlane.example</td><td>v=spf1 include:_spf.google.com include:spf.your-email-tool.example ~all</td></tr><tr><td>DMARC (TXT)</td><td>_dmarc.harvestlane.example</td><td>v=DMARC1; p=none; rua=mailto:dmarc@harvestlane.example</td></tr></tbody></table></div><p>Rules followed: one SPF record only, ending in ~all, never +all; DMARC starts at p=none; From address <code>news@mail.harvestlane.example</code>, not a Gmail address. Press Authenticate in Brevo once DNS has updated.</p><p>Send a test campaign to your Gmail, open it, then the three-dot menu → Show original:</p><pre class=\"codebox\">SPF:   PASS with IP 1.2.3.4\nDKIM:  'PASS' with domain mail.harvestlane.example\nDMARC: 'PASS'</pre><p>Submit the DNS screenshot and the Show original screenshot. If one says FAIL, check for a second SPF record or a DKIM record pasted with extra spaces.</p>",
+   "mistakes": [
+    "Adding a second SPF record instead of merging into one.",
+    "Ending SPF with +all.",
+    "Sending the test from a @gmail.com From address, which cannot pass DMARC through the tool.",
+    "Reading the email tool's dashboard instead of Gmail's Show original."
+   ],
+   "pass": "A Show original screenshot from Gmail showing SPF, DKIM and DMARC all as PASS for the learner's own (or permitted) domain, plus the DNS records.",
+   "redo": "Send it back if any of the three is not PASS, there are two SPF records or +all, or the domain is not one the learner controls or has permission for."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane's consent flow into Brevo, with the welcome series and 60-day win-back.</p><ol><li><b>Checkout</b>: unticked box \"Send me weekly prices and offers\".</li><li><b>HL·03 payment workflow</b>, after a verified payment: IF consent → Brevo · Create or update contact with FIRSTNAME, SEGMENT, FAV_CATEGORY, LAST_ORDER_DATE, USUAL_ORDER_DAY; add to \"Customers · opted in\"; Supabase stores consent_at and consent_source. No consent → nothing sent to Brevo.</li><li><b>Welcome</b> (Brevo automation): contact added to list → email 1 → wait 3 days → email 2 → wait 4 days → email 3.</li><li><b>Win-back</b>: n8n updates LAST_ORDER_DATE on every order; Brevo sends the win-back when it is 60 days old and stops if they order.</li><li><b>Unsubscribes</b>: Brevo webhook (unsubscribed, hard bounce, spam complaint) → n8n → Supabase <code>marketing_blocked = true</code>, which every channel checks.</li></ol><p>To test without waiting a week, use a copy of the automation with the waits shortened, then switch back.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test contact</th><th>Set up</th><th>Expected</th><th>Received</th></tr></thead><tbody><tr><td>Ada (test inbox 1)</td><td>Opts in today</td><td>Welcome 1, 2, 3</td><td>All three, in order</td></tr><tr><td>Bayo (test inbox 2)</td><td>LAST_ORDER_DATE 61 days ago</td><td>Welcome, then win-back</td><td>Both</td></tr><tr><td>Chidi (test inbox 3)</td><td>Ordered 10 days ago</td><td>Welcome only</td><td>Welcome only</td></tr><tr><td>Dami (no box ticked)</td><td>Pays, no consent</td><td>Nothing</td><td>Nothing; not in Brevo</td></tr></tbody></table></div><p>Then Bayo clicks unsubscribe: within minutes the Supabase row is blocked, the win-back automation stops, and the WhatsApp offer workflow skips him the same day.</p>",
+   "mistakes": [
+    "Adding every paying customer to the list whether or not they ticked the box.",
+    "Testing with one contact only, so the win-back and no-email cases are never seen.",
+    "Unsubscribes stopping email but not WhatsApp or other marketing.",
+    "Leaving shortened test waits in the live automation."
+   ],
+   "pass": "Three or more test contacts at different order dates each received exactly the expected emails, a no-consent contact received nothing, and one unsubscribe blocked all marketing to that contact the same day.",
+   "redo": "Send it back if any contact got a wrong or extra email, consent is not recorded, or the unsubscribe did not reach other channels."
+  },
+  "g": {
+   "answer": "<p>Worked example: Mama Ngozi's Pantry, a fictional foodstuff shop in Enugu, with 1,240 contacts who ticked the box at checkout or on the shop's form (double opt-in). The shop moved to a paid Brevo plan, because the free plan's 300 emails a day would spread each newsletter over five days.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Week</th><th>Delivered</th><th>Clicks</th><th>Orders from email (UTM)</th><th>Unsubscribes</th><th>Complaints</th></tr></thead><tbody><tr><td>Baseline: month before (no email)</td><td>–</td><td>–</td><td>0</td><td>–</td><td>–</td></tr><tr><td>1</td><td>1,226</td><td>88</td><td>6</td><td>9</td><td>1 (0.08%)</td></tr><tr><td>2</td><td>1,219</td><td>74</td><td>4</td><td>5</td><td>0</td></tr><tr><td>3</td><td>1,231</td><td>102</td><td>9</td><td>4</td><td>0</td></tr><tr><td>4</td><td>1,228</td><td>95</td><td>7</td><td>3</td><td>1 (0.08%)</td></tr></tbody></table></div><p><b>Total</b>: 26 orders traced to email links (<code>utm_source=email</code>), about ₦312,000 in sales by the shop's records. Complaints stayed under 0.1% every week, so the automatic pause never fired.</p><p>Each newsletter was drafted by AI from the price sheet and approved by the owner on Telegram. Week 3's draft offered \"free delivery this weekend\"; the code check blocked it because it wasn't on the approved offers list, and the owner removed it.</p><p>Opens were 61% on average, but we judge by clicks and orders because automatic image loading inflates opens.</p><p>Submit: the four approved drafts, the Brevo reports, the UTM order export, the complaint and unsubscribe figures, and the owner's sign-off.</p>",
+   "mistakes": [
+    "Using a list that includes WhatsApp or phone contacts who never opted in.",
+    "Reporting open rates as the main result.",
+    "Letting the AI add discounts the owner never approved.",
+    "No baseline to compare orders against."
+   ],
+   "pass": "Four owner-approved newsletters to a consented list, with clicks, UTM-traced orders, unsubscribes and complaints reported against a baseline, complaints under 0.1% each week.",
+   "redo": "Send it back if complaints reached 0.1%, consent is unproven, orders cannot be traced to email links, or a newsletter went out without approval."
+  }
+ }
+}

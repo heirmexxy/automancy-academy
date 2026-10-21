@@ -1,0 +1,162 @@
+{
+ "name": "TOOL · get_customer_context",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## TOOL · get_customer_context (Lesson 5.7)\nCalled by the Sage Desk agent before every reply. customer_id is fixed by the workflow, not chosen by the AI, so the agent can only read the customer it is answering.\nReturns the timeline across channels (last 30 messages), open orders and the decisions table.\n\nCredentials: Postgres (Supabase).\nAdjust the open orders query to your orders table (it joins on a verified phone).",
+    "height": 280,
+    "width": 500
+   },
+   "id": "a80fe716-9735-4b0a-8820-b0b9b48a52a5",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -300
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "3495206f-8854-4590-9095-01be7c8a1175",
+   "name": "When called by the agent",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select m.at, m.channel, m.direction, m.sent_by, left(m.text, 400) as text\nfrom messages m join conversations c on c.id = m.conversation_id\nwhere c.customer_id = $1\norder by m.at desc limit 30;",
+    "options": {
+     "queryReplacement": "={{ [ $json.customer_id ] }}"
+    }
+   },
+   "id": "575dd5af-62fa-423e-aa1e-d38855b537ad",
+   "name": "Timeline",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    220,
+    0
+   ],
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select o.order_id, o.status, o.eta, o.total\nfrom orders o join identities i on i.type = 'phone' and i.value = o.phone and i.verified\nwhere i.customer_id = $1 and o.status not in ('delivered', 'cancelled');",
+    "options": {
+     "queryReplacement": "={{ [ $('When called by the agent').first().json.customer_id ] }}"
+    }
+   },
+   "id": "7a0c6d46-a0f4-477a-978c-a055f47c41e4",
+   "name": "Open orders",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    440,
+    0
+   ],
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "select type, value, decided_by, at from decisions where customer_id = $1 order by at desc;",
+    "options": {
+     "queryReplacement": "={{ [ $('When called by the agent').first().json.customer_id ] }}"
+    }
+   },
+   "id": "8006139a-3b04-435b-8707-acf0251e09bb",
+   "name": "Decisions",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    0
+   ],
+   "alwaysOutputData": true,
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const rows = (n) => $(n).all().map(i => i.json).filter(r => Object.keys(r).length);\nconst timeline = rows('Timeline').reverse().map(m => `${m.at} ${m.channel} ${m.direction === 'in' ? 'customer' : m.sent_by}: ${m.text}`);\nreturn [{ json: { timeline: timeline.join('\\n') || 'no earlier messages',\n  open_orders: rows('Open orders'), decisions: rows('Decisions') } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "30779a4f-6521-4a14-8897-20f08cce439a",
+   "name": "Context",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "When called by the agent": {
+   "main": [
+    [
+     {
+      "node": "Timeline",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Timeline": {
+   "main": [
+    [
+     {
+      "node": "Open orders",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Open orders": {
+   "main": [
+    [
+     {
+      "node": "Decisions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Decisions": {
+   "main": [
+    [
+     {
+      "node": "Context",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by the agent": [
+   {
+    "json": {
+     "customer_id": 1
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

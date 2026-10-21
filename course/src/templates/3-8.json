@@ -1,0 +1,125 @@
+{
+  "id": "3.8",
+  "items": [
+    {
+      "file": "3-8-backup-github.json",
+      "name": "HL · Backup workflows → GitHub",
+      "what": "Every night at 02:00, lists every workflow through the n8n API and commits each one as workflows/<name>.json to a private GitHub repository, editing existing files and creating new ones.",
+      "setup": [
+        "Deploy n8n first (lesson steps, also in the sticky note): a 2 GB Ubuntu server with provider backups, a DNS A record, Docker, the firewall allowing only 22, 80 and 443, and the .env, docker-compose.yml and Caddyfile from Card 3 with a pinned version, your generated encryption key (saved in a password manager), N8N_WEBHOOK_URL (WEBHOOK_URL before 2.35) and N8N_PROXY_HOPS=1. Run docker compose up -d.",
+        "Open your domain over HTTPS, create the owner account and turn on two-factor login. Import your Track 3 workflows, recreate their credentials, publish them and switch off the laptop copies.",
+        "Create a private GitHub repository called harvestlane-n8n and a fine-grained personal access token limited to it with Contents: read and write.",
+        "Create a Header Auth credential called \"GitHub backup\": Name Authorization, Value Bearer followed by your token. Select it in GitHub · Get file, GitHub · Edit a file and GitHub · Create a file.",
+        "In n8n go to Settings, n8n API, and create an API key. Create a Header Auth credential called \"n8n API\": Name X-N8N-API-KEY, Value your API key. Select it in Get many workflows.",
+        "Replace YOUR_N8N_DOMAIN in Get many workflows with your n8n domain (for example n8n.harvestlane.example).",
+        "Replace YOUR_GITHUB_OWNER in the three GitHub nodes with your GitHub user or organisation name.",
+        "In Settings set Error workflow to HL · Error alerts, then save and publish.",
+        "Add an UptimeRobot HTTP monitor on https://YOUR_N8N_DOMAIN/healthz every 5 minutes and test it with docker compose stop n8n, then docker compose start n8n."
+      ],
+      "test": "Click Execute workflow: Get many workflows returns one item with a data list, Split Out gives one item per workflow, and on the first run every file goes out of GitHub · Get file's error output to GitHub · Create a file. The repo now holds workflows/<name>.json for each one, each with a commit titled nightly backup and today's date. Change one workflow and run again: that file goes through GitHub · Edit a file and its change shows in the commit history.",
+      "walk": {
+        "title": "Build it: nightly workflow backups to GitHub",
+        "sample": "Live n8n at n8n.harvestlane.example · Track 3 workflows moved over · private repo harvestlane-n8n",
+        "steps": [
+          {
+            "at": null,
+            "say": "This runs on the live server: Caddy in front with HTTPS, n8n's own port kept private, a pinned version, and the encryption key saved in a password manager, off the server.",
+            "show": [
+              "Firewall: 22, 80, 443 only · no 5678",
+              "N8N_WEBHOOK_URL=https://YOUR_N8N_DOMAIN/ · N8N_PROXY_HOPS=1",
+              "Key: in the password manager"
+            ]
+          },
+          {
+            "at": "Schedule Trigger",
+            "say": "The backup runs every night at two, when nothing else is busy.",
+            "show": [
+              "Trigger interval: Days · 1 · 02:00"
+            ]
+          },
+          {
+            "at": "Get many workflows",
+            "say": "We ask n8n's own API for every workflow. The API key lives in a Header Auth credential, never in a field.",
+            "show": [
+              "GET https://YOUR_N8N_DOMAIN/api/v1/workflows",
+              "Query: limit=250",
+              "Credential: n8n API (X-N8N-API-KEY)"
+            ],
+            "data": "1 item · data list of workflows"
+          },
+          {
+            "at": "Split Out",
+            "say": "The answer is one item holding a list. Split Out gives us one item per workflow.",
+            "show": [
+              "Field to split out: data"
+            ],
+            "data": "1 item per workflow"
+          },
+          {
+            "at": "Code",
+            "say": "A small Code node, run once for each item, builds a safe file path from the workflow's name, and the content. GitHub's API wants the content in base64.",
+            "show": [
+              "Mode: Run Once for Each Item",
+              "path: workflows/${name with odd characters → _}.json",
+              "content_b64: Buffer.from(…).toString('base64')"
+            ],
+            "data": "workflows/HL_Error_alerts.json"
+          },
+          {
+            "at": "GitHub · Get file",
+            "say": "To edit a file, GitHub needs its current version code, the sha. So we read the file first, with a token limited to this one private repo.",
+            "show": [
+              "GET api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/…",
+              "Credential: GitHub backup (Bearer fine-grained token)"
+            ],
+            "data": "sha: 3f2a…"
+          },
+          {
+            "at": "GitHub · Get file",
+            "say": "A workflow that's new since last night has no file yet, so GitHub answers not found. Set On Error to continue using the error output, so those go down a second path instead of failing the run.",
+            "show": [
+              "Settings › On Error: Continue (using error output)",
+              "404 → error output"
+            ]
+          },
+          {
+            "at": "GitHub · Edit a file",
+            "say": "Existing files are updated with the new content and the sha, and a commit message with today's date. Now every change has history and can be rolled back.",
+            "show": [
+              "PUT …/contents/{{ $('Code').item.json.path }}",
+              "message: 'nightly backup ' + $now.toISODate()",
+              "content: content_b64 · sha: {{ $json.sha }}"
+            ],
+            "data": "commit: nightly backup 2026-10-14"
+          },
+          {
+            "at": "GitHub · Create a file",
+            "say": "New workflows come out of the error output and are created, the same way but without a sha.",
+            "show": [
+              "PUT …/contents/{{ $('Code').item.json.path }}",
+              "message + content (no sha)"
+            ],
+            "data": "new file created"
+          },
+          {
+            "at": "GitHub · Create a file",
+            "say": "Workflow files hold credential names, not secrets, but keep the repo private anyway, and never commit the env file.",
+            "show": [
+              "Repo: private",
+              ".env: never committed"
+            ]
+          },
+          {
+            "at": "Schedule Trigger",
+            "say": "Connect this workflow to HL Error alerts. And because an error workflow can't report n8n itself being down, add an outside uptime check on the health address, and test it by stopping n8n.",
+            "show": [
+              "Settings › Error workflow: HL · Error alerts",
+              "UptimeRobot: https://YOUR_N8N_DOMAIN/healthz · every 5 min"
+            ]
+          }
+        ],
+        "end": "Run it once and check the repo has one file per workflow, then change a workflow, run again and see the change in the commit history."
+      }
+    }
+  ]
+}

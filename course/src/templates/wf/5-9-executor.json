@@ -1,0 +1,1042 @@
+{
+  "name": "CRM · Executor (approved proposals only)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## CRM · Executor (Lesson 5.9)\nA plain workflow, not the agent. Every 15 minutes it takes proposals Tolu APPROVED, checks the action is on the allow-list in code (and refuses stage, owner, consent and permission fields), saves the before-values, calls HubSpot, and logs the result. Deletion is never on the list.\n- merge_companies: only if both companies have the same domain.\n- bulk_update_property: batch update, before-values saved first.\n- create_task: a task for the deal's owner.\n- require_field: HubSpot settings change; Tolu is told exactly what to set (no API call).\n- score_weight: saved to score_weights; update W in CRM · Upsert lead's Score node after testing on last quarter.\n\nCredentials: HubSpot App Token credential (the \"n8n Growth Desk\" private app token, with only contact, company and deal read/write scopes, plus tasks if you create tasks) (this one may write); Postgres (Supabase); Telegram.\nPlaceholders: YOUR_TELEGRAM_CHAT_ID.",
+        "height": 420,
+        "width": 640
+      },
+      "id": "11b362d6-a0f0-4047-bd62-9a744c4160ff",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        -460
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "05d7611d-c8d3-4f3c-8519-6681111a0529",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from crm_proposals where status = 'approved' order by id limit 20;",
+        "options": {}
+      },
+      "id": "5eab5f31-a453-459b-9066-f7228d6e3943",
+      "name": "Approved proposals",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "5374ad36-3a3e-4d60-90f4-9375c1f25472",
+      "name": "One at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4a660719-d1b9-42bf-b355-46fa6e6f823e",
+      "name": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ALLOW = ['merge_companies', 'bulk_update_property', 'create_task', 'require_field', 'score_weight'];\nconst NEVER_FIELDS = ['dealstage', 'pipeline', 'hubspot_owner_id', 'marketing_consent', 'consent_date', 'hs_email_optout', 'lifecyclestage'];\nconst p = $json;\nconst d = p.details || {};\nlet reason = '';\nif (!ALLOW.includes(p.action)) reason = `action ${p.action} is not on the allow-list`;\nif (p.action === 'bulk_update_property' && NEVER_FIELDS.includes(String(d.property).trim().toLowerCase())) reason = `property ${d.property} can't be changed by the executor`;\n// object_type goes into the URL: only these three, so nothing else (archive, merge, associations) can be reached.\nif (p.action === 'bulk_update_property' && !['contacts', 'companies', 'deals'].includes(String(d.object_type))) reason = `object type ${d.object_type} is not allowed`;\nif (p.action === 'merge_companies' && (!d.primary_id || !d.merge_id)) reason = 'merge needs primary_id and merge_id';\nif (!reason && p.action === 'bulk_update_property' && !(Array.isArray(p.target_ids) && p.target_ids.length && d.object_type && d.property)) reason = 'bulk update needs target_ids, object_type and property';\nreturn { ...p, details: d, allowed: !reason, reason };\n",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "88382aa8-18d7-4961-8e18-2e6044249444",
+      "name": "Allow-list check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "80951b94-6dc7-4866-8093-dace9849ef82",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4df31489-8494-4831-be37-e2a803370576",
+      "name": "Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update crm_proposals set status = 'blocked', result = $1 where id = $2;",
+        "options": {
+          "queryReplacement": "={{ [ $json.reason, $json.id ] }}"
+        }
+      },
+      "id": "c9b687bf-2a62-4462-a9c5-e738cf23a90f",
+      "name": "Block",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=Proposal #{{ $('Allowed?').item.json.id }} was NOT executed: {{ $('Allowed?').item.json.reason }}.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0746dd1b-f178-431d-9aec-e6e139a87ecc",
+      "name": "Tell Tolu: blocked",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "b93cf419-6774-44e4-97d5-0d95f6dddbcf",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "merge_companies",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "merge_companies"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "9386d3ce-b7f6-4688-ad06-981c04f4a00e",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "bulk_update_property",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bulk_update_property"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "23a4ede5-5a89-43fe-881d-e704eef3994a",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "create_task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create_task"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "b09034f2-7c11-4cf9-8db1-2e3091127548",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "require_field",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "require_field"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "886ae9c0-a1ec-42f4-9e56-4b362a8f63c7",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "score_weight",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "score_weight"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "dc2da279-b9b9-4a4e-a32e-7dea3f5772ce",
+      "name": "Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/batch/read",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: ['name', 'domain'], inputs: [ { id: String($json.details.primary_id) }, { id: String($json.details.merge_id) } ] }) }}",
+        "options": {}
+      },
+      "id": "e4d950cf-1048-4d98-b49c-11bbbcebf332",
+      "name": "Before: both companies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c9ce8566-8f5c-4712-8311-c68ab2946728",
+              "leftValue": "={{ ($json.results || []).length === 2 && $json.results[0].properties.domain && $json.results[0].properties.domain === $json.results[1].properties.domain }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4b88be63-fe40-4f59-8b7c-4dbfd1dd30a0",
+      "name": "Same domain?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/merge",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ primaryObjectId: String($('One at a time').item.json.details.primary_id), objectIdToMerge: String($('One at a time').item.json.details.merge_id) }) }}",
+        "options": {}
+      },
+      "id": "02e2a580-0457-4b4a-95ab-e3e920ed81bc",
+      "name": "Merge companies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b54adc80-478b-4c51-9b97-453af9a1e6e5",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "bd2ed8da-ceb2-4ba2-86c9-016b88cf96db",
+              "name": "before_values",
+              "value": "={{ JSON.stringify($('Before: both companies').item.json.results) }}",
+              "type": "string"
+            },
+            {
+              "id": "27437e77-e7cb-475b-bc78-d819974c2161",
+              "name": "result",
+              "value": "=merged into company {{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "1c595773-ade6-4c49-a422-90cb71b11b00",
+              "name": "status",
+              "value": "executed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20fa76ac-4f20-4075-88cc-86f506b2f1f3",
+      "name": "Result: merged",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1980,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc7effc0-453c-4047-acf8-66ce19b6b7f5",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e4408921-f5d1-43c9-900e-20c4f6f54afd",
+              "name": "before_values",
+              "value": "={{ JSON.stringify($json.results || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "59a3538f-a080-4923-8908-e918d004efd4",
+              "name": "result",
+              "value": "not merged: the two companies don't share the same verified domain",
+              "type": "string"
+            },
+            {
+              "id": "4b5abd3e-4254-42fc-9e70-628faf37d6ca",
+              "name": "status",
+              "value": "blocked",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93d4c1ec-57ac-4004-84e2-c5c6ba301bad",
+      "name": "Result: domains differ",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        -216
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v3/objects/{{ $json.details.object_type }}/batch/read",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: [ $json.details.property ], inputs: $json.target_ids.map(id => ({ id: String(id) })) }) }}",
+        "options": {}
+      },
+      "id": "de914226-c077-4b1d-97ed-61fcd8f78713",
+      "name": "Before: current values",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v3/objects/{{ $('One at a time').item.json.details.object_type }}/batch/update",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $('One at a time').item.json.target_ids.map(id => ({ id: String(id), properties: { [$('One at a time').item.json.details.property]: $('One at a time').item.json.details.to_value } })) }) }}",
+        "options": {}
+      },
+      "id": "0cb643fe-2fe0-404f-9891-8946fdd75670",
+      "name": "Bulk update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f10d0d-d8f5-4a83-8db4-3620c97f2a05",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3f065b33-15b9-4539-8da2-1975ce50c2d5",
+              "name": "before_values",
+              "value": "={{ JSON.stringify($('Before: current values').item.json.results) }}",
+              "type": "string"
+            },
+            {
+              "id": "73ea8efb-75df-4a6f-8133-33f69766e5d3",
+              "name": "result",
+              "value": "=updated {{ ($json.results || []).length }} records",
+              "type": "string"
+            },
+            {
+              "id": "9c14cfdb-9905-4cb7-9d94-81b67d3cac57",
+              "name": "status",
+              "value": "executed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4e10ac1b-9074-4dd6-893c-615a2bf9ce64",
+      "name": "Result: updated",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date().toISOString(), hs_task_subject: $json.details.subject, hs_task_status: 'NOT_STARTED', hubspot_owner_id: String($json.details.owner_id || '') }, associations: [ { to: { id: String($json.details.deal_id) }, types: [ { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 } ] } ] }) }}",
+        "options": {}
+      },
+      "id": "e3862733-c438-4ff9-a8ba-5bcb96dd19e9",
+      "name": "Create task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21e89566-636c-414c-ac47-038709598776",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b8f5f266-44c7-405a-b4d4-447a1a07d11c",
+              "name": "before_values",
+              "value": "{}",
+              "type": "string"
+            },
+            {
+              "id": "fd3bc487-ea97-465f-b1b5-86ce305f67c5",
+              "name": "result",
+              "value": "=task {{ $json.id }} created",
+              "type": "string"
+            },
+            {
+              "id": "b617d69c-921b-4e57-bc6c-681f73bf8025",
+              "name": "status",
+              "value": "executed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d57d8bc0-6277-4b51-bbb6-0ad57ffbcebe",
+      "name": "Result: task",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        108
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=Approved: make {{ $json.details.property }} required at stage {{ $json.details.stage }}. In HubSpot: Settings -> Objects -> Deals -> Pipelines -> edit stage properties. (Not done by API.)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b5eb3404-9ace-4baa-aee1-2482d2342b4e",
+      "name": "Tell Tolu: settings change",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b99a62f6-c91d-4ca3-bb28-ccd26c3fd325",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "1e829bc1-ddf0-488c-869b-17e2df89db25",
+              "name": "before_values",
+              "value": "{}",
+              "type": "string"
+            },
+            {
+              "id": "ed139690-714f-43e7-8bdc-6fe88b4ac878",
+              "name": "result",
+              "value": "manual settings change requested from Tolu",
+              "type": "string"
+            },
+            {
+              "id": "88ed5f46-f0db-4d94-966c-5ce8820a634e",
+              "name": "status",
+              "value": "executed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f0b65512-f2f4-4409-9333-a587305b4c44",
+      "name": "Result: manual",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into score_weights (name, value, evidence) values ($1, $2, $3) returning id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.details.name, $json.details.value, $json.evidence ] }}"
+        }
+      },
+      "id": "0169c2f6-04bd-4156-8b65-aeb368fb1e0d",
+      "name": "Save score weight",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        468
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04bfaf62-4c6e-4fba-9612-c302f2390e40",
+              "name": "id",
+              "value": "={{ $('One at a time').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ca204210-b362-4816-b30a-559c8d034689",
+              "name": "before_values",
+              "value": "{}",
+              "type": "string"
+            },
+            {
+              "id": "0b927cf1-e393-440c-9c61-eb2e9e11afce",
+              "name": "result",
+              "value": "=weight saved; update W in CRM · Upsert lead's Score node",
+              "type": "string"
+            },
+            {
+              "id": "9ac4456e-ce37-4642-b612-2d9650eb1311",
+              "name": "status",
+              "value": "executed",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5e6d50a3-0af6-4ba6-b16f-95b93d6e27ca",
+      "name": "Result: weight saved",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        468
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update crm_proposals set status = $1, before_values = $2::jsonb, result = $3, executed_at = now() where id = $4;",
+        "options": {
+          "queryReplacement": "={{ [ $json.status, $json.before_values || '{}', $json.result, $json.id ] }}"
+        }
+      },
+      "id": "5cb764ac-d49b-4a86-ac03-7af2b7fc741c",
+      "name": "Log result",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Approved proposals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved proposals": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One at a time": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Allow-list check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allow-list check": {
+      "main": [
+        [
+          {
+            "node": "Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Block": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu: blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell Tolu: blocked": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action": {
+      "main": [
+        [
+          {
+            "node": "Before: both companies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Before: current values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell Tolu: settings change",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save score weight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Before: both companies": {
+      "main": [
+        [
+          {
+            "node": "Same domain?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Same domain?": {
+      "main": [
+        [
+          {
+            "node": "Merge companies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Result: domains differ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge companies": {
+      "main": [
+        [
+          {
+            "node": "Result: merged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Before: current values": {
+      "main": [
+        [
+          {
+            "node": "Bulk update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bulk update": {
+      "main": [
+        [
+          {
+            "node": "Result: updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task": {
+      "main": [
+        [
+          {
+            "node": "Result: task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell Tolu: settings change": {
+      "main": [
+        [
+          {
+            "node": "Result: manual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save score weight": {
+      "main": [
+        [
+          {
+            "node": "Result: weight saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: merged": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: domains differ": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: updated": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: task": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: manual": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Result: weight saved": {
+      "main": [
+        [
+          {
+            "node": "Log result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log result": {
+      "main": [
+        [
+          {
+            "node": "One at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

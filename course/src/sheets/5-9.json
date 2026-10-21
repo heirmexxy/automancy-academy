@@ -1,0 +1,39 @@
+{
+ "id": "5.9",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Harvest Lane on HubSpot Free, so most logic runs in n8n.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Rule</th><th>Trigger</th><th>Action</th><th>Where and plan</th><th>Owner</th></tr></thead><tbody><tr><td>Lead in from Instagram, WhatsApp, email, outreach</td><td>New lead in Supabase</td><td>CRM · Upsert lead</td><td>n8n (CRM only takes its own forms)</td><td>Tolu</td></tr><tr><td>Score</td><td>Lead upserted</td><td>Score in code, write harvest_score</td><td>n8n (HubSpot scoring is Professional+)</td><td>Tolu</td></tr><tr><td>Ready lead</td><td>Score 65+</td><td>Lifecycle → SQL; \"Call today\" task; Telegram</td><td>n8n</td><td>Tolu</td></tr><tr><td>Tasting booked</td><td>Stage change</td><td>Task the day before; WhatsApp template reminder (with consent)</td><td>n8n (HubSpot from Starter)</td><td>Tolu</td></tr><tr><td>Proposal, no reply 3 days</td><td>Daily search</td><td>Follow-up task; AI draft for approval</td><td>n8n</td><td>Tolu</td></tr><tr><td>Deal won</td><td>Stage change</td><td>Lifecycle → Customer; welcome series</td><td>n8n</td><td>Bisi</td></tr><tr><td>Deal lost</td><td>Stage change</td><td>Require reason; task in 6 months if current supplier</td><td>n8n</td><td>Tolu</td></tr><tr><td>Going cold</td><td>7 days no activity</td><td>Morning alert</td><td>n8n</td><td>Tolu</td></tr></tbody></table></div><p>Why n8n: the free plan has very little automation and there is no admin to maintain CRM workflows. If Harvest Lane later pays for a higher plan, the task rules could move into HubSpot. Every n8n rule is documented in the handover pack.</p>",
+   "mistakes": [
+    "Putting lead scoring inside HubSpot Free, where it is not available.",
+    "Rules with no owner or no trigger.",
+    "Not noting which plan each CRM-side rule needs.",
+    "Planning an automation that changes deal stages by itself."
+   ],
+   "pass": "A table covering every lead source and follow-up rule, each with a trigger, an action, an owner, where it runs and why, and the plan it needs.",
+   "redo": "Send it back if any rule lacks a trigger, owner or plan note, or an automation moves deal stages."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane, HubSpot Free, private app \"n8n Growth Desk\" with only contact, company and deal scopes; token in an n8n credential.</p><p><b>CRM · Upsert lead</b>: normalise (lowercase email, +234 phone, domain without www.) → search company by domain, update or create → contact Create or Update by email with lead_source and consent → associate → if buying intent and no open deal, create deal at New enquiry, owner Tolu, associate both → save crm_contact_id and crm_deal_id in Supabase. Called by the Instagram (5.5) and email (5.7) engines.</p><p><b>Score</b>: the lesson's Code node (zone knock-out, base 30, type 20, asked 25, opens 5, size 10, ready at 65) → harvest_score property; ready → SQL and \"Call today\" task.</p><p><b>Stage change</b>: HubSpot Trigger on dealstage → Switch → Proposal sent creates a follow-up task due in 3 days. It writes only tasks and notes, never the stage.</p><p><b>Ops Agent</b>: AI Agent with read-only search tools plus <code>propose_change</code> (inserts into crm_proposals). Telegram Approve or Reject; a separate executor checks the allow-list in code before calling HubSpot.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Test</th><th>Expected</th><th>Result</th></tr></thead><tbody><tr><td>Grill Yard enquires on Instagram, then by email (same domain)</td><td>1 company, 1 contact, 1 deal</td><td>1 / 1 / 1; second run updated, not created</td></tr><tr><td>Move test deal to Proposal sent</td><td>1 task, workflow runs once</td><td>1 execution, task due in 3 days</td></tr><tr><td>Agent proposes merging two Bodija Suites (same domain); Reject</td><td>Nothing changes</td><td>Proposal status rejected; both companies still there; executor not run</td></tr><tr><td>Agent asked to delete contacts</td><td>Refuses; not on allow-list</td><td>No proposal created</td></tr></tbody></table></div><p>Evidence: execution list filtered by workflow, HubSpot record screenshots, and the crm_proposals table.</p>",
+   "mistakes": [
+    "Using 'Create contact' instead of 'Create or Update', so each message makes a new contact.",
+    "A stage-change workflow that writes back to the deal and triggers itself.",
+    "Giving the Ops Agent HubSpot write tools instead of propose_change only.",
+    "Pasting the private app token into a node.",
+    "Skipping associations, so deals have no company."
+   ],
+   "pass": "Evidence that the same test lead from two channels produced one contact, one company and one deal; a stage change produced exactly one execution; and a rejected Ops Agent proposal left HubSpot unchanged.",
+   "redo": "Send it back if duplicates appear, any workflow runs more than once per change, the agent can write to the CRM directly, or the token is outside a credential."
+  },
+  "g": {
+   "answer": "<p>Worked example: Crestline Uniforms (fictional, from 5.8), one month on HubSpot Free with WhatsApp, email and Instagram feeding CRM · Upsert lead.</p><p><b>Score calibration on last quarter</b> (24 school leads, 6 became customers): weights tuned in code until the call-first list caught all 6 buyers with 2 false alarms; \"opened emails\" kept at low weight; outside Ogun State = knock-out.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Ops Agent health check</th><th>Week 1</th><th>Week 2</th><th>Week 3</th><th>Week 4</th></tr></thead><tbody><tr><td>Duplicate companies</td><td>9</td><td>4</td><td>1</td><td>0</td></tr><tr><td>Values outside dropdowns</td><td>37</td><td>6</td><td>2</td><td>1</td></tr><tr><td>Open deals with no next step</td><td>11</td><td>5</td><td>3</td><td>2</td></tr><tr><td>Proposals approved / changed / rejected</td><td>6 / 2 / 1</td><td>4 / 1 / 1</td><td>2 / 1 / 0</td><td>1 / 0 / 0</td></tr></tbody></table></div><p><b>Leads typed by hand</b>: 0 of 47 new leads this month.</p><p><b>Deal saved by an alert</b>: Bright Future Academy appeared on the \"going cold\" list after 7 quiet days at Quote sent. Tayo called; the bursar had lost the quote. Re-sent the same day; deposit of ₦600,000 paid the following week.</p><p><b>Loops and duplicates</b>: no workflow ran more than once per change all month (execution counts checked weekly).</p><p>Submit: the calibration table, the four health reports, the deal's timeline, the Monday pipeline reports and the client's note naming the deal.</p>",
+   "mistakes": [
+    "Calibrating the score on guesses instead of last quarter's real outcomes.",
+    "Letting the Ops Agent's changes run without the owner's approval.",
+    "Claiming a deal was saved with no timeline to show the alert led to it.",
+    "Comparing health checks from week 1 and week 4 that measure different things."
+   ],
+   "pass": "A month of real use with no leads typed by hand, a score calibrated on last quarter, four health reports showing fewer data problems in week 4 than week 1, and the client naming a deal won or saved by a follow-up or going-cold alert.",
+   "redo": "Send it back if leads were still entered by hand, no deal can be traced to an alert, or the health problems did not fall."
+  }
+ }
+}

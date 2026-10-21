@@ -1,0 +1,165 @@
+{
+  "id": "6.2",
+  "items": [
+    {
+      "file": "6-2-payments-in.json",
+      "name": "FF · Payments in",
+      "what": "Receives Paystack webhooks, checks the signature and the transaction with Paystack, skips duplicate references, then onboards new clients automatically (Clients row, welcome pack, Telegram alert, intake follow-up) and answers failed monthly charges with a friendly reminder instead of a shutdown.",
+      "setup": [
+        "Use Paystack TEST mode only. Create a payment page per tier deposit (e.g. Growth: 50% setup, ₦425,000) with a custom field \"Business name\" and the tier in its metadata or a custom field \"Tier\", and a monthly plan per tier.",
+        "On your n8n server set the environment variables PAYSTACK_SECRET_KEY (your TEST secret key), NODE_FUNCTION_ALLOW_BUILTIN=crypto and N8N_BLOCK_ENV_ACCESS_IN_NODE=false, then restart n8n.",
+        "Create a Header Auth credential called \"Paystack test\": Name Authorization, Value Bearer followed by your TEST secret key. Select it in Verify transaction, Verify subscription and Get update-card link.",
+        "Create a Google Sheet with tabs Payments (reference, date, business, email, tier, kind, amount_ngn), Clients (business, contact, email, tier, amount, reference, date, status, retainer, last_paid, plan, subscription_code, next_payment_date), Intake (email plus your form answers) and Log (date, event, reference, detail). Replace YOUR_SHEET_ID in every Google Sheets node and select a Google Sheets credential.",
+        "Select a Gmail credential in the three Gmail nodes and a Telegram credential in the Telegram nodes; replace YOUR_TELEGRAM_CHAT_ID with Tolu's chat ID.",
+        "Replace YOUR_SCOPE_LINK, YOUR_BOOKING_LINK and YOUR_INTAKE_FORM_LINK in the email texts.",
+        "Edit the TIERS table in \"Check status and amount\" to your own deposit and monthly amounts.",
+        "Publish the workflow, copy the PRODUCTION webhook URL into Paystack's test webhook settings, and set Settings → Error workflow to your error workflow (3.6)."
+      ],
+      "test": "Pay a test deposit page with Paystack's test card: one Payments row, one Clients row, a welcome email and a Telegram message within a minute. Resend the same event from the dashboard: it stops at \"Duplicate: skip\". POST a made-up body from Hoppscotch: it stops at \"Signature valid?\" and a signature_rejected row appears in Log. Trigger a failed subscription charge: a friendly reminder email and a Telegram note arrive, and nothing is switched off.",
+      "walk": {
+        "title": "Build it: pay, verified, onboarded",
+        "sample": "Paystack TEST · Okonkwo Pharmacy pays the Growth deposit, ₦425,000 · then the same event resent · then a failed monthly charge",
+        "steps": [
+          {
+            "at": null,
+            "say": "Everything here runs in Paystack test mode first: a payment page per tier's deposit with a Business name field and the tier, and a monthly plan per tier.",
+            "show": [
+              "Payment page: Growth: 50% setup, ₦425,000",
+              "Custom field: Business name · metadata: tier",
+              "Plans: monthly, one per tier"
+            ]
+          },
+          {
+            "at": "Paystack webhook",
+            "say": "Paystack posts to this webhook, with the raw body kept, because the signature is computed on the exact bytes. Publish it and paste the production URL into Paystack, not the test URL.",
+            "show": [
+              "POST /ff-payments-in",
+              "Options: Raw Body on",
+              "Paystack → webhook: PRODUCTION URL"
+            ],
+            "data": "charge.success event"
+          },
+          {
+            "at": "Verify signature",
+            "say": "Verification one: an HMAC SHA512 of the raw body with your secret key must equal Paystack's signature header. The test secret key lives in one place, the n8n environment.",
+            "show": [
+              "createHmac('sha512', $env.PAYSTACK_SECRET_KEY)",
+              "must equal x-paystack-signature",
+              "timingSafeEqual"
+            ],
+            "data": "signature_valid true"
+          },
+          {
+            "at": "Signature valid?",
+            "say": "We reply 200 to Paystack straight away. A made-up POST stops here and is logged as signature rejected, so a fake payment can never onboard anyone.",
+            "show": [
+              "false → Log: signature_rejected"
+            ]
+          },
+          {
+            "at": "Route by event",
+            "say": "Then we route by event: a successful charge, a new subscription, or a failed monthly invoice. Anything else is logged for review.",
+            "show": [
+              "charge.success · subscription.create",
+              "invoice.payment_failed · fallback → Log"
+            ],
+            "data": "charge.success"
+          },
+          {
+            "at": "Verify transaction",
+            "say": "Verification two: only Paystack's own answer counts. We ask Paystack about this reference, with the key in a Header Auth credential.",
+            "show": [
+              "GET api.paystack.co/transaction/verify/{reference}",
+              "Auth: Header Auth · Paystack test"
+            ]
+          },
+          {
+            "at": "Check status and amount",
+            "say": "The status must be success, in naira, and the amount must match the tier exactly. Paystack counts in kobo, so 425,000 naira is 42.5 million kobo.",
+            "show": [
+              "status = success · currency = NGN",
+              "amount = TIERS[tier].deposit × 100 (kobo)",
+              "plan present → monthly, else deposit"
+            ],
+            "data": "verified · Growth deposit"
+          },
+          {
+            "at": "Alert: payment not verified",
+            "say": "If anything doesn't match, nothing happens to the client, and Tolu gets a note to check it in the dashboard.",
+            "show": [
+              "Paystack event NOT acted on · Why: …"
+            ]
+          },
+          {
+            "at": "New reference?",
+            "say": "Paystack can send the same event more than once. If the reference is already in Payments, we skip it, so no one gets three welcome packs.",
+            "show": [
+              "Find reference in Payments",
+              "found → Duplicate: skip"
+            ],
+            "data": "new reference"
+          },
+          {
+            "at": "Record payment",
+            "say": "We record the payment first, so the next copy of this event is caught as a duplicate.",
+            "show": [
+              "Append · Payments",
+              "reference, date, business, tier, kind, amount_ngn"
+            ]
+          },
+          {
+            "at": "Append to Clients",
+            "say": "A deposit means a new client: a Clients row with status Onboarding.",
+            "show": [
+              "Append · Clients · status Onboarding"
+            ],
+            "data": "Okonkwo Pharmacy · Growth"
+          },
+          {
+            "at": "Send welcome pack",
+            "say": "Within a minute, the welcome pack: thanks, the signed scope, what happens week by week, the kick-off booking link and the intake form.",
+            "show": [
+              "Subject: Welcome to your automation project…",
+              "Scope · Week 1–4 plan · booking · intake form"
+            ],
+            "data": "1 welcome email"
+          },
+          {
+            "at": "Tell Tolu",
+            "say": "Tolu gets a Telegram, so no client ever pays and hears nothing.",
+            "show": [
+              "New client: … · Growth · deposit ₦425,000 received (test)"
+            ]
+          },
+          {
+            "at": "Intake reminder",
+            "say": "Two days later, if the intake form isn't in, a gentle reminder goes to the client and Tolu is told.",
+            "show": [
+              "Wait 2 days → Find intake form",
+              "not found → reminder + Telegram"
+            ]
+          },
+          {
+            "at": "Friendly payment reminder",
+            "say": "A failed monthly charge starts a conversation, not a shutdown. Paystack doesn't retry it, so we send a card-update link and say everything keeps running.",
+            "show": [
+              "Get update-card link (subscription manage link)",
+              "\"Everything keeps running in the meantime.\""
+            ],
+            "data": "1 friendly email"
+          },
+          {
+            "at": "Check-in with client",
+            "say": "Tolu gets a note, it's logged, and three days later she's reminded to check in kindly. Attach the error workflow, so a paid client who fails onboarding alerts you at once.",
+            "show": [
+              "Note to Tolu · Log failed charge",
+              "Wait 3 days → Check in today… nothing is switched off",
+              "Error workflow: 3.6"
+            ]
+          }
+        ],
+        "end": "Pay the test deposit: one payment row, one client row, a welcome email and a Telegram within a minute; resend it and it stops at Duplicate: skip."
+      }
+    }
+  ]
+}

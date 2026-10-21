@@ -1,0 +1,18 @@
+{"id": "0.2", "items": [], "walk": {
+  "title": "Solve it: will it rain on tomorrow's deliveries?",
+  "sample": "Ibadan forecast from Open-Meteo · a fake payment.success webhook for order HL-0042",
+  "steps": [
+    {"at": null, "say": "Two jobs today, both by hand: ask a weather service about tomorrow's rain, then watch a payment notice arrive. No platform yet, so you see what the platforms hide.", "show": ["Tools: Hoppscotch, webhook.site"]},
+    {"at": "1", "say": "Open-Meteo is free and needs no key for non-commercial use. Its docs builder writes the URL for us, so we never guess parameter names.", "show": ["Variable: precipitation_probability_max", "Ibadan: latitude 7.38, longitude 3.94"]},
+    {"at": "2", "say": "In Hoppscotch, set the method to GET and paste the forecast address. Hoppscotch splits it into the same parameter table you'll fill on an HTTP step later.", "show": ["GET https://api.open-meteo.com/v1/forecast", "daily=precipitation_probability_max,precipitation_sum", "forecast_days=3"]},
+    {"at": "2", "say": "The time zone matters. Without it, tomorrow could mean tomorrow in London, and late at night you'd read the wrong day.", "show": ["timezone=Africa/Lagos"]},
+    {"at": "3", "say": "Press Send. We want status two hundred, OK, and a JSON body.", "show": ["Status: 200 OK", "Content-Type: application/json"], "data": "3 days of forecast"},
+    {"at": "3", "say": "Read the shape. The daily lists line up by position: position zero is today, position one is tomorrow.", "show": ["daily.precipitation_probability_max[1]"], "data": "[35, 70, 20] → tomorrow 70"},
+    {"at": "4", "say": "Now a simple rule: fifty per cent or more, the riders pack covers. Seventy is above fifty, so tonight's message is pack covers. No AI needed; it's a number against a threshold.", "show": ["If tomorrow ≥ 50 → \"Pack covers.\""], "data": "70 ≥ 50 → Pack covers"},
+    {"at": "5", "say": "Break it on purpose. Remove latitude and you get a four hundred, Bad Request. Misspell forecast and you get a four oh four, wrong address.", "show": ["no latitude → 400 Bad Request", "/v1/forcast → 404 Not Found"], "data": "4xx: fix your request"},
+    {"at": "6", "say": "Now flip roles. Webhook.site gives you a unique URL that plays Harvest Lane's system, and records anything sent to it.", "show": ["POST https://webhook.site/<your-unique-id>", "Content-Type: application/json"]},
+    {"at": "6", "say": "Send a pretend payment notice for order HL-0042 and watch it appear instantly. That's a webhook: the doorbell, not the mailbox.", "show": ["\"event\": \"payment.success\"", "\"order_id\": \"HL-0042\""], "data": "request received with headers and body"},
+    {"at": "6", "say": "One trap: the amount is in kobo, not naira. One million two hundred and fifty thousand kobo is twelve thousand five hundred naira, so check the unit before any maths.", "show": ["\"amount_kobo\": 1250000", "= ₦12,500"]}
+  ],
+  "end": "You've been the client and the server. Every HTTP step and webhook trigger in this course is just this, wrapped in a nicer screen."
+}}

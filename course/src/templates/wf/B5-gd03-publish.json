@@ -1,0 +1,518 @@
+{
+  "name": "GD·03 Publish · on time",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GD·03 Publish: on time (Boss 5 · D4)\nEvery 15 min: approved posts that are due → pause switch (posting_paused) → price RE-CHECK at publish time (held and Tolu notified if the price changed after approval) → route by platform:\n- Facebook: POST photo with message to the Page\n- Instagram: create media container, then publish\n- X: POST /2/tweets (pay per use: within the X budget, GD·00)\n- anything else (TikTok, LinkedIn until approved): sent to Tolu as a draft to post by hand\nEach returned post ID is saved; a failed post goes to the error workflow.\n\n**Credentials:** Postgres, Facebook Graph API (Page token with publish permissions), X OAuth2, Telegram.\n**Replace:** YOUR_PAGE_ID, YOUR_IG_USER_ID, YOUR_TELEGRAM_CHAT_ID.",
+        "height": 380,
+        "width": 420
+      },
+      "id": "8d220f5c-3de1-4ec8-b3d2-b3db4201c5a0",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -324
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "952df7d0-4c7e-44f4-be0d-7077e1b25c63",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.*, pr.price_ngn AS price_now, c.product_sku\nFROM posts p\nJOIN calendar c ON c.id = p.calendar_id\nLEFT JOIN products pr ON pr.sku = c.product_sku\nWHERE p.status = 'approved' AND p.scheduled_at <= now()\n  AND coalesce((SELECT value FROM settings WHERE key = 'posting_paused'), 'false') <> 'true'\nORDER BY p.scheduled_at LIMIT 20;",
+        "options": {}
+      },
+      "id": "98162572-340b-423c-b731-a74e28b5d8c1",
+      "name": "Due posts",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6c80070a-c423-4bd5-8e73-44baa6e0be72",
+              "leftValue": "={{ $json.id ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "daa17e79-29d3-46e3-9471-9080f30869ff",
+      "name": "Any due",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c9888328-0d0a-46b1-8626-c4fe9ca8278b",
+              "leftValue": "={{ $json.uses_price === true && Number($json.price_now) !== Number($json.price_snapshot) }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1cfa670d-475e-4e6b-997e-86e2a3bd7f5f",
+      "name": "Price changed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE posts SET status = 'held_price_changed' WHERE id = $1 RETURNING id, platform;",
+        "options": {
+          "queryReplacement": "={{ [ $json.id ] }}"
+        }
+      },
+      "id": "14df985c-b962-4808-9893-dd60de1316b8",
+      "name": "Hold post",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=⏸️ Held a {{ $('Price changed?').item.json.platform }} post: the price changed from ₦{{ $('Price changed?').item.json.price_snapshot }} to ₦{{ $('Price changed?').item.json.price_now }} after you approved it. Edit and re-approve it.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "95c776c1-9700-498f-83cf-716b742490e0",
+      "name": "Tell Tolu: held",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "eb8b8103-ab81-4e8a-b103-fdeebe46c8fd",
+                    "leftValue": "={{ $json.platform }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "facebook"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "facebook"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "8cee788d-49eb-4c29-aa68-93a78d352f04",
+                    "leftValue": "={{ $json.platform }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "instagram"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "2c1449c0-6783-497e-91df-55bd66f13940",
+                    "leftValue": "={{ $json.platform }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "x"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "x"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "ccf04d81-a8f1-4a1d-81f3-b4f59183f55c",
+      "name": "Route by platform",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/YOUR_PAGE_ID/photos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ url: $json.media_url, caption: $json.caption, published: true }) }}",
+        "options": {}
+      },
+      "id": "366708d7-c950-4fae-9125-1ac810abc0f4",
+      "name": "Facebook: post photo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/YOUR_IG_USER_ID/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ image_url: $json.media_url, caption: $json.caption, alt_text: $json.alt_text }) }}",
+        "options": {}
+      },
+      "id": "f0330a41-2458-4ebe-8113-6e5315d23654",
+      "name": "Instagram: container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/YOUR_IG_USER_ID/media_publish",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ creation_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "aa534173-1859-4286-a3be-fc8b9e06380d",
+      "name": "Instagram: publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.com/2/tweets",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.caption }) }}",
+        "options": {}
+      },
+      "id": "46d61a4a-bc32-4265-b064-ec28b89a0b1c",
+      "name": "X: create post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=📱 Post this by hand on {{ $json.platform }} (not automated yet):\n\n{{ $json.caption }}\n\nPhoto: {{ $json.media_url || 'none' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5193dbf6-0d92-4b99-be06-306408f9217d",
+      "name": "Other: draft to Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        342
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE posts SET status = 'published', post_id = $2, published_at = now() WHERE id = $1 RETURNING id, platform)\nINSERT INTO events (workflow, event, detail) SELECT 'GD·03', 'published', jsonb_build_object('post', id, 'channel', platform) FROM u\nUNION ALL SELECT 'GD·03', 'api_usage', jsonb_build_object('api', 'x', 'channel', 'x', 'cost_ngn', 25) FROM u WHERE platform = 'x';",
+        "options": {
+          "queryReplacement": "={{ [ $('Any due').item.json.id, String($json.post_id ?? $json.id ?? $json.data?.id ?? 'manual') ] }}"
+        }
+      },
+      "id": "c7120f35-0d2c-47f6-ac53-e9c24ce24cd6",
+      "name": "Save post ID",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1540,
+        -90
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Due posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due posts": {
+      "main": [
+        [
+          {
+            "node": "Any due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any due": {
+      "main": [
+        [
+          {
+            "node": "Price changed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price changed?": {
+      "main": [
+        [
+          {
+            "node": "Hold post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route by platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hold post": {
+      "main": [
+        [
+          {
+            "node": "Tell Tolu: held",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by platform": {
+      "main": [
+        [
+          {
+            "node": "Facebook: post photo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Instagram: container",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "X: create post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Other: draft to Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: container": {
+      "main": [
+        [
+          {
+            "node": "Instagram: publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook: post photo": {
+      "main": [
+        [
+          {
+            "node": "Save post ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram: publish": {
+      "main": [
+        [
+          {
+            "node": "Save post ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X: create post": {
+      "main": [
+        [
+          {
+            "node": "Save post ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Other: draft to Tolu": {
+      "main": [
+        [
+          {
+            "node": "Save post ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

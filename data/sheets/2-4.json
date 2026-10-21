@@ -1,0 +1,38 @@
+{
+  "id": "2.4",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: the playground's three Harvest Lane items, in a test scenario.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Module</th><th>Settings</th></tr></thead><tbody><tr><td>1</td><td>JSON · Parse JSON</td><td>JSON string: the items array wrapped as <code>{\"items\": [ … ]}</code>; data structure generated from that sample</td></tr><tr><td>2</td><td>Flow control · Iterator</td><td>Array: <code>1.items</code></td></tr><tr><td>3</td><td>Tools · Text aggregator</td><td>Source module: <b>2. Iterator</b>; Text: <code>{{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; 0; \".\"; \",\")}}</code>; Row separator: new line</td></tr><tr><td>4</td><td>Gmail · Send an Email</td><td>To: your own address; Subject: Order items (test); Content: <code>3.text</code></td></tr></tbody></table></div><p><b>The email you receive (one only):</b></p><pre class=\"codebox\">2× Tomatoes · ₦25,000\n1× Tatashe · ₦9,000\n3× Onions · ₦12,000</pre><p><b>Bubble counts after Run once:</b> Parse JSON 1 · Iterator 3 · Text aggregator 1 · Gmail 1. If Gmail shows 3, it is inside the iterated section: move it after the aggregator.</p>",
+      "mistakes": [
+        "Leaving the text aggregator's source module on Parse JSON, so the bundle counts look wrong.",
+        "Placing the Gmail module between the iterator and aggregator, which sends three emails.",
+        "Feeding the iterator text instead of the parsed array, so it outputs one bundle.",
+        "Calculating the line total as a string with ₦ before multiplying."
+      ],
+      "pass": "The run's bubble counts show Iterator 3 and Text aggregator 1, and exactly one email arrives listing all three items with correct line totals (₦25,000, ₦9,000, ₦12,000).",
+      "redo": "Send it back if more than one email arrives, if the counts aren't shown, or if any line total is wrong."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane, five test orders, opening stock TOM-CRATE 40, PEP-TATASHE-L 20, ONI-BAG 30. Part A writes one Stock_Movements row per item and one confirmation per order; Part B sends the 18:00 summary.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Order</th><th>Items</th><th>Movement rows</th><th>Total (incl. ₦1,500 fee)</th></tr></thead><tbody><tr><td>HL-0101</td><td>2 TOM, 1 PEP, 3 ONI</td><td>−2, −1, −3</td><td>₦47,500</td></tr><tr><td>HL-0102</td><td>2 TOM + 1 TOM (repeated)</td><td>−2, −1</td><td>₦39,000</td></tr><tr><td>HL-0103</td><td>1 ONI (single item)</td><td>−1</td><td>₦5,500</td></tr><tr><td>HL-0104</td><td>2 PEP, 2 ONI</td><td>−2, −2</td><td>₦27,500</td></tr><tr><td>HL-0105</td><td>4 TOM, 1 PEP</td><td>−4, −1</td><td>₦60,500</td></tr></tbody></table></div><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Product</th><th>Opening</th><th>Sold (hand count)</th><th>Expected</th><th>Products sheet</th></tr></thead><tbody><tr><td>TOM-CRATE</td><td>40</td><td>9</td><td>31</td><td>31 ✓</td></tr><tr><td>PEP-TATASHE-L</td><td>20</td><td>4</td><td>16</td><td>16 ✓</td></tr><tr><td>ONI-BAG</td><td>30</td><td>6</td><td>24</td><td>24 ✓</td></tr></tbody></table></div><p>Stock_Movements has 10 rows. HL-0102's two tomato lines are separate rows (−2 and −1), and the SUMIFS formula drops stock by exactly 3. Each order produced one confirmation email (text aggregator source = Iterator), five in total.</p><p><b>Part B email at 18:00:</b> \"Today: 5 orders · ₦180,000\" followed by five lines like <code>HL-0101 · Ade Bakare · ₦47,500</code>. Numeric aggregators: SUM of total and COUNT, both with source module = the Search Rows module.</p><p>Submit: screenshots of Stock_Movements, Products, one confirmation and the summary email (test names only), plus the hand-count table.</p>",
+      "mistakes": [
+        "Overwriting stock_qty from inside the iterator, so the repeated-product order loses a crate.",
+        "Skipping the repeated-product or single-item test order.",
+        "Summing a ₦-formatted total in the numeric aggregator, so the day's sales show 0.",
+        "Setting the confirmation aggregator's source to the trigger, so one email lists items from several customers."
+      ],
+      "pass": "Products stock matches a hand count for every SKU after five test orders (including a repeated product and a single item), each order got one confirmation, and the single summary shows the right count and naira total.",
+      "redo": "Send it back if stock is off by any amount, if any customer got more or fewer than one confirmation, or if the summary count or total is wrong."
+    },
+    "g": {
+      "answer": "<p>Worked example: Harvest Lane's Thursday 07:00 restock scenario. (If Order_Items has no date, add a <code>created_at</code> column when items are written.)</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Module</th><th>Settings</th></tr></thead><tbody><tr><td>1</td><td>Sheets · Search Rows</td><td>Order_Items where created_at ≥ <code>formatDate(addDays(now; -14); \"YYYY-MM-DD\")</code></td></tr><tr><td>2</td><td>Numeric aggregator</td><td>SUM of qty · Group by: sku · Source: module 1</td></tr><tr><td>3</td><td>Sheets · Search Rows</td><td>Products where sku = the group key (returns stock_qty)</td></tr><tr><td>Link filter</td><td>Will run out</td><td>stock_qty &lt; <code>round(2.result / 14 * 3)</code> (Thursday to Saturday)</td></tr><tr><td>4</td><td>Table aggregator</td><td>Source: module 2 · columns: product, stock, expected demand, suggested order</td></tr><tr><td>5</td><td>Gmail</td><td>To Tolu: \"Restock before Saturday\" + the table</td></tr></tbody></table></div><p>Suggested order = <code>ceil(expected * 1.2 - stock_qty)</code>, a 20% buffer for the Saturday rush.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Product</th><th>14-day qty</th><th>Stock</th><th>Expected Thu–Sat</th><th>Suggested order</th></tr></thead><tbody><tr><td>TOM-CRATE</td><td>84</td><td>12</td><td>18</td><td>10</td></tr><tr><td>ONI-BAG</td><td>42</td><td>7</td><td>9</td><td>4</td></tr></tbody></table></div><p>PEP-TATASHE-L (28 sold, stock 16, expected 6) is filtered out because it won't run out.</p><p><b>Manual check:</b> a SUMIFS on Order_Items over the same 14 days gives 84 tomato crates and 42 onion bags, matching the aggregator. Lower TOM-CRATE stock to 12 in a test copy and tomatoes appear; raise it to 30 and they drop off the list.</p><p>Submit: the scenario screenshot, the email, and your manual SUMIFS check side by side.</p>",
+      "mistakes": [
+        "Forgetting Group by, so the aggregator gives one total for all products.",
+        "Comparing two weeks of demand with stock instead of the demand expected before Saturday.",
+        "A date filter that misses the time zone or uses mm for months, so the 14-day window is wrong.",
+        "No manual check, so a wrong total in the email is never noticed."
+      ],
+      "pass": "The Thursday email lists product, stock, expected demand and suggested order quantity; the 14-day totals match a manual SUMIFS; and tomatoes appear when their stock is set low.",
+      "redo": "Send it back if the totals don't match the sheet, if products with enough stock are listed, or if there is no evidence of a low-stock tomato test."
+    }
+  }
+}

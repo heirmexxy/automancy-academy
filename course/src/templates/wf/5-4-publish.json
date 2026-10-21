@@ -1,0 +1,1319 @@
+{
+ "name": "HL · Posting week · publish",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Posting week: publish (Lesson 5.4)\nEvery 15 minutes: stop if posting_paused is on. Pick approved posts that are due. Re-read any price the post uses and hold the post if it changed. Keep X within its monthly budget. Then route by platform and save each returned post ID.\n- Facebook: photo + message to the Page.\n- Instagram: media container from a public image or video URL, then publish.\n- LinkedIn: Posts API as the organisation.\n- X: create post (paid per post; more with a link).\n- TikTok: the video goes to Tolu as a draft to publish in the app (API posts stay private until TikTok audits the app).\n- WhatsApp: the weekly offer as the approved marketing template weekly_offer, only to opted-in customers.\n\nSheets: Settings (setting, value: posting_paused, x_monthly_budget_usd), Posts, Price list, Customers (name, phone, whatsapp_opt_in).\nAttach your error workflow (3.6): a failed post must alert Tolu, never fail silently.",
+    "height": 520,
+    "width": 600
+   },
+   "id": "905cd32c-27c2-4092-9da9-bf5fdb14d3ee",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -660,
+    -440
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 15
+      }
+     ]
+    }
+   },
+   "id": "b51b5af2-e732-4644-8d9d-1e2e562823e9",
+   "name": "Every 15 minutes",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Settings",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "49b275bd-6997-4437-bb11-7d89bbbb6c04",
+   "name": "Read Settings",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const s = Object.fromEntries($input.all().map(i => [String(i.json.setting).trim(), String(i.json.value).trim()]));\nreturn [{ json: { posting_paused: s.posting_paused === 'true' || s.posting_paused === 'yes', x_monthly_budget_usd: Number(s.x_monthly_budget_usd || 5) } }];\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "eb557465-5ee6-44b5-929b-17f921460b1c",
+   "name": "Settings",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "3c36d5ed-c9a4-4b34-85b4-13838518e8ac",
+       "leftValue": "={{ $json.posting_paused }}",
+       "rightValue": "",
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c062b16b-e77a-4206-8330-e131520275c7",
+   "name": "Posting paused?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "93d90a82-e1f9-4e64-a786-ba4cca719eef",
+   "name": "Paused: nothing publishes",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    880,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "f8c6a00e-04a3-48fa-8e71-b668fc28f2a3",
+   "name": "Read Posts",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    880,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Price list",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "66a46ac0-f7ff-4a5c-b0ed-081a7e877ada",
+   "name": "Read Price list",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1100,
+    54
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const now = new Date();\nconst budget = $('Settings').first().json.x_monthly_budget_usd;\nconst posts = $('Read Posts').all().map(i => i.json);\nconst prices = $('Read Price list').all().map(i => i.json);\nconst month = now.toISOString().slice(0, 7);\nconst xCost = (p) => /https?:\\/\\//.test(p.caption) ? 0.20 : 0.015;   // check X's current pricing\nlet xSpent = posts.filter(p => p.platform === 'x' && String(p.published_at).startsWith(month)).reduce((a, p) => a + xCost(p), 0);\nconst out = [];\nfor (const p of posts) {\n  if (p.status !== 'approved' || p.post_id || new Date(p.scheduled_at) > now) continue;\n  let hold = '';\n  if (String(p.uses_price) === 'true') {\n    const cur = prices.find(r => String(r.product).toLowerCase() === String(p.product).toLowerCase());\n    if (!cur || String(cur.price).replace(/[^\\d]/g, '') !== String(p.price_used).replace(/[^\\d]/g, '')) hold = `price changed (approved ₦${p.price_used}, now ₦${cur ? cur.price : 'missing'})`;\n  }\n  if (!hold && p.platform === 'x') {\n    if (xSpent + xCost(p) > budget) hold = `X monthly budget ($${budget}) reached`;\n    else xSpent += xCost(p);\n  }\n  out.push({ json: { ...p, route: hold ? 'hold' : 'publish', hold_reason: hold } });\n}\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "2d5dfba5-8878-4537-9f72-7692279b6f92",
+   "name": "Due now",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "75f6c040-260c-47b1-a633-e42d56cf3e3b",
+          "leftValue": "={{ $json.route }}",
+          "rightValue": "hold",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "hold"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "07238b12-77c9-4151-852a-c9e39df7e1ee",
+          "leftValue": "={{ $json.route }}",
+          "rightValue": "publish",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "publish"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "8c28f397-ec5d-44ef-87a2-35f871bfecdc",
+   "name": "Hold or publish",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    1540,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "post_key": "={{ $json.post_key }}",
+      "status": "held",
+      "problems": "={{ $json.hold_reason }}"
+     },
+     "matchingColumns": [
+      "post_key"
+     ],
+     "schema": [
+      {
+       "id": "post_key",
+       "displayName": "post_key",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "status",
+       "displayName": "status",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "problems",
+       "displayName": "problems",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "2b73669c-3e2f-497c-a0a1-b23214846e6b",
+   "name": "Mark held",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1760,
+    -125
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=Post held ({{ $('Hold or publish').item.json.platform }}, {{ $('Hold or publish').item.json.scheduled_at }}): {{ $('Hold or publish').item.json.hold_reason }}. Re-approve it with the new price, or skip it.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "87fd288f-3c4d-4e28-a1bb-a6cd28c21053",
+   "name": "Tell Tolu: held",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1980,
+    -125
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "5cd21da4-3d54-4f00-aa36-02be32e1ec1a",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "facebook",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "facebook"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "a4301455-6cd3-4a96-8b00-b217a56173cd",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "instagram",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "instagram"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "798cc97c-8038-44a0-8fab-9389573a60d8",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "linkedin",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "linkedin"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "6a241270-07ef-4a4f-980e-43f0e99d329e",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "x",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "x"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "d83a9871-9bd9-4d7d-a6f5-c44f2d536527",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "tiktok",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "tiktok"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "da3b1847-a793-48c8-b392-bedafbb880d5",
+          "leftValue": "={{ $json.platform }}",
+          "rightValue": "whatsapp",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "whatsapp"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "57ddd3ad-2108-4005-aab4-27aee38ec875",
+   "name": "Platform",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    1760,
+    234
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/YOUR_PAGE_ID/photos",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ url: $json.media_file, message: $json.caption }) }}",
+    "options": {}
+   },
+   "id": "13fe986a-1211-41a8-92da-46a35bc6be03",
+   "name": "Facebook photo post",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1980,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "7d3f388f-9782-4b08-9c88-36988e9c7893",
+       "name": "post_key",
+       "value": "={{ $('Platform').item.json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "ee97d0dd-ec65-4981-ae2a-a64c6e5e0b5e",
+       "name": "post_id",
+       "value": "={{ $json.post_id || $json.id }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "95fe84ae-4289-49da-bab8-7d5c00f01673",
+   "name": "Result: facebook",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2200,
+    54
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/YOUR_IG_USER_ID/media",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify(/\\.(mp4|mov)$/i.test($json.media_file) ? { media_type: 'REELS', video_url: $json.media_file, caption: $json.caption } : { image_url: $json.media_file, caption: $json.caption }) }}",
+    "options": {}
+   },
+   "id": "6496b7c6-952b-4843-beff-ab2881f54079",
+   "name": "Instagram media container",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1980,
+    234
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/YOUR_IG_USER_ID/media_publish",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ creation_id: $json.id }) }}",
+    "options": {}
+   },
+   "id": "c8d30c15-2f9a-4b9b-80f3-2b76ac57e6d8",
+   "name": "Instagram publish",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2200,
+    234
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "69d0d97b-9915-494d-8c3b-1d802a0b347d",
+       "name": "post_key",
+       "value": "={{ $('Platform').item.json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "b281c21a-0156-47fd-8288-008846bc1dd5",
+       "name": "post_id",
+       "value": "={{ $json.id }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "c6de5e3b-748d-4c99-9bf0-c7da1b5df732",
+   "name": "Result: instagram",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2420,
+    234
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.linkedin.com/rest/posts",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "linkedInOAuth2Api",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "LinkedIn-Version",
+       "value": "YOUR_LINKEDIN_API_VERSION"
+      },
+      {
+       "name": "X-Restli-Protocol-Version",
+       "value": "2.0.0"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ author: 'urn:li:organization:YOUR_LINKEDIN_ORG_ID', commentary: $json.caption, visibility: 'PUBLIC', distribution: { feedDistribution: 'MAIN_FEED', targetEntities: [], thirdPartyDistributionChannels: [] }, lifecycleState: 'PUBLISHED', isReshareDisabledByAuthor: false }) }}",
+    "options": {
+     "response": {
+      "response": {
+       "fullResponse": true
+      }
+     }
+    }
+   },
+   "id": "f42f9c2e-062d-4911-b24b-17b885353923",
+   "name": "LinkedIn organisation post",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1980,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "6eaedcd8-8875-4878-9c41-3a9f50f90c89",
+       "name": "post_key",
+       "value": "={{ $('Platform').item.json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "82156ebc-ae2e-4f9a-aec8-8b7b9202575d",
+       "name": "post_id",
+       "value": "={{ $json.headers['x-restli-id'] }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "e56cb32d-d5da-4a36-a385-4c9d95507e29",
+   "name": "Result: linkedin",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2200,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.x.com/2/tweets",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "twitterOAuth2Api",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ text: $json.caption }) }}",
+    "options": {}
+   },
+   "id": "12999175-111a-49d2-a2ef-8eafe3c33a54",
+   "name": "X create post",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1980,
+    594
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "d137c5a1-c3c8-4928-8b27-b694c9de8e65",
+       "name": "post_key",
+       "value": "={{ $('Platform').item.json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "42b03bc4-90de-4ac0-ac3c-fabdb08f5bd4",
+       "name": "post_id",
+       "value": "={{ $json.data.id }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "55faf188-2ffe-46b7-aa39-05257bfad657",
+   "name": "Result: x",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2200,
+    594
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=TikTok draft for {{ $json.scheduled_at }}. Publish it from the TikTok app:\nVideo: {{ $json.media_file }}\n\n{{ $json.caption }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "38a16ecb-07bd-4bc1-a3d2-c25fed228162",
+   "name": "TikTok draft to Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1980,
+    774
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "b638d497-8924-45be-aa96-0de155dbce23",
+       "name": "post_key",
+       "value": "={{ $('Platform').item.json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "77ba1237-a5a6-4cdc-9c65-b0f5dd900d75",
+       "name": "post_id",
+       "value": "sent to Tolu to publish in the app",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "a97d39d0-c1c6-43bb-9911-f5841e444851",
+   "name": "Result: tiktok",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2200,
+    774
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Customers",
+     "mode": "name"
+    },
+    "filtersUI": {
+     "values": [
+      {
+       "lookupColumn": "whatsapp_opt_in",
+       "lookupValue": "yes"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "bf587c83-8a7b-480f-8483-3db0aea96a7d",
+   "name": "Opted-in customers",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1980,
+    954
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "// TEST MODE: only YOUR_TEST_PHONE receives the offer. Set TEST_MODE = false after Tolu approves going live.\nconst TEST_MODE = true;\nconst offer = $('Platform').first().json;\nconst people = TEST_MODE ? [{ phone: 'YOUR_TEST_PHONE', name: 'Test' }] : $input.all().map(i => i.json).filter(c => c.phone);\nreturn people.map(c => ({ json: { phone: c.phone, offer_line: offer.caption.slice(0, 300), post_key: offer.post_key } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "3bd02288-b06d-4946-8d58-617ee598c22d",
+   "name": "Recipients (test mode)",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2200,
+    954
+   ]
+  },
+  {
+   "parameters": {
+    "method": "POST",
+    "url": "https://graph.facebook.com/v21.0/YOUR_PHONE_NUMBER_ID/messages",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "whatsAppApi",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $json.phone, type: 'template', template: { name: 'weekly_offer', language: { code: 'en' }, components: [ { type: 'body', parameters: [ { type: 'text', text: $json.offer_line } ] } ] } }) }}",
+    "options": {}
+   },
+   "id": "eee0d495-b65e-41cb-9024-bdf53e971d88",
+   "name": "WhatsApp weekly_offer template",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2420,
+    954
+   ]
+  },
+  {
+   "parameters": {
+    "aggregate": "aggregateAllItemData",
+    "destinationFieldName": "sends",
+    "options": {}
+   },
+   "id": "7ba942f1-91a4-480d-8957-24959386e8c1",
+   "name": "Count sends",
+   "type": "n8n-nodes-base.aggregate",
+   "typeVersion": 1,
+   "position": [
+    2640,
+    954
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "4f2b3c90-2a9a-491a-a26a-f077f6341cb3",
+       "name": "post_key",
+       "value": "={{ $('Recipients (test mode)').first().json.post_key }}",
+       "type": "string"
+      },
+      {
+       "id": "0c404413-262f-43bb-9351-0036c23c03de",
+       "name": "post_id",
+       "value": "=weekly_offer template to {{ $json.sends.length }} opted-in customer(s)",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "030d5f71-d055-45f5-aba0-0b3b6e6f9e18",
+   "name": "Result: whatsapp",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    2860,
+    954
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "3ef802c7-85b6-4b04-b35e-ec98b00a77ac",
+       "name": "status",
+       "value": "published",
+       "type": "string"
+      },
+      {
+       "id": "e861c35c-d513-444f-a5ce-449631efb282",
+       "name": "published_at",
+       "value": "={{ $now.toISO() }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {},
+    "includeOtherFields": true
+   },
+   "id": "e7d70ae7-6e97-424e-9728-6722e8632561",
+   "name": "Mark published",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    3080,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Posts",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "post_key"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "5363b87c-9954-4327-a3e5-991584c13882",
+   "name": "Save post ID",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    3300,
+    413
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Credentials for this workflow\n- Google Sheets (all sheet nodes)\n- Header Auth \"Meta page token\" (Authorization: Bearer + Page access token): Facebook and both Instagram nodes\n- LinkedIn OAuth2 (Community Management, organisation admin or content admin role)\n- X OAuth2 (pay per use)\n- WhatsApp API (permanent token) in the template node\n- Telegram\nPlaceholders: YOUR_SHEET_ID, YOUR_PAGE_ID, YOUR_IG_USER_ID, YOUR_LINKEDIN_ORG_ID, YOUR_LINKEDIN_API_VERSION, YOUR_PHONE_NUMBER_ID, YOUR_TEST_PHONE, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 300,
+    "width": 440
+   },
+   "id": "6e6e0801-01e0-43a6-bab6-b7a334b26ab1",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    1800,
+    -520
+   ]
+  }
+ ],
+ "connections": {
+  "Every 15 minutes": {
+   "main": [
+    [
+     {
+      "node": "Read Settings",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Settings": {
+   "main": [
+    [
+     {
+      "node": "Settings",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Settings": {
+   "main": [
+    [
+     {
+      "node": "Posting paused?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Posting paused?": {
+   "main": [
+    [
+     {
+      "node": "Paused: nothing publishes",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Read Posts",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Posts": {
+   "main": [
+    [
+     {
+      "node": "Read Price list",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Price list": {
+   "main": [
+    [
+     {
+      "node": "Due now",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Due now": {
+   "main": [
+    [
+     {
+      "node": "Hold or publish",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Hold or publish": {
+   "main": [
+    [
+     {
+      "node": "Mark held",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Platform",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark held": {
+   "main": [
+    [
+     {
+      "node": "Tell Tolu: held",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Platform": {
+   "main": [
+    [
+     {
+      "node": "Facebook photo post",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Instagram media container",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "LinkedIn organisation post",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "X create post",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "TikTok draft to Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Opted-in customers",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: facebook": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: instagram": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: linkedin": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: x": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: tiktok": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Result: whatsapp": {
+   "main": [
+    [
+     {
+      "node": "Mark published",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Facebook photo post": {
+   "main": [
+    [
+     {
+      "node": "Result: facebook",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram media container": {
+   "main": [
+    [
+     {
+      "node": "Instagram publish",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram publish": {
+   "main": [
+    [
+     {
+      "node": "Result: instagram",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "LinkedIn organisation post": {
+   "main": [
+    [
+     {
+      "node": "Result: linkedin",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "X create post": {
+   "main": [
+    [
+     {
+      "node": "Result: x",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "TikTok draft to Tolu": {
+   "main": [
+    [
+     {
+      "node": "Result: tiktok",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Opted-in customers": {
+   "main": [
+    [
+     {
+      "node": "Recipients (test mode)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Recipients (test mode)": {
+   "main": [
+    [
+     {
+      "node": "WhatsApp weekly_offer template",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "WhatsApp weekly_offer template": {
+   "main": [
+    [
+     {
+      "node": "Count sends",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Count sends": {
+   "main": [
+    [
+     {
+      "node": "Result: whatsapp",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark published": {
+   "main": [
+    [
+     {
+      "node": "Save post ID",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

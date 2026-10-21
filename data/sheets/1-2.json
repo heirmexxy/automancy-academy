@@ -1,0 +1,38 @@
+{
+  "id": "1.2",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: a name-cleaning line added to Harvest Lane's HL · Form order → Sheet Zap.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Step</th><th>App · event · transform</th><th>Input</th><th>Renamed to</th></tr></thead><tbody><tr><td>2</td><td>Formatter · Text · Trim Whitespace</td><td>Name pill (step 1)</td><td>Trim name</td></tr><tr><td>3</td><td>Formatter · Text · Lowercase</td><td>Step 2 output</td><td>Lower name</td></tr><tr><td>4</td><td>Formatter · Text · Capitalize</td><td>Step 3 output</td><td>Capitalise name</td></tr><tr><td>5</td><td>Formatter · Text · Split Text, separator: space, segment: First</td><td>Step 4 output</td><td>First name</td></tr><tr><td>6</td><td>Formatter · Text · Split Text, separator: space, segment: Last</td><td>Step 4 output</td><td>Last name</td></tr><tr><td>7</td><td>Sheets · Create Spreadsheet Row</td><td>first_name ← step 5, last_name ← step 6</td><td>Save row</td></tr></tbody></table></div><p>The Lowercase step is there because Capitalize may leave \"MAMA KEMI\" in capitals; check your own test, and drop it if Capitalize already fixes the rest of each word.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Input</th><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>\"  mrs ADEBAYO \"</td><td>Mrs</td><td>Adebayo</td></tr><tr><td>\"tunde bakare\"</td><td>Tunde</td><td>Bakare</td></tr><tr><td>\"MAMA KEMI\"</td><td>Mama</td><td>Kemi</td></tr></tbody></table></div><p>Formatter steps use no tasks, so the Zap still costs one task per form response. Note in your log that a three-word name such as \"Ngozi Ada Okafor\" loses its middle name with First/Last.</p>",
+      "mistakes": [
+        "Splitting before trimming, so the leading spaces make the first segment empty.",
+        "Mapping the raw Name pill from step 1 into the sheet instead of the split outputs.",
+        "Assuming Capitalize lowercases the rest of the word without testing \"MAMA KEMI\".",
+        "Leaving every step named \"Formatter\", so nobody can tell which output is which."
+      ],
+      "pass": "All three test names appear in the sheet as Mrs / Adebayo, Tunde / Bakare and Mama / Kemi in separate columns, with no leading or trailing spaces.",
+      "redo": "Send it back if any name keeps stray spaces or capitals, sits in one column, or the sheet was mapped from the raw trigger pill."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's nine-step order Zap, HL · Form order → Sheet + alert, with Tomatoes (crate) at 12500 in Products.</p><p><b>Build:</b> exactly the solved problem: Clean phone (NG, international format), Clean date (YYYY-MM-DD, Africa/Lagos), Look up price (Products, column name, stop if not found), Delivery fee (Bodija, Mokola, Ring Road 1500; Challenge 2000; fallback 2500), Total formula, Format Currency (NGN), Create Orders row (total from step 6), Send email.</p><p><b>Three tests, checked by hand:</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Order</th><th>Hand calculation</th><th>Sheet total</th><th>Email shows</th></tr></thead><tbody><tr><td>1</td><td>2 × Tomatoes (crate), Bodija</td><td>2 × 12500 + 1500 = 26500</td><td>26500</td><td>₦26,500.00</td></tr><tr><td>2</td><td>1 × Tomatoes (crate), Apete (new area)</td><td>1 × 12500 + 2500 (fallback) = 15000</td><td>15000</td><td>₦15,000.00</td></tr><tr><td>—</td><td>Tolu changes Tomatoes (crate) to 14000 in Products</td><td></td><td></td><td></td></tr><tr><td>3</td><td>3 × Tomatoes (crate), Mokola</td><td>3 × 14000 + 1500 = 43500</td><td>43500</td><td>₦43,500.00</td></tr></tbody></table></div><p><b>Checks:</b> rows 1 and 2 still show unit_price 12500 after the change; row 3 shows 14000. The total column is right-aligned and a quick =SUM over it works, proving it holds numbers. Phones read +2348031234567; dates read 2026-10-06.</p><p><b>Log:</b> 9 steps; transforms used: Format Phone Number, Date/Time Format, Lookup Table (fallback 2500), Spreadsheet-Style Formula, Format Currency. Tasks per order: read from Zap history (the app steps: lookup, row, email).</p>",
+      "mistakes": [
+        "Saving step 7's ₦ text into the total column, so =SUM returns 0.",
+        "Changing the price before the first two orders, so the 'only later orders change' test proves nothing.",
+        "No fallback value, so the new-area order gets a blank fee and a wrong total.",
+        "Mapping the raw phone or date pill from step 1 instead of the cleaned step 2 and 3 outputs."
+      ],
+      "pass": "Three orders with hand calculations that match the sheet, a numeric total column, ₦ formatting only in the email, the fallback fee on the new area, and the new price only on the order placed after the change.",
+      "redo": "Send it back if totals don't match the hand maths, the sheet stores formatted currency, or the price-change test was run in the wrong order."
+    },
+    "g": {
+      "answer": "<p>Worked example: Harvest Lane's 6 p.m. summary using option 2 (Schedule plus a Summary tab).</p><p><b>Summary tab</b> (row 1 headers: label, order_count, order_value; row 2 values). In 0.4's Orders, created_at is column B and total is column I:</p><pre class=\"codebox\">A2: today\nB2: =COUNTIFS(Orders!B:B, \"&gt;=\"&amp;TODAY())\nC2: =SUMIFS(Orders!I:I, Orders!B:B, \"&gt;=\"&amp;TODAY())</pre><p><b>Zap:</b> HL · 6pm summary.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Step</th><th>Settings</th></tr></thead><tbody><tr><td>1 · Schedule by Zapier · Every Day</td><td>Time 6 p.m.; account time zone Africa/Lagos</td></tr><tr><td>2 · Sheets · Lookup Spreadsheet Row</td><td>Worksheet Summary; lookup column label; value today</td></tr><tr><td>3 · Formatter · Numbers · Format Currency</td><td>Input: order_value; NGN</td></tr><tr><td>4 · Gmail · Send Email</td><td>Subject: Harvest Lane today · [order_count] orders · [step 3 output]</td></tr></tbody></table></div><p><b>Sample email</b> (test day):</p><pre class=\"codebox\">Subject: Harvest Lane today · 7 orders · ₦184,500.00\n\nOrders today: 7\nValue today: ₦184,500.00\nFull list: the Orders tab, filtered to today.</pre><p><b>Check:</b> filter Orders to today and add up by hand: 7 rows, 184500. Matches.</p><p><b>Two lines for a client:</b> \"I'd give a client option 2. It costs two tasks a day whatever the volume, and the owner can see the same numbers in the sheet at any time; Digest needs a task per order and must be included in their plan.\"</p><p><b>Submit:</b> the Summary formulas, the Zap outline, a screenshot of the email that arrived at 18:00 (from Zap history: the run time), your hand check, and the two lines.</p>",
+      "mistakes": [
+        "Account time zone left on UTC, so the email arrives at 7 p.m. Lagos time or counts the wrong day.",
+        "SUMIFS over a column of ₦-formatted text, so the value is 0.",
+        "Testing by clicking Test step at noon and never waiting for a real 18:00 run.",
+        "The two-line recommendation names an option but gives no reason (tasks, visibility, plan)."
+      ],
+      "pass": "Zap history shows a scheduled run at 18:00 Lagos time, the email's count and total match a hand check of that day's rows, and two lines justify the chosen option.",
+      "redo": "Send it back if the numbers don't match the sheet, the email only arrived from a manual test, or the recommendation has no reasoning."
+    }
+  }
+}

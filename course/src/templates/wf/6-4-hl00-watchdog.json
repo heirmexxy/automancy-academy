@@ -1,0 +1,228 @@
+{
+  "name": "HL·00 Watchdog",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·00 Watchdog (lesson 6.4, layer 2: heartbeats)\nEvery 30 minutes: for each workflow, compare its last success event with its expected interval; alert Tolu if overdue (at most once every 2 hours per workflow).\n\nTable (create once):\nworkflow_schedule(workflow text pk, label text, expected_every interval, success_event text, active bool default true)\ne.g. ('HL·06','Weekly report','7 days','success'), ('HL·07','Books sync','1 day','heartbeat'), ('HL·03','Payments','6 hours','paid')\n\n**Credentials:** Postgres (Supabase), Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 340,
+        "width": 400
+      },
+      "id": "3b35ac77-1116-4a0d-9567-bc63b1b940bf",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "e466e256-afa3-4041-81b6-9d240e6ed5bb",
+      "name": "Every 30 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·00', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ check: 'watchdog' }) ] }}"
+        }
+      },
+      "id": "90d65bae-6cfe-490f-943b-c287f7013d0b",
+      "name": "Watchdog heartbeat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT w.workflow, w.label, w.expected_every::text AS expected,\n       max(e.at) AS last_success,\n       round(extract(epoch FROM now() - max(e.at)) / 86400.0, 1) AS days_since\nFROM workflow_schedule w\nLEFT JOIN events e ON e.workflow = w.workflow AND e.event = w.success_event\nWHERE w.active\n  AND NOT EXISTS (SELECT 1 FROM events a\n                  WHERE a.workflow = 'HL·00' AND a.event = 'watchdog_alert'\n                    AND a.detail->>'workflow' = w.workflow\n                    AND a.at > now() - interval '2 hours')\nGROUP BY w.workflow, w.label, w.expected_every\nHAVING max(e.at) IS NULL OR max(e.at) < now() - w.expected_every;",
+        "options": {}
+      },
+      "id": "114f98eb-c1ce-4b63-a73a-54057574c49c",
+      "name": "Find overdue workflows",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b0212248-f733-421e-9bc5-1e0881e34252",
+              "leftValue": "={{ $json.workflow ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6bedfa28-6d44-4ff2-9eeb-57c59f25c628",
+      "name": "Overdue only",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const lines = $input.all().map(i => {\n  const r = i.json;\n  const last = r.last_success ? `last success ${r.days_since} days ago` : 'no success recorded yet';\n  return `• ${r.workflow} ${r.label || ''}: expected every ${r.expected}, ${last}.`;\n});\nreturn [{ json: {\n  text: `⏰ Watchdog: ${lines.length} workflow(s) overdue\\n` + lines.join('\\n') + `\\nCheck: is it published? Did its trigger change? (handover pack, section 4)`,\n  workflows: $input.all().map(i => i.json.workflow)\n} }];"
+      },
+      "id": "3b58823f-62a4-4733-820c-0bf170a0c4d3",
+      "name": "Build alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "39eafe58-1f26-4535-a88e-e35a64c89d35",
+      "name": "Alert Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, event, detail)\nSELECT 'HL·00', 'watchdog_alert', jsonb_build_object('workflow', w)\nFROM jsonb_array_elements_text($1::jsonb) AS w;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($('Build alert').item.json.workflows) ] }}"
+        }
+      },
+      "id": "558723ce-fc05-460c-82e1-03c21f4ce94f",
+      "name": "Log watchdog alerts",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1320,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every 30 minutes": {
+      "main": [
+        [
+          {
+            "node": "Watchdog heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Watchdog heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Find overdue workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find overdue workflows": {
+      "main": [
+        [
+          {
+            "node": "Overdue only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overdue only": {
+      "main": [
+        [
+          {
+            "node": "Build alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build alert": {
+      "main": [
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log watchdog alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

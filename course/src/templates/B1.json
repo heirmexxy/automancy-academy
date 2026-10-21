@@ -1,0 +1,221 @@
+{
+  "id": "B1",
+  "items": [
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Lead Machine · Zap 1 Intake",
+      "what": "Catches every partner-form enquiry instantly, drops tests, honeypot bots and repeat submissions before any AI task, lets AI (Standard) extract typed fields, scores the lead by code rules, logs it in Leads, then routes it: hot gets a personal email plus an alert to whoever Settings names, warm gets an email and exactly one follow-up after 3 days if they haven't replied, cold gets a polite info email, spam gets nothing.",
+      "steps": [
+        "1 · Trigger · Webhooks by Zapier › Catch Hook (instant): the website's partner form POSTs JSON with business_name, business_type, area, weekly_budget (free text), start_date (free text), contact_name, email, phone, message, plus a hidden honeypot field website that real people never fill.",
+        "2 · Filter by Zapier (\"Drop tests and bots\"): Only continue if… [1. business_name] (Text) Does not contain test AND [1. website] (Text) Does not exist.",
+        "3 · Formatter by Zapier › Date/Time › Add/Subtract Time (\"24 hours ago\"): Input = {{zap_meta_human_now}}; Expression = -24 hours; To Format = YYYY-MM-DD HH:mm:ss; To Timezone = Africa/Lagos.",
+        "4 · Google Sheets › Lookup Spreadsheet Row (\"Same email before?\"): Worksheet = Leads; Lookup Column = email; Lookup Value = [1. email]; Bottom-Up = Yes (newest first); success when nothing is found = Yes.",
+        "5 · Filter by Zapier (\"Not a repeat in 24 h\"): Only continue if… [4. Zap Search Was Found Status] (Boolean) Is false, OR [4. received_at] (Date/time) Before [3. Output].",
+        "6 · AI by Zapier › Analyze and Return Data (\"Extract lead\"): Model = Standard; Prompt:\nYou read \"Become a supply partner\" enquiries for Harvest Lane, a\nfresh-produce delivery business in Ibadan, Nigeria. Today's date is\n[{{zap_meta_human_now}}]. Fill in the output fields from the enquiry only.\n- type: one of hotel, caterer, restaurant, school, other.\n- weekly_budget: the weekly budget in naira as a plain number.\n  \"120k\" = 120000. If the budget is monthly, divide by 4.33\n  (₦1.5m a month is about 346000 a week). If no budget is stated,\n  leave it empty. Never guess.\n- start_date: when they want to start, as YYYY-MM-DD, worked out from\n  today's date. \"now\" or \"ASAP\" = today. Empty if not stated.\n- is_spam: true if they are selling something to Harvest Lane, the text\n  is gibberish, or there is no genuine business need; otherwise false.\n- first_name: the contact's first name only; empty if not given.\n- summary: one line, at most 20 words, quoting what they need.\nDo not invent details. Do not mention prices.\nBusiness: [1. business_name]   Type given: [1. business_type]\nArea: [1. area]   Budget text: [1. weekly_budget]   Start: [1. start_date]\nContact: [1. contact_name]   Message: [1. message]",
+        "6 (Settings › Output Fields): type · Text · \"hotel, caterer, restaurant, school or other\" · required; weekly_budget · Number · \"weekly naira, monthly ÷ 4.33, empty if not stated\" · not required; start_date · Text · \"YYYY-MM-DD, empty if not stated\" · not required; is_spam · Boolean · \"true if selling to us, gibberish or no business need\" · required; first_name · Text · \"contact's first name\" · not required; summary · Text · \"20 words max\" · required.",
+        "7 · Formatter by Zapier › Utilities › Lookup Table (\"Zone\", from 1.3): Lookup Key = [1. area]; Bodija = inside, Mokola = inside, Ring Road = inside, Challenge = inside; Fallback Value = outside.",
+        "8 · Code by Zapier › Run JavaScript (\"Score\"): Input Data budget = [6. weekly_budget]; type = [6. type]; zone = [7. Value]; start_date = [6. start_date]; is_spam = [6. is_spam]. Code:\n// Input Data: budget, type, zone, start_date, is_spam\nconst budget = Number(inputData.budget) || 0;\nlet score = 0;\nif (budget >= 200000) score += 3;\nelse if (budget >= 100000) score += 2;\nelse if (budget > 0) score += 1;\nif ([\"hotel\", \"caterer\", \"restaurant\"].includes((inputData.type || \"\").toLowerCase())) score += 2;\nif (inputData.zone === \"inside\") score += 2;\nconst start = inputData.start_date ? new Date(inputData.start_date) : null;\nconst days = start ? (start - new Date()) / 86400000 : null;\nif (days !== null && days <= 30) score += 1;   // includes \"now\" and ASAP\nconst spam = String(inputData.is_spam).toLowerCase() === \"true\";\nconst tier = spam ? \"spam\" : score >= 7 ? \"hot\" : score >= 4 ? \"warm\" : \"cold\";\noutput = { score: spam ? 0 : score, tier };",
+        "9 · Google Sheets › Create Spreadsheet Row (\"Log lead\"): Spreadsheet = Harvest Lane Leads workbook; Worksheet = Leads; lead_id = L-{{zap_meta_timestamp}}; received_at = {{zap_meta_human_now}}; business = [1. business_name]; type = [6. type]; area = [1. area]; zone = [7. Value]; weekly_budget = [6. weekly_budget]; start_date = [6. start_date]; contact = [1. contact_name]; email = [1. email]; phone = [1. phone]; message = [1. message]; score = [8. score]; tier = [8. tier]; status = Contacted; contacted_at = {{zap_meta_human_now}}.",
+        "10 · Paths by Zapier (\"Route by tier\"):",
+        "10A · Path HOT: Only continue if… [8. tier] (Text) Exactly matches hot.",
+        "10A.1 · Google Sheets › Lookup Spreadsheet Row (\"Settings\"): Worksheet = Settings; Lookup Column = setting; Lookup Value = current. Returns alert_to and caller_name.",
+        "10A.2 · Gmail › Send Email (personal acknowledgement): To = [1. email]; Subject = Harvest Lane · supply partnership for [1. business_name]; Body = Hi [6. first_name], thank you for asking about fresh produce supply for [1. business_name]. You mentioned: \"[6. summary]\". Within the next working day, [10A.1 caller_name] will call you on [1. phone] to talk through what you need. Harvest Lane, Ibadan. (No prices, discounts or promises.)",
+        "10A.3 · Telegram Bot › Send Message (\"Alert hot lead\"): Chat ID = [10A.1 alert_to]; Text = HOT lead ([8. score]/8): [1. business_name] · [6. type] · [1. area] · [1. contact_name] [1. phone] · [6. summary].",
+        "10B · Path WARM: Only continue if… [8. tier] (Text) Exactly matches warm.",
+        "10B.1 · Gmail › Send Email (personal acknowledgement): To = [1. email]; Subject = Harvest Lane · supply partnership for [1. business_name]; Body = Hi [6. first_name], thank you for your enquiry for [1. business_name]. You mentioned: \"[6. summary]\". Reply to this email with a good time to talk and we'll take it from there. Harvest Lane, Ibadan.",
+        "10B.2 · Delay by Zapier › Delay For: 3 days.",
+        "10B.3 · Google Sheets › Lookup Spreadsheet Row (\"Lead now\"): Worksheet = Leads; Lookup Column = lead_id; Lookup Value = [9. lead_id].",
+        "10B.4 · Filter by Zapier (\"Not replied\"): Only continue if… [10B.3 status] (Text) Exactly matches Contacted.",
+        "10B.5 · Gmail › Send Email (the one follow-up): To = [1. email]; Subject = Re: Harvest Lane · supply partnership for [1. business_name]; Body = Hi [6. first_name], just checking you saw my note about supplying [1. business_name]. If it helps, reply with a good time and we'll call you. Harvest Lane, Ibadan.",
+        "10B.6 · Google Sheets › Update Spreadsheet Row: Worksheet = Leads; Row = [10B.3 Row ID]; status = Followed up; followed_up_at = {{zap_meta_human_now}}.",
+        "10C · Path COLD: Only continue if… [8. tier] (Text) Exactly matches cold.",
+        "10C.1 · Gmail › Send Email (polite info): To = [1. email]; Subject = Harvest Lane · thanks for your enquiry; Body = Hi [6. first_name], thank you for thinking of Harvest Lane for [1. business_name]. We've noted what you need (\"[6. summary]\") and will be in touch if we can help. No follow-up.",
+        "10D · Path SPAM: set as the fallback branch.",
+        "10D.1 · Google Sheets › Update Spreadsheet Row (\"Mark as spam\"): Worksheet = Leads; Row = [9. Row ID]; status = Spam; contacted_at = n/a. Send nothing."
+      ],
+      "setup": [
+        "Needs a paid plan or trial (Webhooks, Paths, AI by Zapier, Code, Delay). Set the Zapier time zone to Africa/Lagos.",
+        "Create a Harvest Lane Leads workbook. Leads tab, headers in row 1: lead_id, received_at, business, type, area, zone, weekly_budget, start_date, contact, email, phone, message, score, tier, status, contacted_at, followed_up_at; dropdowns for tier (hot, warm, cold, spam) and status (New, Contacted, Replied, Followed up, Spam, Won, Lost); weekly_budget as a number, phone as plain text.",
+        "Settings tab, headers setting, alert_to, caller_name; one row: current | Tolu's Telegram chat ID | Tolu. For the trade fair, change alert_to to a Telegram group with Tolu and Kemi and caller_name to our team; switch back by editing the cells, not the Zap.",
+        "Create a Telegram bot with BotFather for alerts and connect it in Zapier (the token lives only in that connection). Add the hidden website honeypot field to the partner form.",
+        "Copy the Catch Hook URL into the website form's settings only; it is a secret (0.6). Connect Gmail and Google Sheets with the business account.",
+        "Test the AI step on the 12 test leads before building the rest, then build, test every step, name the Zap and publish. Share it from the Zap's menu → Share."
+      ],
+      "test": "Send the 12 test leads from Hoppscotch as JSON (today = the day you test): at least 11 land in the expected tier (Grand Oak 8 hot, Mama Put 7 hot, Joy Caterers 6 warm, Unity School 3 cold, Ogbomoso Grill 6 warm, Ade 4 warm, CHEAP SEO spam with no email, Blue Lagoon 6 warm with weekly_budget ≈ 346420, Campus Café 4 warm, Royal Events 5 warm with empty budget, Sunrise 7 hot) and \"test test\" shows Filtered with no row. Hot leads email and alert within 5 minutes; no automatic email contains a price. Send lead 1 again with the same email: it stops at step 5. Shorten the Delay to 5 minutes in a test copy: an un-replied warm lead gets exactly one follow-up; one you replied to gets none.",
+      "tasks": "About 5–6 tasks per genuine lead (duplicate check, AI on Standard, code, sheet row, email, plus Settings and alert for hot) and 2–3 more for a warm follow-up, about 410 a month at 60 leads; tests, bots and repeats stop at a filter for at most one task.",
+      "walk": {
+        "title": "Build it: the Lead Machine intake",
+        "sample": "Partner form POST · Grand Oak Suites · hotel · Bodija · ₦350,000 a week · start in 2 weeks",
+        "steps": [
+          {
+            "at": "1",
+            "say": "The partner form sends each enquiry straight to a Catch Hook, so the Zap runs instantly. That's how hot leads reach Tolu within five minutes.",
+            "show": [
+              "Webhooks by Zapier › Catch Hook",
+              "business_name, business_type, area, weekly_budget…",
+              "hidden honeypot field: website"
+            ],
+            "data": "Grand Oak Suites · hotel · Bodija"
+          },
+          {
+            "at": "2",
+            "say": "The first gate drops test entries and bots. Real people never fill the hidden website field, so if it has a value, the run stops before any AI task is used.",
+            "show": [
+              "[1. business_name] Does not contain test",
+              "AND [1. website] Does not exist"
+            ],
+            "data": "\"test test\" → Filtered"
+          },
+          {
+            "at": "5",
+            "say": "Next, the flood guard. We look for the same email in the Leads sheet, and stop if it arrived in the last twenty-four hours. Forty fake leads become one.",
+            "show": [
+              "Lookup Leads by email (newest first)",
+              "Continue if not found OR received before 24 h ago"
+            ],
+            "data": "new email → continue"
+          },
+          {
+            "at": "6",
+            "say": "Sage reads the enquiry on the Standard model, with today's date in the prompt so it can turn in two weeks into a real date.",
+            "show": [
+              "AI by Zapier › Analyze and Return Data",
+              "Model: Standard",
+              "Today's date: {{zap_meta_human_now}}"
+            ]
+          },
+          {
+            "at": "6",
+            "say": "The budget becomes a weekly number. Monthly budgets are divided by four point three three, and a missing budget stays empty. Never guess.",
+            "show": [
+              "\"120k\" = 120000",
+              "monthly ÷ 4.33 · not stated → empty"
+            ],
+            "data": "weekly_budget 350000"
+          },
+          {
+            "at": "7",
+            "say": "Typed output fields keep every answer usable: a number for budget, a date for the start, and a true or false for spam.",
+            "show": [
+              "weekly_budget · Number",
+              "start_date · Text YYYY-MM-DD",
+              "is_spam · Boolean · required"
+            ],
+            "data": "is_spam: false"
+          },
+          {
+            "at": "8",
+            "say": "The zone comes from the lookup table we built in 1.3. Any area not on the list counts as outside.",
+            "show": [
+              "Lookup Table · \"Zone\"",
+              "Fallback Value: outside"
+            ],
+            "data": "Bodija → inside"
+          },
+          {
+            "at": "9",
+            "say": "The AI reads, but rules score. This code applies the points exactly, so the same lead always gets the same tier, and an empty budget counts as zero instead of crashing.",
+            "show": [
+              "Number(inputData.budget) || 0",
+              "budget ≥ 200000 → +3 · hotel → +2",
+              "inside → +2 · start ≤ 30 days → +1"
+            ],
+            "data": "score 8 · tier hot"
+          },
+          {
+            "at": "10",
+            "say": "Log every lead before routing, with its score, tier and status, so nothing is ever forgotten.",
+            "show": [
+              "Worksheet: Leads",
+              "lead_id = L-{{zap_meta_timestamp}}",
+              "status = Contacted"
+            ],
+            "data": "1 row · L-…"
+          },
+          {
+            "at": "13",
+            "say": "On the hot path, look up a tiny Settings tab first. When Tolu is at the trade fair, one cell sends alerts to Kemi instead, with no Zap edit.",
+            "show": [
+              "Path HOT: tier Exactly matches hot",
+              "Settings → alert_to, caller_name"
+            ]
+          },
+          {
+            "at": "14",
+            "say": "The acknowledgement uses their first name and a line from their message, and says who will call. No prices, no discounts, no promises.",
+            "show": [
+              "Hi [first_name] … You mentioned: \"[summary]\"",
+              "[caller_name] will call you on [phone]"
+            ],
+            "data": "email sent"
+          },
+          {
+            "at": "15",
+            "say": "Then the alert, on Telegram, with the score and the details Tolu needs to call.",
+            "show": [
+              "Telegram Bot › Send Message",
+              "Chat ID: [alert_to]",
+              "HOT lead (8/8): business · type · area…"
+            ],
+            "data": "alert within 5 minutes"
+          },
+          {
+            "at": "18",
+            "say": "Warm leads get a friendly acknowledgement, then the Zap waits three days.",
+            "show": [
+              "Path WARM · Gmail acknowledgement",
+              "Delay by Zapier › Delay For: 3 days"
+            ]
+          },
+          {
+            "at": "20",
+            "say": "After the wait, look the lead up again, and only continue if the status is still Contacted. If they replied, the reply catcher Zap has already changed it.",
+            "show": [
+              "Lookup Leads by lead_id",
+              "Filter: status Exactly matches Contacted"
+            ]
+          },
+          {
+            "at": "22",
+            "say": "Send the one follow-up and mark the row Followed up, so nobody ever gets a second chaser.",
+            "show": [
+              "One follow-up email",
+              "status = Followed up · followed_up_at"
+            ],
+            "data": "exactly one follow-up"
+          },
+          {
+            "at": "26",
+            "say": "Cold leads get a polite note with no follow-up. Spam is the fallback: mark the row and send nothing. Then run all twelve test leads and compare tiers.",
+            "show": [
+              "Path COLD: polite info email",
+              "Path SPAM (fallback): status = Spam, send nothing",
+              "12 test leads · aim 11 of 12"
+            ]
+          }
+        ],
+        "end": "Every lead in, scored by rules, answered in minutes and chased once. Now build it and fire your twelve test leads at it."
+      }
+    },
+    {
+      "file": null,
+      "kind": "zap",
+      "name": "HL · Lead Machine · Zap 2 Reply catcher",
+      "what": "When a lead replies to a Lead Machine email, finds their row in Leads by email address and sets the status to Replied, so the warm path's follow-up check stops and nobody gets chased after answering.",
+      "steps": [
+        "1 · Trigger · Gmail › New Email Matching Search: Search String = subject:\"supply partnership\" -from:me (replies to Zap 1's emails keep the subject).",
+        "2 · Google Sheets › Lookup Spreadsheet Row (\"Find lead by email\"): Spreadsheet = Harvest Lane Leads workbook; Worksheet = Leads; Lookup Column = email; Lookup Value = [1. From Email]; Bottom-Up = Yes; success when nothing is found = Yes.",
+        "3 · Filter by Zapier (\"Known lead, still open\"): Only continue if… [2. Zap Search Was Found Status] (Boolean) Is true AND [2. status] (Text) Is in Contacted, Followed up.",
+        "4 · Google Sheets › Update Spreadsheet Row: Worksheet = Leads; Row = [2. Row ID]; status = Replied."
+      ],
+      "setup": [
+        "Use the same business Gmail account that Zap 1 sends from, and the same Leads workbook.",
+        "Keep the Zap 1 email subjects containing \"supply partnership\" so replies match the search; the cold email uses a different subject on purpose, so its replies are handled by hand.",
+        "Test with a real reply, name the Zap and publish. Share it from the Zap's menu → Share."
+      ],
+      "test": "Reply from a warm test lead's address to its acknowledgement: within about 15 minutes (polling) its Leads row shows Replied, and when the (shortened) delay ends no follow-up is sent. A reply from an unknown address stops at the filter with no update.",
+      "tasks": "About two tasks per lead email received (the lookup and the update), roughly 80 a month at 40 replies; a filtered email uses only the lookup."
+    }
+  ]
+}

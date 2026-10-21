@@ -1,0 +1,11 @@
+/* Checkout, callback and earn pages (writer A). Shared classes from globals.css do most of the work. */
+.co{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+.co-price{font:800 2.2rem/1 var(--display)}
+.co-price small{font:400 .95rem var(--body);color:var(--muted)}
+.co-opt{display:grid;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.co-opt legend{font-weight:700;font-size:.92rem;padding:0 4px}
+.co-opt label{display:flex;gap:8px;align-items:flex-start;font-weight:400}
+.co-opt input{width:auto;margin-top:5px}
+.co ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.reflink{font-family:var(--mono);font-size:.9rem;word-break:break-all;background:var(--paper2);border-radius:10px;padding:10px 12px}
+@media (max-width:760px){.co{grid-template-columns:1fr}}

@@ -1,0 +1,222 @@
+{
+  "name": "HL·00 Outcome checks",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL·00 Outcome checks (lesson 6.4, layer 3)\nGreen runs that do the wrong thing. Every 30 minutes:\n- paid orders vs payment events (24 h)\n- more than 3 rejected payment signatures in 10 minutes\n- orders paid over 2 hours ago with no dispatch\n- stock below zero\n- 0 orders in a week = alarm, not a report\nEach check alerts at most once every 2 hours. If a column was renamed, the query itself fails and HL·00 Errors fires: also caught.\n\n**Credentials:** Postgres (Supabase), Telegram. **Replace:** YOUR_TELEGRAM_CHAT_ID.",
+        "height": 360,
+        "width": 400
+      },
+      "id": "3ca95c9e-a1be-4cca-913f-e661e7e36932",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -251
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "e914d503-4ee8-49fe-aa2b-5c9b0e62a1de",
+      "name": "Every 30 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH paid_orders AS (SELECT count(*) AS n FROM orders WHERE paid_at > now() - interval '24 hours'),\npaid_events AS (SELECT count(*) AS n FROM events WHERE workflow = 'HL·03' AND event = 'paid' AND at > now() - interval '24 hours'),\nrejected AS (SELECT count(*) AS n FROM events WHERE event = 'signature_rejected' AND at > now() - interval '10 minutes'),\nstuck AS (SELECT count(*) AS n, string_agg(o.order_id, ', ') AS ids FROM orders o\n          WHERE o.status = 'paid' AND o.paid_at < now() - interval '2 hours'\n            AND NOT EXISTS (SELECT 1 FROM events e WHERE e.order_id = o.order_id AND e.event = 'dispatched')),\nneg AS (SELECT count(*) AS n, string_agg(sku, ', ') AS skus FROM stock WHERE qty < 0),\nweek AS (SELECT count(*) AS n FROM orders WHERE created_at > now() - interval '7 days'),\nchecks AS (\n  SELECT 'paid_vs_events' AS check_name, format('Paid orders %s vs payment events %s in the last 24 h', p.n, e.n) AS detail\n    FROM paid_orders p, paid_events e WHERE p.n <> e.n\n  UNION ALL SELECT 'rejected_signatures', format('%s rejected payment signatures in the last 10 minutes: is the Paystack secret in n8n current?', n) FROM rejected WHERE n > 3\n  UNION ALL SELECT 'stuck_in_paid', format('%s order(s) paid over 2 hours ago, not dispatched: %s', n, ids) FROM stuck WHERE n > 0\n  UNION ALL SELECT 'stock_below_zero', format('Stock below zero: %s', skus) FROM neg WHERE n > 0\n  UNION ALL SELECT 'no_orders_week', 'No orders created in 7 days: an alarm, not a quiet week. Check column names and HL·01/HL·02.' FROM week WHERE n = 0\n)\nSELECT c.* FROM checks c\nWHERE NOT EXISTS (SELECT 1 FROM events a WHERE a.workflow = 'HL·00' AND a.event = 'outcome_alert'\n                  AND a.detail->>'check' = c.check_name AND a.at > now() - interval '2 hours');",
+        "options": {}
+      },
+      "id": "d17bad00-1fbe-4b8d-93ea-932f8849bb34",
+      "name": "Run outcome checks",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        0
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "2f908009-3e64-43c2-8d73-3f9b539ed2d9",
+              "leftValue": "={{ $json.check_name ?? '' }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e59bb00c-b8c5-4825-856c-fced6abaab19",
+      "name": "Failing checks only",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nreturn [{ json: {\n  text: `🧭 Outcome check: ${rows.length} problem(s)\\n` + rows.map(r => '• ' + r.detail).join('\\n'),\n  checks: rows.map(r => r.check_name)\n} }];"
+      },
+      "id": "904f7520-2188-4ede-8f78-e3820d8c8a67",
+      "name": "Build alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0c148cee-c64a-41cd-bc54-9945b7930440",
+      "name": "Alert Tolu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, event, detail)\nSELECT 'HL·00', 'outcome_alert', jsonb_build_object('check', c)\nFROM jsonb_array_elements_text($1::jsonb) AS c;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($('Build alert').item.json.checks) ] }}"
+        }
+      },
+      "id": "384af58c-0e3c-44a8-b48b-d8a6b406294b",
+      "name": "Log outcome alerts",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (workflow, order_id, event, detail) VALUES ('HL·00', $1, 'success', $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ null, JSON.stringify({ check: 'outcomes' }) ] }}"
+        }
+      },
+      "id": "abf68415-3c74-471e-8443-45ef6d8ea01e",
+      "name": "Checks heartbeat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        440,
+        216
+      ]
+    }
+  ],
+  "connections": {
+    "Every 30 minutes": {
+      "main": [
+        [
+          {
+            "node": "Run outcome checks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Checks heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run outcome checks": {
+      "main": [
+        [
+          {
+            "node": "Failing checks only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failing checks only": {
+      "main": [
+        [
+          {
+            "node": "Build alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build alert": {
+      "main": [
+        [
+          {
+            "node": "Alert Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Tolu": {
+      "main": [
+        [
+          {
+            "node": "Log outcome alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

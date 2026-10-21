@@ -1,0 +1,73 @@
+{
+  "name": "HL · Alarm test",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Alarm test (Lesson 3.6)\nFails on purpose every minute, to prove the whole alarm chain from a real automatic run.\n\n1. Import and save **HL · Error alerts** first.\n2. Here: Settings → Error workflow → HL · Error alerts. Save.\n3. Publish, wait about a minute, check your phone.\n4. **Unpublish immediately.** Left on, it sends 1,440 alerts a day.\n\nNo credentials or placeholders.",
+        "height": 300,
+        "width": 420
+      },
+      "id": "130ee2d7-c3d9-4cfb-bcdc-b03cbad2d4bc",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -484,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "6b4a0d57-0b0b-4338-a7f4-d3c99f7a1f5a",
+      "name": "Every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "Test alarm: if you can read this, alerts work."
+      },
+      "id": "7844a2b2-6c1c-4e41-808e-f542fc52b9d8",
+      "name": "Stop and Error",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every minute": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

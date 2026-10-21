@@ -1,0 +1,223 @@
+{
+  "name": "HL · Backup workflows → GitHub (B4)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Backup workflows → GitHub\nBoss 4 (from 3.8). Nightly at 02:00: every workflow from the n8n API is saved as a file in a PRIVATE GitHub repo, creating or updating each file.\n\nThe lesson uses the n8n and GitHub nodes; this template calls both APIs with HTTP Request so it imports on any version.\n\n**Credentials:** Header Auth \"n8n API\" (Name X-N8N-API-KEY, Value your n8n API key); Header Auth \"GitHub backup\" (Name Authorization, Value Bearer + a fine-grained token limited to this repo, contents read/write).\n**Replace:** YOUR_N8N_DOMAIN; YOUR_GITHUB_OWNER (3 places).",
+        "height": 420,
+        "width": 440
+      },
+      "id": "a09b3559-e5e3-49d6-95c2-c518a9ab4b5f",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "id": "176a76d6-bd73-4a48-b101-18401d85d302",
+      "name": "Every day at 02:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://YOUR_N8N_DOMAIN/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "250"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c32a1353-886b-4316-8569-0f8310e5fbd5",
+      "name": "Get all workflows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "id": "d8cc1bb2-bb42-4862-87db-86f5272ed2a4",
+      "name": "One item per workflow",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { path: `workflows/${$json.name.replace(/[^\\w-]+/g, '_')}.json`,\n  content: Buffer.from(JSON.stringify($json, null, 2)).toString('base64') } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "22567c1b-0236-4128-b81c-9a7e66d51029",
+      "name": "Make file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/{{ $json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "6ec3acf0-238b-43e9-9474-6689b4a4a25c",
+      "name": "Current file (sha)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/YOUR_GITHUB_OWNER/harvestlane-n8n/contents/{{ $('Make file').item.json.path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ message: 'nightly backup ' + $now.toISODate(), content: $('Make file').item.json.content }, $json.sha ? { sha: $json.sha } : {})) }}",
+        "options": {}
+      },
+      "id": "b3f06b1b-a66b-42a8-ad02-7691234258cb",
+      "name": "Commit file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "### Same credential, two hosts\nSelect the \"GitHub backup\" credential in both GitHub nodes and \"n8n API\" in Get all workflows. Keep the repo private: workflow files contain credential names and IDs (not secrets).",
+        "height": 200,
+        "width": 340
+      },
+      "id": "acab4f49-9f0f-4171-9a1f-da75ed24ec9d",
+      "name": "Sticky Note 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Every day at 02:00": {
+      "main": [
+        [
+          {
+            "node": "Get all workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all workflows": {
+      "main": [
+        [
+          {
+            "node": "One item per workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per workflow": {
+      "main": [
+        [
+          {
+            "node": "Make file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make file": {
+      "main": [
+        [
+          {
+            "node": "Current file (sha)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Current file (sha)": {
+      "main": [
+        [
+          {
+            "node": "Commit file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

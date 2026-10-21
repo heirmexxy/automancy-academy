@@ -1,0 +1,152 @@
+{
+  "id": "2.4",
+  "items": [
+    {
+      "file": "2-4-stock-movements.json",
+      "kind": "make",
+      "name": "HL · Order items → stock movements + confirmation",
+      "what": "2.4 Part A: a website order arrives as JSON on a custom webhook, the Iterator splits its items array into one bundle per item, each item adds a negative row to Stock_Movements (so a SUMIFS formula keeps stock right, even when a product appears twice), and a Text aggregator with the Iterator as source module squeezes the items back into one confirmation email per order.",
+      "build": [
+        "1 · Webhooks › Custom webhook: add a new webhook named HL website orders; Maximum number of results = 1. Redetermine the data structure by sending the sample order below.",
+        "2 · Flow control › Iterator: Array = {{1.items}}.",
+        "3 · Google Sheets › Add a Row: Sheet = Stock_Movements; A date = {{formatDate(now; \"YYYY-MM-DD\")}}; B order_id = {{1.order_id}}; C sku = {{2.sku}}; D qty_change = {{-1 * 2.qty}}.",
+        "4 · Tools › Text aggregator: Source module = 2. Iterator (not the webhook); Row separator = New row; Text = {{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; 0; \".\"; \",\")}}.",
+        "5 · Gmail › Send an Email: To = {{ifempty(1.customer.email; \"orders@harvestlane.example\")}}; Subject = Harvest Lane · order {{1.order_id}} confirmed; Content (HTML) = Hi {{1.customer.name}}, thank you! Your order {{1.order_id}}:<br>{{replace(4.text; newline; \"<br>\")}}<br>Delivery fee: ₦{{formatNumber(1.delivery_fee; 0; \".\"; \",\")}}<br>Total: ₦{{formatNumber(1.total; 0; \".\"; \",\")}}<br>Harvest Lane.",
+        "Scenario settings: instant (webhook) trigger, scheduling ON = Immediately. Scenario name: HL · Order items → stock movements + confirmation."
+      ],
+      "setup": [
+        "Add a Stock_Movements tab: A date, B order_id, C sku, D qty_change (negative for sales, positive for supplier deliveries).",
+        "In Products, make stock_qty a formula: =opening_stock + SUMIFS(Stock_Movements!D:D, Stock_Movements!C:C, A2) (adjust opening_stock to its cell, e.g. D2), and fill it down.",
+        "In Make: Scenarios → Create a new scenario → the three-dot menu at the bottom → Import Blueprint → choose this file.",
+        "Click module 1 → Add → name the webhook HL website orders → Save, copy its URL, then click Redetermine data structure and send the sample order (below) with a tool like Postman or the 1.4 test page. The webhook URL is a secret: keep it out of public page code.",
+        "Connect Google Sheets (module 3) and Gmail (module 5) with the business Google account and pick the Stock_Movements tab.",
+        "Check module 4's Source module is the Iterator. Switch scheduling ON (Immediately)."
+      ],
+      "test": "POST this sample to the webhook: {\"order_id\": \"HL-0071\", \"customer\": {\"name\": \"Mrs Adebayo\", \"phone\": \"+2348000000000\", \"email\": \"adebayo@harvestlane.example\"}, \"items\": [{\"sku\": \"TOM-CRATE\", \"name\": \"Tomatoes\", \"qty\": 2, \"unit_price\": 12500}, {\"sku\": \"TOM-CRATE\", \"name\": \"Tomatoes\", \"qty\": 1, \"unit_price\": 12500}, {\"sku\": \"ONI-BAG\", \"name\": \"Onions\", \"qty\": 3, \"unit_price\": 4000}], \"delivery_fee\": 1500, \"total\": 51000}. Bubble counts: webhook 1, Iterator 3, Add a Row 3, Text aggregator 1, Gmail 1. Stock_Movements gets three rows (TOM-CRATE −2, TOM-CRATE −1, ONI-BAG −3), Products shows tomatoes down by exactly 3, and one email lists 2× Tomatoes · ₦25,000, 1× Tomatoes · ₦12,500, 3× Onions · ₦12,000.",
+      "walk": {
+        "title": "Build it: stock that updates itself",
+        "sample": "Website order HL-0071 · Mrs Adebayo · 2× Tomatoes, 1× Tomatoes, 3× Onions · total 51,000",
+        "steps": [
+          {
+            "at": null,
+            "say": "First, the sheet. Stock_Movements gets one row per change, and stock in Products is a SUMIFS formula over it, so no update can ever overwrite another.",
+            "show": [
+              "Stock_Movements: date, order_id, sku, qty_change",
+              "stock_qty = opening_stock + SUMIFS(…)"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "Website orders arrive as JSON on a custom webhook. Send the sample order once so Make learns its shape. Treat that webhook address as a secret.",
+            "show": [
+              "Webhooks › Custom webhook: HL website orders",
+              "Maximum number of results: 1",
+              "Redetermine data structure"
+            ],
+            "data": "1 bundle · items array of 3"
+          },
+          {
+            "at": "2",
+            "say": "One order, three products inside it. The Iterator pulls the accordion open: one bundle per item, so each can be handled on its own.",
+            "show": [
+              "Flow control › Iterator",
+              "Array: {{1.items}}"
+            ],
+            "data": "3 bundles · TOM-CRATE, TOM-CRATE, ONI-BAG"
+          },
+          {
+            "at": "3",
+            "say": "Each item adds a row to Stock_Movements, with a negative quantity for a sale. We add rows instead of overwriting stock.",
+            "show": [
+              "Google Sheets › Add a Row · Sheet: Stock_Movements",
+              "sku: {{2.sku}}",
+              "qty_change: {{-1 * 2.qty}}"
+            ],
+            "data": "3 rows · −2, −1, −3"
+          },
+          {
+            "at": "3",
+            "say": "This is why: when tomatoes appear twice in one order, an overwrite design reads stale stock and loses a crate. Two movement rows simply add up.",
+            "show": [
+              "TOM-CRATE −2 and −1 → stock down by 3"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Everything between the iterator and the aggregator runs, and costs a credit, once per item. Three items means three Add a Row credits.",
+            "show": [
+              "Add a Row bubble: 3"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Now squeeze the accordion shut with a Text aggregator: one line per item, joined by new lines.",
+            "show": [
+              "Tools › Text aggregator · Row separator: New row",
+              "{{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; …)}}"
+            ],
+            "data": "1 bundle · 3 lines"
+          },
+          {
+            "at": "4",
+            "say": "Set the source module to the Iterator, not the webhook. The wrong source is the classic bug that mixes one customer's items into another's email.",
+            "show": [
+              "Source module: 2. Iterator"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "One Gmail module after the aggregator sends one confirmation per order, listing every item, the delivery fee and the total.",
+            "show": [
+              "Gmail › Send an Email",
+              "To: {{ifempty(1.customer.email; \"orders@harvestlane.example\")}}",
+              "Subject: Harvest Lane · order {{1.order_id}} confirmed"
+            ],
+            "data": "1 email · 3 items listed"
+          },
+          {
+            "at": "5",
+            "say": "Inside the email, we turn the aggregator's new lines into line breaks so the list reads properly.",
+            "show": [
+              "{{replace(4.text; newline; \"<br>\")}}"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "It's an instant trigger, so scheduling is set to Immediately. The six p.m. summary is a separate scenario using the same squeeze, with Search Rows as the source.",
+            "show": [
+              "Scheduling: ON · Immediately",
+              "Name: HL · Order items → stock movements + confirmation"
+            ]
+          }
+        ],
+        "end": "Post the sample order with tomatoes twice, then check for three movement rows, tomatoes down by exactly three, and one email."
+      }
+    },
+    {
+      "file": "2-4-daily-summary.json",
+      "kind": "make",
+      "name": "HL · 6 p.m. daily summary",
+      "what": "2.4 Part B: every day at 18:00, Search Rows finds today's orders, a Numeric aggregator sums the totals, a second one counts the orders, a Text aggregator builds one line per order (all three with the search as source module), and Tolu gets one email, \"Today: 17 orders · ₦412,500\" plus the list, instead of forty alerts.",
+      "build": [
+        "1 · Google Sheets › Search Rows: business Google connection; Sheet = Orders; Table contains headers = Yes; Filter = created_at (column B) Contains {{formatDate(now; \"YYYY-MM-DD\")}}; Limit = 500.",
+        "2 · Tools › Numeric aggregator: Source module = 1. Search Rows; Aggregate function = SUM; Value = {{1.total}} (the plain number column, never a ₦-formatted one).",
+        "3 · Tools › Numeric aggregator: Source module = 1. Search Rows; Aggregate function = COUNT; Value = {{1.order_id}}.",
+        "4 · Tools › Text aggregator: Source module = 1. Search Rows; Row separator = New row; Text = {{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}}.",
+        "5 · Gmail › Send an Email: To = tolu@harvestlane.example; Subject = Today: {{3.result}} orders · ₦{{formatNumber(2.result; 0; \".\"; \",\")}}; Content (HTML) = the same line, then <br><br>{{replace(4.text; newline; \"<br>\")}}.",
+        "If Make will not let modules 3 and 4 use module 1 as their source after another aggregator, use the lesson's alternative: 2 · Flow control › Array aggregator (source 1, fields order_id, customer_name, total), then count with {{length(2.array)}}, total with {{sum(map(2.array; \"total\"))}}, and the list with an Iterator on 2.array plus a Text aggregator sourced from that Iterator.",
+        "Scenario settings › Schedule: Every day at 18:00. Scheduling ON. Scenario name: HL · 6 p.m. daily summary."
+      ],
+      "setup": [
+        "In Make, set your organisation and profile time zone to Africa/Lagos before running anything with dates (2.2).",
+        "Orders tab layout the blueprints assume (row 1 = headers): A order_id, B created_at, C customer_id, D customer_name, E delivery_date, F delivery_fee, G status, H items_total, I total (the 0.4 columns), then J phone, K channel, L delivery_window, M customer_email, N payment_link. If your columns differ, open each Google Sheets module after import and re-pick the columns; the build list names every field.",
+        "created_at must start with the date written as YYYY-MM-DD (for example 2026-10-12 09:41) so the Contains filter finds today's rows.",
+        "In Make: Scenarios → Create a new scenario → the three-dot menu at the bottom → Import Blueprint → choose this file.",
+        "Connect Google Sheets (module 1) and Gmail (module 5) with the business Google account; pick the spreadsheet and Orders tab, and confirm the filter column is created_at.",
+        "Open modules 2, 3 and 4 and check each Source module is 1. Search Rows.",
+        "Schedule: every day at 18:00, then switch scheduling ON. This is one of your two Free-plan active scenarios."
+      ],
+      "test": "Add five rows to Orders with today's created_at (totals 26500, 13500, 82000, 9000, 40000) and one row dated yesterday. Run once: Search Rows shows 5, each aggregator 1, Gmail 1. One email arrives: \"Today: 5 orders · ₦171,000\" followed by five lines like HL-0061 · Mrs Adebayo · ₦26,500. Yesterday's row is not listed. Check a hand-added total and count against the sheet."
+    }
+  ]
+}

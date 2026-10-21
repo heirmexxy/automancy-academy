@@ -1,0 +1,210 @@
+{
+ "name": "HL · Unsubscribes everywhere",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Unsubscribes everywhere (Lesson 5.6)\nBrevo webhook (unsubscribed, hard bounce, spam complaint) -> mark the person in Supabase the same day, so no other channel (WhatsApp, SMS, outreach) markets to them either. Every channel checks marketing_consent.status before marketing.\n\nIn Brevo: Transactional/Marketing webhooks -> URL https://YOUR_N8N_DOMAIN/webhook/hl-brevo-events?token=YOUR_WEBHOOK_SECRET, events unsubscribed, hard bounce, spam.\nMailchimp has the same webhooks.\n\nCredentials: Postgres (Supabase).\nPlaceholders: YOUR_WEBHOOK_SECRET.",
+    "height": 320,
+    "width": 500
+   },
+   "id": "a8ec2ee2-df61-4bbf-bba8-b4ec60081f40",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -560,
+    -320
+   ]
+  },
+  {
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "hl-brevo-events",
+    "responseMode": "responseNode",
+    "options": {}
+   },
+   "id": "8526fcea-57b1-4cef-a4c2-1007708ba51f",
+   "name": "Brevo events",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "472740d5-bed8-451f-bba8-ba92b9a3557d"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "4657f644-6478-4d23-b66b-4fd93b294016",
+       "leftValue": "={{ $json.query.token }}",
+       "rightValue": "YOUR_WEBHOOK_SECRET",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "04fe053a-7847-4346-84ff-c5f8e7dbf619",
+   "name": "Secret matches?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "Unauthorized",
+    "options": {
+     "responseCode": 401
+    }
+   },
+   "id": "cb3defe7-37ec-47ca-ad72-5a7d49600e32",
+   "name": "Respond 401",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    440,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const events = Array.isArray($json.body) ? $json.body : [$json.body];\nconst map = { unsubscribed: 'unsubscribed', unsubscribe: 'unsubscribed', hard_bounce: 'hard_bounce', hardBounce: 'hard_bounce', spam: 'complaint', complaint: 'complaint' };\nreturn events.filter(e => e && e.email && map[e.event])\n  .map(e => ({ json: { email: String(e.email).trim().toLowerCase(), status: map[e.event] } }));\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "39b89d3b-737f-4fe4-a8a4-6163d1c96deb",
+   "name": "Map event",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "insert into marketing_consent (email, status, suppressed_at)\nvalues ($1, $2, now())\non conflict (email) do update set status = excluded.status, suppressed_at = now();",
+    "options": {
+     "queryReplacement": "={{ [ $json.email, $json.status ] }}"
+    }
+   },
+   "id": "04e91914-f39f-47c1-ba90-264c81cf0d9c",
+   "name": "Mark in Supabase",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    660,
+    -54
+   ]
+  },
+  {
+   "parameters": {
+    "respondWith": "text",
+    "responseBody": "ok",
+    "options": {
+     "responseCode": 200
+    }
+   },
+   "id": "1b3a3767-16e6-4ed3-8d05-9df9a4ae4d61",
+   "name": "Respond 200",
+   "type": "n8n-nodes-base.respondToWebhook",
+   "typeVersion": 1.1,
+   "position": [
+    880,
+    -54
+   ],
+   "executeOnce": true
+  },
+  {
+   "parameters": {
+    "content": "## No matching event?\nIf Map event returns nothing (an event type you don't track), the webhook still needs a reply: Brevo retries otherwise. Turn on Always Output Data in Map event's settings if you subscribe to more event types.",
+    "height": 180,
+    "width": 380
+   },
+   "id": "f0f82251-0a06-43a8-895d-6e7fa446dcd3",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    300,
+    300
+   ]
+  }
+ ],
+ "connections": {
+  "Brevo events": {
+   "main": [
+    [
+     {
+      "node": "Secret matches?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Secret matches?": {
+   "main": [
+    [
+     {
+      "node": "Map event",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Respond 401",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Map event": {
+   "main": [
+    [
+     {
+      "node": "Mark in Supabase",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark in Supabase": {
+   "main": [
+    [
+     {
+      "node": "Respond 200",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

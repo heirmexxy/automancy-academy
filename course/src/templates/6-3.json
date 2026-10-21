@@ -1,0 +1,105 @@
+{
+  "id": "6.3",
+  "items": [],
+  "note": "Lesson 6.3 (portfolio and templates) has no new n8n build: its solved problem packages your existing Boss 3 workflow as a sellable template.",
+  "walk": {
+    "title": "Solve it: Boss 3 as a sellable template",
+    "sample": "HL · Telegram order bot (Boss 3) · its proof-of-work log · a fresh n8n trial account",
+    "steps": [
+      {
+        "at": null,
+        "say": "We're turning the Telegram order bot into a package another shop can buy and set up in 15 minutes: workflow, sample sheet, README, video and case study.",
+        "show": [
+          "5 pieces: workflow · sheet · README · video · case study",
+          "Target: setup in under 15 minutes"
+        ]
+      },
+      {
+        "at": "1",
+        "say": "Duplicate the workflow and rename Harvest Lane things to neutral names, like Your shop.",
+        "show": [
+          "Duplicate · \"Harvest Lane\" → \"Your shop\""
+        ]
+      },
+      {
+        "at": "1",
+        "say": "Move every business setting, the delivery fee, the free-delivery threshold, the 50-unit limit and the owner's chat ID, into one Settings node at the start, so buyers change them in one place. Then add sticky notes.",
+        "show": [
+          "Edit Fields · Settings (first node)",
+          "delivery fee · free-delivery threshold",
+          "50-unit limit · owner chat ID"
+        ]
+      },
+      {
+        "at": "2",
+        "say": "Unpin all data. Pinned test data travels inside the file, and a buyer should never meet Funmi's order.",
+        "show": [
+          "Unpin all data before export"
+        ],
+        "data": "0 pinned records"
+      },
+      {
+        "at": "2",
+        "say": "Any key typed into a field goes along with the export. Move it into a credential, run the file through the Card 4 checker, and fix what it finds at the source, not just in the file.",
+        "show": [
+          "Typed keys → credentials",
+          "Export → Card 4 checker → fix at source"
+        ]
+      },
+      {
+        "at": "2",
+        "say": "Replace your sheet ID with a placeholder, then read the final file once yourself. Pattern checks don't catch everything.",
+        "show": [
+          "documentId → <YOUR_SHEET_ID>",
+          "Read the final JSON yourself"
+        ],
+        "data": "0 secrets, 0 phone numbers"
+      },
+      {
+        "at": "3",
+        "say": "Make a sample sheet with the four tabs, ten fake products and two fake customers, shared so anyone with the link can make a copy.",
+        "show": [
+          "Tabs: Price_List · Customers · Pending · Orders",
+          "10 fake products · 2 fake customers",
+          "Sharing: anyone with the link can copy"
+        ]
+      },
+      {
+        "at": "4",
+        "say": "Test on a fresh account: a new n8n trial, a new Telegram test bot and a copy of the sheet. Follow only the README, and time yourself.",
+        "show": [
+          "New n8n Cloud trial (or fresh Docker volume)",
+          "New Telegram test bot · copy of the sheet"
+        ]
+      },
+      {
+        "at": "4",
+        "say": "Every time you have to look something up, that answer goes into the README. Keep going until setup takes under 15 minutes.",
+        "show": [
+          "Looked something up → fix the README",
+          "Target: < 15 min"
+        ],
+        "data": "setup time logged"
+      },
+      {
+        "at": "5",
+        "say": "Write the case study from your Boss 3 log: the problem, the build in plain words, how it's safe, and the results, labelled honestly as test results for a fictional business.",
+        "show": [
+          "Problem: pricing orders by hand at night",
+          "Safety: prices never from AI; big orders to a human",
+          "Results: labelled as test results"
+        ]
+      },
+      {
+        "at": "5",
+        "say": "Then record the three-minute demo: the problem from the customer's side, the solution on the phone, one safety feature, and the numbers. Use test data, and hide tokens and other tabs.",
+        "show": [
+          "0:00 problem · 0:30 solution · 1:45 behind the scenes",
+          "2:30 result in numbers",
+          "Test data only; hide email and tokens"
+        ]
+      }
+    ],
+    "end": "That's the package: a clean file with no secrets or pinned records, a copyable sheet, a README tested on a fresh account, an honest case study and a three-minute demo."
+  }
+}

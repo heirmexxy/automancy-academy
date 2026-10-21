@@ -1,0 +1,7 @@
+.careers .cpaths{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.careers .cpath{border-top:6px solid var(--c,var(--sky))}
+.careers .cpath dl{margin:0;display:grid;gap:4px}
+.careers .cpath dt{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:6px}
+.careers .cpath dd{margin:0;font-size:.94rem}
+.careers .olist{margin:0;padding-left:22px;display:grid;gap:6px}
+@media (max-width:400px){.careers .cpaths{grid-template-columns:minmax(0,1fr)}}

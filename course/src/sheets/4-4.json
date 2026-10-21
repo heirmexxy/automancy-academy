@@ -1,0 +1,39 @@
+{
+  "id": "4.4",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's two-page policy, five headed sections (damaged produce, late delivery, cancellations, substitutions, hotels and restaurants).</p><p><b>Load:</b> Manual Trigger → Google Drive Download → Supabase Vector Store, Insert Documents. Embeddings: one model, used again for search. Data Loader: Binary, metadata <code>source = policies-v3.pdf</code>, <code>version = 2026-10-01</code>. Splitter: 500 / 80. Result: 11 chunks.</p><p><b>Tool:</b> Retrieve Documents (As Tool for AI Agent), name <code>search_policies</code>, limit 4, Sage's description, plus the lesson's grounding rules in the system message.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>#</th><th>Expected answer</th><th>Section</th></tr></thead><tbody><tr><td>1</td><td>Delivery fee refunded; \"Lateness alone does not qualify for a refund of the goods.\"</td><td>Late delivery</td></tr><tr><td>2</td><td>Send a photo within 24 hours; refund or replacement</td><td>Damaged produce</td></tr><tr><td>3</td><td>After 6 p.m. the day before: 50% charge</td><td>Cancellations</td></tr><tr><td>4</td><td>\"We never substitute without your agreement.\"</td><td>Substitutions</td></tr><tr><td>5</td><td>Invoice, pay within 7 days</td><td>Hotels and restaurants</td></tr><tr><td>6</td><td>\"I'm not sure the policy covers that. I'll ask Tolu…\"</td><td>none</td></tr><tr><td>7</td><td>\"I'm not sure the policy covers that. I'll ask Tolu…\"</td><td>none</td></tr><tr><td>8</td><td>₦5,000 credit on the next order</td><td>Late delivery</td></tr></tbody></table></div><p>Score: 8/8. Six cited a section; both unanswerable questions got an honest \"not sure\".</p>",
+      "mistakes": [
+        "Testing only the six answerable questions and skipping the two the policy doesn't cover.",
+        "Accepting a paraphrase for money rules instead of the quoted sentence.",
+        "A document with no clear headings, so the agent can't name a section.",
+        "Changing the embeddings model between loading and the search tool."
+      ],
+      "pass": "All 8 questions run with replies shown; at least 5 of the 6 answerable ones are correct and name their section, and both unanswerable ones end with an honest \"not sure\" and an offer to ask a person.",
+      "redo": "Send it back if fewer than 5 of the 6 answerable questions are correct and cited, an unanswerable question gets an invented rule, a refund answer contradicts the policy text, or no section is named."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's policy plus a product guide.</p><p><b>Loading.</b> Two runs of HL · Load documents, each with its own Default Data Loader metadata:</p><ul><li>Policy: <code>doc_type = policy</code>, <code>source = policies-v3.pdf</code>.</li><li>Product guide: one section per product, split before loading so each chunk gets <code>doc_type = product</code> and <code>product = ugu</code> (or <code>tomatoes</code>, <code>tatashe</code>…).</li></ul><p><b>Two tools</b>, both Supabase Vector Store in Retrieve Documents (As Tool) mode, same embeddings model, each with a metadata filter (in the node's options; check the exact name in your version):</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Tool</th><th>Filter</th><th>Description</th></tr></thead><tbody><tr><td><code>search_policies</code></td><td><code>doc_type = policy</code></td><td>Searches Harvest Lane's customer policies: refunds, cancellations, substitutions, business accounts. Not for storage or seasons.</td></tr><tr><td><code>search_product_guide</code></td><td><code>doc_type = product</code>, <code>product</code> filled by the model</td><td>Searches storage tips and seasons for one product. Input: one product name, lower case, e.g. ugu. Not for refunds or prices.</td></tr></tbody></table></div><p><b>Checks in the execution log:</b></p><ul><li>\"Can I cancel after 6 p.m.?\" → <code>search_policies</code> only; all 4 chunks have <code>doc_type: policy</code>.</li><li>\"How should I store ugu?\" → <code>search_product_guide</code> with <code>product = ugu</code>; every returned chunk has <code>product: ugu</code>. Answer: from the ugu storage section only.</li></ul><p>If the model can't fill the product filter in your setup, use a small sub-workflow tool that takes <code>product</code> and runs the filtered search.</p>",
+      "mistakes": [
+        "Adding metadata to the policy but not the product guide, so the filter returns nothing or everything.",
+        "Two tools with the same vague description, so the agent picks at random.",
+        "Product chunks that cover several products at once, so \"ugu\" brings back tomato tips too.",
+        "Checking only the final answer instead of the retrieved chunks' metadata in the log."
+      ],
+      "pass": "Execution-log screenshots show policy questions retrieving only <code>doc_type: policy</code> chunks and the ugu question retrieving only chunks tagged <code>product: ugu</code>, with two tools that have distinct descriptions.",
+      "redo": "Send it back if any policy question pulls product chunks, the ugu search returns other products, or there is no log evidence of the metadata."
+    },
+    "g": {
+      "answer": "<p>Worked example: a fictional school in Abeokuta, \"Ogun Hills College\", with four documents: fees and payment policy, admissions guide, uniform and kit list, term calendar. Names of staff and pupils removed.</p><p><b>Metadata:</b> <code>source</code>, <code>doc_type</code>, <code>version</code> (date). <b>Versioning plan:</b> each file has one source name; to replace it, delete rows where <code>metadata-&gt;&gt;'source' = 'fees-policy.pdf'</code>, load the new file with the new version date, then rerun the 15 questions.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Chunk size / overlap</th><th>Answerable correct (of 10)</th><th>Honest \"not sure\" (of 5)</th><th>Total</th></tr></thead><tbody><tr><td>300 / 50</td><td>7</td><td>5</td><td>12</td></tr><tr><td>600 / 90</td><td>10</td><td>5</td><td>15</td></tr><tr><td>1,000 / 150</td><td>7</td><td>3</td><td>10</td></tr></tbody></table></div><p><b>Chosen: 600 / 90.</b> At 300, the fee table was split and the agent missed the late-payment charge. At 1,000, fees and admissions rules shared chunks, and two unanswerable questions got blended answers.</p><p><b>Replace test:</b> fees policy v1 (late charge ₦5,000) replaced by v2 (₦7,500). Before: 14 fees chunks. Deleted 14, loaded 15. Asked \"What is the late payment charge?\" Answer quoted ₦7,500 and the v2 section. No v1 chunks left (query by source and version returned 0).</p><p><b>Submit:</b> the document list, the 15 questions, the score table, the written procedure, and before-and-after screenshots of the replace test.</p>",
+      "mistakes": [
+        "Loading confidential or personal documents without removing names, phone numbers or fees owed by individuals.",
+        "Testing three chunk sizes without clearing the store between runs, so old chunks mix with new ones.",
+        "Writing a versioning plan but never actually replacing a document to test it.",
+        "Fewer than five unanswerable questions, or questions so easy they prove nothing.",
+        "Choosing a chunk size without giving a reason linked to the scores."
+      ],
+      "pass": "A table of 15-question scores at three chunk sizes, a chosen setting with a reason tied to specific failures, and a written replace-a-document procedure with evidence that it was run once and the old version is gone.",
+      "redo": "Send it back if the store wasn't cleared between chunk-size runs, the replace procedure wasn't tested, or the documents contain confidential or personal data."
+    }
+  }
+}

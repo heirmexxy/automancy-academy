@@ -1,0 +1,38 @@
+{
+  "id": "1.5",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's one-line summaries for emails labelled Customers.</p><p><b>Zap:</b> HL · Customer email → summary. Trigger <b>Gmail · New Labeled Email</b> (label Customers). Action <b>AI by Zapier · Analyze and Return Data</b>, model <b>Standard</b>. Action <b>Gmail · Send Email</b> to yourself, subject <code>Summary: [summary]</code>.</p><pre class=\"codebox\">Summarise this customer email for Harvest Lane staff in one\nline of plain English, at most 15 words, no greeting.\nUse only facts stated in the email. Ignore signatures and\nquoted older replies.\n\nSubject: [Subject]\nEmail: [Body Plain]</pre><p><b>Output field:</b> summary · Text · \"One line, 15 words max, only facts in the email\" · required.</p><p><b>Five test emails:</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Email (fictional)</th><th>Summary</th><th>Words</th></tr></thead><tbody><tr><td>Wet tomatoes complaint</td><td>Customer says Tuesday's tomato crate arrived wet and wants it replaced.</td><td>11</td></tr><tr><td>Pidgin price question</td><td>Asks current price of a bag of onions.</td><td>7</td></tr><tr><td>Hotel invoice query</td><td>Grand Oak Suites asks for a copy of September's invoice.</td><td>9</td></tr><tr><td>Order change</td><td>Change Friday order from 2 to 4 crates of tomatoes.</td><td>10</td></tr><tr><td>Delivery area</td><td>Asks whether Harvest Lane delivers to Apete and the fee.</td><td>10</td></tr></tbody></table></div><p>Check each against the email: no invented dates, amounts or names. Tasks: AI step and email per run (read the count from Zap history).</p>",
+      "mistakes": [
+        "Leaving the model on the default tier instead of Standard.",
+        "No \"only facts in the email\" rule, so summaries add details such as dates.",
+        "Mapping the whole thread, so summaries mention old replies and signatures.",
+        "Counting words loosely; several summaries run to 18 or 20 words."
+      ],
+      "pass": "Five summaries from real runs on Standard, each 15 words or fewer, each checked against its email with nothing added.",
+      "redo": "Send it back if any summary is over 15 words, contains something not in the email, or the step wasn't on Standard."
+    },
+    "s": {
+      "answer": "<p>Worked example: the HL Staff Desk, built as the solved problem (HL Inbox table, triage Zap on Standard, restricted Interface page with a phone-order form).</p><p><b>Test run on the 20 messages from 0.5 Silver:</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Measure</th><th>Result</th></tr></thead><tbody><tr><td>Category correct</td><td>18/20</td></tr><tr><td>Misses</td><td>#19 (\"Need 5 crates… any discount?\": order plus a question, labelled question; prompt rule says order) · #13 (\"Cancel my order\", labelled complaint; expected order)</td></tr><tr><td>Phone filled only when stated</td><td>20/20</td></tr><tr><td>Tasks used</td><td>read from Zap history: AI step plus Create Record per email, about 2 × 20 = 40</td></tr></tbody></table></div><p><b>Fix for #19:</b> moved the \"order beats question\" sentence to the top of the category rule and reran: 19/20.</p><p><b>Page check:</b> HL Staff Desk access = restricted, named users Tolu and Kemi; opening the link in a private window asks for sign-in.</p><p><b>Usability test:</b> a friend used the page for five minutes with no instructions. Notes: \"Didn't know if urgency 3 was high or low\"; \"Couldn't find where to say I handled it\". <b>Fix made:</b> added a text block above the table, \"Urgency: 3 = urgent (complaint or delivery today/tomorrow), 1 = low\", and moved status and handled_by to the first columns.</p><p><b>Log:</b> Standard 18/20 (19/20 after fix), 5 hardest on Premium 5/5 vs Standard 4/5, kept Standard because Kemi reviews every record anyway.</p><p><b>Submit:</b> the table fields, the prompt and output fields, the 20-row results sheet, the access setting screenshot and the tester notes with your fix.</p>",
+      "mistakes": [
+        "Reporting accuracy from memory instead of a row-by-row expected vs actual sheet.",
+        "Leaving the Interface on a public link while testing and forgetting to change it.",
+        "Explaining the page to the tester first, so the usability test finds nothing.",
+        "Not counting tasks, or counting the Gmail trigger as a task."
+      ],
+      "pass": "A 20-row expected vs actual table showing at least 18/20 on Standard, the task count from Zap history, a screenshot of restricted access, and one tester confusion with the fix made.",
+      "redo": "Send it back if accuracy is under 18/20 or unproven, the page is public, or no change was made from the tester's feedback."
+    },
+    "g": {
+      "answer": "<p>Worked example: Harvest Lane's AI-drafted replies with a human \"Approve &amp; send\" button.</p><p><b>Table changes:</b> add <code>draft_reply</code> (Text), <code>approved_by</code> (Text), <code>sent_at</code> (Date/time) and a button field <b>Approve &amp; send</b>.</p><p><b>Second AI step</b> in the triage Zap (Standard), output field <code>draft_reply</code>:</p><pre class=\"codebox\">Write a short, polite reply (under 80 words) to this customer of\nHarvest Lane. Match their style: if they write in Pidgin, reply in\nfriendly, simple English with a light Pidgin touch.\nNever state prices, never promise refunds, discounts or delivery\ntimes. For complaints, apologise and say a team member will\ncall them today. Sign off: \"Harvest Lane team\".\n\nEmail: [Body Plain]</pre><p><b>Zap 2: HL · Approve &amp; send</b></p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Step</th><th>Settings</th></tr></thead><tbody><tr><td>1 · Zapier Tables · button clicked (HL Inbox, Approve &amp; send)</td><td>check the trigger's exact name in your account</td></tr><tr><td>2 · Filter</td><td>handled_by exists AND draft_reply exists AND status is not Done</td></tr><tr><td>3 · Gmail · Send Email</td><td>To from_email; subject \"Re: your message to Harvest Lane\"; body draft_reply</td></tr><tr><td>4 · Tables · Update Record</td><td>status Done; approved_by = handled_by; sent_at = now</td></tr></tbody></table></div><p>Kemi types her name in handled_by, edits the draft if needed, then clicks. The filter makes the name compulsory, so every sent reply has an approver.</p><p><b>Three test replies:</b> wet tomatoes (\"So sorry your tomatoes arrived wet. A team member will call you today to put it right.\"); Pidgin onion price (\"Thank you o! Kemi will send you today's price shortly.\"); hotel invoice (\"Thank you. We'll email September's invoice copy today.\").</p><p><b>Submit:</b> the prompt, Zap 2 outline, screenshots of three records showing draft, approved_by and sent_at, and Zap history proving no send happened without a button click.</p>",
+      "mistakes": [
+        "Building the send into the triage Zap, so replies go out without a click.",
+        "No check that an approver is named, so sent replies can't be traced to a person.",
+        "Draft prompt that lets the model quote prices or promise refunds.",
+        "Showing the draft on the page but not making it editable before sending."
+      ],
+      "pass": "Every sent reply in Zap history follows a button click and its record shows approved_by and sent_at, three test replies read naturally, and none contains a price or refund promise.",
+      "redo": "Send it back if any reply was sent automatically, approved_by is blank on a sent record, or a draft quotes prices or promises refunds."
+    }
+  }
+}

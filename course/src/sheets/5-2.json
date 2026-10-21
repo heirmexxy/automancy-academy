@@ -1,0 +1,39 @@
+{
+ "id": "5.2",
+ "tiers": {
+  "b": {
+   "answer": "<p>Worked example: Harvest Lane's ICP as rules, scored by hand for restaurants in Ibadan (names below are the lab's invented ones).</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Rule</th><th>Points</th><th>Source</th></tr></thead><tbody><tr><td>Google rating 4.0 or higher</td><td>25</td><td>Google Maps listing</td></tr><tr><td>100 or more reviews</td><td>15</td><td>Google Maps listing</td></tr><tr><td>Offers delivery</td><td>25</td><td>Business's own website</td></tr><tr><td>Offers office lunches</td><td>20</td><td>Business's own website</td></tr><tr><td>Address in Bodija, Mokola, Ring Road, Akobo or Dugbe</td><td>15</td><td>Google Maps listing</td></tr><tr><td>Disqualify: not a restaurant, or outside the zone</td><td>out</td><td>Google Maps category and address</td></tr><tr><td>No published business email</td><td>manual list</td><td>Business's own website</td></tr></tbody></table></div><p>Keep anyone scoring 60 or more. Sample of the 20:</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Business</th><th>Score</th><th>Next step</th></tr></thead><tbody><tr><td>Amala Corner (4.6, 812, delivery, office lunch, Bodija)</td><td>100</td><td>Email</td></tr><tr><td>Iya Basira Kitchen (4.3, 240, delivery, Mokola, no published email)</td><td>80</td><td>Manual: call off-peak</td></tr><tr><td>The Grill Yard (4.7, 1,320, no delivery, Ring Road)</td><td>55</td><td>Park</td></tr><tr><td>Mama Put Express (3.8, 95, delivery, Dugbe)</td><td>40</td><td>Park</td></tr><tr><td>Sweet Crumbs Bakery</td><td>out</td><td>Bakery, outside ICP</td></tr></tbody></table></div><p>Test: give the rules to a friend with five of your businesses. Same scores means the rules are clear.</p>",
+   "mistakes": [
+    "Writing feelings as rules ('busy', 'serious') that no source can check.",
+    "Leaving out where each rule's answer comes from.",
+    "Using LinkedIn scraping, a browser extension or a bought list to find the 20.",
+    "Treating 'no business email' as a low score instead of a separate manual route."
+   ],
+   "pass": "Every rule has points and a named allowed source, 20 businesses are scored, and a second person scoring five of them from the rules gets the same numbers.",
+   "redo": "Send it back if any rule cannot be checked from a named source, any lead came from a banned source, or a second scorer gets different results."
+  },
+  "s": {
+   "answer": "<p>Worked example: Harvest Lane's agent on 10 real Ibadan restaurants, every send going to your own test inbox.</p><ol><li>HTTP Request · Places Text Search, field mask <code>places.id,places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress</code>; key in a Header Auth credential. Store only <code>place_id</code>.</li><li>HTTP Request (home and menu pages, 2-second wait) → HTML (extract text) → Information Extractor with <code>offers_delivery</code>, <code>office_lunch</code>, <code>business_email</code>, <code>fact</code>, <code>fact_quote</code>.</li><li>Code · verify: keep <code>fact</code> only if <code>fact_quote</code> (over 12 characters) appears in the page text.</li><li>Code · score, then keep 60 or more:<pre class=\"codebox\">let s = 0;\nif ($json.rating &gt;= 4.0) s += 25;\nif ($json.userRatingCount &gt;= 100) s += 15;\nif ($json.offers_delivery) s += 25;\nif ($json.office_lunch) s += 20;\nconst zone = /bodija|mokola|ring road|akobo|dugbe/i.test($json.formattedAddress);\nif (zone) s += 15;\nconst route = !zone ? 'out' : $json.business_email ? 'email' : 'manual';\nreturn { ...$json, fit_score: s, route };</pre></li><li>AI drafts from the template, filling only <code>{{business}}</code> and <code>{{fact}}</code>; no verified fact means a general line about kitchens in the area.</li><li>Code · lint: 120 words or fewer, exactly one question, no spam words or shouting, honest subject. It appends \"Tolu Adebayo, Harvest Lane, Bodija, Ibadan. Not useful? Reply STOP and I won't email again.\"</li><li>Telegram · Send and Wait: name, score, reasons, fact with source link, draft; Approve, Edit, Skip.</li><li>Gmail · Send with To fixed to your test address, never <code>business_email</code>.</li></ol><p>Log: 10 found, 7 scored 60+, 6 verified facts, 1 general line, 7 lint passes, 6 approved, 0 sent to businesses.</p>",
+   "mistakes": [
+    "Using * as the Places field mask, or storing copies of Places data instead of the place ID.",
+    "Asking the AI to 'be honest' instead of checking the quote against the page text in code.",
+    "Letting the AI write the opt-out and identity, so some drafts miss them.",
+    "Wiring the Gmail To field to business_email while testing.",
+    "Scoring with the AI instead of a Code node."
+   ],
+   "pass": "Executions for 10 real businesses show the verify node, a code-calculated score, lint passes for every draft, Telegram approvals, and sends that reached only the learner's test inbox.",
+   "redo": "Send it back if any fact is unverified, a draft fails the lint, the field mask is *, Places data is stored, or any email reached a real business."
+  },
+  "g": {
+   "answer": "<p>Worked example: Kemi Packaging, a fictional food-packaging wholesaler in Ibadan, prospecting restaurants and hotels for two weeks. The client signed off the ICP, the template and the rules before day 1.</p><p><b>Setup</b>: outreach subdomain, 20 a day maximum, the owner approves every draft on Telegram, suppression checked before every send, one follow-up after 5 working days.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Measure</th><th>Week 1</th><th>Week 2</th><th>Total</th></tr></thead><tbody><tr><td>Prospects found (allowed sources)</td><td>84</td><td>61</td><td>145</td></tr><tr><td>Fit 60+ with business email</td><td>38</td><td>27</td><td>65</td></tr><tr><td>Manual list (form or phone)</td><td>17</td><td>12</td><td>29</td></tr><tr><td>Drafts approved</td><td>30</td><td>24</td><td>54</td></tr><tr><td>Sent (incl. follow-ups)</td><td>30</td><td>41</td><td>71</td></tr><tr><td>Replies: interested</td><td>3</td><td>4</td><td>7</td></tr><tr><td>Replies: not now</td><td>2</td><td>3</td><td>5</td></tr><tr><td>Replies: STOP</td><td>1</td><td>2</td><td>3</td></tr><tr><td>Out of office / bounce / other</td><td>2</td><td>3</td><td>5</td></tr><tr><td>Meetings booked</td><td>1</td><td>3</td><td>4</td></tr><tr><td>Complaints</td><td>0</td><td>0</td><td>0</td></tr></tbody></table></div><p>All three STOPs and two bounces were on the suppression list within the hour; none received a follow-up. No facts were sent unverified.</p><p><b>What we learned</b>: verified facts about a new menu or branch got the most replies; general lines got almost none. Hotels replied within a day, restaurants took about four.</p><p><b>Client decision</b>: continue for four more weeks, hotels and caterers only, because restaurant replies were slower.</p><p>Submit: the signed-off ICP and template, the Prospects and Suppression sheets (business data only), this report, and the client's written decision.</p>",
+   "mistakes": [
+    "Starting before the client has approved the ICP, template and rules in writing.",
+    "Sending from the client's main domain or above the daily cap.",
+    "Reporting only emails sent, with no breakdown of replies by type or meetings.",
+    "Leaving a STOP reply in the follow-up queue."
+   ],
+   "pass": "A two-week report with prospects found, approved, sent, replies by type, meetings and opt-outs; evidence that every opt-out was suppressed within a day; zero complaints; and the client's written decision.",
+   "redo": "Send it back if there was any complaint, an opt-out was followed up, the cap or subdomain rule was broken, or the client's decision is missing."
+  }
+ }
+}

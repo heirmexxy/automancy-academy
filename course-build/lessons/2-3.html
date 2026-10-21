@@ -1,0 +1,345 @@
+<template data-mod="2.3" id="tpl-2-3">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.3</span>
+    <h1>Routers &amp; Filters</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Weave</span><span class="pill">Tools: Make, Google Sheets, Telegram or Gmail</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#weave"/></svg>
+</header>
+<p class="lede">You met branching in Zapier's Paths. Make's version has its own habits: filters can sit on any connection, routes can't join back together, and sometimes you <i>want</i> one order to take several routes at once. Today you build the 8 p.m. "tomorrow's deliveries" run that sorts every order.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Put filters on any link, with AND/OR groups and the right operator.</span></div>
+  <div><b>02</b><span>Split a scenario with a router, order its routes, and add a fallback.</span></div>
+  <div><b>03</b><span>Tell exclusive routes from additive routes, and design for each.</span></div>
+  <div><b>04</b><span>Handle the fact that Make routes never merge back.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Eight o'clock, every night</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu at 8 p.m. with three lists: riders, reminders, alerts.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="280" cy="30" r="16" fill="var(--ink)"/><circle cx="288" cy="24" r="14" fill="var(--paper2)"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">
+          <rect x="150" y="50" width="150" height="30" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="70">Rider list for tomorrow</text>
+          <rect x="150" y="90" width="150" height="30" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="110">Chase unpaid orders</text>
+          <rect x="150" y="130" width="150" height="30" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="160" y="150">Flag big orders</text>
+        </g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Every evening</b>Tolu reads through tomorrow's orders and sorts them into three jobs. It takes an hour.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A big unpaid order that belongs in two lists at once.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="110" y="30" width="100" height="60" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="160" y="56" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">HL-0077</text>
+        <text x="160" y="74" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">₦82,000 · unpaid</text>
+        <path d="M140 90 L90 140 M180 90 L230 140" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="30" y="140" width="120" height="30" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="90" y="160" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Chase payment</text>
+        <rect x="170" y="140" width="120" height="30" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="230" y="160" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Alert Tolu</text>
+      </svg>
+      <div class="cap"><b>The twist</b>Some orders need two jobs at once: a big unpaid order needs a reminder <i>and</i> an alert.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch cutting tentacle-shaped routes so they can't reconnect.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M170 40 Q220 40 240 80 M170 140 Q220 140 240 100" stroke="var(--volt)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M250 70 L270 110" stroke="var(--glitch)" stroke-width="4"/><path d="M270 70 L250 110" stroke="var(--glitch)" stroke-width="4"/>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"In Make, routes split but never rejoin. Enjoy building everything twice!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave holding four tentacles, each leading to a different job.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)"><text x="190" y="40">1 · rider list</text><text x="190" y="80">2 · reminder</text><text x="190" y="120">3 · big alert</text><text x="190" y="160">fallback · check</text></g>
+        <use href="#weave" x="10" y="30" width="160" height="160"/>
+      </svg>
+      <div class="cap"><b>Weave</b>"Some of my arms share the work, some take turns. You decide which, on purpose."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Filters live on the links</h3>
+    <p>In Make, a filter isn't a module: it sits on the <b>connection between two modules</b>. Click the link (the dotted line) and set up a filter. Bundles that fail stop there. Filters use no credits, and the modules after them don't run for the stopped bundles.</p>
+    <div class="vocab">
+      <div><b>Operators by type</b>Text (equal to, contains, matches pattern), Numeric (greater than, less than or equal), Date (before, after), Array (contains), Basic (exists, does not exist).</div>
+      <div><b>Case-insensitive options</b>Text operators come in case-insensitive versions: "Paid", "paid" and "PAID" all match.</div>
+      <div><b>AND / OR</b>Conditions in one group must all pass (AND); add an OR group for alternatives.</div>
+      <div><b>Label every filter</b>Give it a name like "Only paid orders". It shows on the canvas.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Routers: one bundle, several routes</h3>
+    <p>A <b>Router</b> module splits the flow into routes. Each route begins with a link, which can carry a filter. A bundle is sent down <b>every route whose filter it passes</b>, one route after another in the router's route order. A route marked as the <b>fallback</b> receives only bundles that passed no other route. Routers are free of credits.</p>
+    <figure class="fig"><svg viewBox="0 0 640 220" role="img" aria-label="Orders flow through a filter that removes cancelled orders into a router with four routes: rider list, payment reminder, big order alert, and a fallback route for anything unexpected.">
+      <defs><marker id="k1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <circle cx="50" cy="110" r="36" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/><text x="50" y="106" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#13233A">Search</text><text x="50" y="120" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#13233A">tomorrow</text>
+      <path d="M86 110 H180" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
+      <rect x="108" y="96" width="50" height="28" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.5"/><text x="133" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#13233A">≠ Cancelled</text>
+      <circle cx="210" cy="110" r="28" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/><text x="210" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">Router</text>
+      <g stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="5 4"><path d="M236 98 C280 40 300 30 380 30"/><path d="M238 106 C290 85 310 85 380 85"/><path d="M238 114 C290 135 310 135 380 140"/><path d="M236 122 C280 180 300 190 380 195"/></g>
+      <g font-family="Atkinson Hyperlegible,sans-serif" font-size="11">
+        <rect x="384" y="14" width="246" height="32" rx="8" fill="var(--volt)"/><text x="394" y="35" fill="#13233A">1 · Rider list: Paid OR standing</text>
+        <rect x="384" y="69" width="246" height="32" rx="8" fill="var(--sun)"/><text x="394" y="90" fill="#13233A">2 · Reminder: New AND not standing</text>
+        <rect x="384" y="124" width="246" height="32" rx="8" fill="var(--glitch)" opacity=".9"/><text x="394" y="145" fill="#fff">3 · Big order alert: total &gt; 50,000</text>
+        <rect x="384" y="179" width="246" height="32" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/><text x="394" y="200" fill="var(--ink)">Fallback · Needs checking</text>
+      </g>
+    </svg><figcaption>Routes 1–3 are independent rules, so a big unpaid order correctly takes routes 2 and 3. The fallback catches anything with an unexpected status.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Exclusive or additive? Decide on purpose</h3>
+    <div class="why">
+      <div class="box"><h5>Exclusive routes</h5><ul><li>Each bundle should take exactly one route (like 1.3's order router).</li><li>Write conditions that can't both be true, and add a fallback.</li><li>Test with a truth table.</li></ul></div>
+      <div class="box"><h5>Additive routes</h5><ul><li>Each route is an independent rule: "if X, also do this".</li><li>Several can fire for one bundle, and that's correct.</li><li>Make sure no two routes do the <i>same</i> job twice.</li></ul></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Write the rule in words next to each route: "Rider list: every order that will be delivered." If two routes' sentences describe the same job, you have a duplicate. If no sentence covers a case, you need the fallback.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Routes never merge back</h3>
+    <p>In Zapier, Paths also end their branches. In Make, once a route splits off, it runs to its own end. If two routes both need the same final step (say, "log to the Activity tab"), you have three options:</p>
+    <div class="never">
+      <div><b>Repeat the step</b>Put the same module at the end of each route. Simple; fine for one or two modules.</div>
+      <div><b>Do it before the router</b>Anything every bundle needs should happen before the split.</div>
+      <div><b>Call a shared scenario</b>For longer shared endings, send the bundle to another scenario (via a webhook) that does the common work once (2.5).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Route order and nested routers</h3>
+    <div class="vocab">
+      <div><b>Route order</b>Routes run one after another. If route 1 updates the row and route 2 reads it, the order matters. Use the router's option to set the order.</div>
+      <div><b>Nested routers</b>A route can contain another router. Keep it to two levels; deeper nesting gets hard to read.</div>
+      <div><b>Empty routes</b>A route with a filter and no modules is a clear way to say "do nothing for these" and keeps the fallback from catching them.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy · Foundation: routers, filters and scheduling</b><small>Look for: AND/OR filter groups and the fallback route.</small></span></a>
+    <a class="wcard" href="https://academy-content.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy public lessons: "Direct your data with routers and filters"</b><small>Read before building the solved problem.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+router+filter+fallback+route" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make router and fallback route" video</b><small>Look for: how to mark a route as fallback and change route order.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: the 8 p.m. tomorrow run</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every evening at 8 p.m., find all orders for tomorrow and sort them: deliverable orders go on the rider list, unpaid ones get a payment reminder, big ones alert Tolu, and anything strange is flagged. Cancelled orders are ignored.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Schedule and search</h4>
+      <p>New scenario. First module: <b>Google Sheets · Search Rows</b> on Orders, filter <code>delivery_date</code> equal to <code>{{formatDate(addDays(now; 1); "YYYY-MM-DD")}}</code>. Schedule: every day at 20:00. (A search as the first module runs on the schedule and returns one bundle per matching order.)</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Filter out cancelled orders on the first link</h4>
+      <p>Click the link after Search Rows and add a filter labelled <b>Not cancelled</b>: <code>status</code> · Text operators: Not equal to (case insensitive) · <code>Cancelled</code>.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the router and write each rule in words</h4>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Route</th><th>Rule in words</th><th>Filter</th><th>Module</th></tr></thead>
+        <tbody>
+          <tr><td>1 · Rider list</td><td>Every order that will be delivered tomorrow</td><td>status = Paid <b>OR</b> channel = standing</td><td>Sheets · Add a Row to Deliveries</td></tr>
+          <tr><td>2 · Reminder</td><td>Unpaid customer orders get a nudge</td><td>status = New <b>AND</b> channel ≠ standing</td><td>Gmail · Send reminder with payment link</td></tr>
+          <tr><td>3 · Big order</td><td>Tolu hears about every order over ₦50,000</td><td>total (numeric) &gt; 50000</td><td>Telegram or Gmail · Alert Tolu</td></tr>
+          <tr><td>Fallback</td><td>Anything that matched none of the above</td><td>Set as fallback route</td><td>Sheets · Add a Row to Needs checking</td></tr>
+        </tbody>
+      </table></div>
+      <p>Routes 1–3 are <b>additive</b>: a paid big order takes routes 1 and 3; an unpaid big order takes 2 and 3. Nothing is done twice, because each route has a different job.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Try the design</h4>
+      <p>Change the order's status, channel and total to see which routes it takes.</p>
+      <div class="router" data-route='{"designs":[{"name":"8 p.m. router (additive routes + fallback)","multiOk":true,"gateName":"Filter: Not cancelled","gate":[{"f":"status","op":"notis","v":"Cancelled"}],"paths":[{"name":"1 · Rider list","any":[{"f":"status","op":"is","v":"Paid"},{"f":"channel","op":"is","v":"standing"}]},{"name":"2 · Payment reminder","all":[{"f":"status","op":"is","v":"New"},{"f":"channel","op":"notis","v":"standing"}]},{"name":"3 · Big order alert","all":[{"f":"total","op":">","v":50000}]}],"fallback":"Needs checking"}]}'>
+        <div class="inputs">
+          <label>Status<select id="rt-2-3-status" data-k="status"><option>Paid</option><option selected>New</option><option>Cancelled</option><option value="">(blank)</option><option>On hold</option></select></label>
+          <label>Channel<select id="rt-2-3-channel" data-k="channel"><option>whatsapp</option><option>form</option><option>standing</option></select></label>
+          <label>Total (₦)<input id="rt-2-3-total" data-k="total" type="number" value="82000" step="500"></label>
+        </div>
+        <div class="designs" style="grid-template-columns:1fr"><div class="design"></div></div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with a truth table of real rows</h4>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Test order</th><th>Status</th><th>Channel</th><th class="n">Total</th><th>Expected routes</th></tr></thead>
+        <tbody>
+          <tr><td>T1</td><td>Paid</td><td>whatsapp</td><td class="n">26,500</td><td>1</td></tr>
+          <tr><td>T2</td><td>New</td><td>form</td><td class="n">13,500</td><td>2</td></tr>
+          <tr><td>T3</td><td>New</td><td>whatsapp</td><td class="n">82,000</td><td>2 and 3</td></tr>
+          <tr><td>T4</td><td>New</td><td>standing</td><td class="n">95,000</td><td>1 and 3</td></tr>
+          <tr><td>T5</td><td>On hold</td><td>form</td><td class="n">9,000</td><td>Fallback</td></tr>
+          <tr><td>T6</td><td>Cancelled</td><td>whatsapp</td><td class="n">40,000</td><td>None (filtered)</td></tr>
+        </tbody>
+      </table></div>
+      <p>Put these six rows in Orders with tomorrow's date and <b>Run once</b>. The small counts on each module show how many bundles reached it: Deliveries 2, Reminder 2, Alert 2, Needs checking 1.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Count the credits</h4>
+      <div class="stats">
+        <div class="stat"><b>1</b><span>credit: the search</span></div>
+        <div class="stat"><b>7</b><span>credits: the modules at the end of routes (2 + 2 + 2 + 1)</span></div>
+        <div class="stat"><b>0</b><span>credits: the filter and router</span></div>
+      </div>
+      <p>8 credits a night for six orders. At 30 orders a night, roughly 40 credits: about 1,200 a month, more than the Free plan's 1,000, so at that volume Tolu needs a paid plan. One search a day is far cheaper than polling every 15 minutes.</p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Junk (cancelled orders) is dropped before the router, for free.</li><li>Each route has one job, described in words.</li><li>Additive routes fit reality: some orders need two actions.</li><li>The fallback turns surprises into a list, not silence.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Assuming a bundle takes only the first matching route.</li><li>Two routes doing the same job (double rider entries).</li><li>Text comparison on a number field for the ₦50,000 check.</li><li>Expecting routes to join back for a shared last step.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I rebuilt the 8 p.m. run for a friend's bakery. Five complaints. Explain each.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>Glitch's setup</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Route 1: status = Paid. Route 4: status = Paid AND total &gt; 50000, both adding to the rider list.</td><td>Big paid orders appear twice on the rider list.</td></tr>
+        <tr><td>B</td><td>Filter: status Equal to "Paid" (case sensitive).</td><td>Orders typed "paid" never reach the riders.</td></tr>
+        <tr><td>C</td><td>Big-order filter uses Text: Greater than "50000".</td><td>A ₦9,000 order triggers the big-order alert.</td></tr>
+        <tr><td>D</td><td>No fallback route.</td><td>An "On hold" order vanishes: no rider, no reminder, no record.</td></tr>
+        <tr><td>E</td><td>A "Log to Activity" step placed only after route 3.</td><td>Only big orders are logged.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> two routes share the same job. Keep one rider-list route; let the big-order route only alert.</li>
+        <li><b>B:</b> use the case-insensitive operator, or better, a dropdown in the sheet (0.4) so the value is always "Paid".</li>
+        <li><b>C:</b> text comparison compares characters, and "9000" sorts after "50000". Use the numeric operator.</li>
+        <li><b>D:</b> add a fallback route that records unexpected cases.</li>
+        <li><b>E:</b> routes don't merge back. Log before the router, or add the log step to every route.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A filter with an OR group</h4>
+    <ul><li>In your 2.1 scenario, add a filter on the link before the email: continue only if total &gt; 20000 <b>OR</b> the customer is VIP.</li><li>Test with four rows covering every combination.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Exactly the three rows that meet at least one condition send an email.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build and pass the 8 p.m. run</h4>
+    <ul><li>Build the solved scenario with all four routes and the cancelled filter.</li><li>Load the six test rows and run once.</li><li>Screenshot the module counts (no personal data visible) and compare with the expected routes.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Counts match (2, 2, 2, 1), T6 stops at the filter, and nothing appears twice on the rider list.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A shared ending without duplication</h4>
+    <ul><li>Add a requirement: every order processed tonight must be written to an Activity tab with the routes it took.</li><li>Solve it without copying the log module into every route. (Hint: log before the router with the routes it <i>will</i> take, calculated with <code>if()</code> formulas from 2.2.)</li><li>Explain in three sentences why your design is easier to maintain.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every non-cancelled order has exactly one Activity row listing its routes correctly.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Where do filters live in Make?</p><div class="opts">
+      <button type="button" data-opt="a">In a separate Filter module</button><button type="button" data-opt="b">Only inside routers</button><button type="button" data-opt="c">On the links between modules</button><button type="button" data-opt="d">In the scenario settings</button></div>
+      <p class="fb" hidden data-why="Click any connection line to add a filter. It costs no credits."></p></div>
+    <div class="q" data-ans="a"><p>2. A bundle passes the filters of routes 2 and 3. What happens?</p><div class="opts">
+      <button type="button" data-opt="a">It goes down both, one after the other</button><button type="button" data-opt="b">Only route 2 runs</button><button type="button" data-opt="c">Only the fallback runs</button><button type="button" data-opt="d">The scenario errors</button></div>
+      <p class="fb" hidden data-why="Every route whose filter passes receives the bundle."></p></div>
+    <div class="q" data-ans="d"><p>3. When does the fallback route receive a bundle?</p><div class="opts">
+      <button type="button" data-opt="a">Always</button><button type="button" data-opt="b">When a route errors</button><button type="button" data-opt="c">Once a day</button><button type="button" data-opt="d">Only when the bundle passed no other route</button></div>
+      <p class="fb" hidden data-why="It's the 'none of the above' route."></p></div>
+    <div class="q" data-ans="b"><p>4. A ₦9,000 order triggers a "greater than 50000" filter. Why?</p><div class="opts">
+      <button type="button" data-opt="a">The router is broken</button><button type="button" data-opt="b">A text operator was used instead of a numeric one</button><button type="button" data-opt="c">The filter is case sensitive</button><button type="button" data-opt="d">The schedule is wrong</button></div>
+      <p class="fb" hidden data-why="Text comparison goes character by character. Use numeric operators for numbers."></p></div>
+    <div class="q" data-ans="c"><p>5. Every route needs the same final logging step. What's the cleanest design?</p><div class="opts">
+      <button type="button" data-opt="a">Hope the routes merge</button><button type="button" data-opt="b">Add a second router at the end</button><button type="button" data-opt="c">Log once before the router</button><button type="button" data-opt="d">Skip logging</button></div>
+      <p class="fb" hidden data-why="Routes don't merge in Make; shared work belongs before the split."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-3">AUTOMANCY LOG · Lesson 2.3 · Routers & Filters
+Date:
+Filters (label → condition):
+Routes (rule in words → filter → module):
+Exclusive or additive, and why:
+Test rows: expected vs. actual module counts:
+Credits for tonight's run:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Filters sit on links, cost nothing, and stop bundles early.</li>
+      <li>A bundle takes every route whose filter it passes; the fallback takes the rest.</li>
+      <li>Decide whether routes are exclusive or additive, and write each rule in words.</li>
+      <li>Use numeric operators for numbers and case-insensitive ones for text.</li>
+      <li>Routes never merge: do shared work before the router.</li>
+      <li>A daily search is often cheaper than frequent polling.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.make.com/" target="_blank" rel="noopener">Make Academy: Foundation (routers and filters)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: routers, filters and scheduling</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/" target="_blank" rel="noopener">Make Help Center: search "router" and "filtering"</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+router+tutorial" target="_blank" rel="noopener">YouTube: Make router tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Print the six test orders on cards and let learners physically sort them into route piles before building. The T3 and T4 cards, which belong in two piles, are the discussion starters. Contrast with 1.3's exclusive router so learners see that both designs are valid for different jobs.</p>
+  </div>
+</section>
+
+</article>
+</template>

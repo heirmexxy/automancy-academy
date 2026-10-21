@@ -1,0 +1,360 @@
+<template data-mod="4.4" id="tpl-4-4">
+<article style="--c:var(--grape)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 4 · Sage's Tower (Agentic AI) · Lesson 4.4</span>
+    <h1>RAG: Answering From Your Documents</h1>
+    <div class="kicker"><span class="pill">≈ 2–3 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Sage</span><span class="pill">Tools: n8n vector store nodes, Supabase (pgvector), an embeddings model, Google Drive</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">Models know a lot about the world and nothing about Harvest Lane's refund policy. <b>Retrieval-augmented generation (RAG)</b> fixes that: before answering, the agent searches your documents, pulls out the few passages that matter, and answers from them, citing where the answer came from. Done right, it's the difference between "I think…" and "Section 2 says…".</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain embeddings, chunks and vector search in plain words.</span></div>
+  <div><b>02</b><span>Load a document into a vector store with sensible chunk size, overlap and metadata.</span></div>
+  <div><b>03</b><span>Give an agent a retrieval tool that answers with the source section.</span></div>
+  <div><b>04</b><span>Make the agent say "I don't know" when the documents don't say.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The 12-page PDF nobody reads</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A thick document titled Harvest Lane Customer Policies.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="186" y="34" width="100" height="130" rx="4" fill="var(--card)"/><rect x="180" y="28" width="100" height="130" rx="4" fill="var(--card)"/><rect x="174" y="22" width="100" height="130" rx="4" fill="var(--card)"/></g>
+        <text x="224" y="50" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10" fill="var(--ink)">CUSTOMER</text>
+        <text x="224" y="64" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="10" fill="var(--ink)">POLICIES v3</text>
+        <g fill="var(--line)"><rect x="186" y="80" width="76" height="5" rx="2"/><rect x="186" y="92" width="76" height="5" rx="2"/><rect x="186" y="104" width="60" height="5" rx="2"/><rect x="186" y="116" width="76" height="5" rx="2"/></g>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The policies</b>Refunds, cancellations, substitutions, business accounts: 12 pages that Tolu's lawyer friend helped write.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A customer asking whether late delivery means a refund for the tomatoes.">
+        <rect width="320" height="190" fill="#DCE8F2"/>
+        <rect x="110" y="40" width="190" height="50" rx="12" fill="#FFFFFF"/>
+        <text x="122" y="62" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Delivery came 3 hours late.</text>
+        <text x="122" y="78" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Can I get my money back?</text>
+        <rect x="20" y="110" width="210" height="40" rx="12" fill="#FFFFFF"/>
+        <text x="32" y="135" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--glitch)">Yes! Full refund within 3 days. 😊</text>
+      </svg>
+      <div class="cap"><b>The mistake</b>The agent promises a full refund. The policy refunds only the delivery fee for lateness.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two policy paragraphs glued into one block.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="35" width="240" height="120" rx="8" fill="var(--card)" stroke="var(--glitch)" stroke-width="3"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)"><text x="52" y="58">Damaged produce: full refund</text><text x="52" y="74">within 3 working days…</text><text x="52" y="100">Late delivery: refund the</text><text x="52" y="116">delivery fee only…</text></g>
+        <text x="160" y="142" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--glitch)">one 1,000-character chunk</text>
+      </svg>
+      <div class="cap"><b>Why</b>Both rules sat in one big chunk. The agent blended "full refund" from one with "late delivery" from the other.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch with giant scissors cutting paper in the wrong places.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="3" fill="none"><circle cx="220" cy="120" r="14"/><circle cx="260" cy="120" r="14"/><path d="M230 110 L280 50 M250 110 L200 50"/></g>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Bigger chunks mean more context, and more context is always better. Right?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 40 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>RAG in two pipelines</h3>
+    <figure class="fig"><svg viewBox="0 0 640 250" role="img" aria-label="Loading pipeline, run once per document version: document, split into chunks, embed each chunk into numbers, store in a vector database with metadata. Answering pipeline, every question: question, embed it, search for the nearest chunks, give the top chunks to the model with the question, answer with the source.">
+      <defs><marker id="rg1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <text x="10" y="20" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">1 · LOADING (once per document version)</text>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11.5" text-anchor="middle">
+        <rect x="10" y="32" width="110" height="46" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="65" y="60" fill="var(--ink)">Policy PDF</text>
+        <rect x="160" y="32" width="110" height="46" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="215" y="60" fill="#13233A">Split: chunks</text>
+        <rect x="310" y="32" width="130" height="46" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="375" y="52" fill="#fff">Embed</text><text x="375" y="68" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">text → [0.12, -0.4…]</text>
+        <rect x="480" y="32" width="150" height="46" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="555" y="52" fill="#13233A">Vector store</text><text x="555" y="68" fill="#13233A" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">+ metadata</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M122 55 H156" marker-end="url(#rg1)"/><path d="M272 55 H306" marker-end="url(#rg1)"/><path d="M442 55 H476" marker-end="url(#rg1)"/></g>
+      <text x="10" y="128" font-family="JetBrains Mono,monospace" font-size="11" font-weight="600" fill="var(--muted)">2 · ANSWERING (every question)</text>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11.5" text-anchor="middle">
+        <rect x="10" y="140" width="110" height="46" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="65" y="168" fill="#fff">Question</text>
+        <rect x="160" y="140" width="110" height="46" rx="10" fill="var(--grape)" stroke="var(--ink)" stroke-width="2"/><text x="215" y="168" fill="#fff">Embed</text>
+        <rect x="310" y="140" width="130" height="46" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="375" y="160" fill="#13233A">Search nearest</text><text x="375" y="176" fill="#13233A" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">top 3–5 chunks</text>
+        <rect x="480" y="140" width="150" height="46" rx="10" fill="var(--spark)" stroke="var(--ink)" stroke-width="2"/><text x="555" y="160" fill="#fff">Model answers</text><text x="555" y="176" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">from chunks + cites</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M122 163 H156" marker-end="url(#rg1)"/><path d="M272 163 H306" marker-end="url(#rg1)"/><path d="M442 163 H476" marker-end="url(#rg1)"/><path d="M555 80 V100 H375 V136" stroke-dasharray="5 4" marker-end="url(#rg1)"/></g>
+      <text x="320" y="230" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">Both pipelines must use the same embeddings model, or the search compares apples with oranges.</text>
+    </svg><figcaption>Loading happens once (and again whenever the document changes). Answering happens on every question.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Embeddings, in plain words</h3>
+    <p>An <b>embeddings model</b> turns a piece of text into a long list of numbers that captures its <i>meaning</i>. Texts with similar meaning get similar numbers, even with different words: "my order came late" lands near "delivery arrived after the agreed window". A <b>vector store</b> (Supabase with pgvector, Pinecone, Qdrant…) stores those lists and quickly finds the ones nearest to a question's list.</p>
+    <div class="vocab">
+      <div><b>Chunk</b>A piece of a document small enough to be about one thing. You search and retrieve chunks, not whole documents.</div>
+      <div><b>Chunk size and overlap</b>How long each piece is, and how much text consecutive pieces share, so a rule split across a boundary isn't lost.</div>
+      <div><b>Metadata</b>Labels stored with each chunk: source file, section, version date, product. Used to filter and to cite.</div>
+      <div><b>Top-k</b>How many chunks to retrieve per question (often 3–5).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Try it: chunk size decides what the agent reads</h3>
+    <p>Below is a short version of Harvest Lane's policy. Adjust the chunking and ask a question to see which chunks would be retrieved. Start with Glitch's 1,000 characters and no overlap, then shrink.</p>
+    <div class="raglab" data-rag>
+      <label>Document<textarea spellcheck="false">## Refunds for damaged produce
+If produce arrives damaged or spoiled, send a photo within 24 hours of delivery. We refund the value of the damaged items in full, or replace them on the next delivery, whichever you prefer. Refunds are paid within 3 working days to the original payment method. Delivery fees are not refunded for damaged items.
+## Refunds for late delivery
+If your delivery arrives more than 2 hours after the agreed window, we refund the delivery fee. Lateness alone does not qualify for a refund of the goods. Repeated lateness, three times in one month, earns a ₦5,000 credit on your next order.
+## Cancellations
+You can cancel free of charge until 6 p.m. the day before delivery. After that, cancellations are charged 50% of the order value, because produce is bought fresh for you each morning. Bulk orders over ₦200,000 can only be cancelled 48 hours ahead.
+## Substitutions
+If an item is unavailable, we call before substituting. We never substitute without your agreement. If we cannot reach you, we leave the item out and refund it.
+## Hotels and restaurants
+Business customers on a weekly plan pay by invoice within 7 days. Price changes are announced one week ahead by email. Weekly plan customers get priority delivery before 9 a.m.</textarea></label>
+      <div class="row">
+        <label><span>Chunk size: <b data-o="sizev"></b> characters</span><input type="range" data-rg="size" min="150" max="1200" step="50" value="1000"></label>
+        <label><span>Overlap: <b data-o="ovv"></b> characters</span><input type="range" data-rg="ov" min="0" max="200" step="25" value="0"></label>
+        <label>Top-k<select data-rg="k"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+      </div>
+      <label>Customer question<input type="text" data-rg="q" value="My delivery came 3 hours late. Can I get a refund for the tomatoes?"></label>
+      <div class="stats"><div class="stat"><b data-o="nch">–</b><span>chunks</span></div></div>
+      <p class="mgoal" data-o="verdict"></p>
+      <ol class="chunks" data-o="chunks" aria-live="polite"></ol>
+      <p style="font-size:.84rem;color:var(--muted)">A teaching model: here, retrieval scores shared words, which stands in for real embeddings (those match on meaning, not just words). The chunking lesson is the same.</p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Answer from the source, or say "I don't know"</h3>
+    <div class="vocab">
+      <div><b>Ground the answer</b>Instruct: answer only from retrieved text; name the section; if the text doesn't answer the question, say so and offer to ask a person.</div>
+      <div><b>Quote the rule</b>For money and promises (refunds, cancellations), quote the exact sentence. Paraphrases drift.</div>
+      <div><b>Keep documents current</b>Store a version date in metadata. When the policy changes, delete the old chunks and load the new version, or old rules come back to haunt you.</div>
+      <div><b>RAG isn't a database</b>"How much are tomatoes today?" is a lookup (4.2), not a document search. RAG is for text: policies, manuals, FAQs, contracts.</div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> "I don't know, but I'll ask Tolu" is a good answer. A confident wrong answer about refunds costs real money and trust. Test me with questions the documents <i>don't</i> answer, and check I admit it.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>RAG nodes in n8n</h3>
+    <div class="vocab">
+      <div><b>Vector store node</b>(Supabase, Pinecone, Qdrant, PGVector, or the in-memory Simple Vector Store for testing). Modes include <i>Insert Documents</i>, <i>Get Many</i>, and <i>Retrieve Documents (As Tool for AI Agent)</i>, which gives the agent a search tool with a name, description and result limit.</div>
+      <div><b>Embeddings sub-node</b>Choose one model (e.g. from OpenAI, Google or Cohere, or a local Ollama model) and use the <b>same</b> one for inserting and retrieving.</div>
+      <div><b>Default Data Loader</b>Reads text or a binary file (such as a PDF) and attaches metadata.</div>
+      <div><b>Text splitter</b>The Recursive Character Text Splitter sets chunk size and overlap, and tries to split at paragraph and sentence boundaries first.</div>
+      <div><b>Supabase setup</b>Supabase needs a table and a matching function (usually <code>match_documents</code>). Copy the SQL from Supabase's LangChain guide, and set the vector size to your embeddings model's size.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 20 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.deeplearning.ai/short-courses/vector-databases-embeddings-applications/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>DeepLearning.AI: Vector Databases, from Embeddings to Applications (free short course)</b><small>Watch the first two lessons: embeddings and similarity search.</small></span></a>
+    <a class="wcard" href="https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.vectorstoresupabase" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>n8n Docs: Supabase Vector Store</b><small>Read: the modes, and the Supabase setup note.</small></span></a>
+    <a class="wcard" href="https://supabase.com/docs/guides/ai" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Supabase: AI and vectors guide (pgvector)</b><small>Find the LangChain integration page for the table and match_documents SQL.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 60 MIN</span><h2>Solved problem: the policy assistant</h2></div>
+  <div class="prose"><p><b>The goal.</b> Load Harvest Lane's policy PDF into Supabase, then give the support agent a <code>search_policies</code> tool so it answers refund, cancellation and substitution questions with the exact section, and says "I don't know" when the policy is silent.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Prepare Supabase</h4>
+      <p>In your Supabase project, open the SQL editor and run the setup from Supabase's LangChain guide: enable the <code>vector</code> extension, create the <code>documents</code> table and the <code>match_documents</code> function. Set the vector size to match your embeddings model (for example, OpenAI's <code>text-embedding-3-small</code> produces 1,536 numbers). In n8n, add a <b>Supabase</b> credential (project URL and service role key: keep it in the credential only; it bypasses row-level security).</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Build the loading workflow</h4>
+      <p><b>HL · Load policies</b>: Manual Trigger → <b>Google Drive · Download</b> the policy PDF → <b>Supabase Vector Store · Insert Documents</b> (table <code>documents</code>), with sub-nodes:</p>
+      <ul>
+        <li><b>Embeddings</b>: your chosen model.</li>
+        <li><b>Default Data Loader</b>: type Binary; metadata <code>source = policies-v3.pdf</code>, <code>version = 2026-10-01</code>.</li>
+        <li><b>Recursive Character Text Splitter</b>: chunk size ≈ <b>500</b>, overlap ≈ <b>80</b>. Start there and test (Card 3).</li>
+      </ul>
+      <p>Run it once. In Supabase's table editor you should see rows with content, metadata and an embedding.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Give the agent a search tool</h4>
+      <p>On your support agent, add <b>Supabase Vector Store</b> in <b>Retrieve Documents (As Tool for AI Agent)</b> mode, with the same embeddings model. Name: <code>search_policies</code>. Limit: 4. Description: <i>"Searches Harvest Lane's official customer policies (refunds, late delivery, cancellations, substitutions, business accounts). Use it before answering any question about what a customer is entitled to. Returns the most relevant policy passages."</i></p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Ground the answers</h4>
+<pre class="codebox">Policies: for any question about refunds, cancellations, substitutions or business accounts,
+call search_policies first.
+Answer ONLY from the passages returned. Name the policy section you used.
+For money (refunds, charges, credits), quote the exact sentence from the policy.
+If the passages don't answer the question, say: "I'm not sure the policy covers that.
+I'll ask Tolu and get back to you." Never guess.
+You can explain policies, but you cannot approve or promise a refund yourself.</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with answerable and unanswerable questions</h4>
+<pre class="codebox" id="rag-tests-4-4">1  My delivery came 3 hours late. Can I get my money back for the tomatoes?
+2  Half the eggs were broken. What happens now?
+3  Can I cancel tomorrow's order? It's 8 p.m.
+4  You swapped my tatashe for rodo without asking!
+5  We're a hotel on the weekly plan. When do we pay?
+6  Do you deliver to Abuja?                         (not in the policy)
+7  Can I get a refund in cash?                      (not covered: should admit it)
+8  My order was late 3 times this month. Anything for me?</pre>
+      <div><button type="button" class="btn ghost" data-copy="rag-tests-4-4">Copy the 8 questions</button></div>
+      <p>Expected for question 1: <i>"Our late-delivery policy refunds the delivery fee: 'Lateness alone does not qualify for a refund of the goods.' I've noted the delay for Tolu."</i> Questions 6 and 7 must end with "I'll ask Tolu", not invented rules.</p>
+      <div class="stats">
+        <div class="stat"><b>~500 / 80</b><span>chunk size / overlap to start from</span></div>
+        <div class="stat"><b>4</b><span>passages retrieved per question</span></div>
+        <div class="stat"><b>8/8</b><span>target: correct, cited, or honestly "not sure"</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Chunks small enough to hold one rule stop policies blending.</li><li>Overlap keeps rules that cross a boundary intact.</li><li>The same embeddings model for loading and searching keeps the search meaningful.</li><li>Quoting and naming sections makes answers checkable.</li><li>"I'm not sure" is an allowed, tested answer.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Huge chunks "for more context".</li><li>Different embeddings models for loading and searching.</li><li>Loading v4 of the policy without deleting v3's chunks.</li><li>Using RAG for live data like prices (use a lookup tool).</li><li>Testing only questions the document answers.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Five ways to make a smart agent read the wrong page.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Answers mix the damaged-produce refund with the late-delivery rule.</td></tr>
+        <tr><td>B</td><td>Search returns nonsense for every question after Tolu "upgraded the embeddings model" in the agent.</td></tr>
+        <tr><td>C</td><td>The agent quotes the old 24-hour cancellation rule, which changed last month.</td></tr>
+        <tr><td>D</td><td>Asked "do you deliver to Abuja?", the agent says yes, confidently.</td></tr>
+        <tr><td>E</td><td>A rule split across two chunks comes back half-finished: "…are charged 50% of".</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> chunks too big, so both rules land in one chunk. Shrink the chunk size (or split on headings) and re-load.</li>
+        <li><b>B:</b> the agent's embeddings model no longer matches the one used for loading. Use the same model, or re-load everything with the new one.</li>
+        <li><b>C:</b> old version chunks are still in the store. Delete by the <code>version</code> or <code>source</code> metadata before loading the new version.</li>
+        <li><b>D:</b> no "I don't know" rule, and the model filled the gap. Instruct it to answer only from passages, and test unanswerable questions.</li>
+        <li><b>E:</b> no overlap between chunks. Add overlap (about 10–20% of the chunk size).</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 30 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>RAG over one PDF</h4>
+    <ul><li>Write a two-page policy document for Harvest Lane (or a business you know), with clear headings.</li><li>Load it into a vector store (Supabase, or the Simple Vector Store to start) and build an agent with a search tool.</li><li>Run the 8 test questions, adapted to your document.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>At least 5 of the 6 answerable questions are correct and cite a section, and both unanswerable questions get an honest "not sure".</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Metadata filters</h4>
+    <ul><li>Load two documents: the customer policy and a product guide (storage tips, seasons, per product).</li><li>Add metadata: <code>doc_type</code> (policy or product) and, for product chunks, <code>product</code>.</li><li>Give the agent two search tools, each filtered by <code>doc_type</code>, with distinct descriptions.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Policy questions never retrieve product chunks (check the execution log), and "how should I store ugu?" retrieves only ugu chunks.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A RAG assistant on your own documents</h4>
+    <ul><li>Choose 3–5 real documents from your work (remove anything confidential or personal).</li><li>Load them with metadata and a versioning plan (how you'll replace a document when it changes).</li><li>Write 15 test questions: 10 answerable, 5 not. Test three chunk sizes (e.g. 300, 600, 1,000) and record the scores.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You have a table of scores by chunk size, a chosen setting with a reason, and a written replace-a-document procedure that you've tested once.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What does an embeddings model do?</p><div class="opts">
+      <button type="button" data-opt="a">Writes answers</button><button type="button" data-opt="b">Turns text into numbers that capture meaning, so similar texts can be found</button><button type="button" data-opt="c">Translates PDFs</button><button type="button" data-opt="d">Compresses files</button></div>
+      <p class="fb" hidden data-why="Similar meaning → nearby numbers → found by vector search."></p></div>
+    <div class="q" data-ans="c"><p>2. Answers blend two different policies. Most likely cause?</p><div class="opts">
+      <button type="button" data-opt="a">Too few chunks retrieved</button><button type="button" data-opt="b">The model is too small</button><button type="button" data-opt="c">Chunks so big that both policies share one chunk</button><button type="button" data-opt="d">The PDF is too long</button></div>
+      <p class="fb" hidden data-why="Each chunk should be about one thing. Smaller chunks (or heading-based splits) fix it."></p></div>
+    <div class="q" data-ans="a"><p>3. Why must loading and searching use the same embeddings model?</p><div class="opts">
+      <button type="button" data-opt="a">Different models produce incompatible numbers, so search becomes meaningless</button><button type="button" data-opt="b">It's cheaper</button><button type="button" data-opt="c">Supabase requires it</button><button type="button" data-opt="d">It makes chunks smaller</button></div>
+      <p class="fb" hidden data-why="Distances only mean something within one model's number space."></p></div>
+    <div class="q" data-ans="d"><p>4. "How much are tomatoes today?" Best approach?</p><div class="opts">
+      <button type="button" data-opt="a">RAG over last year's price PDFs</button><button type="button" data-opt="b">Ask the model to remember</button><button type="button" data-opt="c">Bigger chunks</button><button type="button" data-opt="d">A lookup tool on the live price list</button></div>
+      <p class="fb" hidden data-why="RAG is for text documents; live data needs a lookup (4.2)."></p></div>
+    <div class="q" data-ans="b"><p>5. The policy doesn't cover the question. The agent should…</p><div class="opts">
+      <button type="button" data-opt="a">Give the most likely answer</button><button type="button" data-opt="b">Say it isn't sure and offer to ask a person</button><button type="button" data-opt="c">Search the internet</button><button type="button" data-opt="d">Quote the nearest unrelated section</button></div>
+      <p class="fb" hidden data-why="An honest “not sure” protects money and trust. Test for it."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-4-4">AUTOMANCY LOG · Lesson 4.4 · RAG
+Date:
+Vector store and embeddings model:
+Documents loaded, chunk size, overlap, number of chunks:
+Metadata fields:
+Test results (answerable __/__ · honest "not sure" __/__):
+A wrong answer I fixed, and how:
+Versioning plan when a document changes:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-4-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>RAG = search your documents, then answer from what you found.</li>
+      <li>Two pipelines: load once per version; retrieve on every question.</li>
+      <li>One chunk, one topic; overlap so rules aren't cut in half.</li>
+      <li>Same embeddings model for loading and searching.</li>
+      <li>Metadata for filtering, citing and versioning.</li>
+      <li>Answer only from passages, quote money rules, and say "not sure" when needed.</li>
+      <li>RAG for documents; lookup tools for live data.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/langchain-chat-with-your-data/" target="_blank" rel="noopener">DeepLearning.AI: LangChain, Chat with Your Data</a></li>
+    <li><span class="kind">Video</span><a href="https://www.deeplearning.ai/short-courses/vector-databases-embeddings-applications/" target="_blank" rel="noopener">DeepLearning.AI: Vector Databases, from Embeddings to Applications</a></li>
+    <li><span class="kind">Text</span><a href="https://supabase.com/docs/guides/ai" target="_blank" rel="noopener">Supabase: AI and vectors guide (pgvector)</a></li>
+    <li><span class="kind">Text</span><a href="https://www.pinecone.io/learn/" target="_blank" rel="noopener">Pinecone Learn: embeddings and RAG explainers</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.vectorstoresupabase" target="_blank" rel="noopener">n8n Docs: Supabase Vector Store</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=n8n+RAG+supabase+vector+store+tutorial" target="_blank" rel="noopener">YouTube: n8n RAG with Supabase tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Print the policy, cut it into strips with scissors at three different sizes, and give each team a question. Teams may only read the two strips they "retrieve" by keyword. Big strips produce blended answers; tiny strips lose context; the middle size wins. Then show Card 3 doing the same in seconds.</p>
+  </div>
+</section>
+
+</article>
+</template>

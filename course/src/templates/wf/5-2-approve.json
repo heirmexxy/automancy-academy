@@ -1,0 +1,321 @@
+{
+ "name": "HL · Prospects · morning approval",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Prospects: morning approval (Lesson 5.2)\nEvery weekday at 07:30 Tolu gets each drafted prospect on Telegram: business name (fetched fresh from Google by place ID), fit score, reasons, the fact with its source link, and the draft. She chooses Approve, Edit or Skip. Nothing sends without her.\n\nCredentials: Header Auth \"Google Places key\" on Fresh place details; Google Sheets; Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_TELEGRAM_CHAT_ID.",
+    "height": 320,
+    "width": 460
+   },
+   "id": "d7092409-40bc-4727-b6ac-c3b6bcdae4ed",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -520,
+    -260
+   ]
+  },
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "cronExpression",
+       "expression": "30 7 * * 1-5"
+      }
+     ]
+    }
+   },
+   "id": "7f66bd79-79dc-4177-a814-de36527047aa",
+   "name": "Weekdays 07:30",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "filtersUI": {
+     "values": [
+      {
+       "lookupColumn": "status",
+       "lookupValue": "drafted"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "ffd5478c-af2d-4fb1-abdb-e961b0776534",
+   "name": "Drafted prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "batchSize": 1,
+    "options": {}
+   },
+   "id": "68e2e525-ce6a-49e0-b423-57b4ef53216c",
+   "name": "One prospect at a time",
+   "type": "n8n-nodes-base.splitInBatches",
+   "typeVersion": 3,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "d51fd793-3de8-45e8-a39e-2ef495a1d68e",
+   "name": "All reviewed",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    660,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "method": "GET",
+    "url": "=https://places.googleapis.com/v1/places/{{ $json.place_id }}",
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "X-Goog-FieldMask",
+       "value": "displayName"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "b2f8649f-6535-4ea7-a402-bfa72e67ed89",
+   "name": "Fresh place details",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "sendAndWait",
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "message": "=Outreach draft for {{ $json.displayName.text }}\nFit score: {{ $('One prospect at a time').item.json.fit_score }}\nWhy: {{ $('One prospect at a time').item.json.reasons }}\nFact: {{ $('One prospect at a time').item.json.fact || 'none (general line used)' }}\nSource: {{ $('One prospect at a time').item.json.fact_source || '-' }}\nTo: {{ $('One prospect at a time').item.json.business_email }}\n\nSubject: {{ $('One prospect at a time').item.json.subject }}\n\n{{ $('One prospect at a time').item.json.draft }}",
+    "responseType": "customForm",
+    "formFields": {
+     "values": [
+      {
+       "fieldLabel": "Decision",
+       "fieldType": "dropdown",
+       "fieldOptions": {
+        "values": [
+         {
+          "option": "Approve"
+         },
+         {
+          "option": "Edit"
+         },
+         {
+          "option": "Skip"
+         }
+        ]
+       },
+       "requiredField": true
+      },
+      {
+       "fieldLabel": "Edited draft (only if Edit)",
+       "fieldType": "textarea"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "8649b556-c486-4da6-ba30-5f990afb47fa",
+   "name": "Ask Tolu",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    90
+   ],
+   "webhookId": "c5ad41d1-a64a-49a7-98ba-ff1bbff24bd4"
+  },
+  {
+   "parameters": {
+    "jsCode": "const p = $('One prospect at a time').item.json;\nconst d = $json.data || $json;\nconst decision = d['Decision'] || d.decision;\nconst edited = String(d['Edited draft (only if Edit)'] || '').trim();\nconst optOut = 'Not interested? Reply STOP and we will never email you again.';\nlet draft = p.draft;\nif (decision === 'Edit' && edited) {\n  draft = edited.includes('Reply STOP') ? edited\n    : edited + '\\n\\nTolu Adebayo\\nHarvest Lane, Bodija, Ibadan\\n\\n' + optOut;\n}\nconst approved = decision === 'Approve' || (decision === 'Edit' && edited);\nreturn { place_id: p.place_id, draft, status: approved ? 'approved' : 'skipped', approved_at: approved ? new Date().toISOString() : '' };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "3cededc2-a88d-46e6-b197-323ad89f160e",
+   "name": "Apply decision",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Prospects",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [
+      "place_id"
+     ],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "85a98d8f-242f-43d9-9766-dcc6a0698b8f",
+   "name": "Update Prospects",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1320,
+    90
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Check the form output\nAfter one test, open Ask Tolu's output and confirm the field names (Decision, Edited draft). Apply decision reads them from data. An Edit with an empty text counts as Skip.",
+    "height": 200,
+    "width": 360
+   },
+   "id": "1311f1e3-2206-498d-950a-8d9b81e60643",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    900,
+    300
+   ]
+  }
+ ],
+ "connections": {
+  "Weekdays 07:30": {
+   "main": [
+    [
+     {
+      "node": "Drafted prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Drafted prospects": {
+   "main": [
+    [
+     {
+      "node": "One prospect at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "One prospect at a time": {
+   "main": [
+    [
+     {
+      "node": "All reviewed",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Fresh place details",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Fresh place details": {
+   "main": [
+    [
+     {
+      "node": "Ask Tolu",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Ask Tolu": {
+   "main": [
+    [
+     {
+      "node": "Apply decision",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Apply decision": {
+   "main": [
+    [
+     {
+      "node": "Update Prospects",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Update Prospects": {
+   "main": [
+    [
+     {
+      "node": "One prospect at a time",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

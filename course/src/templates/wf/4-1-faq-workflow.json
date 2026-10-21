@@ -1,0 +1,497 @@
+{
+  "name": "HL · FAQ workflow (4.1 Version A)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · FAQ workflow (Version A)\nLesson 4.1, Version A: the fixed workflow.\n\nChat Trigger → Text Classifier (one category per FAQ topic + Other) → a Google Sheets lookup of that topic's answer → reply. Other → \"I'll ask Tolu and get back to you.\"\n\n**Credentials:** OpenAI (chat model), Google Sheets OAuth2.\n**Replace:** YOUR_SHEET_ID in every Sheets node; YOUR_MODEL in the chat model.\n\nSheet tab **FAQ**, columns topic · answer. The topic values must match the category names exactly.",
+        "height": 380,
+        "width": 380
+      },
+      "id": "e78022bc-c6ce-4ddc-a694-d4e65f314724",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "04f7c54b-b427-4036-b20a-11e631f727e8",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.chatInput }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "opening hours",
+              "description": "Questions about when Harvest Lane is open: days, times, weekends, public holidays such as Sallah or Christmas."
+            },
+            {
+              "category": "delivery areas and days",
+              "description": "Which areas of Ibadan we deliver to (Bodija, Akobo, Ring Road...) and on which days."
+            },
+            {
+              "category": "delivery fee",
+              "description": "How much delivery costs, and when it is free."
+            },
+            {
+              "category": "payment",
+              "description": "How customers can pay: transfer, card, pay on delivery, Paystack link."
+            },
+            {
+              "category": "minimum order",
+              "description": "Whether there is a minimum order value or quantity."
+            },
+            {
+              "category": "how to order",
+              "description": "How to place an order: WhatsApp, the Telegram order bot, cut-off times."
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other"
+        }
+      },
+      "id": "ca87f8e7-f054-4b0c-9ea4-ca648588c4c0",
+      "name": "Classify FAQ topic",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "YOUR_MODEL",
+        "options": {}
+      },
+      "id": "f87a97c4-ff5e-4bd9-b4ac-90989e79ce1d",
+      "name": "Classifier model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "opening hours"
+            }
+          ]
+        }
+      },
+      "id": "bd24d833-0909-4fba-a9e3-796b509dcb77",
+      "name": "Get answer · opening hours",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        -450
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "delivery areas and days"
+            }
+          ]
+        }
+      },
+      "id": "fb9da96a-70e3-4e9c-be2b-e0d2d4c01e8c",
+      "name": "Get answer · delivery areas and days",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        -270
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "delivery fee"
+            }
+          ]
+        }
+      },
+      "id": "2787d9a1-bf35-441f-b4a8-e16424e72452",
+      "name": "Get answer · delivery fee",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        -90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "payment"
+            }
+          ]
+        }
+      },
+      "id": "e1fa5b9a-947f-4260-aa45-20f903bf98f2",
+      "name": "Get answer · payment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "minimum order"
+            }
+          ]
+        }
+      },
+      "id": "77d0ac68-5342-4c01-a6aa-636f36e057f6",
+      "name": "Get answer · minimum order",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "topic",
+              "lookupValue": "how to order"
+            }
+          ]
+        }
+      },
+      "id": "853171c7-1e9f-464d-ac23-c6c164ca5246",
+      "name": "Get answer · how to order",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        500,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72866e7a-873d-4965-ac18-735510c86ef7",
+              "name": "output",
+              "value": "={{ $json.answer }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ea398ad5-2bb3-4d0a-bf81-0aa1a4bc9d83",
+      "name": "Reply with answer",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8802b80-a38f-49c2-b101-d97e0f2e1583",
+              "name": "output",
+              "value": "I'll ask Tolu and get back to you.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e9e5d434-91c3-41fd-9a49-8d41cef5b2d9",
+      "name": "Reply · ask Tolu",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        630
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Decide\nWrite the category descriptions carefully: they are all the classifier sees. Slang like \"you people dey open for Sallah day?\" must still land on opening hours.",
+        "height": 200,
+        "width": 260
+      },
+      "id": "bf877671-b8af-4ec0-96d2-e5a2e0789261",
+      "name": "Sticky Note 12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -420
+      ]
+    }
+  ],
+  "connections": {
+    "Classifier model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify FAQ topic",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Classify FAQ topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify FAQ topic": {
+      "main": [
+        [
+          {
+            "node": "Get answer · opening hours",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get answer · delivery areas and days",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get answer · delivery fee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get answer · payment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get answer · minimum order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get answer · how to order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply · ask Tolu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · opening hours": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · delivery areas and days": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · delivery fee": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · payment": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · minimum order": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get answer · how to order": {
+      "main": [
+        [
+          {
+            "node": "Reply with answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

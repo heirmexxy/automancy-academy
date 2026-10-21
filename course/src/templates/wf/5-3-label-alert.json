@@ -1,0 +1,545 @@
+{
+ "name": "SUB · Listening post · label and alert",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## SUB · Listening post: label and alert (Lesson 5.3)\nCalled by the collectors with items in one shape: source, item_id, link, posted_at, text.\nRemove duplicates against the Mentions sheet (item_id) -> label with the Card 2 schema and 13 local examples -> alert rules in code -> Mentions sheet -> Telegram now for hard-rule items.\nlevel today -> the 18:00 summary. level report -> Monday's report.\nQuestions and leads (intent) also go to the social inbox you build in 5.5.\n\nMentions columns: source, item_id, link, posted_at, text, sentiment, topic, urgent, intent, confidence, level, alerted, handled_by. No phone numbers, no profiles of people.\n\nCredentials: Google Sheets; OpenAI (a small, cheap model is enough); Telegram.\nPlaceholders: YOUR_SHEET_ID, YOUR_MODEL, YOUR_TELEGRAM_CHAT_ID.\nAttach your error workflow (3.6) in workflow settings.",
+    "height": 460,
+    "width": 560
+   },
+   "id": "1a40ea34-ce8d-4b0d-8238-ddc9027dc16d",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -620,
+    -360
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "4d782157-be8f-4513-b63e-fca23c2a23c7",
+   "name": "When called by a collector",
+   "type": "n8n-nodes-base.executeWorkflowTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "options": {}
+   },
+   "id": "a28ae731-c717-456a-933d-cb1739d35722",
+   "name": "Read Mentions",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    220,
+    0
+   ],
+   "executeOnce": true,
+   "alwaysOutputData": true
+  },
+  {
+   "parameters": {
+    "jsCode": "const known = new Set($('Read Mentions').all().map(r => String(r.json.item_id || '')).filter(Boolean));\nconst seen = new Set();\nconst out = [];\nfor (const item of $('When called by a collector').all()) {\n  const m = item.json;\n  const id = String(m.item_id || '');\n  if (!id || !m.text || known.has(id) || seen.has(id)) continue;\n  seen.add(id);\n  out.push({ json: m });\n}\nreturn out;\n",
+    "mode": "runOnceForAllItems"
+   },
+   "id": "e6d5f266-acb1-4da2-b1b5-b107bfbc99e2",
+   "name": "Remove duplicates",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    440,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "text": "={{ $json.text }}",
+    "schemaType": "manual",
+    "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sentiment\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"positive\",\n        \"neutral\",\n        \"negative\",\n        \"mixed\"\n      ]\n    },\n    \"topic\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"quality\",\n        \"late delivery\",\n        \"price\",\n        \"refund\",\n        \"food safety\",\n        \"hours\",\n        \"other\"\n      ]\n    },\n    \"urgent\": {\n      \"type\": \"boolean\",\n      \"description\": \"needs a person today\"\n    },\n    \"intent\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"praise\",\n        \"complaint\",\n        \"question\",\n        \"lead\",\n        \"spam\"\n      ]\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"sentiment\",\n    \"topic\",\n    \"urgent\",\n    \"intent\",\n    \"confidence\"\n  ]\n}",
+    "options": {
+     "systemPromptTemplate": "You label customer comments about Harvest Lane, a fresh-produce delivery business in Ibadan. Comments may be in Nigerian English, Pidgin, Yoruba, slang or emoji. Return sentiment, topic, urgent (needs a person today), intent and confidence (0 to 1, your honest estimate).\n\nExamples:\n1. \"Una tomatoes fresh well well, I go order again\" -> positive, quality, praise, urgent false\n2. \"Price don cost o\" -> neutral, price, complaint, urgent false (about price, not anger)\n3. \"This bread is sick 🔥\" -> positive, quality, praise, urgent false (sick = amazing)\n4. \"deadly jollof, we go come back\" -> positive, quality, praise, urgent false (deadly = excellent)\n5. \"Great, another 'fresh' delivery of soft tomatoes 🙄\" -> negative, quality, complaint, urgent false (sarcasm)\n6. \"Half the onions were rotten and nobody is picking my calls\" -> negative, quality, complaint, urgent true\n7. \"My son was sick after eating your ugu\" -> negative, food safety, complaint, urgent true\n8. \"What time do you open on Sundays?\" -> neutral, hours, question, urgent false\n9. \"Do you supply restaurants weekly? We need about 20 crates\" -> positive, other, lead, urgent false\n10. \"Delivery late again. Third time this month.\" -> negative, late delivery, complaint, urgent false\n11. \"Veggies dey fresh but the rider was rude\" -> mixed, other, complaint, urgent false\n12. \"I paid since Monday, nothing came. I want my money back\" -> negative, refund, complaint, urgent true\n13. \"Earn N50k daily!!! Click the link in my bio\" -> neutral, other, spam, urgent false"
+    }
+   },
+   "id": "48976232-dfbe-449b-b7df-7b06eb9bc5ec",
+   "name": "Label",
+   "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+   "typeVersion": 1,
+   "position": [
+    660,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "model": "YOUR_MODEL",
+    "options": {}
+   },
+   "id": "000d980e-6251-4340-9f41-fe0a0c39e96b",
+   "name": "OpenAI Chat Model",
+   "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+   "typeVersion": 1,
+   "position": [
+    660,
+    216
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "return { ...$('Remove duplicates').item.json, ...$json.output };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "6758b207-a047-4921-ac1b-72523adfb291",
+   "name": "Combine",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    880,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const t = $json;\nconst hard = t.topic === 'food safety' || /threat|police|lawyer|sick after/i.test(t.text);\nconst soft = t.sentiment === 'negative' && t.confidence >= 0.8\n          && ['refund','late delivery'].includes(t.topic);\nreturn { ...t, alert: hard || soft, level: hard ? 'now' : soft ? 'today' : 'report' };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "80eab0d3-b6d9-48db-a19c-a32e6e47fc0e",
+   "name": "Alert rules",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1100,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "const t = $json;\nreturn { source: t.source, item_id: t.item_id, link: t.link, posted_at: t.posted_at, text: t.text,\n  sentiment: t.sentiment, topic: t.topic, urgent: t.urgent, intent: t.intent, confidence: t.confidence,\n  level: t.level, alerted: 'no', handled_by: '' };\n",
+    "mode": "runOnceForEachItem"
+   },
+   "id": "1a475a3a-5282-48f6-bb1c-114552bd53cd",
+   "name": "Row for sheet",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1320,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "append",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "autoMapInputData",
+     "value": {},
+     "matchingColumns": [],
+     "schema": []
+    },
+    "options": {}
+   },
+   "id": "1aadc891-11b7-49e2-a2cc-7bbd6e23e5b6",
+   "name": "Append to Mentions",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    1540,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "8f5e928a-f70b-4c6c-9d47-d3f72cd9c0e6",
+          "leftValue": "={{ $('Row for sheet').item.json.level }}",
+          "rightValue": "now",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "now"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "951f5110-ff07-48da-b0db-1cf835ddb3d1",
+          "leftValue": "={{ $('Row for sheet').item.json.level }}",
+          "rightValue": "today",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "today"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose"
+        },
+        "conditions": [
+         {
+          "id": "0d85d60b-dfcf-43b5-be1a-72ac375ae04d",
+          "leftValue": "={{ $('Row for sheet').item.json.level }}",
+          "rightValue": "report",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "report"
+      }
+     ]
+    },
+    "options": {
+     "fallbackOutput": "none"
+    }
+   },
+   "id": "35abb942-f627-438d-815a-acc59b0635f9",
+   "name": "Level",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3,
+   "position": [
+    1760,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "YOUR_TELEGRAM_CHAT_ID",
+    "text": "=URGENT ({{ $('Row for sheet').item.json.topic }}) on {{ $('Row for sheet').item.json.source }}:\n\"{{ $('Row for sheet').item.json.text }}\"\n{{ $('Row for sheet').item.json.link }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "27e8924c-b496-48d3-9162-1eafdd4a0759",
+   "name": "Telegram alert now",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1980,
+    -180
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "update",
+    "documentId": {
+     "__rl": true,
+     "value": "YOUR_SHEET_ID",
+     "mode": "id"
+    },
+    "sheetName": {
+     "__rl": true,
+     "value": "Mentions",
+     "mode": "name"
+    },
+    "columns": {
+     "mappingMode": "defineBelow",
+     "value": {
+      "item_id": "={{ $('Row for sheet').item.json.item_id }}",
+      "alerted": "yes"
+     },
+     "matchingColumns": [
+      "item_id"
+     ],
+     "schema": [
+      {
+       "id": "item_id",
+       "displayName": "item_id",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      },
+      {
+       "id": "alerted",
+       "displayName": "alerted",
+       "required": false,
+       "defaultMatch": false,
+       "display": true,
+       "type": "string",
+       "canBeUsedToMatch": true
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "5b23ef89-cd80-46f5-a238-fc63afb12338",
+   "name": "Mark alerted",
+   "type": "n8n-nodes-base.googleSheets",
+   "typeVersion": 4.5,
+   "position": [
+    2200,
+    -180
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "0739cc20-13f0-4670-8a8e-e8f14bfcf7ef",
+   "name": "Waits for 18:00 summary",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1980,
+    0
+   ]
+  },
+  {
+   "parameters": {},
+   "id": "ff70d6b0-198c-49c2-b930-f588013d98ab",
+   "name": "Waits for Monday report",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1980,
+    180
+   ]
+  },
+  {
+   "parameters": {
+    "content": "## Sage's rule\nFood safety, threats and medical claims alert a person on a hard rule, whatever the confidence. Everything else needs negative + confidence 0.8 or more + topic refund or late delivery, and waits for the 18:00 summary.",
+    "height": 200,
+    "width": 380
+   },
+   "id": "203423ab-efbe-40f4-9cbe-47d6e1083759",
+   "name": "Note 2",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    1100,
+    -420
+   ]
+  }
+ ],
+ "connections": {
+  "When called by a collector": {
+   "main": [
+    [
+     {
+      "node": "Read Mentions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Read Mentions": {
+   "main": [
+    [
+     {
+      "node": "Remove duplicates",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Remove duplicates": {
+   "main": [
+    [
+     {
+      "node": "Label",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Label": {
+   "main": [
+    [
+     {
+      "node": "Combine",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Combine": {
+   "main": [
+    [
+     {
+      "node": "Alert rules",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Alert rules": {
+   "main": [
+    [
+     {
+      "node": "Row for sheet",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Row for sheet": {
+   "main": [
+    [
+     {
+      "node": "Append to Mentions",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Append to Mentions": {
+   "main": [
+    [
+     {
+      "node": "Level",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "OpenAI Chat Model": {
+   "ai_languageModel": [
+    [
+     {
+      "node": "Label",
+      "type": "ai_languageModel",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Level": {
+   "main": [
+    [
+     {
+      "node": "Telegram alert now",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Waits for 18:00 summary",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Waits for Monday report",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Telegram alert now": {
+   "main": [
+    [
+     {
+      "node": "Mark alerted",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {
+  "When called by a collector": [
+   {
+    "json": {
+     "source": "facebook",
+     "item_id": "test_1001",
+     "link": "https://facebook.com/harvestlane.example/posts/1",
+     "posted_at": "2026-10-06T09:00:00Z",
+     "text": "My daughter was sick after eating the ugu we bought on Saturday"
+    }
+   },
+   {
+    "json": {
+     "source": "instagram",
+     "item_id": "test_1002",
+     "link": "https://instagram.com/p/example1",
+     "posted_at": "2026-10-06T09:05:00Z",
+     "text": "This pepper is sick 🔥🔥 una too much"
+    }
+   },
+   {
+    "json": {
+     "source": "instagram",
+     "item_id": "test_1003",
+     "link": "https://instagram.com/p/example1",
+     "posted_at": "2026-10-06T09:07:00Z",
+     "text": "Price don cost o, how much for basket now?"
+    }
+   }
+  ]
+ },
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

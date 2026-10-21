@@ -1,0 +1,38 @@
+{
+  "id": "1.1",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Harvest Lane's order form feeding a copy of the Orders tab.</p><p><b>The form</b> (Google Forms, all required): Name (short answer), Phone (short answer), Product (dropdown: Tomatoes (crate), Pepper tatashe (large), Onions (bag)), Quantity (short answer, number validation, greater than 0), Delivery date (date).</p><p><b>The sheet.</b> The normalised Orders tab from 0.4 keeps products in Order_Items, so use a copy tab called <b>Orders_form</b> with the header in row 1: created_at, customer_name, phone, product, qty, delivery_date, status. Format phone as plain text.</p><p><b>The Zap:</b> HL · Form order → Sheet. Trigger <b>Google Forms · New Form Response</b>; action <b>Google Sheets · Create Spreadsheet Row</b>, worksheet Orders_form.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Column</th><th>Mapped to</th></tr></thead><tbody><tr><td>created_at</td><td>Timestamp pill</td></tr><tr><td>customer_name</td><td>Name pill</td></tr><tr><td>phone</td><td>Phone pill</td></tr><tr><td>product</td><td>Product pill</td></tr><tr><td>qty</td><td>Quantity pill</td></tr><tr><td>delivery_date</td><td>Delivery date pill</td></tr><tr><td>status</td><td>Fixed text: New</td></tr></tbody></table></div><p><b>Tests:</b> Mrs Adebayo, 08031234567, Tomatoes (crate), 2, 6 Oct; Tunde Bakare, 08051112222, Onions (bag), 1, 7 Oct; Mama Kemi, 07069998888, Pepper tatashe (large), 3, 7 Oct. Publish, then submit all three. Zap history shows three green runs, 3 tasks in total.</p>",
+      "mistakes": [
+        "Mapping into the normalised 0.4 Orders tab, which has no product or qty columns, so values land in the wrong place.",
+        "The header row isn't in row 1, so the columns never appear in the Zap.",
+        "Phone column left as a number, so 0803… loses its leading zero.",
+        "Testing in the editor but never publishing, so the three real submissions create no rows."
+      ],
+      "pass": "Three rows, each value in the right column (phone keeps its zero), and a Zap history screenshot showing three successful runs from the published Zap.",
+      "redo": "Send it back if any value sits in the wrong column, rows were typed by hand, or the runs shown are editor tests rather than live runs."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's new-order alert, chained from the Bronze Zap.</p><p><b>Zap:</b> HL · New order row → email Tolu. Trigger <b>Google Sheets · New Spreadsheet Row</b> (same spreadsheet, worksheet Orders_form). Action <b>Gmail · Send Email</b> from the business account to yourself.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Field</th><th>Set to</th></tr></thead><tbody><tr><td>To</td><td>your business address</td></tr><tr><td>Subject</td><td>New order · [customer_name pill] · [delivery_date pill]</td></tr><tr><td>Body type</td><td>Plain</td></tr><tr><td>Body</td><td>one line per field, as below</td></tr></tbody></table></div><pre class=\"codebox\">New order received\n\nName: [customer_name]\nPhone: [phone]\nProduct: [product]\nQuantity: [qty]\nDelivery date: [delivery_date]\nStatus: [status]\nLogged at: [created_at]</pre><p>On a real run the subject reads <code>New order · Mrs Adebayo · 2026-10-06</code>. If the date shows as 10/6/2026, format the delivery_date column in Sheets as YYYY-MM-DD (0.3).</p><p><b>Test the chain end to end.</b> Publish both Zaps, then submit the Bronze form once. Expected timeline: the form row appears within about 15 minutes (the Forms trigger), and the email within about another 15 (the Sheets trigger also polls). Zap history shows one run in each Zap: <b>2 tasks per order</b>. Open the Sheets Zap's run and check that the data in matches the row the form Zap wrote.</p><p><b>Log:</b> \"Chained two Zaps through Orders_form. Worst-case delay about 30 minutes, 2 tasks per order. Fine for an alert; 1.2 replaces it with one multi-step Zap.\"</p>",
+      "mistakes": [
+        "Subject typed as fixed text, so every email says the same thing.",
+        "Body fields run together on one line instead of one per line.",
+        "Testing only the second Zap with an existing row, never proving that a form submission travels through both.",
+        "Rows added above existing data or by sorting the sheet, which the New Spreadsheet Row trigger doesn't see as new."
+      ],
+      "pass": "One fresh form submission produces an email with a subject built from three pills plus text and every field on its own line, and both Zaps show a run in Zap history.",
+      "redo": "Send it back if the email was triggered by hand or by an editor test, the subject is static, or fields are missing from the body."
+    },
+    "g": {
+      "answer": "<p>Worked example: a clearly fictional pharmacy in Ibadan, \"Green Cross Pharmacy\", whose top task from 0.1 was passing callback requests to the pharmacist on duty.</p><p><b>Map:</b> Customer fills a callback form → <b>Google Forms · New Form Response</b> → <b>Gmail · Send Email</b> to the duty pharmacist's business address, subject <code>Callback · [Name] · [Preferred time]</code>, body with name, phone and question. Two steps, so it fits the free plan. The form says the number is used only to call back (consent).</p><p><b>Tests:</b> three real-style test requests from staff phones, all arrived within 15 minutes. Then published and left alone for a week.</p><p><b>Week report</b> (from Zap history):</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Measure</th><th>Result</th></tr></thead><tbody><tr><td>Live runs</td><td>23</td></tr><tr><td>Failures</td><td>1 (Gmail connection expired on day 4; reconnected, replayed the run)</td></tr><tr><td>Tasks used</td><td>23 (the failed run used none until replayed)</td></tr><tr><td>Minutes saved per request</td><td>about 4 (copying from the notebook, phoning the pharmacist)</td></tr><tr><td>Time saved this week</td><td>23 × 4 = 92 minutes, about 1.5 hours</td></tr></tbody></table></div><p><b>Log entry:</b> Zap name GCP · Callback form → email; trigger Google Forms · New Form Response; action Gmail · Send Email; pills combined in the subject: Name + Preferred time; test result 3/3; live runs 23 / failures 1 / tasks 23; time saved about 1.5 hours a week; learned: check Zap history daily in the first week.</p><p><b>Submit:</b> the map, a screenshot of the published Zap, a Zap history screenshot showing at least five live runs (customer details blurred), and the log entry.</p>",
+      "mistakes": [
+        "Counting editor tests as live runs; only runs after publishing count.",
+        "Picking a task that needs three or more steps, then stalling on the free plan.",
+        "Guessing time saved instead of timing the manual task once and multiplying by runs.",
+        "Screenshots that show real customers' names and phone numbers unblurred."
+      ],
+      "pass": "A published two-step Zap for a real task with at least five live runs in Zap history, and a log entry stating runs, failures, tasks used and minutes saved with the arithmetic shown.",
+      "redo": "Send it back if there are fewer than five live runs, the numbers aren't taken from Zap history, or personal data is visible in the evidence."
+    }
+  }
+}

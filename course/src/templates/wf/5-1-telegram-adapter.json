@@ -1,0 +1,215 @@
+{
+ "name": "HL · Telegram adapter",
+ "nodes": [
+  {
+   "parameters": {
+    "content": "## HL · Telegram adapter (Lesson 5.1)\nThe same brain, a different door. Bronze mission: Telegram answers exactly as before, and the brain's executions show tg- user IDs.\n\nCredentials: Telegram (bot token) on the trigger and both send nodes.\nPlaceholders: YOUR_BRAIN_WORKFLOW_ID (SUB · Sage Desk brain).",
+    "height": 260,
+    "width": 420
+   },
+   "id": "8db423cc-a6c1-4131-8c6c-a1a8938f5502",
+   "name": "Note 1",
+   "type": "n8n-nodes-base.stickyNote",
+   "typeVersion": 1,
+   "position": [
+    -480,
+    -220
+   ]
+  },
+  {
+   "parameters": {
+    "updates": [
+     "message"
+    ],
+    "additionalFields": {}
+   },
+   "id": "2ada3ceb-6d94-42b4-be42-9c24f45d72ac",
+   "name": "Telegram Trigger",
+   "type": "n8n-nodes-base.telegramTrigger",
+   "typeVersion": 1.1,
+   "position": [
+    0,
+    0
+   ],
+   "webhookId": "4bfce336-b973-45af-88c3-5d0b7f547273"
+  },
+  {
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "id": "95dc1120-d1e8-4262-8453-28d7f57d1b75",
+       "leftValue": "={{ $json.message.text }}",
+       "rightValue": "",
+       "operator": {
+        "type": "string",
+        "operation": "exists",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "3d245ad2-eef7-4215-bdfc-cf7253dcfc7c",
+   "name": "Text message?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    220,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "mode": "manual",
+    "assignments": {
+     "assignments": [
+      {
+       "id": "a7933d94-808e-4cc2-b527-839947789556",
+       "name": "channel",
+       "value": "telegram",
+       "type": "string"
+      },
+      {
+       "id": "43f321d5-6a8d-4e64-b146-44bc4fe15c3c",
+       "name": "user_id",
+       "value": "=tg-{{ $json.message.chat.id }}",
+       "type": "string"
+      },
+      {
+       "id": "dd4926f6-2ed3-48c9-b4b5-b71ae269e652",
+       "name": "text",
+       "value": "={{ $json.message.text }}",
+       "type": "string"
+      }
+     ]
+    },
+    "options": {}
+   },
+   "id": "c9122783-51c4-4ed1-947a-94b6ba51c51d",
+   "name": "Edit Fields",
+   "type": "n8n-nodes-base.set",
+   "typeVersion": 3.4,
+   "position": [
+    440,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "source": "database",
+    "workflowId": "YOUR_BRAIN_WORKFLOW_ID",
+    "options": {}
+   },
+   "id": "87b78da3-854e-4a7b-bf4d-7ec4957fdabd",
+   "name": "SUB · Sage Desk brain",
+   "type": "n8n-nodes-base.executeWorkflow",
+   "typeVersion": 1.1,
+   "position": [
+    660,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+    "text": "={{ $json.reply }}",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "a0337a63-57c6-4c21-b17d-1abfd7f6b6ab",
+   "name": "Send reply",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    880,
+    -90
+   ]
+  },
+  {
+   "parameters": {
+    "chatId": "={{ $json.message.chat.id }}",
+    "text": "Thank you! Please type your message so we can help you quickly.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "id": "70e373a3-0756-433b-922b-8afd941fd23b",
+   "name": "Please type your message",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    440,
+    180
+   ]
+  }
+ ],
+ "connections": {
+  "Telegram Trigger": {
+   "main": [
+    [
+     {
+      "node": "Text message?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Text message?": {
+   "main": [
+    [
+     {
+      "node": "Edit Fields",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Please type your message",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Edit Fields": {
+   "main": [
+    [
+     {
+      "node": "SUB · Sage Desk brain",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "SUB · Sage Desk brain": {
+   "main": [
+    [
+     {
+      "node": "Send reply",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "pinData": {},
+ "settings": {
+  "executionOrder": "v1"
+ },
+ "meta": {
+  "templateCredsSetupCompleted": false
+ }
+}

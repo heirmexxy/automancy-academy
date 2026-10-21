@@ -1,0 +1,39 @@
+{
+  "id": "4.6",
+  "tiers": {
+    "b": {
+      "answer": "<p>Worked example: Tolu connects the reference filesystem server to Claude Desktop, limited to one test folder.</p><p>Create a folder <code>hl-test</code> with three fake files: <code>supplier-notes.txt</code>, <code>rider-rota.txt</code>, <code>october-ideas.md</code>. In Claude Desktop → Settings → Developer → Edit Config:</p><pre class=\"codebox\">{\n  \"mcpServers\": {\n    \"hl-files\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\",\n               \"/Users/tolu/hl-test\"]\n    }\n  }\n}</pre><p>Restart Claude Desktop. Three questions:</p><ol><li>\"List the files in my test folder.\" → directory listing tool, approved.</li><li>\"Summarise supplier-notes.txt in three bullets.\" → read file tool, approved.</li><li>\"Which rider works most Saturdays in rider-rota.txt?\" → read file tool, approved.</li></ol><p>Then: \"Read my Documents folder.\" Refused: outside the allowed directory.</p><p><b>What the server offers</b> (check the list in your client): tools to list, read, search, write, move and create files and folders. <b>Access given:</b> one folder, nothing else. Write tools exist, so per-tool approval stays on and only test files live there. <b>Why trust it:</b> it's the reference server from the MCP project, open source and widely used.</p>",
+      "mistakes": [
+        "Pointing the server at the home folder or the whole drive instead of one test folder.",
+        "Switching off approval prompts, or choosing \"always allow\" for write tools.",
+        "Putting real business files (customer lists, bank statements) in the test folder.",
+        "Not being able to name the server's tools, or not noticing it includes write tools."
+      ],
+      "pass": "Screenshots of the config limited to one folder, three approved tool calls with correct answers, and a short note naming the server's tools, the access given and why the server is trusted.",
+      "redo": "Send it back if the server can reach more than a test folder, approvals were turned off, or real sensitive files were used."
+    },
+    "s": {
+      "answer": "<p>Worked example: Harvest Lane's internal MCP server, used from two clients.</p><p><b>HL · MCP (internal):</b> MCP Server Trigger, path <code>orders</code>, Bearer auth (credential with a long random token), tools <code>get_order_status</code> and <code>get_today_summary</code> (Call n8n Workflow, read-only, no phones or addresses). Published; production URL copied.</p><p><b>Client 1, Claude Desktop</b> (via <code>mcp-remote</code>, token typed into the file, never pasted in chat):</p><pre class=\"codebox\">\"harvest-lane\": {\n  \"command\": \"npx\",\n  \"args\": [\"mcp-remote\", \"https://n8n.harvestlane.example/mcp/orders\",\n           \"--header\", \"Authorization: Bearer ${AUTH_TOKEN}\"],\n  \"env\": { \"AUTH_TOKEN\": \"••••••\" }\n}</pre><p><b>Client 2, n8n AI Agent</b> with an <b>MCP Client Tool</b>: same production URL, Bearer credential with the same token.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Question</th><th>Tool</th><th>Correct?</th></tr></thead><tbody><tr><td>Where is HL-0042?</td><td>get_order_status</td><td>Yes (both)</td></tr><tr><td>Who is riding HL-0045?</td><td>get_order_status</td><td>Yes (both)</td></tr><tr><td>How did today go?</td><td>get_today_summary</td><td>Yes (both)</td></tr><tr><td>Which items are running low?</td><td>get_today_summary</td><td>Yes (both)</td></tr><tr><td>Status of HL-42?</td><td>none; asked for HL-0000 format</td><td>Yes (both)</td></tr></tbody></table></div><p>For the n8n side, the agent's system message adds: \"Use the harvest-lane tools for order and daily-summary questions.\" Max Iterations: 5. The MCP Client Tool lists the same two tools the trigger exposes, with the same descriptions, so both clients choose from identical wording.</p><p><b>No-token test:</b> remove the header (or use a wrong token) → 401, no execution of the tool. All successful calls appear in n8n Executions as runs of HL · MCP (internal).</p>",
+      "mistakes": [
+        "Using the test URL (<code>/mcp-test/…</code>) in the client, so it stops working once the editor isn't listening.",
+        "Leaving authentication on None \"just for testing\" and forgetting to switch it on.",
+        "Showing the real token in a screenshot or the submitted config.",
+        "Testing only Claude Desktop and skipping the n8n MCP Client Tool connection.",
+        "Returning phone numbers or addresses from the order tool."
+      ],
+      "pass": "Five questions answered correctly from both Claude Desktop (or another client) and an n8n agent, matching executions in n8n, and evidence that a request without the token is refused.",
+      "redo": "Send it back if the production URL isn't used, the no-token test is missing, only one client works, or a real token or customer data is visible."
+    },
+    "g": {
+      "answer": "<p>Worked example: a fictional client, a hotel in Ibadan (\"Agodi Gardens Hotel\"), front desk and management.</p><div class=\"tablewrap\"><table class=\"dt\"><thead><tr><th>Tool</th><th>Read / write</th><th>Sensitivity</th><th>Who</th></tr></thead><tbody><tr><td>get_room_availability</td><td>Read</td><td>Low</td><td>Front desk</td></tr><tr><td>get_booking_status</td><td>Read</td><td>Medium (no phone, no card)</td><td>Front desk</td></tr><tr><td>get_today_arrivals</td><td>Read</td><td>Medium</td><td>Front desk</td></tr><tr><td>draft_guest_email</td><td>Write (draft only)</td><td>Medium</td><td>Front desk</td></tr><tr><td>get_daily_revenue</td><td>Read</td><td>High</td><td>Manager</td></tr><tr><td>get_occupancy_trend</td><td>Read</td><td>High</td><td>Manager</td></tr><tr><td>apply_discount</td><td>Write</td><td>High (money)</td><td>Manager</td></tr></tbody></table></div><p><b>Servers by audience:</b></p><ul><li><b>Front desk server</b> (<code>/mcp/frontdesk</code>), Bearer token A. Write tool <code>draft_guest_email</code> only saves a Gmail draft; a person sends it.</li><li><b>Management server</b> (<code>/mcp/management</code>), Bearer token B. <code>apply_discount</code> runs a sub-workflow with human review on Telegram to the general manager and a code cap of 20%.</li></ul><p><b>Why these groupings:</b> the front desk never needs revenue figures, and a leaked front-desk token should not expose management data. Each server has its own token, rotated every quarter and when staff leave. Guest phone numbers and card details are never returned by any tool.</p><p><b>Built:</b> <code>get_room_availability</code> and <code>get_daily_revenue</code>, both read-only, tested from Claude Desktop: \"Any double rooms free on Friday?\" and \"What was yesterday's revenue?\" both answered correctly, with matching executions.</p><p><b>Submit:</b> the one-page plan, screenshots of both tools working from a client, the executions list, and the trigger's auth settings (token hidden).</p>",
+      "mistakes": [
+        "Putting staff and management tools on one server with one token.",
+        "Listing write tools with no approval step, or an approval described but not designed.",
+        "Building write tools first instead of the two most valuable read-only ones.",
+        "A plan that runs to several pages, or doesn't say who may use each tool."
+      ],
+      "pass": "A one-page plan with 6–10 tools each marked read/write, sensitivity and user; servers grouped by audience with their own auth; an approval on every write tool; and two read-only tools proven working from an MCP client.",
+      "redo": "Send it back if any write tool lacks an approval, audiences share one server and token, the built tools aren't read-only, or there's no client evidence."
+    }
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "name": "HL · MCP (internal)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · MCP (internal)\nLesson 4.6. n8n as an MCP server: path orders, Bearer auth, two read-only Call n8n Workflow tools.\n\n**Credentials:** Bearer Auth credential holding a long random token (select it in the MCP Server Trigger).\n**Replace:** YOUR_ORDER_STATUS_WORKFLOW_ID (pick SUB · Order status); YOUR_TODAY_SUMMARY_WORKFLOW_ID (pick SUB · Today summary).\n\nPublish (activate) the workflow and copy the PRODUCTION URL, not the test URL.",
+        "height": 320,
+        "width": 400
+      },
+      "id": "8b74c94c-7e32-447f-a518-c5d1c4613676",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "bearerAuth",
+        "path": "orders"
+      },
+      "id": "4c32a4ea-9912-4d20-87f7-3a870d296588",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_order_status",
+        "description": "Returns the status, items, total, delivery date and rider for one Harvest Lane order. Use when asked about a specific order. Input order_id, format HL-0000, e.g. HL-0042.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_ORDER_STATUS_WORKFLOW_ID",
+          "mode": "id"
+        },
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"order_id\": {\n      \"type\": \"string\",\n      \"description\": \"Order number, format HL-0000, e.g. HL-0042\"\n    }\n  },\n  \"required\": [\n    \"order_id\"\n  ]\n}"
+      },
+      "id": "a2f72ac3-d815-4646-9ae0-48ce1119272e",
+      "name": "get_order_status",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "name": "get_today_summary",
+        "description": "Returns today's order count, revenue in naira, pending orders and low-stock items. Use for \"how did today go?\" questions. No input.",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_TODAY_SUMMARY_WORKFLOW_ID",
+          "mode": "id"
+        }
+      },
+      "id": "58363d58-963b-4006-a769-aba3ae7d8379",
+      "name": "get_today_summary",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Claude Desktop config\nInstall Node.js. Claude Desktop → Settings → Developer → Edit Config, paste, put your real token in place of YOUR_LONG_RANDOM_TOKEN in the file only, save, restart Claude Desktop.\n\n```\n{\n  \"mcpServers\": {\n    \"harvest-lane\": {\n      \"command\": \"npx\",\n      \"args\": [\"mcp-remote\", \"YOUR_MCP_PRODUCTION_URL\",\n               \"--header\", \"Authorization: Bearer ${AUTH_TOKEN}\"],\n      \"env\": { \"AUTH_TOKEN\": \"YOUR_LONG_RANDOM_TOKEN\" }\n    }\n  }\n}\n```\nBehind nginx: turn off proxy buffering (and gzip) for the /mcp path.",
+        "height": 480,
+        "width": 440
+      },
+      "id": "ae537a73-6e73-4778-bf9c-75cf759e3b71",
+      "name": "Sticky Note 4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -140
+      ]
+    }
+  ],
+  "connections": {
+    "get_order_status": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_today_summary": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

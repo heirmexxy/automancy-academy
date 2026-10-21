@@ -1,0 +1,110 @@
+{
+  "id": "2.1",
+  "items": [
+    {
+      "file": "2-1-new-order-email.json",
+      "kind": "make",
+      "name": "HL · New order → email Tolu",
+      "what": "The 2.1 solved problem: Google Sheets · Watch New Rows on Orders (up to 10 rows a run) sends Tolu one email per new order, with the customer name and total. Scheduled hourly, 7 a.m. to 9 p.m., so it costs about 720 credits a month at 10 orders a day and fits the Free plan.",
+      "build": [
+        "1 · Google Sheets › Watch New Rows: connection = the Harvest Lane business Google account (0.6); Search Method = Select by path; Spreadsheet = Harvest Lane spreadsheet; Sheet = Orders; Table contains headers = Yes; Row with headers = A1:Z1; Limit = 10. When asked where to start, choose From now on.",
+        "2 · Gmail › Send an Email: To = tolu@harvestlane.example (your own address); Subject = New order · {{1.customer_name}} · {{1.total}}; Content = New order from {{1.customer_name}}. Total: {{1.total}}. Map customer_name and total from module 1 in the mapping panel.",
+        "Scenario settings › Schedule: Every 60 minutes, advanced: run only between 07:00 and 21:00. Scheduling ON. Scenario name: HL · New order → email Tolu."
+      ],
+      "setup": [
+        "Create a free Make account. In Make: Scenarios → Create a new scenario → the three-dot menu at the bottom → Import Blueprint → choose this file.",
+        "Click module 1 and create a Google Sheets connection with the Harvest Lane business Google account. Pick the spreadsheet and the Orders tab; headers are in row 1.",
+        "When Make asks where to start, choose From now on, so old orders are not emailed.",
+        "Click module 2 and create a Gmail connection with the same account. Put your own address in To.",
+        "Re-drop 1. customer_name and 1. total from the mapping panel if they show empty after import (Make loads the sheet headers once the sheet is picked).",
+        "Open the schedule (clock icon): every 60 minutes, advanced settings limited to 07:00–21:00. Remember the Free plan allows two active scenarios."
+      ],
+      "test": "Add three rows to Orders and click Run once. The Sheets bubble shows 3 and the Gmail bubble shows 3; you get three emails, each with the right name and total. The run uses 4 credits (1 check + 3 emails). Click each bubble count to inspect bundle 2's input and output, then switch scheduling ON and check History after the next hourly run.",
+      "walk": {
+        "title": "Build it: new-order alerts, rebuilt in Make",
+        "sample": "Three test rows in Orders · Mrs Ade, Chef Tunde, Bodija Suites · with totals",
+        "steps": [
+          {
+            "at": null,
+            "say": "We're rebuilding the new-order alert from Track 1, this time in Make. Two bubbles, and we'll count every credit they use.",
+            "show": [
+              "Scenario: HL · New order → email Tolu"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "The trigger is Google Sheets, Watch New Rows, connected with the Harvest Lane business account, not a personal one.",
+            "show": [
+              "Google Sheets › Watch New Rows",
+              "Connection: Harvest Lane business Google account"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "Pick the spreadsheet and the Orders tab, and tell Make the headers sit in row one, so each column gets a proper name.",
+            "show": [
+              "Sheet: Orders",
+              "Table contains headers: Yes",
+              "Row with headers: A1:Z1"
+            ]
+          },
+          {
+            "at": "1",
+            "say": "Limit is the most rows taken in one run. When Make asks where to start, choose From now on, or the first run emails Tolu about every old order.",
+            "show": [
+              "Limit: 10",
+              "Where to start: From now on"
+            ],
+            "data": "only rows added from today"
+          },
+          {
+            "at": "2",
+            "say": "Next bubble: Gmail, Send an Email, to Tolu's address.",
+            "show": [
+              "Gmail › Send an Email",
+              "To: tolu@harvestlane.example"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Map the customer name and total from the mapping panel. The number one in front tells you the value comes from module one, the Sheets trigger.",
+            "show": [
+              "Subject: New order · {{1.customer_name}} · {{1.total}}",
+              "Content: New order from {{1.customer_name}}. Total: {{1.total}}."
+            ],
+            "data": "New order · Mrs Ade · 18,500"
+          },
+          {
+            "at": "2",
+            "say": "Add three rows and click Run once. Three rows become three bundles, so the email bubble runs three times. That's one credit for the check plus three for the emails.",
+            "show": [
+              "Sheets bubble: 3",
+              "Gmail bubble: 3",
+              "Run: 4 credits"
+            ],
+            "data": "3 bundles · 3 emails"
+          },
+          {
+            "at": "1",
+            "say": "Every check costs a credit even when nothing's there, so we choose the schedule with numbers. Hourly, seven in the morning to nine at night, is about 720 credits a month and fits the free plan.",
+            "show": [
+              "Schedule: every 60 minutes",
+              "Advanced: only 07:00–21:00",
+              "≈ 420 checking + 300 work = 720 / month"
+            ]
+          },
+          {
+            "at": "2",
+            "say": "Name the scenario clearly, switch scheduling on, and after the next hourly run, open History to see the bundles and credits.",
+            "show": [
+              "Name: HL · New order → email Tolu",
+              "Scheduling: ON"
+            ],
+            "data": "Free plan: 2 active scenarios"
+          }
+        ],
+        "end": "Run once with your three rows, click each bubble count, and check that the run used exactly four credits."
+      }
+    }
+  ]
+}

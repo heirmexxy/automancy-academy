@@ -1,0 +1,201 @@
+{
+  "id": "2.7",
+  "items": [
+    {
+      "file": "2-7-invoices-checked.json",
+      "kind": "make",
+      "name": "HL · Supplier invoices → books, checked",
+      "what": "Each new file in Supplier invoices is read by an AI model into fixed JSON, parsed, and checked by arithmetic: line maths, lines = subtotal, subtotal + VAT = total, an invoice number and nothing unreadable. Clean invoices go to Supplier_Invoices and Invoice_Lines; anything doubtful goes to Needs_Review with exact reasons and an email to Tolu.",
+      "setup": [
+        "Connections: Google Drive, Google Sheets and Gmail with the Harvest Lane business Google account; OpenAI (your own API key, stored in the connection) in \"Read invoice (AI)\". Replace YOUR_MODEL with a vision-capable model.",
+        "In \"Watch Supplier invoices\" pick the Drive folder your 1.1 Zap fills (replace YOUR_SUPPLIER_INVOICES_FOLDER_ID). Choose \"From now on\" when asked where to start.",
+        "In \"Read invoice (AI)\" add the downloaded file to the user message (image/file input = Download a File → Data). If your OpenAI module can't take PDFs, insert Make's AI Content Extractor (extract text from a document) after Download a File and map its text into the user message instead.",
+        "In \"Parse JSON\" click Add data structure → Generate, and paste the clean Farmgate sample from the lesson's playground (add \"unreadable_parts\": []).",
+        "Spreadsheet (replace YOUR_BOOKS_SHEET_ID) with tabs: Supplier_Invoices = A supplier, B invoice_number, C invoice_date, D subtotal, E vat, F total, G drive_link, H added_at, I note. Invoice_Lines = A invoice_number, B supplier, C invoice_date, D description, E qty, F unit_price, G line_total. Needs_Review = A file, B supplier, C invoice_number, D total, E reasons, F drive_link, G added_at, H status.",
+        "Scenario settings: Allow storing of incomplete executions (for the Break on the AI step). Schedule: every 60 minutes, 08:00–18:00, Monday–Saturday.",
+        "Privacy (0.6): test with invoices you typed or printed yourself; never real supplier bank details."
+      ],
+      "test": "Drop five sample invoices in the folder (two software PDFs, a scanned PDF, a photo of a printed invoice, and a handwritten slip with no number) and Run once: four rows in Supplier_Invoices with their lines in Invoice_Lines, and the slip in Needs_Review with \"No invoice number\" plus the unclear digit, and one email to Tolu. Change one line_total in a typed invoice (56,000 for 65,000): it lands in Needs_Review with \"Line maths: …\".",
+      "build": [
+        "1 · Google Drive › Watch Files in a Folder \"Watch Supplier invoices\": folder Supplier invoices; files only; limit 5.",
+        "2 · Google Drive › Download a File \"Download a File\": File ID {{1.id}}.",
+        "3 · OpenAI › Create a Completion (chat) \"Read invoice (AI)\": model YOUR_MODEL; temperature 0; response format JSON object; max tokens 2000; system message = the lesson prompt (\"You extract supplier invoices for Harvest Lane … Never guess a number.\"); user message \"Invoice file: {{1.name}} (attached).\" with the file from module 2 attached.",
+        "Error handler on 3 · Gmail › Send an email \"Alert Tolu (AI step)\": Subject Invoice reader failed · {{1.name}}; Body {{error.type}}: {{error.message}} + the Drive link → Break: automatic completion Yes, 2 attempts, every 15 minutes.",
+        "4 · JSON › Parse JSON \"Parse JSON\": JSON string {{3.result}}; data structure generated from the clean Farmgate sample.",
+        "40 · Router \"Any lines?\" (a guard so an invoice with no lines can't vanish in an empty iterator).",
+        "Route 1 · filter on 40→5 \"Has lines\": {{length(4.lines)}} Numeric: Greater than 0.",
+        "5 · Flow control › Iterator \"Iterator · lines\": Array {{4.lines}}.",
+        "6 · Tools › Set variable \"Line check\": name line_problem; lifetime one cycle; value {{if(abs(5.qty * 5.unit_price - 5.line_total) > 1; 5.description + \": \" + 5.qty + \" x \" + 5.unit_price + \" is not \" + 5.line_total; emptystring)}}.",
+        "7 · Flow control › Array aggregator \"Array aggregator · lines\": Source module 5 (Iterator); fields line_total (5) and line_problem (6). This one aggregator does the lesson's Numeric aggregator (SUM) and text collection in a single pass.",
+        "8 · Tools › Set multiple variables \"Sum and bad lines\": lines_sum = {{sum(map(7.array; \"line_total\"))}}; bad_lines = {{join(remove(map(7.array; \"line_problem\"); emptystring); \"; \")}}.",
+        "9 · Tools › Set multiple variables \"Verdict\": review_reasons = one text built from five checks: bad_lines not empty → \"Line maths: …\"; abs(lines_sum − subtotal) > 1 → \"Lines add up to … but subtotal is …\"; abs(subtotal + vat − total) > 1 → \"Subtotal + VAT does not equal total.\"; invoice_number empty → \"No invoice number.\"; unreadable_parts not empty → \"Unreadable: …\". Empty review_reasons means every check passed.",
+        "10 · Router \"Save or review\".",
+        "Route Auto-save · filter on 10→11 \"Auto-save\" (no bad lines AND sum = subtotal ±1 AND subtotal + vat = total ±1 AND invoice_number exists AND unreadable_parts empty): {{length(trim(9.review_reasons))}} Numeric: Equal to 0 → 11 · Google Sheets › Add a Row \"Add to Supplier_Invoices\": supplier, invoice_number, invoice_date, subtotal, vat, total, drive_link {{1.webViewLink}}, added_at now, note {{if(ifempty(4.vat; 0) > 0 & abs(4.vat - 4.subtotal * 0.075) > 1; \"VAT isn't 7.5%\"; emptystring)}} → 12 · Iterator \"Iterator · lines to save\" {{4.lines}} → 13 · Google Sheets › Add a Row \"Add to Invoice_Lines\": invoice_number, supplier, invoice_date, description, qty, unit_price, line_total.",
+        "Route Fallback · Review · filter on 10→14 \"Fallback · Review\": {{length(trim(9.review_reasons))}} Numeric: Greater than 0 (or tick Fallback route) → 14 · Google Sheets › Add a Row \"Add to Needs_Review\": file {{1.name}}, supplier, invoice_number, total, reasons {{9.review_reasons}}, drive_link, added_at, status New → 15 · Gmail › Send an email \"Email Tolu (review)\" with the reasons and the Drive link.",
+        "Route 2 of 40 · filter \"No lines\": {{length(4.lines)}} Equal to 0 → 16 · Add a Row \"Needs_Review (no lines)\" (reason \"No line items could be read.\" + unreadable_parts) → 17 · Gmail \"Email Tolu (no lines)\".",
+        "Scenario settings: Allow storing of incomplete executions Yes. Schedule hourly in business hours."
+      ],
+      "walk": {
+        "title": "Build it: invoices into the books, checked",
+        "sample": "Farmgate Supplies FG-0192 · 3 lines · subtotal 290,000 · VAT 21,750 · total 311,750",
+        "steps": [
+          {
+            "at": "1",
+            "say": "We watch the Supplier invoices folder your 1.1 Zap already fills, starting from now on, and run hourly in business hours.",
+            "show": [
+              "Google Drive › Watch Files in a Folder",
+              "Folder: Supplier invoices · Limit: 5",
+              "Schedule: hourly, 08:00–18:00, Mon–Sat"
+            ],
+            "data": "1 file · FG-0192.pdf"
+          },
+          {
+            "at": "2",
+            "say": "Download the file itself, so the AI can read the actual invoice, not just its name.",
+            "show": [
+              "Google Drive › Download a File",
+              "File: {{1.id}}"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "Sage reads it. We use our own provider connection, a vision-capable model, temperature zero, and JSON mode so the answer is valid JSON.",
+            "show": [
+              "OpenAI › Create a Completion · model: YOUR_MODEL",
+              "Temperature: 0 · Response format: JSON object",
+              "User message: the downloaded file attached"
+            ]
+          },
+          {
+            "at": "3",
+            "say": "The prompt fixes the shape, with line items so there's something to check. And one rule matters most: if a value is unclear, use null and say why. Never guess a number.",
+            "show": [
+              "Return ONLY JSON: supplier, invoice_number, lines[], …",
+              "unclear → null + unreadable_parts",
+              "Never guess a number."
+            ],
+            "data": "JSON · 3 lines"
+          },
+          {
+            "at": "30",
+            "say": "If the AI provider is down, an error route emails Tolu what failed.",
+            "show": [
+              "Gmail: Invoice reader failed · {{1.name}}",
+              "{{error.type}}: {{error.message}}"
+            ]
+          },
+          {
+            "at": "31",
+            "say": "Then Break with two retries, so invoices wait instead of disappearing. Remember to allow incomplete executions in the settings.",
+            "show": [
+              "Break · 2 attempts · every 15 minutes"
+            ]
+          },
+          {
+            "at": "4",
+            "say": "Parse JSON with a data structure generated from the clean sample. Now supplier, totals and the lines list are fields you can map.",
+            "show": [
+              "JSON › Parse JSON · {{3.result}}",
+              "Data structure: generated from clean Farmgate sample"
+            ],
+            "data": "supplier, subtotal, vat, total, lines[3]"
+          },
+          {
+            "at": "40",
+            "say": "A small guard router first: if no lines could be read at all, the invoice goes straight to review instead of vanishing in an empty iterator.",
+            "show": [
+              "Has lines: length(4.lines) > 0",
+              "No lines → Needs_Review + email Tolu"
+            ]
+          },
+          {
+            "at": "5",
+            "say": "Now Weave checks the arithmetic. The iterator splits the lines, one bundle each.",
+            "show": [
+              "Iterator · Array: {{4.lines}}"
+            ],
+            "data": "3 bundles"
+          },
+          {
+            "at": "6",
+            "say": "For each line, quantity times unit price must equal the line total, within one naira. If not, we note the problem in words.",
+            "show": [
+              "line_problem: abs(qty × unit_price − line_total) > 1 → describe it"
+            ],
+            "data": "Tatashe: 10 x 6500 is not 56000"
+          },
+          {
+            "at": "7",
+            "say": "An array aggregator, sourced from the iterator, squeezes the lines back together, carrying each line total and any problem.",
+            "show": [
+              "Array aggregator · Source module: 5 (Iterator)",
+              "Fields: line_total, line_problem"
+            ],
+            "data": "1 bundle"
+          },
+          {
+            "at": "8",
+            "say": "Then we add up the lines and collect the bad ones.",
+            "show": [
+              "lines_sum = {{sum(map(7.array; \"line_total\"))}}",
+              "bad_lines = non-empty line_problem values"
+            ],
+            "data": "lines_sum 290000"
+          },
+          {
+            "at": "9",
+            "say": "The verdict collects every reason to doubt the invoice: bad lines, lines not matching the subtotal, subtotal plus VAT not matching the total, no invoice number, or anything unreadable. Empty means it all adds up.",
+            "show": [
+              "review_reasons: 5 checks, ±1 naira",
+              "empty = every check passed"
+            ],
+            "data": "review_reasons: empty"
+          },
+          {
+            "at": "11",
+            "say": "Only a clean invoice skips a human. It's saved to Supplier_Invoices, with a note if VAT isn't seven and a half percent, and each line goes to Invoice_Lines.",
+            "show": [
+              "Filter: Auto-save · length(trim(9.review_reasons)) = 0",
+              "Add a Row · Supplier_Invoices, then Invoice_Lines per line"
+            ],
+            "data": "1 invoice · 3 lines saved"
+          },
+          {
+            "at": "14",
+            "say": "Anything doubtful goes to Needs_Review with the exact reasons and the Drive link, and Tolu gets one email. One misread digit is caught here, not in the books.",
+            "show": [
+              "Filter: Fallback · Review",
+              "Add a Row · Needs_Review · reasons: {{9.review_reasons}}",
+              "Gmail: Invoice needs a look · {{4.supplier}}"
+            ],
+            "data": "Mama Bisi slip → review"
+          }
+        ],
+        "end": "Drop in your five sample invoices, including one with a wrong line total, and check each lands on the route you expected, with clear reasons."
+      }
+    },
+    {
+      "file": "2-7-ask-weave-spend-tool.json",
+      "kind": "make",
+      "name": "HL · Ask Weave agent + its read-only tool",
+      "what": "The bonus \"Ask Weave\" agent: a Make AI Agent that answers Tolu's spending questions using one read-only tool, this scenario, which searches Invoice_Lines by supplier, product and date range and returns the total, line count and invoice numbers. The agent and its Telegram runner are set up by hand from the steps below.",
+      "setup": [
+        "Import this blueprint as a new scenario named \"HL · Tool · Supplier spend lookup (read-only)\". Connect Google Sheets (business account) and pick the books spreadsheet (YOUR_BOOKS_SHEET_ID) and the Invoice_Lines tab from the invoice scenario.",
+        "Scenario inputs (scenario settings → Scenario inputs and outputs): inputs supplier (text, optional, \"Supplier name or part of it, e.g. Farmgate\"), product (text, optional, \"Product word, e.g. tomatoes\"), date_from (text, required, \"YYYY-MM-DD\"), date_to (text, required, \"YYYY-MM-DD\"). Outputs total_ngn (number), line_count (number), invoices (text), suppliers (text). Scheduling: On demand. Turn the scenario on.",
+        "Scenario description (the agent reads it to choose the tool): \"Read-only. Returns how much Harvest Lane spent with suppliers, from the Invoice_Lines sheet, filtered by supplier, product and date range. Returns nothing when no lines match.\"",
+        "Create the agent: Make → AI Agents → Create agent. Name Ask Weave; model connection = your AI provider (your own key) and a capable model; system prompt exactly: \"You answer Tolu's questions about supplier spending using only the tools provided. Never change data. If the tools can't answer, say so.\" Add one tool: Scenarios → HL · Tool · Supplier spend lookup (read-only). Add no module or MCP tools that can write, update, delete or send.",
+        "Create the runner scenario \"HL · Ask Weave (Telegram)\": Telegram Bot › Watch Updates (your bot) → filter: Message › Chat ID equal to Tolu's chat ID (YOUR_TELEGRAM_CHAT_ID) → Make AI Agents › Run an agent: agent Ask Weave; message {{1.message.text}}; thread ID {{1.message.chat.id}} → Telegram Bot › Send a Text Message or a Reply: chat ID {{1.message.chat.id}}, text = the agent's response.",
+        "Before quoting a client, check Make's current credit use for agents and the model's token price (Card 1)."
+      ],
+      "test": "From Tolu's Telegram ask \"How much did we spend on tomatoes from Farmgate in October?\": the reply gives the naira total and invoice numbers, matching a manual SUMIFS on Invoice_Lines, and the tool scenario's history shows one run with those inputs. Ask \"Delete the duplicate Farmgate row\": the agent says it can't change data. Message the bot from another account: nothing runs past the chat ID filter.",
+      "build": [
+        "1 · Google Sheets › Search Rows \"Search Invoice_Lines\": books spreadsheet, Invoice_Lines, no filter, limit 5000 (filtering happens on the next link, which costs no credits).",
+        "Filter on 1→2 \"Matches the question\": {{lower(1.supplier)}} Text: Contains {{lower(ifempty(var.input.supplier; emptystring))}} AND {{lower(1.description)}} Contains {{lower(ifempty(var.input.product; emptystring))}} AND invoice_date Text: Greater than or equal to {{ifempty(var.input.date_from; \"2000-01-01\")}} AND invoice_date Less than or equal to {{ifempty(var.input.date_to; \"2100-12-31\")}} (ISO dates compare correctly as text).",
+        "2 · Flow control › Array aggregator \"Array aggregator · matching lines\": Source module 1; fields invoice_number, supplier, line_total.",
+        "3 · Scenarios › Return output \"Return output\": total_ngn {{sum(map(2.array; \"line_total\"))}}; line_count {{length(2.array)}}; invoices {{join(distinct(map(2.array; \"invoice_number\")); \", \")}}; suppliers {{join(distinct(map(2.array; \"supplier\")); \", \")}}.",
+        "Agent (built by hand, not in the blueprint) · Make AI Agents › agent \"Ask Weave\": system prompt \"You answer Tolu's questions about supplier spending using only the tools provided. Never change data. If the tools can't answer, say so.\"; tools: only this scenario; no write tools.",
+        "Runner (built by hand) · R1 Telegram Bot › Watch Updates → filter R1→R2 \"Tolu only\": {{1.message.chat.id}} Equal to YOUR_TELEGRAM_CHAT_ID → R2 Make AI Agents › Run an agent: Ask Weave, message {{1.message.text}}, thread ID {{1.message.chat.id}} → R3 Telegram Bot › Send a Text Message or a Reply: chat ID {{1.message.chat.id}}, text = R2's response."
+      ]
+    }
+  ]
+}

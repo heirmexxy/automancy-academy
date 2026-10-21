@@ -1,0 +1,327 @@
+<template data-mod="1.3" id="tpl-1-3">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.3</span>
+    <h1>Filters &amp; Paths</h1>
+    <div class="kicker"><span class="pill">≈ 90 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Bolt</span><span class="pill">Needs: a paid plan or trial for Paths</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">Not every order is the same. A ₦90,000 hotel order needs Tolu's attention now; an order from outside the city needs the logistics list; a test order needs to go nowhere. Filters and Paths let one Zap make those decisions.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Stop a Zap from continuing with a Filter, without using tasks.</span></div>
+  <div><b>02</b><span>Write conditions with AND and OR correctly.</span></div>
+  <div><b>03</b><span>Split a Zap into branches with Paths, plus a fallback.</span></div>
+  <div><b>04</b><span>Use a truth table to prove every case goes down exactly one branch.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Three kinds of order, one inbox</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A big order alert buried among many small order alerts.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--line)" stroke-width="1.5"><rect x="150" y="14" width="160" height="22" rx="6"/><rect x="150" y="42" width="160" height="22" rx="6"/><rect x="150" y="98" width="160" height="22" rx="6"/><rect x="150" y="126" width="160" height="22" rx="6"/><rect x="150" y="154" width="160" height="22" rx="6"/></g>
+        <rect x="150" y="70" width="160" height="22" rx="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--muted)"><text x="158" y="29">New order · ₦13,500</text><text x="158" y="57">New order · ₦9,000</text><text x="158" y="85" fill="#13233A" font-weight="600">New order · ₦92,000</text><text x="158" y="113">New order · ₦14,000</text><text x="158" y="141">New order · ₦26,500</text><text x="158" y="169">New order · ₦4,000</text></g>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Wednesday</b>Forty identical alerts. The ₦92,000 order from a caterer sits unread for three hours.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A map pin far outside a city boundary circle.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="130" cy="96" r="70" fill="var(--volt)" opacity=".2" stroke="var(--volt)" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="130" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--ink)">Ibadan zone</text>
+        <path d="M270 70 c0 -20 -30 -20 -30 0 c0 18 15 30 15 40 c0 -10 15 -22 15 -40 z" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="255" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">Oyo town</text>
+      </svg>
+      <div class="cap"><b>Thursday</b>An order from Oyo town goes into the normal rider list. The rider finds out at 7 a.m.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch submitting a test order labelled TEST that gets delivered.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="60" width="120" height="70" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="230" y="92" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="18" fill="var(--glitch)">TEST</text>
+        <text x="230" y="114" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--muted)">delivered to nobody</text>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Friday</b>A test order from last week's building goes out on a real bike. Glitch is delighted.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Bolt at a railway junction with three tracks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M140 170 L220 100 L300 30 M220 100 L300 100 M220 100 L300 170" stroke="var(--ink)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="220" cy="100" r="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <use href="#bolt" x="0" y="40" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Bolt</b>"Every order still enters on one track. We'll just add a junction."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Filters: a gate that says "only continue if…"</h3>
+    <p>A <b>Filter</b> step checks conditions. If they pass, the Zap continues; if not, the run stops quietly and shows as <b>Filtered</b> in Zap history. Steps after a failed filter don't run, so they don't use tasks.</p>
+    <div class="vocab">
+      <div><b>Field</b>The value to check, e.g. the Total from step 6.</div>
+      <div><b>Condition</b>How to compare: (Text) Contains, Exactly matches, Is in; (Number) Greater than, Less than; Exists; (Boolean) Is true.</div>
+      <div><b>Value</b>What to compare against: 50000, "test", "Bodija".</div>
+    </div>
+    <div class="analogy"><b>Type matters (0.3 again).</b> "Number greater than" compares numbers. If the field holds text like <code>₦26,500.00</code>, the comparison fails. Always filter on the plain number.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>AND vs. OR</h3>
+    <div class="why">
+      <div class="box"><h5>AND: all must be true</h5><ul><li>Total over 50,000 <b>AND</b> status is Paid.</li><li>Narrows the gate. Each extra AND lets fewer runs through.</li></ul></div>
+      <div class="box"><h5>OR: at least one must be true</h5><ul><li>Total over 50,000 <b>OR</b> customer is VIP.</li><li>Widens the gate. Each extra OR lets more runs through.</li></ul></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Say your rule out loud as a sentence first. If you say "and" but your condition group says OR, you've found tomorrow's bug.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Paths: a junction with several tracks</h3>
+    <p><b>Paths by Zapier</b> splits a Zap into branches. Each branch has its own rules and its own steps. Branches are checked one at a time, left to right, and <b>every branch whose rules match will run</b>, not just the first. A <b>fallback</b> branch (one per path group, always rightmost) runs only when no other branch matched.</p>
+    <figure class="fig"><svg viewBox="0 0 620 230" role="img" aria-label="An order flows into a Paths step that splits into three branches: Priority (total over 50,000), Outside zone (total up to 50,000 and zone outside), and a fallback Standard branch.">
+      <defs><marker id="f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="90" width="120" height="50" rx="12" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="70" y="120" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">Clean order</text>
+      <path d="M130 115 H170" stroke="var(--ink)" stroke-width="2.5" marker-end="url(#f1)"/>
+      <circle cx="195" cy="115" r="24" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/><text x="195" y="120" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--ink)">Paths</text>
+      <path d="M215 100 C260 40 280 40 320 40" stroke="var(--ink)" stroke-width="2" fill="none" marker-end="url(#f1)"/>
+      <path d="M219 115 H320" stroke="var(--ink)" stroke-width="2" fill="none" marker-end="url(#f1)"/>
+      <path d="M215 130 C260 190 280 190 320 190" stroke="var(--ink)" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#f1)"/>
+      <rect x="324" y="18" width="286" height="44" rx="10" fill="var(--glitch)" opacity=".9"/><text x="336" y="37" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">A · Priority</text><text x="336" y="54" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">total &gt; 50000 → alert Tolu now</text>
+      <rect x="324" y="93" width="286" height="44" rx="10" fill="var(--sky)"/><text x="336" y="112" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#fff">B · Outside zone</text><text x="336" y="129" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">total ≤ 50000 AND zone = outside → logistics</text>
+      <rect x="324" y="168" width="286" height="44" rx="10" fill="var(--volt)"/><text x="336" y="187" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="#13233A">C · Standard (fallback)</text><text x="336" y="204" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">runs only if A and B didn't</text>
+    </svg><figcaption>Branch B includes "total ≤ 50000" on purpose, so a big order from outside the zone can't trigger both A and B. The Priority branch handles its logistics itself.</figcaption></figure>
+    <p style="font-size:.9rem;color:var(--muted)">Paths are on paid plans. Each path group allows up to 10 branches, and Path steps themselves don't use tasks; the actions inside a branch do.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Truth tables: proof that every case lands once</h3>
+    <p>List every combination of the things your rules check, then write which branch each should take. If any row runs two branches or none, your rules have a hole.</p>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Total</th><th>Zone</th><th>Should go to</th></tr></thead>
+      <tbody>
+        <tr><td>≤ 50,000</td><td>inside</td><td>C · Standard</td></tr>
+        <tr><td>≤ 50,000</td><td>outside</td><td>B · Outside zone</td></tr>
+        <tr><td>&gt; 50,000</td><td>inside</td><td>A · Priority</td></tr>
+        <tr><td>&gt; 50,000</td><td>outside</td><td>A · Priority (with its own logistics step)</td></tr>
+        <tr><td>anything</td><td>missing</td><td>C · Standard, flagged for Tolu to check</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Filter or Paths?</h3>
+    <div class="vocab">
+      <div><b>Use a Filter</b>when some runs should simply stop: test orders, unpaid orders, emails from yourself.</div>
+      <div><b>Use Paths</b>when different runs need different actions.</div>
+      <div><b>Use both</b>A Filter at the top to drop junk, then Paths to route the real orders.</div>
+      <div><b>Or split the Zap</b>If branches share nothing, two simpler Zaps with filters can be easier to maintain than one giant one.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/8496288555917-Add-branching-logic-to-Zap-workflows-with-Paths" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: add branching logic with Paths</b><small>Read: how branches run left to right, and how the fallback branch works.</small></span></a>
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/34372501750285-Use-conditional-logic-to-filter-and-split-your-Zap-workflows" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: conditional logic with filters and paths</b><small>Look for: which condition types exist for text, numbers and dates.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Zapier+paths+and+filters+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A recent "Zapier Paths and Filters" video</b><small>Look for: how a filtered run appears in Zap history.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 30 MIN</span><h2>Solved problem: route every order to the right place</h2></div>
+  <div class="prose"><p><b>The goal.</b> Extend the 1.2 order Zap. Drop test orders. Then send big orders to Tolu immediately, out-of-zone orders to a Logistics tab, and everything else down the normal route. Prove it with a truth table.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Add a Filter right after the trigger</h4>
+      <p>Insert <b>Filter by Zapier</b> as step 2. Rule: <b>Name</b> · (Text) Does not contain · <code>test</code>. Now test orders stop before any task is used, and appear as Filtered in Zap history.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Give every area a zone</h4>
+      <p>Next to the fee lookup from 1.2, add another <b>Formatter · Utilities · Lookup Table</b>: Bodija, Mokola, Ring Road, Challenge → <code>inside</code>; fallback → <code>outside</code>. Now the zone is a clean, single word the Paths can check.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Write the truth table before building</h4>
+      <p>Use the table in Card 4. Decide now that a big out-of-zone order goes to Priority, which will also log it for logistics. Writing this down first is what stops double alerts later.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the Paths step after the total is calculated</h4>
+      <p>After the Formula and Format Currency steps, add <b>Paths by Zapier</b> and set up the branches:</p>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Branch</th><th>Rules</th><th>Steps inside</th></tr></thead>
+        <tbody>
+          <tr><td>A · Priority</td><td>Total (the plain number) · (Number) Greater than · 50000</td><td>Create Orders row · Email Tolu with "PRIORITY" in the subject · Create Logistics row <i>only if</i> zone is outside (a small Filter inside the branch)</td></tr>
+          <tr><td>B · Outside zone</td><td>Total · (Number) Less than · 50001 <b>AND</b> Zone · (Text) Exactly matches · outside</td><td>Create Orders row · Create Logistics row</td></tr>
+          <tr><td>C · Standard</td><td>Set as the <b>fallback</b> branch</td><td>Create Orders row · normal email</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:.9rem;color:var(--muted)">"Less than 50001" means "50,000 or less" when some number conditions don't offer "less than or equal".</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test every row of the truth table</h4>
+      <p>Submit one form per row: a ₦26,500 Bodija order, a ₦13,500 Oyo town order, a ₦92,000 Bodija order, a ₦92,000 Oyo order, and one with "Test" in the name. In Zap history, each should show exactly one branch taken, and the test order should show Filtered.</p>
+      <p>Try the design yourself below. Change the total and zone and compare Glitch's first attempt with the clean design.</p>
+      <div class="router" data-route='{"designs":[{"name":"Glitch design (no fallback, overlapping)","paths":[{"name":"A · Priority","all":[{"f":"total","op":">","v":50000}]},{"name":"B · Outside zone","all":[{"f":"zone","op":"is","v":"outside"}]},{"name":"C · Standard","all":[{"f":"total","op":"<=","v":50000},{"f":"zone","op":"is","v":"inside"}]}]},{"name":"Clean design","paths":[{"name":"A · Priority","all":[{"f":"total","op":">","v":50000}]},{"name":"B · Outside zone","all":[{"f":"total","op":"<=","v":50000},{"f":"zone","op":"is","v":"outside"}]}],"fallback":"C · Standard"}]}'>
+        <div class="inputs">
+          <label>Order total (₦)<input id="rt-1-3-total" data-k="total" type="number" value="92000" step="500"></label>
+          <label>Zone<select id="rt-1-3-zone" data-k="zone"><option value="inside">inside</option><option value="outside" selected>outside</option><option value="">missing (no lookup fallback)</option></select></label>
+        </div>
+        <div class="designs"><div class="design"></div><div class="design"></div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The filter drops junk before it costs tasks.</li><li>A single-word zone makes conditions simple and reliable.</li><li>Rules are written so no order can match two branches.</li><li>The fallback catches anything nobody predicted.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Assuming only the first matching branch runs.</li><li>Comparing numbers against a currency-formatted field.</li><li>No fallback: surprising data disappears silently.</li><li>Building first and writing the truth table never.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Four more complaints from Tolu. My rules looked perfect to me.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>Symptom</th><th>Glitch's rule</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Big out-of-zone orders create two Orders rows and two emails.</td><td>A: total &gt; 50000 · B: zone is outside</td></tr>
+        <tr><td>B</td><td>The priority branch never runs, even for ₦92,000 orders.</td><td>Formatted total (step 7) · Number greater than · 50000</td></tr>
+        <tr><td>C</td><td>Orders from "Bodija " (with a space) go down the outside branch.</td><td>Raw Area field · Exactly matches · Bodija</td></tr>
+        <tr><td>D</td><td>Every order is filtered out, including real ones.</td><td>Name does not contain "test" <b>AND</b> Email contains "@"</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> overlapping rules. Every matching branch runs. Add "total ≤ 50000" to B, or make Priority handle the logistics itself.</li>
+        <li><b>B:</b> the formatted total (₦92,000.00) is text, so the number comparison fails. Use the plain number from the formula step.</li>
+        <li><b>C:</b> exact matches are unforgiving. Trim and clean the area first (1.2), or compare the zone produced by the lookup table.</li>
+        <li><b>D:</b> the form has no email question, so "Email contains @" is never true, and with AND, one false condition blocks everything. Only check fields that exist, and test the filter with real data.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>A junk filter</h4>
+    <ul><li>Add a Filter to one of your Zaps that stops test entries (name contains "test", in any capitalisation).</li><li>Submit two real and two test entries.</li><li>Find the two Filtered runs in Zap history and confirm they used no tasks.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Two runs show as successful and two as Filtered.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build the router and pass the truth table</h4>
+    <ul><li>Build the solved problem's filter, zone lookup and three branches.</li><li>Run the five test orders from the truth table.</li><li>Screenshot the Zap history for each (no keys visible) and mark which branch ran.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every row takes exactly the branch the table says, and the test order is filtered.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Design a router for your own work</h4>
+    <ul><li>Pick a flow in your own business that needs at least four different outcomes (for example enquiries by product line and size, or leads by country and budget).</li><li>Write the truth table first, covering every combination plus a "missing data" row.</li><li>Build it with Paths and a fallback, test every row, and record the results.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every truth-table row is tested, none runs two branches, and the fallback has caught at least one case.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. A Filter stops a run. What happens to the steps after it?</p><div class="opts">
+      <button type="button" data-opt="a">They run anyway but show a warning</button><button type="button" data-opt="b">They don't run, use no tasks, and the run shows as Filtered</button><button type="button" data-opt="c">The Zap turns itself off</button><button type="button" data-opt="d">Zapier emails you an error</button></div>
+      <p class="fb" hidden data-why="A filter is a quiet stop. Check Zap history for Filtered runs."></p></div>
+    <div class="q" data-ans="c"><p>2. Two path branches both match the same order. What happens?</p><div class="opts">
+      <button type="button" data-opt="a">Only the first runs</button><button type="button" data-opt="b">Only the last runs</button><button type="button" data-opt="c">Both run, one after the other, left to right</button><button type="button" data-opt="d">Neither runs</button></div>
+      <p class="fb" hidden data-why="Every matching branch runs. Write rules so each case matches only one."></p></div>
+    <div class="q" data-ans="a"><p>3. When does the fallback branch run?</p><div class="opts">
+      <button type="button" data-opt="a">Only when no other branch's rules matched</button><button type="button" data-opt="b">Always, after the others</button><button type="button" data-opt="c">When a branch errors</button><button type="button" data-opt="d">Once a day</button></div>
+      <p class="fb" hidden data-why="The fallback is the 'none of the above' track."></p></div>
+    <div class="q" data-ans="d"><p>4. "Total · Number greater than · 50000" never passes, even for big orders. Most likely cause?</p><div class="opts">
+      <button type="button" data-opt="a">50000 is too high</button><button type="button" data-opt="b">Paths are turned off</button><button type="button" data-opt="c">The Zap isn't published</button><button type="button" data-opt="d">The field is the currency-formatted text, not the plain number</button></div>
+      <p class="fb" hidden data-why="₦92,000.00 is text. Compare numbers to numbers."></p></div>
+    <div class="q" data-ans="b"><p>5. "Treat an order as priority if it's over ₦50,000 or the customer is a VIP." Which logic?</p><div class="opts">
+      <button type="button" data-opt="a">AND</button><button type="button" data-opt="b">OR</button><button type="button" data-opt="c">Two separate Zaps</button><button type="button" data-opt="d">A lookup table</button></div>
+      <p class="fb" hidden data-why="Either condition is enough, so OR."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-3">AUTOMANCY LOG · Lesson 1.3 · Filters & Paths
+Date:
+Filter rule(s):
+Branches and their rules:
+  A.
+  B.
+  Fallback:
+Truth table rows tested (✓ = exactly one branch):
+Filtered runs seen in Zap history:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-1-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>A Filter stops a run quietly and saves tasks; look for Filtered in Zap history.</li>
+      <li>AND narrows, OR widens. Say the rule as a sentence first.</li>
+      <li>Every matching path branch runs, left to right. Design so only one can match.</li>
+      <li>The fallback branch catches everything else. Always add one.</li>
+      <li>Compare clean values: numbers as numbers, text after trimming.</li>
+      <li>Write the truth table before you build, and test every row.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8496288555917-Add-branching-logic-to-Zap-workflows-with-Paths" target="_blank" rel="noopener">Zapier Help: add branching logic with Paths</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/34372501750285-Use-conditional-logic-to-filter-and-split-your-Zap-workflows" target="_blank" rel="noopener">Zapier Help: conditional logic in Zaps</a></li>
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/" target="_blank" rel="noopener">Zapier Academy: Building Intermediate Zaps (Paths lessons)</a></li>
+    <li><span class="kind">Text</span><a href="https://zapier.com/blog/zapier-paths-conditional-workflows/" target="_blank" rel="noopener">Zapier blog: Paths, conditional logic in your Zaps</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+paths+tutorial" target="_blank" rel="noopener">YouTube: Zapier Paths tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Before touching Zapier, give groups the business rules on a card and ask them to write the truth table on paper. Then use the route tester on this page to check their designs. Groups that find the "big and outside" overlap themselves remember it for good.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -1,0 +1,392 @@
+<template data-mod="5.2" id="tpl-5-2">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 5 · The Signal Tower (Growth) · Lesson 5.2</span>
+    <h1>Prospecting Agents</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guide: Echo</span><span class="pill">Tools: n8n, Google Places API, Gmail or Google Workspace, Google Sheets, Telegram, an AI model</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">Every business wants more customers, and most cold outreach fails: it's generic, it goes to the wrong people, or it breaks a platform's rules and gets an account banned. In this lesson you build an agent that finds the right businesses from sources you're allowed to use, researches each one, scores the fit, and writes a short, true, personal message, which a person approves before anything is sent.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Turn an ideal customer profile (ICP) into rules an agent can score against.</span></div>
+  <div><b>02</b><span>Find leads from allowed sources, and know which sources will get you banned or fined.</span></div>
+  <div><b>03</b><span>Research and personalise without inventing facts, and prove it in code.</span></div>
+  <div><b>04</b><span>Send safely: human approval, daily caps, opt-outs and reply sorting.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Twenty new kitchens</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Tolu beside a sign reading: goal, 20 new restaurant clients.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="45" width="140" height="80" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="235" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">GOAL · THIS QUARTER</text>
+        <text x="235" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="17" fill="var(--ink)">20 restaurants</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Tolu</b>"Harvest Lane runs itself now. Next: twenty restaurant kitchens buying from us every week. Where do I even find them?"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a sign: scrape LinkedIn, email 5,000 tonight.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="160" y="50" width="148" height="70" rx="8" fill="var(--glitch)" stroke="#fff" stroke-width="2"/>
+        <text x="234" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#fff">SCRAPE LINKEDIN!</text>
+        <text x="234" y="100" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="#fff">EMAIL 5,000 TONIGHT!</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Easy. Scrape every restaurant owner off LinkedIn, buy a list, and blast them all tonight. Volume wins!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Echo the parrot with signal waves and the words: find, research, ask, help.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="13" fill="var(--ink)"><text x="170" y="60">1 · Find</text><text x="170" y="84">2 · Research</text><text x="170" y="108">3 · Ask Tolu</text><text x="170" y="132">4 · Be useful</text></g>
+        <use href="#echo" x="10" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Volume gets you banned. Relevance gets replies. Twenty right kitchens beat five thousand wrong inboxes."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A phone with an approval message and Approve and Skip buttons.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="175" y="22" width="110" height="150" rx="14" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="185" y="40" width="90" height="52" rx="6" fill="var(--paper2)"/>
+        <text x="230" y="58" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="8.5" fill="var(--ink)">Draft for</text>
+        <text x="230" y="72" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="8.5" fill="var(--ink)">Amala Corner</text>
+        <rect x="185" y="102" width="42" height="20" rx="6" fill="var(--volt)"/><text x="206" y="116" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#fff">Approve</text>
+        <rect x="233" y="102" width="42" height="20" rx="6" fill="var(--line)"/><text x="254" y="116" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="var(--ink)">Skip</text>
+        <use href="#tolu" x="10" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Every morning</b>Tolu gets the day's drafts on her phone. She approves, edits or skips each one. Nothing sends without her.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 35 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Your ideal customer, written as rules</h3>
+    <p>An agent can't prospect for "good customers". It can check rules. Write your ideal customer profile (ICP) so each line is something the agent can test against a source.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Harvest Lane's ICP</th><th>Rule the agent checks</th><th>Where the answer comes from</th></tr></thead>
+      <tbody>
+        <tr><td>Busy kitchens</td><td>Google rating 4.0+ and 100+ reviews</td><td>Google Places API</td></tr>
+        <tr><td>Cook every day, in volume</td><td>Offers delivery or office lunches</td><td>The business's own website</td></tr>
+        <tr><td>Within our delivery zone</td><td>Address in Bodija, Mokola, Ring Road, Akobo, Dugbe…</td><td>Google Places API</td></tr>
+        <tr><td>Restaurants, not bakeries (for now)</td><td>Category is restaurant</td><td>Google Places API</td></tr>
+        <tr><td>Reachable the right way</td><td>A published business email, or a contact form</td><td>The business's own website</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Fit score</b>Points for each rule met, calculated in code. AI can add reasons, but the score itself should be repeatable.</div>
+      <div><b>Disqualifiers</b>Rules that rule a lead out completely, whatever the score: outside the zone, no allowed way to contact.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Where leads may come from, and where they may not</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Source</th><th>Allowed?</th><th>What to know</th></tr></thead>
+      <tbody>
+        <tr><td>Google Places API</td><td>Yes, within its terms</td><td>Search businesses by type and area. Its policies forbid keeping copies of Places content, except the place ID (store that, and fetch fresh details when you need them). Free monthly caps apply per field group; after that you pay per 1,000 calls.</td></tr>
+        <tr><td>The business's own website</td><td>Yes</td><td>Public business information: menu, services, news, a published business email. Respect the site's terms and don't hammer it with requests.</td></tr>
+        <tr><td>Directories, associations, events, referrals</td><td>Yes</td><td>Trade groups, market associations, event exhibitor lists and introductions from happy customers. Often the best leads of all.</td></tr>
+        <tr><td>LinkedIn, by hand or with Sales Navigator</td><td>Yes, manually</td><td>Search and message from your own account, as a person. LinkedIn's paid Sales Navigator is built for this.</td></tr>
+        <tr><td>Scraping LinkedIn or automating your account</td><td><b>No</b></td><td>LinkedIn's User Agreement (section 8.2) bans scrapers, bots and browser extensions that copy profiles or automate messages. Accounts get restricted or shut down.</td></tr>
+        <tr><td>Bought or rented email lists</td><td><b>No</b></td><td>No one on them agreed to hear from you. Nigeria's data protection rules require consent for direct marketing, and bought lists wreck your sending reputation.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> On LinkedIn, the agent can still help: it researches a company from its website and drafts a note. <i>You</i> open LinkedIn and send it yourself. The human does the clicking.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>The prospecting pipeline</h3>
+    <figure class="fig"><svg viewBox="0 0 660 230" role="img" aria-label="Prospecting pipeline: find businesses from allowed sources, research each website, score the fit in code, draft a short message using only verified facts, a person approves, send within a daily cap, sort replies, and update the CRM. Opt-outs go to a suppression list checked before every send.">
+      <defs><marker id="m61a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <g font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" text-anchor="middle">
+        <rect x="8" y="30" width="72" height="46" rx="10" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><text x="44" y="57" fill="#fff">Find</text>
+        <rect x="96" y="30" width="78" height="46" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="135" y="57" fill="var(--ink)">Research</text>
+        <rect x="190" y="30" width="72" height="46" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="226" y="51" fill="var(--ink)">Score</text><text x="226" y="66" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">in code</text>
+        <rect x="278" y="30" width="72" height="46" rx="10" fill="var(--rose)" stroke="var(--ink)" stroke-width="2"/><text x="314" y="51" fill="#fff">Draft</text><text x="314" y="66" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">AI</text>
+        <rect x="366" y="30" width="78" height="46" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="405" y="51" fill="#13233A">Person</text><text x="405" y="66" fill="#13233A">approves</text>
+        <rect x="460" y="30" width="72" height="46" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="496" y="51" fill="var(--ink)">Send</text><text x="496" y="66" fill="var(--muted)" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">≤ 20/day</text>
+        <rect x="548" y="30" width="104" height="46" rx="10" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="600" y="51" fill="#fff">Sort replies</text><text x="600" y="66" fill="#fff" font-family="JetBrains Mono,monospace" font-weight="400" font-size="9">→ CRM</text>
+      </g>
+      <g stroke="var(--ink)" stroke-width="2" fill="none"><path d="M81 53 H92" marker-end="url(#m61a)"/><path d="M175 53 H186" marker-end="url(#m61a)"/><path d="M263 53 H274" marker-end="url(#m61a)"/><path d="M351 53 H362" marker-end="url(#m61a)"/><path d="M445 53 H456" marker-end="url(#m61a)"/><path d="M533 53 H544" marker-end="url(#m61a)"/></g>
+      <rect x="380" y="140" width="220" height="40" rx="10" fill="var(--card)" stroke="var(--glitch)" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="490" y="165" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="11" fill="var(--ink)">Suppression list (STOP, bounces)</text>
+      <g stroke="var(--glitch)" stroke-width="1.8" fill="none" stroke-dasharray="4 3"><path d="M600 77 V160 H604"/><path d="M496 140 V80" marker-end="url(#m61a)"/></g>
+      <g font-family="JetBrains Mono,monospace" font-size="9.5" fill="var(--muted)"><text x="96" y="100">fact must appear in the page text</text><text x="278" y="118">no fact found → general line, never invented</text><text x="420" y="205">checked before every single send</text></g>
+      <path d="M135 77 V92" stroke="var(--muted)" stroke-width="1.2"/><path d="M314 77 V110" stroke="var(--muted)" stroke-width="1.2"/>
+    </svg><figcaption>Scroll sideways on a phone. AI does the reading and writing; code does the scoring and checking; a person does the deciding.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Prospect lab: score, check, approve</h3>
+    <p>Eight Ibadan businesses the agent found (invented for practice). Adjust the ICP, then fix the outreach template until every check passes. Watch which leads the rules rule out, and why.</p>
+    <script type="application/json" id="pp-5-2">{"biz":[
+      {"name":"Amala Corner","area":"Bodija","rating":4.6,"reviews":812,"website":true,"delivery":true,"cat":"restaurant","contact":"email","fact":"run a lunchtime office delivery menu"},
+      {"name":"Iya Basira Kitchen","area":"Mokola","rating":4.3,"reviews":240,"website":false,"delivery":true,"cat":"restaurant","contact":"phone","fact":""},
+      {"name":"The Grill Yard","area":"Ring Road","rating":4.7,"reviews":1320,"website":true,"delivery":false,"cat":"restaurant","contact":"form","fact":"added a weekend family platter"},
+      {"name":"Mama Put Express","area":"Dugbe","rating":3.8,"reviews":95,"website":true,"delivery":true,"cat":"restaurant","contact":"email","fact":"deliver across Dugbe and Challenge"},
+      {"name":"Ofada Republic","area":"Akobo","rating":4.5,"reviews":530,"website":true,"delivery":true,"cat":"restaurant","contact":"email","fact":""},
+      {"name":"Sweet Crumbs Bakery","area":"Jericho","rating":4.8,"reviews":410,"website":true,"delivery":true,"cat":"bakery","contact":"email","fact":"bake wedding cakes to order"},
+      {"name":"Chopbox Cafe","area":"UI area","rating":4.4,"reviews":300,"website":true,"delivery":true,"cat":"restaurant","contact":"bought","fact":"serve students around UI"},
+      {"name":"Pepper & Pot","area":"Oluyole","rating":4.2,"reviews":150,"website":true,"delivery":true,"cat":"restaurant","contact":"scraped","fact":"launched event catering"}],
+     "contact":{
+      "email":{"label":"Business email on its website","ok":"email"},
+      "form":{"label":"Contact form only","ok":"manual","act":"Manual: fill in their contact form"},
+      "phone":{"label":"Phone number on Google","ok":"manual","act":"Manual: call during off-peak hours"},
+      "bought":{"label":"Email from a bought list","ok":"no","act":"Never: no consent, delete it"},
+      "scraped":{"label":"Owner's address scraped from LinkedIn","ok":"no","act":"Never: breaks LinkedIn's terms, delete it"}}}</script>
+    <div class="prospect" data-prospect="pp-5-2">
+      <div class="ctl">
+        <label>Minimum rating <input type="range" data-pp="rating" min="3.5" max="4.8" step="0.1" value="4.0" aria-label="Minimum rating"> <b data-o="rv">4.0</b></label>
+        <label><input type="checkbox" data-pp="delivery" checked> Must offer delivery</label>
+        <label><input type="checkbox" data-pp="bakery"> Include bakeries</label>
+        <label>Emails a day <input type="number" data-pp="cap" min="1" max="500" value="20" aria-label="Emails a day"></label>
+      </div>
+      <div class="tablewrap"><table><thead><tr><th>Business</th><th>Delivery</th><th>How to reach them</th><th>Fit</th><th>Agent's next step</th></tr></thead><tbody></tbody></table></div>
+      <div class="two">
+        <div><b>Outreach template</b><textarea data-pp="tpl" aria-label="Outreach template" spellcheck="false">Subject: Fresh produce for {{business}}, delivered every morning
+Hi {{business}} team,
+
+I saw that you {{fact}}. Harvest Lane delivers farm-fresh tomatoes, peppers and greens to kitchens every morning, priced weekly with no minimum order.
+
+Would a FREE sample crate next Tuesday be useful?
+
+Tolu Adebayo
+Harvest Lane, Bodija, Ibadan</textarea><ul data-o="lint" aria-live="polite"></ul></div>
+        <div><b>Preview for <select data-pp="pick" aria-label="Preview business"></select></b><pre data-o="preview"></pre><p class="mgoal" data-o="verdict"></p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The rules that keep you safe</h3>
+    <div class="vocab">
+      <div><b>Consent and objection</b>Nigeria's Data Protection Act lets anyone object to direct marketing at any time, and the 2025 implementation directive (GAID) requires consent for direct marketing. A single, relevant message to a business's published business address, with an instant opt-out, is common B2B practice, but it's a grey area: never message personal emails or phones without consent, stop the moment someone objects, and take legal advice for client projects. This isn't legal advice.</div>
+      <div><b>SMS and WhatsApp</b>Don't cold-message on either. Nigeria's NCC do-not-disturb service (text STOP to 2442) covers unsolicited SMS and calls, and WhatsApp business messaging needs the customer's opt-in (5.1).</div>
+      <div><b>Sending limits</b>Free Gmail blocks you for up to 24 hours after more than 500 emails a day; Google Workspace allows about 2,000. For outreach, start at 20–30 a day from a separate sending domain or subdomain, so a mistake can't damage the business's main email.</div>
+      <div><b>Suppression list</b>Everyone who says STOP, unsubscribes or bounces goes on it, and every send checks it first. No exceptions, no "one last follow-up".</div>
+      <div><b>Truth</b>Every personal line must be a fact you found. An agent that flatters with invented details damages the brand faster than no outreach at all.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=AI+lead+generation+agent+n8n+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>YouTube: AI lead generation agents in n8n</b><small>Watch one build. Notice whether it has approval, caps and an opt-out. Many don't.</small></span></a>
+    <a class="wcard" href="https://developers.google.com/maps/documentation/places/web-service/policies" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Google Places API policies</b><small>Read what you may store (place IDs) and what you must not keep.</small></span></a>
+    <a class="wcard" href="https://www.linkedin.com/help/linkedin/answer/a1341387" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>LinkedIn Help: prohibited software and extensions</b><small>Two minutes that could save an account.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Harvest Lane's prospecting agent</h2></div>
+  <div class="prose"><p><b>The goal.</b> Find restaurants in Harvest Lane's delivery zone, research each one, score the fit, draft a short email that uses one true fact, get Tolu's approval on Telegram, send at most 20 a day, and sort the replies. Build it in n8n. Test with your own second email address before any real business sees it.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Set up the sheets</h4>
+      <p><b>ICP</b> (one row per rule and its points), <b>Prospects</b> (<code>place_id, status, fit_score, reasons, fact, fact_source, draft, approved_at, sent_at, reply_type</code>) and <b>Suppression</b> (<code>email, reason, date</code>). Notice what's missing: no copied Google data. You keep the place ID and your own research.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Find: Google Places Text Search</h4>
+      <p>An <b>HTTP Request</b> node, one call per area. The field mask decides what you pay for, so ask only for what you need:</p>
+<pre class="codebox">POST https://places.googleapis.com/v1/places:searchText
+X-Goog-Api-Key: {{ $credentials… }}            <span class="c">← Header Auth credential, never pasted</span>
+X-Goog-FieldMask: places.id,places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress
+
+{ "textQuery": "restaurants in Bodija, Ibadan", "pageSize": 20 }</pre>
+      <p>Rating, review count and website sit in a higher-priced field group than the ID alone. Check which group your mask triggers on Google's pricing page, and set a budget alert in Google Cloud before you start.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Research: read the website, extract facts</h4>
+      <p>For each place with a website: <b>HTTP Request</b> (GET the home and menu pages, 2-second wait between businesses), <b>HTML</b> node to extract text, then an <b>Information Extractor</b> with this schema:</p>
+<pre class="codebox">{ "offers_delivery": boolean, "office_lunch": boolean,
+  "business_email": string | null,      <span class="c">← only an address published on the site</span>
+  "fact": string | null,                <span class="c">← one specific, recent, true detail</span>
+  "fact_quote": string | null }         <span class="c">← the exact words from the page</span></pre>
+      <p>Then the most important node in the lesson, a <b>Code</b> node that checks the AI didn't invent anything:</p>
+<pre class="codebox">const page = $('HTML').item.json.text.toLowerCase();
+const q = ($json.fact_quote || '').toLowerCase().trim();
+const verified = q.length > 12 &amp;&amp; page.includes(q);
+return { ...$json, fact: verified ? $json.fact : null, fact_verified: verified };</pre>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Score in code, not by feel</h4>
+      <p>A Code node reads the ICP sheet and adds points: rating, reviews, delivery, office lunch, in-zone address. Disqualify when there's no published business email (send those to a "manual" list for a contact form or a call). Keep only <code>fit_score ≥ 60</code>. Same input, same score, every time.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Draft with guardrails</h4>
+      <p>An AI step writes the email from the template, filling only <code>{{business}}</code> and <code>{{fact}}</code>. If <code>fact</code> is null, the instruction says to use a general line about kitchens in the area. Then a Code node lints the draft, like the lab in Card 4: word count, one question, no spam words, and it <i>appends</i> the opt-out and Harvest Lane's identity itself, so the AI can never forget them.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Approve on Telegram</h4>
+      <p><b>Telegram · Send and Wait for Response</b> (you met it in 4.5): the business name, fit score, reasons, the fact with its source link, and the draft, with Approve, Edit and Skip buttons. Approved drafts get <code>status = approved</code>.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Send slowly, check the suppression list every time</h4>
+      <p>A <b>Schedule Trigger</b> on weekdays at 9 a.m. takes up to 20 approved prospects. For each: look up the email in Suppression (skip if found), send with the <b>Gmail</b> node from the outreach subdomain, wait a random 3–9 minutes, log <code>sent_at</code>. One follow-up after 5 working days, only if there's no reply and no STOP.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Sort replies</h4>
+      <p>A <b>Gmail Trigger</b> on the outreach inbox and a <b>Text Classifier</b>: <i>interested, not now, stop, out of office, bounce, other</i>. STOP and bounces go straight to Suppression. "Interested" sends Tolu a Telegram alert with the thread and a booking link to reply with. Every outcome updates the Prospects sheet.</p>
+      <div class="stats">
+        <div class="stat"><b>0</b><span>emails without Tolu's approval</span></div>
+        <div class="stat"><b>20</b><span>maximum a day</span></div>
+        <div class="stat"><b>1</b><span>reply to opt out, forever</span></div>
+      </div>
+      <div class="insight"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><p><b>Sage's reminder:</b> this is the 4.5 pattern again. The agent proposes, a person disposes, and code enforces the limits the AI can't be trusted with.</p></div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Only allowed sources, so no account bans or policy problems.</li><li>Facts are verified against the page, so nothing is invented.</li><li>Scoring is code, so it's consistent and explainable.</li><li>A person approves every message before it goes.</li><li>Caps, a separate domain and a suppression list protect deliverability and people's choices.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Scraping LinkedIn or using "automation" extensions.</li><li>Buying lists.</li><li>Letting AI write compliments with no source.</li><li>Sending hundreds on day one from the main domain.</li><li>Follow-ups to people who said stop.</li><li>Keeping copies of Google Places data.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I ran Tolu's agent my way for one week. Here's what happened.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>An email said "Loved your Lagos branch!" to a restaurant that has never been to Lagos. The owner posted a screenshot.</td></tr>
+        <tr><td>B</td><td>The agent sent 400 emails on Monday from Tolu's main address. By Wednesday, Harvest Lane's invoices were landing in customers' spam.</td></tr>
+        <tr><td>C</td><td>A restaurant replied "STOP" on Tuesday and got a cheerful follow-up on Friday.</td></tr>
+        <tr><td>D</td><td>Half the "leads" were owners' personal Gmail addresses collected by a LinkedIn browser extension.</td></tr>
+        <tr><td>E</td><td>The Google Cloud bill was ten times the estimate. The field mask was <code>*</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no fact check. Make the extractor return the exact quote, verify it appears in the page text in code, and fall back to a general line when there's no verified fact.</li>
+        <li><b>B:</b> no daily cap and the main domain used for outreach. Cap at 20–30 a day, send from a separate outreach subdomain, and grow slowly.</li>
+        <li><b>C:</b> the suppression list wasn't checked before the follow-up. Check it before every single send, and put STOP replies on it instantly.</li>
+        <li><b>D:</b> banned source and personal data. Delete them, remove the extension, and only use business addresses published by the business.</li>
+        <li><b>E:</b> <code>*</code> requests every field, at the highest price group. List only the fields you need, and set a budget alert.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>ICP and hand scoring</h4>
+    <ul><li>Write an ICP as rules for a business you know (or Harvest Lane).</li><li>Find 20 businesses by hand from allowed sources and score each one.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every rule can be checked from a named source, and someone else gets the same scores from your rules.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Research and draft, with approval, sending nothing</h4>
+    <ul><li>Build find → research → verify → score → draft → approve for 10 real businesses.</li><li>Send the approved drafts to your own test inbox only.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every draft passes the lint, every personal fact is verified against its page, and no draft reaches a real business.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A two-week outreach pilot for a real client</h4>
+    <ul><li>With the client's approval of the ICP, the template and the rules, run the agent for two weeks.</li><li>Report: prospects found, approved, sent, replies by type, meetings booked, opt-outs.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Zero complaints, every opt-out honoured within a day, and the client decides from your report whether to continue.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Which lead source is allowed?</p><div class="opts">
+      <button type="button" data-opt="a">A browser extension that scrapes LinkedIn profiles</button><button type="button" data-opt="b">Google Places API, plus each business's own website</button><button type="button" data-opt="c">A list of 10,000 emails bought online</button><button type="button" data-opt="d">Personal numbers from a WhatsApp group</button></div>
+      <p class="fb" hidden data-why="Official APIs and public business information. LinkedIn bans scraping; bought lists and personal numbers have no consent."></p></div>
+    <div class="q" data-ans="d"><p>2. How do you stop the agent inventing personal details?</p><div class="opts">
+      <button type="button" data-opt="a">Ask it nicely to be honest</button><button type="button" data-opt="b">Use a bigger model</button><button type="button" data-opt="c">Remove personalisation completely</button><button type="button" data-opt="d">Require an exact quote and check in code that it appears on the page</button></div>
+      <p class="fb" hidden data-why="Verify, don't trust. No verified fact means a general line."></p></div>
+    <div class="q" data-ans="a"><p>3. Who decides whether each message is sent?</p><div class="opts">
+      <button type="button" data-opt="a">A person, approving each draft</button><button type="button" data-opt="b">The AI, if the fit score is high</button><button type="button" data-opt="c">Nobody: it sends automatically</button><button type="button" data-opt="d">The recipient's spam filter</button></div>
+      <p class="fb" hidden data-why="The agent proposes; a person approves; code enforces the limits."></p></div>
+    <div class="q" data-ans="c"><p>4. Someone replies "STOP". What happens?</p><div class="opts">
+      <button type="button" data-opt="a">One last follow-up, then stop</button><button type="button" data-opt="b">Ask why on WhatsApp</button><button type="button" data-opt="c">They go on the suppression list, checked before every send</button><button type="button" data-opt="d">Nothing; it's B2B</button></div>
+      <p class="fb" hidden data-why="People can object to direct marketing at any time. Honour it immediately and permanently."></p></div>
+    <div class="q" data-ans="b"><p>5. Why send outreach from a separate subdomain at 20–30 a day?</p><div class="opts">
+      <button type="button" data-opt="a">It's required by Google Places</button><button type="button" data-opt="b">To protect the main domain's reputation and avoid looking like spam</button><button type="button" data-opt="c">To hide who's sending</button><button type="button" data-opt="d">Because Gmail has no limits</button></div>
+      <p class="fb" hidden data-why="Slow, relevant sending builds reputation. The sender is still clearly named in every email."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-5-2">AUTOMANCY LOG · Lesson 5.2 · Prospecting Agents
+Date:
+My ICP rules (and where each is checked):
+Sources used (all allowed?):
+Prospects found · fit ≥ 60 · drafts approved:
+Facts verified in code: __ of __ drafts
+Sending setup (domain, daily cap, suppression list):
+Replies by type (if sent):
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-5-2">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Write the ideal customer as rules an agent can check.</li>
+      <li>Use allowed sources: official APIs, websites, directories, referrals. Never scrape LinkedIn or buy lists.</li>
+      <li>Verify every personal fact in code; no fact means a general line.</li>
+      <li>Score in code. Let a person approve every message.</li>
+      <li>Send slowly from a separate domain; check the suppression list before every send.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.google.com/maps/billing-and-pricing/pricing" target="_blank" rel="noopener">Google Maps Platform pricing (free monthly caps)</a></li>
+    <li><span class="kind">Text</span><a href="https://developers.google.com/maps/documentation/places/web-service/policies" target="_blank" rel="noopener">Google Places API policies</a></li>
+    <li><span class="kind">Text</span><a href="https://www.linkedin.com/legal/user-agreement" target="_blank" rel="noopener">LinkedIn User Agreement (section 8.2)</a></li>
+    <li><span class="kind">Text</span><a href="https://ndpc.gov.ng/wp-content/uploads/2025/07/NDP-ACT-GAID-2025-MARCH-20TH.pdf" target="_blank" rel="noopener">NDPC: GAID 2025 (direct marketing, Article 18)</a></li>
+    <li><span class="kind">Text</span><a href="https://support.google.com/mail/answer/22839" target="_blank" rel="noopener">Gmail sending limits</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=AI+lead+generation+agent+n8n+tutorial" target="_blank" rel="noopener">YouTube: AI lead generation agents in n8n</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run "inbox judge": print ten real-looking cold emails (some generic, some invented flattery, some good). Learners play busy restaurant owners and sort them into reply, ignore and report as spam in 60 seconds. Then reveal which ones the Card 4 lint would have stopped. The room writes better templates afterwards, every time.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -1,0 +1,330 @@
+<template data-mod="2.4" id="tpl-2-4">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.4</span>
+    <h1>Iterators &amp; Aggregators</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guide: Weave</span><span class="pill">Tools: Make, Google Sheets, Gmail</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#weave"/></svg>
+</header>
+<p class="lede">Real orders contain lists: three products, two crates of this, a bag of that. Today you learn Make's two most powerful moves: splitting one bundle into many (an iterator) and squeezing many bundles back into one (an aggregator). With them, you'll update stock item by item and send one tidy summary instead of forty alerts.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Split an array into bundles with an iterator.</span></div>
+  <div><b>02</b><span>Combine bundles with array, text and numeric aggregators.</span></div>
+  <div><b>03</b><span>Set an aggregator's source module correctly, and group results.</span></div>
+  <div><b>04</b><span>Avoid the stock bug that appears when one product shows up twice.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Saturday's stock-out, again</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A stock sheet says 12 crates of tomatoes, but the storeroom shelf is empty.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="160" y="30" width="140" height="70" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="172" y="56" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">TOM-CRATE stock</text>
+        <text x="230" y="86" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="24" fill="var(--ink)">12</text>
+        <rect x="160" y="120" width="140" height="50" fill="none" stroke="var(--ink)" stroke-width="3"/><path d="M160 145 H300" stroke="var(--ink)" stroke-width="3"/>
+        <text x="230" y="140" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--glitch)">shelf: empty</text>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Saturday, 9 a.m.</b>The sheet says 12 crates. The shelf says zero. Nobody updated stock when orders came in.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="One order card containing a list of three items.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="90" y="30" width="140" height="130" rx="10" fill="var(--sun)" stroke="var(--ink)" stroke-width="2.5"/>
+        <text x="160" y="56" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#13233A">ONE ORDER</text>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="#13233A"><text x="106" y="86">• 2 crates tomato</text><text x="106" y="110">• 1 bag tatashe</text><text x="106" y="134">• 3 bags onion</text></g>
+      </svg>
+      <div class="cap"><b>The shape of the problem</b>One order, one bundle, but three products inside it. Each needs its own stock update.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch surrounded by forty identical alert emails.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--line)" stroke-width="1.5"><rect x="170" y="20" width="120" height="18" rx="4"/><rect x="176" y="44" width="120" height="18" rx="4"/><rect x="170" y="68" width="120" height="18" rx="4"/><rect x="176" y="92" width="120" height="18" rx="4"/><rect x="170" y="116" width="120" height="18" rx="4"/><rect x="176" y="140" width="120" height="18" rx="4"/></g>
+        <text x="236" y="178" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="var(--glitch)">× 40 today</text>
+        <use href="#glitch" x="10" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"And every order still sends its own alert. Forty emails by 6 p.m.!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Weave playing an accordion that expands into several bundles and squeezes back into one.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g stroke="var(--ink)" stroke-width="2"><rect x="160" y="80" width="24" height="40" rx="4" fill="var(--sun)"/><rect x="190" y="70" width="24" height="60" rx="4" fill="var(--sun)"/><rect x="220" y="60" width="24" height="80" rx="4" fill="var(--sun)"/><rect x="250" y="70" width="24" height="60" rx="4" fill="var(--sun)"/><rect x="280" y="80" width="24" height="40" rx="4" fill="var(--sun)"/></g>
+        <use href="#weave" x="0" y="40" width="150" height="150"/>
+      </svg>
+      <div class="cap"><b>Weave</b>"An accordion. Pull it open to work on each item. Squeeze it shut to report once."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Open and close the accordion</h3>
+    <figure class="fig"><svg viewBox="0 0 640 170" role="img" aria-label="One order bundle enters an iterator, becomes three item bundles that each update stock, then an aggregator combines them back into one bundle for a single email.">
+      <defs><marker id="l1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)"/></marker></defs>
+      <rect x="10" y="66" width="80" height="40" rx="8" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><text x="50" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A">1 order</text>
+      <path d="M90 86 H120" stroke="var(--ink)" stroke-width="2" marker-end="url(#l1)"/>
+      <circle cx="152" cy="86" r="30" fill="var(--volt)" stroke="var(--ink)" stroke-width="2.5"/><text x="152" y="90" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="#13233A">Iterator</text>
+      <path d="M182 76 L230 30 M182 86 H230 M182 96 L230 142" stroke="var(--ink)" stroke-width="2"/>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#13233A"><rect x="232" y="16" width="90" height="28" rx="6" fill="var(--sun)"/><text x="242" y="34">tomato ×2</text><rect x="232" y="72" width="90" height="28" rx="6" fill="var(--sun)"/><text x="242" y="90">tatashe ×1</text><rect x="232" y="128" width="90" height="28" rx="6" fill="var(--sun)"/><text x="242" y="146">onion ×3</text></g>
+      <path d="M322 30 H350 M322 86 H350 M322 142 H350" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="350" y="16" width="100" height="140" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><text x="400" y="80" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="11" fill="var(--ink)">Update stock</text><text x="400" y="96" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--muted)">runs 3×</text>
+      <path d="M450 30 L498 76 M450 86 H498 M450 142 L498 96" stroke="var(--ink)" stroke-width="2"/>
+      <circle cx="528" cy="86" r="30" fill="var(--grape)" stroke="var(--ink)" stroke-width="2.5"/><text x="528" y="84" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">Text</text><text x="528" y="97" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="#fff">aggregator</text>
+      <path d="M558 86 H588" stroke="var(--ink)" stroke-width="2" marker-end="url(#l1)"/>
+      <rect x="590" y="66" width="44" height="40" rx="8" fill="var(--glitch)" opacity=".9"/><text x="612" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">1 ✉</text>
+    </svg><figcaption>Everything between the iterator and the aggregator runs once per item. After the aggregator, it's one bundle again: one email.</figcaption></figure>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The Iterator</h3>
+    <p>The <b>Iterator</b> (under Flow control) takes an <b>array</b> and outputs one bundle per item. Each output bundle has the item's fields (sku, qty, unit_price), ready to map. Some app modules have iterating built in: a Gmail email with three attachments, for example, often already produces one bundle per attachment.</p>
+    <div class="analogy"><b>It needs a real array.</b> If an order's items arrive as text ("tomato, onion"), split it first (<code>split()</code> from 2.2), or parse JSON text with <b>JSON · Parse JSON</b>. A single object isn't a list; the iterator can't split it.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Aggregators and the source module</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Aggregator</th><th>Output</th><th>Harvest Lane use</th></tr></thead>
+      <tbody>
+        <tr><td><b>Text aggregator</b></td><td>One block of text, one line per bundle</td><td>"2× Tomatoes · ₦25,000" lines for an email</td></tr>
+        <tr><td><b>Numeric aggregator</b></td><td>One number: SUM, AVG, COUNT, MAX or MIN</td><td>Today's total sales; number of orders</td></tr>
+        <tr><td><b>Array aggregator</b></td><td>One array built from the bundles' fields</td><td>A clean items list to send to another API</td></tr>
+        <tr><td><b>Table aggregator</b></td><td>Text laid out as a table</td><td>A simple table in an email</td></tr>
+      </tbody>
+    </table></div>
+    <p>Every aggregator has a <b>Source module</b>: the module whose bundles it collects. Set it to the iterator (to combine one order's items) or to the search/trigger (to combine all orders in the run). A wrong source module is the most common aggregator bug.</p>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#weave"/></svg><div class="bubble"><b>Weave:</b> Aggregators also have <b>Group by</b>. Group today's items by sku and a numeric aggregator gives one bundle per product: "TOM-CRATE: 14 crates, ONI-BAG: 9 bags". That's Tolu's restocking list, for free.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>The duplicate-item trap</h3>
+    <p>Imagine one order lists tomatoes twice (two lines, 2 crates and 1 crate). The iterator makes two bundles. For each, you look up the stock (12) and write 12 − qty. The first writes 10; the second also reads… 12 (or the old value, depending on timing) and writes 11. You've lost a crate.</p>
+    <div class="never">
+      <div><b>Group first</b>Aggregate by sku, summing qty, before updating stock: one update per product.</div>
+      <div><b>Keep a movements log</b>Instead of overwriting stock, add a row per item to a Stock_Movements tab and let a SUMIFS formula calculate current stock (0.4).</div>
+      <div><b>Test the edge case</b>Always include an order with a repeated product in your tests.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>What it costs</h3>
+    <p>Modules between the iterator and aggregator run once per item, so they use credits per item. A 3-item order that updates stock uses about 3 credits for the updates, plus the search, iterator and aggregator modules. That's why grouping by sku and a movements log can save both errors <i>and</i> credits. Check exact counts in scenario history; Make's help centre lists which modules are free.</p>
+  </div>
+</section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PLAYGROUND</span><h2>The bundle machine</h2></div>
+  <div class="jsonlab" data-bundle>
+    <p style="font-size:.93rem;color:var(--muted)">Edit the items array. Watch the iterator split it into bundles, and the aggregators squeeze them back into one. Try adding a fourth item, making a price text like "₦9,000", or replacing the array with a single object.</p>
+    <label class="crit" for="bm-2-4">Order items (array)</label>
+    <textarea id="bm-2-4" spellcheck="false" style="min-height:170px">[
+  { "sku": "TOM-CRATE", "name": "Tomatoes", "qty": 2, "unit_price": 12500 },
+  { "sku": "PEP-TATASHE-L", "name": "Tatashe", "qty": 1, "unit_price": 9000 },
+  { "sku": "ONI-BAG", "name": "Onions", "qty": 3, "unit_price": 4000 }
+]</textarea>
+    <span class="jl-status"></span>
+    <div class="chips" data-o="bundles"></div>
+    <div class="jl-out" data-o="agg"></div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://academy.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy · Basics: arrays, collections, and text and numeric aggregators</b><small>Look for: how the source module is chosen.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+iterator+array+aggregator+explained" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make iterator and aggregator explained" video</b><small>Look for: the bundle counts on each bubble before and after the aggregator.</small></span></a>
+    <a class="wcard" href="https://help.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Help Center: search "Iterator" and "Aggregator"</b><small>Read: the Group by option.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 35 MIN</span><h2>Solved problem: stock that updates itself, and one 6 p.m. summary</h2></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Part A · Set up a movements log (the safe way to track stock)</h4>
+      <p>Add a <b>Stock_Movements</b> tab: <code>date</code>, <code>order_id</code>, <code>sku</code>, <code>qty_change</code> (negative for sales, positive for deliveries from suppliers). In Products, make <code>stock_qty</code> a formula: <code>=opening_stock + SUMIFS(Stock_Movements!D:D, Stock_Movements!C:C, A2)</code>. Now stock can never be overwritten by a race; every change is a new row.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part A · Split each paid order into items</h4>
+      <p>Trigger: <b>Google Sheets · Watch New Rows</b> on Order_Items is simplest if your items are already rows (0.4). If orders arrive as JSON from the website (1.4), use <b>Webhooks · Custom webhook</b> → <b>Iterator</b> on <code>items</code>. Either way you now have one bundle per item.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part A · One movement row per item</h4>
+      <p>Add <b>Google Sheets · Add a Row</b> to Stock_Movements: date <code>{{formatDate(now; "YYYY-MM-DD")}}</code>, order_id, sku, qty_change <code>{{-1 * 2.qty}}</code>. A 3-item order adds three rows, and stock updates through the formula.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part A · Aggregate into one confirmation</h4>
+      <p>Add <b>Tools · Text aggregator</b>. Source module: the <b>Iterator</b>. Text per bundle: <code>{{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; 0; "."; ",")}}</code>. Row separator: new line. Then one <b>Gmail · Send</b> with the aggregated text: one email per order, listing every item.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Part B · The 6 p.m. summary</h4>
+      <p>New scenario, scheduled daily at 18:00. <b>Google Sheets · Search Rows</b> in Orders where created_at is today. Then two aggregators, both with the search as source module:</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Aggregator</th><th>Settings</th><th>Result</th></tr></thead><tbody>
+        <tr><td>Numeric aggregator</td><td>Function: SUM · Value: total</td><td>Today's sales, e.g. 412500</td></tr>
+        <tr><td>Text aggregator</td><td>Text: <code>{{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; "."; ",")}}</code></td><td>One line per order</td></tr>
+      </tbody></table></div>
+      <p>Send one email: "Today: 17 orders · ₦412,500" followed by the list. (Count the orders with a second numeric aggregator using COUNT, or with <code>length()</code> on an array aggregator.) This fixes Glitch's forty alerts from 2.1.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with the duplicate-item order</h4>
+      <p>Send an order containing tomatoes twice (2 crates and 1 crate). Check Stock_Movements: two rows, −2 and −1. Check Products: stock dropped by exactly 3. The movements log handled the edge case that would break an overwrite design.</p>
+      <div class="stats">
+        <div class="stat"><b>3</b><span>movement rows for a 3-item order</span></div>
+        <div class="stat"><b>1</b><span>confirmation email per order</span></div>
+        <div class="stat"><b>1</b><span>summary email a day, instead of 40 alerts</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The iterator lets each item be handled on its own.</li><li>Aggregators turn many results into one readable message.</li><li>A movements log can't lose updates, and keeps full history.</li><li>A daily summary replaces a stream of interruptions.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Aggregator source module set to the wrong module.</li><li>Overwriting stock from inside an iterator.</li><li>Summing a currency-formatted field.</li><li>Iterating over text that isn't an array.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Five complaints from my version. Iterators are easy, right?</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Mrs Adebayo's confirmation lists Mr Okafor's onions too.</td></tr>
+        <tr><td>B</td><td>The iterator outputs one bundle containing "tomato, onion, pepper".</td></tr>
+        <tr><td>C</td><td>Each customer gets three confirmation emails, one per item.</td></tr>
+        <tr><td>D</td><td>The daily sales total is 0.</td></tr>
+        <tr><td>E</td><td>After a "tomato twice" order, stock only dropped by 1 instead of 3.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the text aggregator's source module is the trigger/search, so it collects items from every order in the run. Set it to the iterator.</li>
+        <li><b>B:</b> the items were text, not an array. Split the text (or parse the JSON) before the iterator.</li>
+        <li><b>C:</b> no aggregator; the email module sits inside the iterated section.</li>
+        <li><b>D:</b> the numeric aggregator sums a text field like "₦12,500". Sum the plain number.</li>
+        <li><b>E:</b> stock was overwritten per item and the second write used a stale value. Use a movements log, or group by sku first.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Iterate and aggregate a list</h4>
+    <ul><li>In a test scenario, use <b>JSON · Parse JSON</b> with the items array from the playground, then an Iterator and a Text aggregator.</li><li>Send yourself one email listing every item with its line total.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The iterator shows 3 bundles, the aggregator 1, and you receive exactly one email.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Stock movements and the daily summary</h4>
+    <ul><li>Build Part A (movements log, iterator, confirmation) and Part B (6 p.m. summary).</li><li>Test with five orders, including one with a repeated product and one with a single item.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Stock in Products matches a hand count, every order gets one confirmation, and one summary arrives with the right count and total.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Tolu's Thursday restock list</h4>
+    <ul><li>Every Thursday at 7 a.m., search the last 14 days of Order_Items, then use a numeric aggregator grouped by sku to total qty per product.</li><li>Compare each product's two-week demand with current stock, and list anything that would run out by Saturday.</li><li>Email Tolu one table (table or text aggregator) with product, stock, expected Saturday demand and suggested order quantity.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The list matches a manual check of the sheet, and tomatoes (the usual stock-out) appear when stock is low.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. An order bundle has an items array with 4 products. What does an Iterator output?</p><div class="opts">
+      <button type="button" data-opt="a">1 bundle</button><button type="button" data-opt="b">4 bundles, one per item</button><button type="button" data-opt="c">4 arrays</button><button type="button" data-opt="d">An error</button></div>
+      <p class="fb" hidden data-why="An iterator turns an array into one bundle per item."></p></div>
+    <div class="q" data-ans="d"><p>2. A confirmation email mixes items from different customers. What's wrong?</p><div class="opts">
+      <button type="button" data-opt="a">The iterator is missing</button><button type="button" data-opt="b">The email module is broken</button><button type="button" data-opt="c">The schedule is wrong</button><button type="button" data-opt="d">The aggregator's source module collects the whole run, not one order's iterator</button></div>
+      <p class="fb" hidden data-why="The source module decides which bundles are combined."></p></div>
+    <div class="q" data-ans="a"><p>3. Which aggregator gives today's total sales as one number?</p><div class="opts">
+      <button type="button" data-opt="a">Numeric aggregator with SUM</button><button type="button" data-opt="b">Text aggregator</button><button type="button" data-opt="c">Iterator</button><button type="button" data-opt="d">Router</button></div>
+      <p class="fb" hidden data-why="Numeric aggregators do SUM, AVG, COUNT, MAX and MIN."></p></div>
+    <div class="q" data-ans="c"><p>4. Why is a Stock_Movements log safer than overwriting stock_qty for each item?</p><div class="opts">
+      <button type="button" data-opt="a">It uses fewer columns</button><button type="button" data-opt="b">Make requires it</button><button type="button" data-opt="c">Each change is a new row, so no update can overwrite another</button><button type="button" data-opt="d">It hides stock from staff</button></div>
+      <p class="fb" hidden data-why="Appending never loses information; a formula computes current stock."></p></div>
+    <div class="q" data-ans="b"><p>5. What does "Group by sku" on a numeric aggregator give you?</p><div class="opts">
+      <button type="button" data-opt="a">One total for everything</button><button type="button" data-opt="b">One result bundle per product</button><button type="button" data-opt="c">A sorted list of customers</button><button type="button" data-opt="d">Nothing; it's only for text</button></div>
+      <p class="fb" hidden data-why="Grouping produces one aggregated bundle per distinct value."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-4">AUTOMANCY LOG · Lesson 2.4 · Iterators & Aggregators
+Date:
+Iterator input (which array):
+Aggregators used (type → source module → result):
+Stock approach (movements log / group by):
+Edge case tested (repeated item) and result:
+Bundle counts per bubble in the test run:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Iterator: one array in, one bundle per item out.</li>
+      <li>Aggregators squeeze bundles back into one: text, numeric, array, table.</li>
+      <li>The source module decides what gets combined. Check it first when results look mixed up.</li>
+      <li>Group by turns a list into per-product (or per-anything) totals.</li>
+      <li>Append movements instead of overwriting totals.</li>
+      <li>Everything inside the accordion runs, and costs, once per item.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.make.com/bundles/make-basics" target="_blank" rel="noopener">Make Academy: Make Basics (aggregators, arrays and collections)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+iterator+aggregator+tutorial" target="_blank" rel="noopener">YouTube: Make iterator and aggregator tutorials</a></li>
+    <li><span class="kind">Course</span><a href="https://docs.n8n.io/build/flow-logic/merge-data" target="_blank" rel="noopener">n8n Docs: merging data (the same ideas in n8n, for Track 3)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Use an actual concertina (or a folded paper fan) as the prop for the accordion idea. Run the duplicate-item test as a live experiment: build the overwrite version first, watch it lose a crate, then switch to the movements log. Seeing the bug happen teaches more than warning about it.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -1,0 +1,8 @@
+.account section{padding-block:22px 0;scroll-margin-top:70px}
+.account h2{font-size:1.5rem}
+.acc-nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.acc-nav a{font-weight:700;font-size:.9rem;text-decoration:none;color:var(--ink);padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card)}
+.acc-nav a:hover{border-color:var(--ink)}
+.account details.danger{border:1.5px solid var(--glitch);border-radius:12px;padding:12px 14px;margin-top:8px}
+.account details.danger summary{cursor:pointer;font-weight:700;color:var(--glitch)}
+.account details.danger form,.account details.danger .alert{margin-top:10px}

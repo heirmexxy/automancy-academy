@@ -1,0 +1,240 @@
+{
+  "name": "HL · Load policies",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## HL · Load policies\nLesson 4.4, the loading pipeline (run once per document version).\nManual Trigger → download the policy PDF from Google Drive → Supabase Vector Store · Insert Documents (table documents) with Embeddings, Default Data Loader (Binary, metadata source + version) and Recursive Character Text Splitter (500 / 80).\n\n**Credentials:** Google Drive OAuth2 (select it in the HTTP Request node), Supabase (project URL + service role key, credential only), OpenAI (embeddings).\n**Replace:** YOUR_POLICY_FILE_ID (the PDF's Drive file ID).\n\nRun the Supabase LangChain setup SQL first (vector extension, documents table, match_documents, vector size 1536 for text-embedding-3-small).",
+        "height": 460,
+        "width": 420
+      },
+      "id": "78d734fd-2db2-4c8a-9408-415b24c11821",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "80f00258-80b3-41d1-9609-0fc059c1eee3",
+      "name": "Load policies",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/drive/v3/files/YOUR_POLICY_FILE_ID",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "alt",
+              "value": "media"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "e3508e3e-676e-44bf-86e4-4e05986c057f",
+      "name": "Download policy PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "e2111a30-5c64-470a-a912-29df0a5a7f67",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "f7db3716-016b-48c8-bce3-bf43b7004bae",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        380,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "policies-v3.pdf"
+              },
+              {
+                "name": "version",
+                "value": "2026-10-01"
+              }
+            ]
+          }
+        }
+      },
+      "id": "391764f7-18e8-4643-bd13-5492a33cac4f",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        560,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 80,
+        "options": {}
+      },
+      "id": "895ed0a0-e1a3-47dd-b1f4-cf954f8ab11a",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        560,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Decide\nChunk size about 500 and overlap about 80 is a starting point: test with the 8 questions and adjust.\n\nNew policy version? Delete the old version's chunks first (filter on metadata source or version), then load. Otherwise old rules come back.",
+        "height": 240,
+        "width": 320
+      },
+      "id": "66cf66d9-165c-4f38-b5f5-b0834cf1039d",
+      "name": "Sticky Note 7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Google Drive download\nThe lesson uses the Google Drive node's Download. This template calls the same Drive API with an HTTP Request (Authentication: Predefined → Google Drive OAuth2), so it imports on any version.",
+        "height": 180,
+        "width": 320
+      },
+      "id": "5096a523-6a28-48c0-acef-6c5a91d09e51",
+      "name": "Sticky Note 8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Load policies": {
+      "main": [
+        [
+          {
+            "node": "Download policy PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download policy PDF": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

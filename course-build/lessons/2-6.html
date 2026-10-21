@@ -1,0 +1,333 @@
+<template data-mod="2.6" id="tpl-2-6">
+<article style="--c:var(--volt)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 2 · The Weave Workshop (Make) · Lesson 2.6</span>
+    <h1>Error Handling &amp; Reliability</h1>
+    <div class="kicker"><span class="pill">≈ 100 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Weave and Glitch</span><span class="pill">Tools: Make, webhook.site</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#glitch"/></svg>
+</header>
+<p class="lede">Everything fails sometimes: a courier's server goes down, a weather service times out, one order has no address. Amateurs' automations stop silently. Professionals' automations retry, skip, substitute or shout, on purpose. This module is where Glitch stops being a villain and becomes your sparring partner.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Explain the five error handlers and choose the right one per module.</span></div>
+  <div><b>02</b><span>Set up automatic retries with incomplete executions.</span></div>
+  <div><b>03</b><span>Build error routes that tell a person exactly what broke.</span></div>
+  <div><b>04</b><span>Test failure on purpose, before it happens for real.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The Friday the courier went down</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A courier company's server with an error 503 sign.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="120" y="30" width="80" height="120" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <g fill="var(--line)"><rect x="132" y="46" width="56" height="10" rx="3"/><rect x="132" y="66" width="56" height="10" rx="3"/><rect x="132" y="86" width="56" height="10" rx="3"/></g>
+        <rect x="104" y="112" width="112" height="30" rx="8" fill="var(--glitch)"/><text x="160" y="132" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="600" fill="#fff">503</text>
+      </svg>
+      <div class="cap"><b>Friday, 8:02 p.m.</b>The courier's booking system is down for maintenance. The 8 p.m. run tries to book 31 deliveries.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A scenario switched off with a grey toggle, nobody watching.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="100" y="70" width="120" height="50" rx="25" fill="var(--line)" stroke="var(--ink)" stroke-width="3"/>
+        <circle cx="128" cy="95" r="18" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="160" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="var(--muted)">scenario: OFF</text>
+      </svg>
+      <div class="cap"><b>Saturday, 6 a.m.</b>The scenario errored, stopped, and after repeated errors was switched off. No bookings. No message to anyone.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Riders waiting at the depot with no delivery list.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="40" y="110" width="240" height="60" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <circle cx="90" cy="90" r="16" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><circle cx="150" cy="90" r="16" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/><circle cx="210" cy="90" r="16" fill="var(--sky)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="160" y="146" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--glitch)">No list. No bookings.</text>
+      </svg>
+      <div class="cap"><b>Saturday, 7 a.m.</b>Four riders, 31 customers, zero bookings. Tolu spends the morning on the phone.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch and Weave shaking hands.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+        <use href="#weave" x="170" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>A truce</b>"From today," says Weave, "Glitch breaks things on purpose, in testing. We plan for every failure before customers ever see one."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>What happens without a plan</h3>
+    <p>When a module errors and has no error handler, Make stops that run with an error. Bundles still waiting are not processed. If a scheduled scenario keeps failing, Make can switch it off automatically (the number of consecutive errors allowed is in the scenario's settings). Make labels errors by type, such as connection, runtime, data and rate-limit errors, which helps you choose a response.</p>
+    <div class="analogy"><b>The big idea:</b> decide in advance, module by module, what should happen when it fails. An error handler is a small route attached to a module (right-click → Add error handler), ending in a <b>directive</b> that tells Make what to do next.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The five directives</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Directive</th><th>What happens</th><th>Run status</th><th>Use when</th></tr></thead>
+      <tbody>
+        <tr><td><b>Ignore</b></td><td>Skips the failed bundle; other bundles carry on</td><td>Success</td><td>One bad item shouldn't stop the rest (and you've logged it)</td></tr>
+        <tr><td><b>Resume</b></td><td>Substitutes output you define and continues as if it worked</td><td>Success</td><td>A sensible default exists (rain chance "unknown")</td></tr>
+        <tr><td><b>Break</b></td><td>Stores the run as an incomplete execution to finish later, manually or with automatic retries</td><td>Warning</td><td>The step must eventually happen (courier booking)</td></tr>
+        <tr><td><b>Commit</b></td><td>Stops the run, keeps what's done, skips remaining bundles</td><td>Success</td><td>Stop cleanly, nothing left worth doing</td></tr>
+        <tr><td><b>Rollback</b></td><td>Stops and tries to undo changes made by modules that support it</td><td>Error</td><td>All-or-nothing changes (works only with modules that support transactions, such as data stores)</td></tr>
+      </tbody>
+    </table></div>
+    <p style="font-size:.88rem;color:var(--muted)">Statuses as described by Make. Google Sheets and email can't be "undone", so Rollback won't reverse them.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Break and automatic retries</h3>
+    <p>To use Break, turn on <b>storing of incomplete executions</b> in the scenario settings. Then, in the Break handler, enable automatic completion and set the number of attempts and the interval. The failed run waits, and Make retries it from the failed module.</p>
+    <figure class="fig"><svg viewBox="0 0 620 140" role="img" aria-label="Retry timeline: attempt at 8:00 p.m. fails with 503, retry at 8:15 fails, retry at 8:30 succeeds and the booking is made.">
+      <line x1="20" y1="70" x2="600" y2="70" stroke="var(--line)" stroke-width="4"/>
+      <g font-family="JetBrains Mono,monospace" font-size="11" text-anchor="middle">
+        <circle cx="80" cy="70" r="16" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2"/><text x="80" y="74" fill="#fff">✕</text><text x="80" y="40" fill="var(--ink)">20:00</text><text x="80" y="108" fill="var(--muted)">503</text>
+        <circle cx="260" cy="70" r="16" fill="var(--glitch)" stroke="var(--ink)" stroke-width="2"/><text x="260" y="74" fill="#fff">✕</text><text x="260" y="40" fill="var(--ink)">20:15</text><text x="260" y="108" fill="var(--muted)">retry 1 · 503</text>
+        <circle cx="440" cy="70" r="16" fill="var(--volt)" stroke="var(--ink)" stroke-width="2"/><text x="440" y="74" fill="#13233A">✓</text><text x="440" y="40" fill="var(--ink)">20:30</text><text x="440" y="108" fill="var(--muted)">retry 2 · 201 booked</text>
+      </g>
+      <text x="560" y="74" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">done</text>
+    </svg><figcaption>Retries handle short outages. Set a limit, and alert a person if the last retry fails too.</figcaption></figure>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#nodo"/></svg><div class="bubble"><b>Nodo:</b> Retry only things that can succeed later: timeouts, 5xx, rate limits (0.2). A 400 or 401 will fail every time; retrying just wastes credits. Fix those and alert.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Error routes that talk</h3>
+    <p>An error handler route can contain modules before its directive. Add a message step so a person knows exactly what failed. Inside the error route, Make provides details about the error (such as its message and type) that you can map.</p>
+<pre class="codebox"><span class="c">Error route on "HTTP · Book courier"</span>
+Gmail · Send to Tolu
+  Subject: Courier booking failed · {{order_id}}
+  Body:    {{error.type}}: {{error.message}}
+           Order {{order_id}} for {{customer_name}}, {{area}}.
+           Make will retry automatically. Check incomplete executions if this repeats.
+→ Break (auto-retry 3 times, every 15 minutes)</pre>
+    <p style="font-size:.88rem;color:var(--muted)">Map the error fields from the mapping panel inside your error route; exact field names appear there.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Prevent, then handle</h3>
+    <div class="never">
+      <div><b>Prevent bad data</b>Validation in sheets (0.4) and filters (2.3) stop many errors before they happen: no address, no API call.</div>
+      <div><b>Handle what you can't prevent</b>Outages, timeouts and rate limits will happen. Give every external call a handler.</div>
+      <div><b>Be told</b>Turn on Make's email notifications for errors and warnings in your profile, and log failures to an Errors tab you review weekly.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PLAYGROUND</span><h2>Which handler would you choose?</h2></div>
+  <div class="sorter">
+    <div class="sitem" data-ans="resume"><span>The weather lookup for the rider message times out. The message can say "rain chance unknown".</span><span class="sb"><button type="button" data-v="ignore">Ignore</button><button type="button" data-v="resume">Resume</button><button type="button" data-v="break">Break</button><button type="button" data-v="rollback">Rollback</button></span><span class="why" hidden data-t="Resume with a substitute value. The run continues and riders still get their list."></span></div>
+    <div class="sitem" data-ans="break"><span>Booking the courier fails with 503. The booking must happen tonight.</span><span class="sb"><button type="button" data-v="ignore">Ignore</button><button type="button" data-v="resume">Resume</button><button type="button" data-v="break">Break</button><button type="button" data-v="rollback">Rollback</button></span><span class="why" hidden data-t="Break with automatic retries, plus an alert, because it must eventually succeed."></span></div>
+    <div class="sitem" data-ans="ignore"><span>Inside a loop of 30 orders, one order's SMS fails because the phone number is invalid. The other 29 should still go.</span><span class="sb"><button type="button" data-v="ignore">Ignore</button><button type="button" data-v="resume">Resume</button><button type="button" data-v="break">Break</button><button type="button" data-v="rollback">Rollback</button></span><span class="why" hidden data-t="Log it on the error route, then Ignore so the rest carry on. Retrying won't fix a bad number."></span></div>
+    <div class="sitem" data-ans="rollback"><span>Two data store updates must both happen or neither: moving credit between two customers' balances.</span><span class="sb"><button type="button" data-v="ignore">Ignore</button><button type="button" data-v="resume">Resume</button><button type="button" data-v="break">Break</button><button type="button" data-v="rollback">Rollback</button></span><span class="why" hidden data-t="Rollback reverts modules that support transactions (like data stores) so you never get half a transfer."></span></div>
+    <div class="sitem" data-ans="ignore"><span>Posting to an optional "activity feed" fails. Nobody needs to retry it, but you want a note in the Errors tab.</span><span class="sb"><button type="button" data-v="ignore">Ignore</button><button type="button" data-v="resume">Resume</button><button type="button" data-v="break">Break</button><button type="button" data-v="rollback">Rollback</button></span><span class="why" hidden data-t="Log, then Ignore. Optional work shouldn't stop or retry the important work."></span></div>
+    <p class="qscore sscore" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.make.com/en/blog/workflow-automation-error-what-to-do" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make blog: what to do when an error occurs</b><small>Read: the five directives and the run status each produces.</small></span></a>
+    <a class="wcard" href="https://academy-content.make.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Make Academy public lessons: "Handle errors gracefully"</b><small>Look for: adding a handler and incomplete executions.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Make.com+error+handling+break+retry" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A "Make error handling" video</b><small>Look for: Break with automatic retries.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 35 MIN</span><h2>Solved problem: an 8 p.m. run that survives Friday</h2></div>
+  <div class="prose"><p><b>The goal.</b> Harden the 2.3 run. It books each delivery with the courier's API, adds the rain chance to rider messages, and texts each customer. Make every failure either recover by itself or reach Tolu with the details. You'll fake the courier with webhook.site, which lets you choose the status code it returns.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Decide the plan on paper first</h4>
+      <div class="tablewrap"><table class="dt">
+        <thead><tr><th>Module</th><th>If it fails…</th><th>Handler</th></tr></thead>
+        <tbody>
+          <tr><td>HTTP · Weather (Open-Meteo)</td><td>Nice to have</td><td>Resume: rain_chance = "unknown"</td></tr>
+          <tr><td>HTTP · Book courier (per order)</td><td>Must happen tonight</td><td>Alert Tolu → Break, 3 retries every 15 min</td></tr>
+          <tr><td>Message customer (per order)</td><td>One bad number shouldn't stop others</td><td>Log to Errors tab → Ignore</td></tr>
+          <tr><td>Google Sheets · Add to Deliveries</td><td>Rare; usually a quota or connection blip</td><td>Break, 2 retries</td></tr>
+        </tbody>
+      </table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Switch on incomplete executions</h4>
+      <p>Scenario settings → allow storing of incomplete executions. Without this, Break can't save failed runs for retry.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Weather: Resume with a default</h4>
+      <p>Right-click the weather HTTP module → Add error handler → <b>Resume</b>. In its output, set the rain chance field to <code>unknown</code>. Later modules map it as normal; the rider message reads "Rain chance: unknown" instead of the run failing.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Courier: alert, then Break with retries</h4>
+      <p>Point the courier HTTP POST at a webhook.site URL set to respond with status <b>503</b>. Add an error handler with a <b>Gmail</b> step (the message from Card 4), then <b>Break</b> with automatic completion: 3 attempts, 15 minutes apart.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Customer messages: log, then Ignore</h4>
+      <p>On the messaging module, add an error route: <b>Google Sheets · Add a Row</b> to an Errors tab (time, scenario, module, order_id, error message), then <b>Ignore</b>. One bad number is recorded, and everyone else still gets their message.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Break it on purpose, then fix it</h4>
+      <p>Run once with three test orders and the courier returning 503. You should see: Tolu's alert emails, a <b>Warning</b> status, and stored incomplete executions. Now switch webhook.site to return <b>201</b>. Within the next retry, the incomplete executions complete by themselves and the bookings appear.</p>
+      <div class="stats">
+        <div class="stat"><b>0</b><span>orders lost while the courier was down</span></div>
+        <div class="stat"><b>1</b><span>alert per failed booking, with the reason</span></div>
+        <div class="stat"><b>Auto</b><span>recovery when the courier came back</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Each module's failure is decided on purpose, by how much it matters.</li><li>Break with retries absorbs short outages without anyone acting.</li><li>Error routes turn failures into readable messages and logs.</li><li>Testing with a controllable fake proves recovery works.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Ignore on something that matters (payments, bookings).</li><li>Break without incomplete executions switched on.</li><li>Retrying errors that can never succeed (400, 401).</li><li>Resume with a dangerous default, like a price of 0.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I added error handling everywhere! Somehow things got worse. Explain these five.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>Glitch's setup</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Ignore on "Mark order Paid"</td><td>Some paid orders stayed "New"; customers got payment reminders.</td></tr>
+        <tr><td>B</td><td>Resume on the price lookup, substitute price 0</td><td>Three orders went out at ₦0.</td></tr>
+        <tr><td>C</td><td>Break with retries, on a 401 Unauthorized</td><td>Hundreds of retries, credits burned, still failing.</td></tr>
+        <tr><td>D</td><td>Break added, incomplete executions setting left off</td><td>Failed runs couldn't be retried.</td></tr>
+        <tr><td>E</td><td>No handlers and no notifications</td><td>The scenario was switched off after repeated errors; nobody noticed for two days.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> Ignore hides failures of important steps. Use Break with retries and an alert.</li>
+        <li><b>B:</b> a dangerous substitute. Resume only with harmless defaults; for prices, Break and alert.</li>
+        <li><b>C:</b> 401 means a bad key; retrying can't fix it. Alert and fix the credential.</li>
+        <li><b>D:</b> Break needs incomplete executions enabled in scenario settings.</li>
+        <li><b>E:</b> add handlers to external calls and turn on Make's error notifications.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>See each directive with your own eyes</h4>
+    <ul><li>Build a tiny scenario: a search returning 3 rows → HTTP request to a webhook.site URL that returns 500.</li><li>Run it four times with Ignore, Resume, Break and Commit in turn.</li><li>Record the run status and what happened to the remaining bundles each time.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Your table of four runs matches the directive table in Card 2.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Harden the 8 p.m. run</h4>
+    <ul><li>Apply the solved plan to your 2.3 scenario, with the fake courier on webhook.site.</li><li>Test: courier down then up; weather down; one invalid phone number.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No order is lost in any test, every failure produces an alert or an Errors row, and the courier bookings complete automatically after recovery.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>A weekly reliability report</h4>
+    <ul><li>Make every scenario you've built log errors to one shared Errors tab (scenario, module, type, message, time).</li><li>Build a Monday 8 a.m. scenario that aggregates last week's errors by scenario and type (2.4) and emails Tolu a short report with the top problem.</li><li>Add a line to each report: "Suggested fix" for the most common error.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>A week of real or simulated errors produces a correct, readable report.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. The courier booking must eventually succeed, even if their server is down for 20 minutes. Which directive?</p><div class="opts">
+      <button type="button" data-opt="a">Ignore</button><button type="button" data-opt="b">Commit</button><button type="button" data-opt="c">Break with automatic retries</button><button type="button" data-opt="d">Resume with a blank booking</button></div>
+      <p class="fb" hidden data-why="Break stores the run and retries it later."></p></div>
+    <div class="q" data-ans="a"><p>2. What must be switched on for Break to store failed runs?</p><div class="opts">
+      <button type="button" data-opt="a">Storing of incomplete executions, in scenario settings</button><button type="button" data-opt="b">A data store</button><button type="button" data-opt="c">A webhook</button><button type="button" data-opt="d">Rollback</button></div>
+      <p class="fb" hidden data-why="Incomplete executions are where Break keeps runs to finish later."></p></div>
+    <div class="q" data-ans="d"><p>3. Which error should you NOT retry automatically?</p><div class="opts">
+      <button type="button" data-opt="a">503 Service unavailable</button><button type="button" data-opt="b">A timeout</button><button type="button" data-opt="c">429 Too many requests</button><button type="button" data-opt="d">401 Unauthorized</button></div>
+      <p class="fb" hidden data-why="A bad key fails every time. Alert and fix it."></p></div>
+    <div class="q" data-ans="b"><p>4. The weather service fails. The rider message can still go with "rain chance unknown". Which directive?</p><div class="opts">
+      <button type="button" data-opt="a">Rollback</button><button type="button" data-opt="b">Resume, with a substitute value</button><button type="button" data-opt="c">Break</button><button type="button" data-opt="d">No handler</button></div>
+      <p class="fb" hidden data-why="Resume continues with a safe default."></p></div>
+    <div class="q" data-ans="c"><p>5. Why put a Gmail step inside an error route before the directive?</p><div class="opts">
+      <button type="button" data-opt="a">To retry faster</button><button type="button" data-opt="b">To undo the error</button><button type="button" data-opt="c">So a person learns exactly what failed and for which order</button><button type="button" data-opt="d">Make requires it</button></div>
+      <p class="fb" hidden data-why="Silent failures are the dangerous ones."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-2-6">AUTOMANCY LOG · Lesson 2.6 · Error Handling & Reliability
+Date:
+Module → handler plan:
+  1.
+  2.
+  3.
+Failure tests run (what I broke, what happened):
+Incomplete executions: stored / auto-completed?
+Where alerts and error logs go:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-2-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Decide what happens when each external call fails, before it fails.</li>
+      <li>Ignore skips; Resume substitutes; Break retries later; Commit stops cleanly; Rollback undoes what it can.</li>
+      <li>Break needs incomplete executions switched on; set a retry limit.</li>
+      <li>Retry temporary errors (timeouts, 5xx, 429), not permanent ones (400, 401).</li>
+      <li>Error routes should tell a person what broke, and log it.</li>
+      <li>Test failures on purpose with a controllable fake.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://www.make.com/en/blog/workflow-automation-error-what-to-do" target="_blank" rel="noopener">Make blog: what to do when an error occurs</a></li>
+    <li><span class="kind">Text</span><a href="https://help.make.com/commit-error-handler" target="_blank" rel="noopener">Make Help: error handlers (start with Commit, then browse the others)</a></li>
+    <li><span class="kind">Text</span><a href="https://academy-content.make.com/" target="_blank" rel="noopener">Make Academy public lessons: error handling</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Make.com+error+handlers+tutorial" target="_blank" rel="noopener">YouTube: Make error handler tutorials</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Give Glitch a real job: one learner per group controls the webhook.site status code and secretly switches it between 201, 503 and 401 during testing. The others must keep orders flowing. It's the most fun hour of Track 2, and the lesson about not retrying 401s sticks.</p>
+  </div>
+</section>
+
+</article>
+</template>

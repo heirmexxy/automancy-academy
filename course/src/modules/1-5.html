@@ -1,0 +1,353 @@
+<template data-mod="1.5" id="tpl-1-5">
+<article style="--c:var(--sun)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 1 · Spark Street (Zapier) · Lesson 1.5</span>
+    <h1>AI Steps, Tables &amp; Interfaces</h1>
+    <div class="kicker"><span class="pill">≈ 110 minutes</span><span class="pill">100 XP</span><span class="pill">Guides: Sage and Bolt</span><span class="pill">Needs: paid plan or trial (AI by Zapier)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sage"/></svg>
+</header>
+<p class="lede">Sage moves into Spark Street. Today you put the prompt skills from Module 0.5 inside a Zap, store the results in Zapier's own database, and give Tolu's staff a simple web page to work from. That's a complete customer inbox system, with no code.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Configure an AI by Zapier step with typed output fields.</span></div>
+  <div><b>02</b><span>Pick a model tier by cost and accuracy, using a test set.</span></div>
+  <div><b>03</b><span>Store records in Zapier Tables and trigger Zaps from them.</span></div>
+  <div><b>04</b><span>Build a staff page with Interfaces, and control who can see it.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Thirty emails before breakfast</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An inbox overflowing with thirty customer emails.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="156" height="150" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <g fill="var(--line)"><rect x="162" y="34" width="132" height="10" rx="3"/><rect x="162" y="52" width="120" height="10" rx="3"/><rect x="162" y="70" width="132" height="10" rx="3"/><rect x="162" y="88" width="110" height="10" rx="3"/><rect x="162" y="106" width="126" height="10" rx="3"/><rect x="162" y="124" width="132" height="10" rx="3"/></g>
+        <text x="228" y="156" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="var(--glitch)">30 unread</text>
+        <use href="#tolu" x="10" y="60" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>7 a.m.</b>Orders, a complaint about wet tomatoes, three price questions, a hotel invoice query. All in one pile.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="The new admin assistant looking confused at a shared inbox.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <circle cx="90" cy="80" r="32" fill="#8A5A3C" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M58 76 Q60 44 90 44 Q120 44 122 76 Q112 58 90 60 Q68 58 58 76 Z" fill="var(--ink)"/>
+        <path d="M50 190 Q52 124 90 120 Q128 124 130 190 Z" fill="var(--volt)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="80" y="30" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="22" fill="var(--glitch)">?</text>
+        <rect x="170" y="40" width="130" height="80" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="182" y="66" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">Which ones are</text>
+        <text x="182" y="84" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">urgent? Who replied</text>
+        <text x="182" y="102" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">to the hotel?</text>
+      </svg>
+      <div class="cap"><b>Kemi, the new admin</b>Starts Monday. Nobody can tell her which emails matter or which were handled.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch holding a huge bill labelled five times tasks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="30" width="120" height="130" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="230" y="80" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="30" fill="var(--glitch)">5×</text>
+        <text x="230" y="110" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="12" fill="var(--ink)">tasks per email</text>
+        <use href="#glitch" x="20" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Just use the fanciest AI model for everything. Tolu loves big bills."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Sage and Bolt in front of a tidy dashboard with coloured urgency labels.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="150" y="20" width="156" height="150" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <text x="162" y="42" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="12" fill="var(--ink)">HL Staff Desk</text>
+        <g font-family="JetBrains Mono,monospace" font-size="9"><rect x="162" y="54" width="132" height="20" rx="4" fill="var(--glitch)" opacity=".25"/><text x="168" y="68" fill="var(--ink)">3 · complaint · wet tomatoes</text><rect x="162" y="80" width="132" height="20" rx="4" fill="var(--sun)" opacity=".35"/><text x="168" y="94" fill="var(--ink)">2 · order · 4 crates Fri</text><rect x="162" y="106" width="132" height="20" rx="4" fill="var(--volt)" opacity=".25"/><text x="168" y="120" fill="var(--ink)">1 · question · onion price</text></g>
+        <use href="#sage" x="10" y="30" width="90" height="90"/>
+        <use href="#bolt" x="60" y="100" width="84" height="84"/>
+      </svg>
+      <div class="cap"><b>The plan</b>Sage reads and labels every email; Bolt files it in a table; Kemi works from one page, most urgent first.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 20 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>AI by Zapier: a prompt with typed outputs</h3>
+    <p>The <b>AI by Zapier</b> app's "Analyze and Return Data" action is Module 0.5 inside a Zap. You write a <b>Prompt</b> (insert earlier data with <code>/</code>), and under Settings you define <b>Output Fields</b>: each with a name, a type, a description and whether it's required. Every field becomes a pill for later steps.</p>
+    <div class="analogy"><b>Output fields are your JSON schema from 0.3</b>, filled in through a form. Typed fields (number, boolean, text) keep the answers consistent run after run, instead of one combined blob of text. There's also a "Generate from prompt" option; use it for a first draft, then check every field.</div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Model tiers: the cost multiplier</h3>
+    <p>AI steps are billed in tasks, and the model tier multiplies the cost of every run:</p>
+    <div class="tablewrap"><table class="dt" style="min-width:0">
+      <thead><tr><th>Tier</th><th class="n">Tasks per run</th><th>Good for</th></tr></thead>
+      <tbody>
+        <tr><td>Standard</td><td class="n">1×</td><td>Classifying, extracting, short summaries at volume</td></tr>
+        <tr><td>Advanced</td><td class="n">3×</td><td>Harder reasoning, using tools</td></tr>
+        <tr><td>Premium (the default for new steps on many accounts; check yours)</td><td class="n">5×</td><td>Complex analysis, multi-step reasoning</td></tr>
+        <tr><td>Bring your own key</td><td class="n">1×</td><td>Your own OpenAI, Anthropic, Gemini or other account; you also pay that provider</td></tr>
+      </tbody>
+    </table></div>
+    <div class="stats">
+      <div class="stat"><b>900</b><span>emails a month (30 a day)</span></div>
+      <div class="stat"><b>900 tasks</b><span>on Standard</span></div>
+      <div class="stat"><b>4,500 tasks</b><span>on Premium, for the same emails</span></div>
+    </div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#sage"/></svg><div class="bubble"><b>Sage:</b> Run your test set from 0.5 on Standard first. Only move up a tier if Standard fails it, and only for the step that needs it.</div></div>
+    <p style="font-size:.88rem;color:var(--muted)">Tier names and multipliers are from Zapier's help centre (Oct 2026). On Advanced and Premium, each tool call the AI makes costs the multiplier again, and a step pauses for your approval if one run reaches 75 tasks (the default cap). AI by Zapier requires a paid plan; on Free you can only preview an unpublished step.</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Zapier Tables: a database that lives next to your Zaps</h3>
+    <p><b>Zapier Tables</b> stores records with typed fields, like the Airtable build in 0.4, but built into Zapier. Records can trigger Zaps instantly when created or updated, and a <b>button field</b> can start a Zap when someone clicks it.</p>
+    <div class="why">
+      <div class="box"><h5>Choose Tables when</h5><ul><li>The data mainly exists to drive automations (an inbox, a queue, approvals).</li><li>You want instant record triggers and buttons.</li><li>It pairs with an Interface for staff.</li></ul></div>
+      <div class="box"><h5>Keep Google Sheets when</h5><ul><li>You need formulas like SUMIFS and XLOOKUP (0.4).</li><li>An accountant or partner needs to open it.</li><li>The data is your long-term record (Orders).</li></ul></div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Interfaces: simple pages for people</h3>
+    <p><b>Zapier Interfaces</b> builds small web pages with components: forms, tables, kanban boards, text and buttons. Connect a component to a Table, and staff can view and edit records without ever seeing a Zap. A form submission can start a Zap.</p>
+    <div class="vocab">
+      <div><b>Staff page</b>Today's messages, sorted by urgency, with a status staff can change.</div>
+      <div><b>Intake form</b>Kemi logs phone orders so they enter the same pipeline (Boss 0, Curveball 1).</div>
+      <div><b>Access</b>Set pages to restricted, with named people signing in. A public link to customer data breaks the rules from 0.6.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>AI inside a pipeline: guard the edges</h3>
+    <div class="never">
+      <div><b>Send only what's needed</b>The email's subject and body, not the whole thread with signatures and old replies. Less data, fewer tokens, better privacy.</div>
+      <div><b>Make blanks honest</b>Tell the model to leave a field empty if it isn't stated. Then check for blanks in a Filter or Paths step.</div>
+      <div><b>A person stays in the loop</b>AI labels and summarises; Kemi decides and replies. You'll let AI draft replies with approval in the Gold mission.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://help.zapier.com/hc/en-us/articles/8496342944013-Use-AI-by-Zapier-to-analyze-and-return-data" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Help: AI by Zapier, analyze and return data</b><small>Read: output fields, model tiers and how tasks are counted.</small></span></a>
+    <a class="wcard" href="https://learn.zapier.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zapier Academy: AI Builder Path, "Building Intermediate Zaps" (AI by Zapier lessons)</b><small>Look for: agentic steps with tools, which you'll meet properly in 1.6.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=Zapier+Tables+and+Interfaces+tutorial" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>A recent "Zapier Tables and Interfaces" walkthrough</b><small>Look for: connecting a table component to a Table, and page access settings.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 40 MIN</span><h2>Solved problem: the HL Staff Desk</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every customer email is read by AI, labelled and summarised, stored in a Zapier Table, and shown on a staff page sorted by urgency, where Kemi marks each one handled. Plus an intake form for phone orders.</p></div>
+
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Build the Inbox table first</h4>
+      <p>In Zapier Tables, create <b>HL Inbox</b> with these fields (data first, as always):</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Field</th><th>Type</th></tr></thead><tbody>
+        <tr><td>received_at</td><td>Date/time</td></tr><tr><td>from_email</td><td>Email</td></tr><tr><td>category</td><td>Dropdown: order · complaint · question · other</td></tr>
+        <tr><td>summary</td><td>Text</td></tr><tr><td>urgency</td><td>Number (1 low – 3 high)</td></tr><tr><td>phone</td><td>Text</td></tr>
+        <tr><td>status</td><td>Dropdown: New · In progress · Done</td></tr><tr><td>handled_by</td><td>Text</td></tr>
+      </tbody></table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Trigger on customer emails</h4>
+      <p>New Zap. Trigger: <b>Gmail · New Labeled Email</b> on a <b>Customers</b> label (a Gmail filter applies it, as in 1.1). Test with an email from your 0.5 Silver list.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Add the AI step, on the Standard model</h4>
+      <p>Add <b>AI by Zapier · Analyze and Return Data</b>. Model: <b>Standard</b>. Prompt (insert the subject and body with <code>/</code>):</p>
+<pre class="codebox">You triage customer emails for Harvest Lane, a fresh-produce
+delivery business in Ibadan, Nigeria. Customers write in English,
+Nigerian Pidgin or Yoruba.
+
+Read the email below and fill in the output fields.
+- category: order (new or change), complaint, question, or other.
+  If an email contains an order and a question, choose order.
+- summary: at most 20 words, plain English, no greeting.
+- urgency: 3 = complaint, or delivery needed today/tomorrow;
+           2 = new order or order change;
+           1 = everything else.
+- phone: only if written in the email, in +234 format. Otherwise leave empty.
+Never invent details that are not in the email.
+
+Subject: <span class="k">[Subject]</span>
+Email: <span class="k">[Body Plain]</span></pre>
+      <p>Output fields:</p>
+      <div class="tablewrap"><table class="dt" style="min-width:0"><thead><tr><th>Field name</th><th>Type</th><th>Description</th><th>Required</th></tr></thead><tbody>
+        <tr><td>category</td><td>Text</td><td>One of: order, complaint, question, other</td><td>Yes</td></tr>
+        <tr><td>summary</td><td>Text</td><td>20 words max</td><td>Yes</td></tr>
+        <tr><td>urgency</td><td>Number</td><td>1, 2 or 3 as defined</td><td>Yes</td></tr>
+        <tr><td>phone</td><td>Text</td><td>+234 format, empty if not stated</td><td>No</td></tr>
+      </tbody></table></div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Save to the table</h4>
+      <p>Add <b>Zapier Tables · Create Record</b> in HL Inbox. Map the AI outputs, the email's date and sender, and set status to <code>New</code>. Test, then publish.</p>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Build the staff page</h4>
+      <p>In Zapier Interfaces, create a page called <b>HL Staff Desk</b>:</p>
+      <div class="vocab">
+        <div><b>Table component</b>Source: HL Inbox. Filter: status is not Done. Sort: urgency, highest first. Allow editing of status and handled_by.</div>
+        <div><b>Form component</b>"Log a phone order": name, phone, items, delivery date. It creates a record with category order and urgency 2.</div>
+        <div><b>Access</b>Restricted to named staff (Tolu, Kemi). Never a public link.</div>
+      </div>
+    </div></div>
+
+    <div class="step"><div>
+      <h4>Test with 20 messages and check the cost</h4>
+      <p>Send yourself the 20 sample messages from Module 0.5's Silver mission as emails (or paste them into a test form). Check each record's category against the expected label. Then rerun your five hardest on the Premium tier to see whether it's actually better.</p>
+      <div class="results">
+        <div><b>18/20</b><div class="bar"><i style="width:90%"></i></div><span>Standard · category correct (example result)</span></div>
+        <div><b>19/20</b><div class="bar"><i style="width:95%"></i></div><span>Premium · category correct (example result)</span></div>
+        <div><b>5×</b><div class="bar"><i style="width:100%"></i></div><span>Premium's task cost for one more correct answer</span></div>
+      </div>
+      <p>In this example, Standard wins: the one extra correct answer isn't worth five times the tasks, especially since Kemi reviews every record anyway. Your numbers will differ; the method is what matters.</p>
+    </div></div>
+  </div>
+
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Typed output fields make every AI answer usable by the next step.</li><li>The model tier is chosen by testing, not by habit.</li><li>Tables and an Interface give staff one clear place to work.</li><li>A human decides and replies; AI sorts and summarises.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Leaving the default Premium tier on a high-volume step.</li><li>A single free-text output instead of typed fields.</li><li>Sharing the staff page as a public link.</li><li>Sending entire email threads to the AI.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 8 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I set up a staff desk for another shop. Five things went wrong in the first week. Explain each.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The monthly task allowance ran out in 6 days.</td></tr>
+        <tr><td>B</td><td>The urgency column is empty on most records, though the AI's raw output says "high".</td></tr>
+        <tr><td>C</td><td>A customer found her own phone number on a page someone shared in a WhatsApp group.</td></tr>
+        <tr><td>D</td><td>Several records show phone numbers that customers never gave.</td></tr>
+        <tr><td>E</td><td>Summaries mention "Sent from my iPhone" and old replies from last month.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the AI step was left on Premium (5× tasks per run). Test Standard first.</li>
+        <li><b>B:</b> urgency is a Number field, but the prompt never defined it as 1–3, so the model wrote "high". Define values in the prompt and the field description.</li>
+        <li><b>C:</b> the Interface was shared by public link. Restrict access to named staff.</li>
+        <li><b>D:</b> no "leave empty if not stated" rule, so the model filled the phone field with guesses.</li>
+        <li><b>E:</b> the whole thread and signature were sent. Map only the latest message's body (Gmail offers a plain-text body field) and tell the model to ignore quoted replies.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>One-line email summaries</h4>
+    <ul><li>Build a Zap: new email with a chosen label → AI by Zapier (Standard) with one output field, <code>summary</code> (max 15 words) → email or message to yourself.</li><li>Run it on five real emails.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>All five summaries are accurate, under 15 words, and contain nothing that wasn't in the email.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build the Staff Desk and measure it</h4>
+    <ul><li>Build the HL Inbox table, the triage Zap and the HL Staff Desk page with its phone-order form.</li><li>Run the 20 sample messages. Record category accuracy and total tasks used.</li><li>Ask someone else to use the page for five minutes without instructions; note what confused them.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Category accuracy is at least 18/20 on Standard, the page is restricted, and you've fixed one thing your tester found confusing.</li></ul>
+  </div>
+
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>AI-drafted replies with a human "Send" button</h4>
+    <ul><li>Add a <code>draft_reply</code> field to HL Inbox, filled by a second AI step: a polite, short reply in the customer's language style, which never promises refunds or prices.</li><li>Add a <b>button field</b> "Approve & send" to the table. A second Zap, triggered by the button, sends the draft from Gmail and sets status to Done.</li><li>Show the draft and button on the Staff Desk page.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No reply is ever sent without a click, every sent reply is logged with who approved it, and three test replies read naturally.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. What makes an AI step's answer easy for later steps to use?</p><div class="opts">
+      <button type="button" data-opt="a">A longer prompt</button><button type="button" data-opt="b">Typed output fields with clear descriptions</button><button type="button" data-opt="c">The Premium model</button><button type="button" data-opt="d">Asking the AI to be brief</button></div>
+      <p class="fb" hidden data-why="Each output field becomes its own pill, with a consistent type every run."></p></div>
+    <div class="q" data-ans="d"><p>2. 900 emails a month run through an AI step on the Premium tier. Roughly how many tasks is that?</p><div class="opts">
+      <button type="button" data-opt="a">900</button><button type="button" data-opt="b">1,800</button><button type="button" data-opt="c">2,700</button><button type="button" data-opt="d">4,500</button></div>
+      <p class="fb" hidden data-why="Premium uses 5 tasks per run: 900 × 5 = 4,500. Standard would use 900."></p></div>
+    <div class="q" data-ans="a"><p>3. When is Zapier Tables a better home than Google Sheets?</p><div class="opts">
+      <button type="button" data-opt="a">When the data mainly drives automations, like an inbox queue with buttons</button><button type="button" data-opt="b">When you need SUMIFS formulas</button><button type="button" data-opt="c">When your accountant needs to open it</button><button type="button" data-opt="d">Never</button></div>
+      <p class="fb" hidden data-why="Tables shine for automation-driven records with instant triggers and buttons; Sheets for formulas and sharing."></p></div>
+    <div class="q" data-ans="c"><p>4. The staff page shows customer names and phone numbers. How should it be shared?</p><div class="opts">
+      <button type="button" data-opt="a">A public link, so it's easy to open</button><button type="button" data-opt="b">A screenshot in the staff group</button><button type="button" data-opt="c">Restricted to named staff who sign in</button><button type="button" data-opt="d">Printed and pinned on the wall</button></div>
+      <p class="fb" hidden data-why="Personal data stays behind a sign-in, shared only with people who need it (0.6)."></p></div>
+    <div class="q" data-ans="b"><p>5. The AI puts invented phone numbers into records. What's the best fix?</p><div class="opts">
+      <button type="button" data-opt="a">Switch to Premium</button><button type="button" data-opt="b">Tell it to leave the field empty if not stated, and mark it not required</button><button type="button" data-opt="c">Remove the phone field</button><button type="button" data-opt="d">Ask customers to write their number twice</button></div>
+      <p class="fb" hidden data-why="Give the model permission not to know. A required field pressures it to fill something in."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-1-5">AUTOMANCY LOG · Lesson 1.5 · AI Steps, Tables & Interfaces
+Date:
+AI step: model tier and output fields:
+Test set results (category accuracy):  Standard __/20   Other tier __/20
+Tasks used for the test run:
+Table name and fields:
+Interface page: components and access setting:
+What my tester found confusing, and my fix:
+One thing I learned:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-1-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>AI by Zapier = prompt + typed output fields; each field becomes a pill.</li>
+      <li>The model tier multiplies tasks: Standard 1×, Advanced 3×, Premium 5×. Test before upgrading.</li>
+      <li>Say what "empty" means, and never make guessable fields required.</li>
+      <li>Tables for automation-driven records; Sheets for formulas and long-term records.</li>
+      <li>Interfaces give staff a simple page. Keep it restricted.</li>
+      <li>AI sorts and drafts; people decide and send.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://help.zapier.com/hc/en-us/articles/8496342944013-Use-AI-by-Zapier-to-analyze-and-return-data" target="_blank" rel="noopener">Zapier Help: AI by Zapier, analyze and return data</a></li>
+    <li><span class="kind">Video</span><a href="https://learn.zapier.com/" target="_blank" rel="noopener">Zapier Academy: AI Builder Path</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+Tables+tutorial" target="_blank" rel="noopener">YouTube: Zapier Tables tutorials</a></li>
+    <li><span class="kind">Video</span><a href="https://www.youtube.com/results?search_query=Zapier+Interfaces+tutorial" target="_blank" rel="noopener">YouTube: Zapier Interfaces tutorials</a></li>
+    <li><span class="kind">Text</span><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank" rel="noopener">Anthropic prompt engineering tutorial (to sharpen the triage prompt)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run the tier comparison as a class experiment: half the room on Standard, half on Premium, same 20 messages. Compare accuracy and task counts on the board. Then have pairs swap Staff Desk pages and use each other's without instructions; the confusion they report is the best design lesson of the day.</p>
+  </div>
+</section>
+
+</article>
+</template>
