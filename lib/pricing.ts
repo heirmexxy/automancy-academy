@@ -20,7 +20,7 @@ export const PRODUCTS: Product[] = [
     blurb: "Try the course before you pay.", features: ["Base Camp: 6 lessons and Boss 0", "Animated walkthroughs and natural-voice Listen", "AI feedback on Base Camp missions", "Community (read and post)"] },
   { id: "self", name: "Self-paced", kind: "plan", ngn: 45000, usd: 79, period: "one-time", accessDays: 365, highlight: true, cta: "Enrol",
     installments: { count: 3, ngn: 16000 },
-    blurb: "The whole course at your own pace.", features: ["All 49 lessons, 6 boss projects and the capstone", "Templates for n8n, Make and Zapier", "AI review of every mission and project", "Certificate with a public verification page", "Community, leaderboard and Hire talent profile", "12 months' access"] },
+    blurb: "The whole course at your own pace.", features: ["All 49 lessons, 6 boss projects and the capstone", "Templates for n8n, Make and Zapier", "AI review of every mission and project", "Certificate with a public verification page", "Learn on the website or on WhatsApp", "Community, leaderboard and Hire talent profile", "12 months' access"] },
   { id: "cohort", name: "Cohort", kind: "plan", ngn: 150000, usd: 249, period: "one-time", accessDays: 365, hiddenUnlessCohortOpen: true, cta: "Reserve a seat",
     installments: { count: 3, ngn: 52000 },
     blurb: "Learn with a group and a mentor, live every week.", features: ["Everything in Self-paced", "13 weekly live build calls", "Mentor review of every boss project", "Story Mode and the template bundle included", "3 months of Membership free"] },

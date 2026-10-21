@@ -68,6 +68,7 @@ export function Plan() {
 const HOW = [
   { t: "Animated walkthroughs", c: "var(--sky)", i: "▶", d: "Watch each build happen step by step, screen by screen, before you try it yourself, with a guide talking you through it." },
   { t: "Listen to any lesson", c: "var(--grape)", i: "♪", d: "A Listen button on every lesson reads it aloud in a natural voice, so you can learn on the bus, in the kitchen or with the screen off." },
+  { t: "Learn on WhatsApp", c: "var(--volt)", i: "✆", d: "Prefer your phone? Link your number and take each lesson one message at a time on WhatsApp: short lessons, videos, quizzes and AI feedback on your tasks, with your progress shared with the website." },
   { t: "Templates for n8n, Make and Zapier", c: "var(--volt)", i: "⇩", d: "Import a working starting point for each build instead of beginning from a blank canvas, then change it to fit your own business." },
   { t: "AI review of every mission", c: "var(--spark)", i: "✓", d: "Submit a mission or a boss project and get feedback in minutes: what works, what to fix, and how it scores against the criteria. A person checks flagged work." },
   { t: "Certificate you can verify", c: "var(--teal)", i: "★", d: "Pass every boss project and the capstone to earn the Certificate in AI Automation, with a public page anyone can use to check it's real." },

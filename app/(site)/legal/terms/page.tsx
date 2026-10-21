@@ -115,6 +115,7 @@ export default function Terms() {
 
       <h2 id="third-party">12. Third-party services and links</h2>
       <p>Lessons link to free videos, courses and tools run by others. We don&rsquo;t control them and aren&rsquo;t responsible for their content, availability or charges. Zapier, Make, n8n, HubSpot, Zoho, Salesforce, WhatsApp and other names are trademarks of their owners; {SITE_NAME} is independent and not endorsed by them.</p>
+      <p><b>Learning on WhatsApp.</b> If you link your WhatsApp number, the same account, progress, access rules and AI review apply in WhatsApp as on the website. WhatsApp is run by Meta under its own terms; your mobile network may charge for data. Hands-on tasks still need a computer. Reply STOP to stop messages at any time.</p>
 
       <h2 id="availability">13. Availability</h2>
       <p>We work to keep the service available, but we can&rsquo;t promise it will always be uninterrupted or error-free. We may need to pause it for maintenance or for reasons outside our control.</p>

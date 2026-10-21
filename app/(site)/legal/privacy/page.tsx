@@ -14,6 +14,7 @@ const PROCESSORS: [string, string, string, string][] = [
   ["Anthropic", "AI review of missions and projects, and the course assistant", "The text and links you submit, the questions you ask the assistant, and the lesson they relate to. We don't send your email address or payment details", "United States"],
   ["Microsoft Azure (Speech)", "Turning lesson text into natural-voice audio", "Lesson text only. No personal data is sent", "PLACEHOLDER: Azure Speech region"],
   ["Resend", "Sending account, receipt and course emails", "Your email address, name and the content of the email", "United States"],
+  ["Meta Platforms (WhatsApp Business Platform)", "Delivering course messages on WhatsApp, if you choose WhatsApp learning", "Your WhatsApp number and the messages exchanged with the Automancy WhatsApp number", "United States and other countries where Meta operates"],
   ["Google Fonts", "Delivering the typefaces the site uses", "Your browser requests the fonts directly, so Google receives your IP address and browser details", "Global"]
 ];
 
@@ -43,6 +44,7 @@ export default function Privacy() {
         <li><b>Referral programme:</b> your referral code, who referred you, your referral earnings and payouts, and for payouts your bank name, the last 4 digits of your account number, the account name and Paystack&rsquo;s recipient code.</li>
         <li><b>Creator courses:</b> if you buy a course by another creator, your enrolment and progress in that course.</li>
         <li><b>Technical:</b> IP address, browser and device type, and logs of requests and errors, kept by our hosting provider for security and troubleshooting. We also count how often you use AI review, the assistant and audio, to apply fair-use limits.</li>
+        <li><b>WhatsApp learning (only if you choose it):</b> your WhatsApp number, when you linked it and your reminder setting, the messages you exchange with the Automancy WhatsApp number (lesson replies, quiz answers, work you send for review, questions), and delivery statuses. We don&rsquo;t read your other WhatsApp chats or contacts.</li>
         <li><b>Messages:</b> what you send us by email.</li>
       </ul>
       <p><b>What we don&rsquo;t collect:</b> we don&rsquo;t record your voice or use your microphone; Listen and Story Mode only turn lesson text into audio. We don&rsquo;t ask for sensitive data (such as health, religion or biometrics), and we ask you not to include it, or anyone else&rsquo;s personal data, in submissions, posts or questions.</p>
@@ -68,6 +70,8 @@ export default function Privacy() {
       <h2 id="ai">4. AI processing and automated decisions</h2>
       <p>When you submit work for review or ask the assistant a question, the content is sent to Anthropic, which processes it on our behalf under its commercial terms to produce feedback and answers. We don&rsquo;t send your email address or payment details with it. Please don&rsquo;t include passwords, API keys, or personal or confidential data in what you submit.</p>
       <p>AI scores count towards your certificate, so we don&rsquo;t let them decide alone: a person reviews any submission the AI flags and a sample of the rest, and you can ask for a human review of any result by emailing <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. This reflects your right under the NDPA not to be subject to decisions based solely on automated processing that significantly affect you.</p>
+
+      <p><b>WhatsApp learning.</b> If you link your WhatsApp number, we message you only in reply to your messages and, if you leave reminders on, with an occasional reminder (at most one every three days). Reply STOP at any time to stop all messages, or turn reminders off in your account; you can unlink your number there too. Your lawful basis is your consent, which you give by sending the link message from your phone.</p>
 
       <h2 id="processors">5. Who we share it with</h2>
       <p>We don&rsquo;t sell your personal data. We share it only with service providers that process it for us under contract, as listed below, and:</p>

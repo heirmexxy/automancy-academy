@@ -59,3 +59,22 @@ Never trust the client for money or grades: verify Paystack signatures (HMAC-SHA
 - **Voice hook (F provides, B and G use):** `window.AUTOMANCY_TTS = { ready: boolean, speak(text, {voice: "male"|"female", rate}) => Promise<void> (resolves when audio ends; rejects on failure so the caller falls back to browser speech), stop() }`. Callers: course Listen reader, guide "Walk me through it", the animated walkthrough player. If `AUTOMANCY_TTS` is missing or not ready, keep the existing browser-voice behaviour.
 - **Lesson text for AI (B provides):** `course-build/lessons/<id>.html` (id with "." → "-", e.g. `3-4.html`, bosses `B3.html`) containing that item's `<template>`; F and C read these on the server.
 - **Marketplace payments (A calls H):** A's checkout and webhook support a second kind of purchase: Paystack metadata `{kind: "course", course_id}`. H provides `lib/marketplace.ts` exporting `startCoursePurchase(userId, email, courseId, refCode?)` (returns the Paystack init params or a redirect URL, using A's `lib/paystack.ts`) and `handleCoursePayment(payment)` (grants `course_enrollments` access and records the creator's earning). A's webhook calls `handleCoursePayment` when `metadata.kind === "course"`.
+
+## WhatsApp learning (added 21 Oct 2026)
+App root is now the git repo **/home/claude/automancy-academy** (course source in `course/`). Work there.
+
+Learners choose "Learn on WhatsApp" in /account, link their number (they send `LINK 123456` with a one-time code to the Automancy number from their phone; no template needed), then learn lesson by lesson in chat. Progress is the same `progress` row as the web course; missions go through the same AI reviewer (`submissions`). Meta WhatsApp Cloud API, Graph API version from env `WHATSAPP_GRAPH_VERSION` (default `v21.0`).
+
+**Lesson scripts (W1 writes, W2 reads):** `data/whatsapp/<fileId>.json` (fileId as for course-build lessons: `3-4`, `B3`) = `{ id, title, track, free, voice: "male"|"female", cards: Card[] }`, where Card is one of:
+- `{t:"text", body}` (≤ 1000 chars, plain WhatsApp formatting: *bold*, _italic_, `- ` bullets)
+- `{t:"video", caption, media: "walk:<id>" | "clip:<id>:<n>" | null, youtube: url | null, app: url}` (media key is resolved through `data/whatsapp-media.json`; if missing, the bot sends the YouTube link and/or the app link instead)
+- `{t:"quiz", q, options: string[] (2–4, each ≤ 24 chars for list rows; longer ones go in the body as A–D), answer: number, why}`
+- `{t:"reveal", prompt, answer}` (Glitch hunts: learner taps "Reveal")
+- `{t:"task", tier: "b"|"s"|"g"|"boss"|"capstone", title, body}` (learner replies with their proof-of-work text, or SKIP; the bot sends it to the AI reviewer)
+- `{t:"link", body, url}` (interactive labs and code-heavy parts: open in the app)
+- `{t:"done", body}` (lesson complete; marks the item done in progress)
+Index: `data/whatsapp/index.json` = `[{id, title, track, free, cards}]` in course order.
+
+**Media manifest (W3 writes, W2 reads):** `data/whatsapp-media.json` = `{ "walk:<id>": {url, bytes, seconds}, "clip:<id>:<n>": {…} }`, public HTTPS MP4 URLs (H.264/AAC, ≤ 16 MB).
+
+**Bot (W2):** `app/api/whatsapp/webhook/route.ts` (GET verify with `WHATSAPP_VERIFY_TOKEN`; POST verifies `X-Hub-Signature-256` HMAC-SHA256 with `WHATSAPP_APP_SECRET` on the raw body), `lib/whatsapp/*`, migration `0009_whatsapp.sql`, account linking UI `components/account/WhatsApp.tsx` + `lib/actions/whatsapp.ts`, reminders `app/api/whatsapp/reminders/route.ts` (Vercel Cron, `CRON_SECRET`), admin `app/(site)/admin/whatsapp/**`, `docs/placeholders/whatsapp.md`.
