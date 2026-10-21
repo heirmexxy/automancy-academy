@@ -19,7 +19,7 @@ Everything below is a placeholder or a decision to confirm. Each writer's detail
 | Variable | What | Where to get it | Without it |
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Database and login | Supabase → Project settings → API | **App won't work** |
-| `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Payments | Paystack → Settings → API Keys & Webhooks. **Live keys were provided; they are only in the git-ignored `.env.local`. Add them in Vercel. Then regenerate them in Paystack (the secret was shared in chat) and update Vercel.** | Checkout shows "Payments open soon" and records a waitlist |
+| `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Payments | Paystack → Settings → API Keys & Webhooks. **Not stored in this repository: add them at go-live (see "Going live with Paystack" below).** | Checkout shows "Payments open soon" and records a waitlist |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | AI reviewer and Sage assistant | console.anthropic.com (set a monthly spend limit). Confirm the current model name (default `claude-sonnet-5-5`). | Submissions wait for a person in Admin → AI reviews; Sage is hidden |
 | `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION` | Natural Nigerian voices (`en-NG-AbeoNeural`, `en-NG-EzinneNeural`) and Story Mode MP3s | Azure portal → Speech resource → Keys and Endpoint | Browser voices are used |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Receipts, intro requests, creator emails | resend.com (verify the sending domain) | Emails are logged, not sent |
@@ -62,10 +62,23 @@ npm test                        # unit tests (money, referrals, reviewer)
    - Authentication → URL configuration: Site URL `https://automancy.twellr.com`; redirect URL `https://automancy.twellr.com/auth/callback` (add `http://localhost:3000/auth/callback` for local).
    - Authentication → Email: keep "Confirm email" on; customise the templates with the Automancy name. Set up custom SMTP (e.g. Resend) for reliable delivery.
 2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.twellr.com` (a CNAME on twellr.com's DNS pointing to Vercel). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
-3. **Paystack**: Settings → API Keys & Webhooks → Webhook URL `https://automancy.twellr.com/api/paystack/webhook` (Test and Live). Enable payment channels (card, transfer, USSD) and, if wanted, USD.
+3. **Paystack**: see "Going live with Paystack" below.
 4. **First admin**: put your email in `ADMIN_EMAILS`, sign up at `/signup`, confirm the email. You'll see **Admin** in the header.
 5. **Admin → Lesson audio → Generate all lesson audio** once (after Azure keys are set), so Story Mode and Listen are instant.
 6. **Test the money loop** with Paystack test keys (or one small live purchase you then refund): buy, refund, Pay in 3, referral. Checklist in `docs/placeholders/payments.md`.
+
+## Going live with Paystack
+
+The Paystack keys are deliberately **not** in this repository or its history. Do this when taking the product live:
+
+1. **Generate fresh keys.** Paystack Dashboard → Settings → API Keys & Webhooks → generate new Live keys. (Earlier keys were shared in chat during development; don't use them.)
+2. **Add them to Vercel**, never to the code: Project → Settings → Environment Variables → `PAYSTACK_SECRET_KEY` = the `sk_live_…` key (Production only) and `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` = the `pk_live_…` key. For Preview deployments use the Test keys (`sk_test_…` / `pk_test_…`). For local work put them in `.env.local` (git-ignored).
+3. **Set the webhook**: same Paystack page → Live Webhook URL `https://automancy.twellr.com/api/paystack/webhook` (and the Test Webhook URL for your preview/local tunnel).
+4. **Enable channels**: card, bank transfer, USSD; enable USD only if your Paystack account is approved for it (otherwise remove the USD option at checkout).
+5. **Redeploy** so the new variables load, then **test the loop**: one purchase (test keys first, or a small live purchase), the confirmation page, access unlocked, then a refund from Admin → Refunds.
+6. **Keep the secret key secret**: only in Vercel/`.env.local`; never in code, chat, email or screenshots. If it's ever exposed, regenerate it in Paystack and update Vercel.
+
+Until the keys are added, checkout shows "Payments open soon" and records a waitlist; nothing is charged.
 
 ## Updating the course
 
