@@ -128,7 +128,7 @@ Demo: [link to 3-minute video]</pre>
     { "name": "Paystack verify", "type": "n8n-nodes-base.httpRequest",
       "parameters": { "url": "https://api.paystack.co/transaction/verify/{{ $json.reference }}",
         "headerParameters": { "parameters": [ { "name": "Authorization",
-          "value": "Bearer sk_test_4f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c" } ] } } },
+          "value": "Bearer sk_test_PASTED-KEY-EXAMPLE" } ] } } },
     { "name": "Alert Tolu", "type": "n8n-nodes-base.gmail",
       "parameters": { "sendTo": "tolu@harvestlane.example",
         "message": "Big order! Call the customer on 08031234567" } }

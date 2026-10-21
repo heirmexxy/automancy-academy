@@ -294,7 +294,7 @@ function renderFeed(){
 function rel(t){ const m = Math.round((Date.now() - t) / 6e4); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " d ago"; }
 // referral + share
 function refCode(){ const base = (S.profile.name || "").replace(/[^A-Za-z]/g, "").slice(0, 5).toUpperCase() || "AUTO"; let h = 0; for(const ch of (S.profile.name || "you") + "aa") h = (h * 31 + ch.charCodeAt(0)) % 9000; return `${base}${h + 1000}`; }
-const SITE_HOST = APP_MODE && AM.siteUrl ? String(AM.siteUrl).replace(/^https?:\/\//, "").replace(/\/$/, "") : "automancy.twellr.com";
+const SITE_HOST = APP_MODE && AM.siteUrl ? String(AM.siteUrl).replace(/^https?:\/\//, "").replace(/\/$/, "") : "automancy.cc";
 function shareBlock(text){
   const t = encodeURIComponent(text + " Start free: ${SITE_HOST}");
   return `<div class="sharecard"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg><div><b>${esc(text)}</b><p class="note">${esc(SITE_HOST)}</p></div></div>
@@ -303,7 +303,7 @@ function shareBlock(text){
 function renderRef(){
   if(!$("#refLink")) return;
   const code = refCode();
-  $("#refLink").textContent = `automancy.twellr.com/r/${code}`;
+  $("#refLink").textContent = `automancy.cc/r/${code}`;
   $("#refShare").innerHTML = shareBlock(`I'm learning to build AI automations with Automancy Academy. Join with my code ${code} and get 10% off (I earn a commission if you join).`).replace(/<div class="sharecard">[\s\S]*?<\/div><\/div>/, "");
 }
 document.addEventListener("click", e => {
@@ -500,7 +500,7 @@ function renderBusiness(){
   const task = $("#auTask").value.trim() || "this task";
   const plat = hrs > 60 || v("auTimes") > 300 ? "n8n (high volume keeps costs predictable)" : v("auTimes") > 60 ? "Make (good value for branching and bulk data)" : "Zapier (fastest to set up at low volume)";
   $("#auAdvice").innerHTML = `<b>Suggested starting point:</b> ${esc(plat)}. Your team could learn this in Base Camp plus Track ${plat.startsWith("n8n") ? "3" : plat.startsWith("Make") ? "2" : "1"}, or a graduate could build it for you.`;
-  const msg = `Automation audit: "${task}" costs about ${ngn(cost)} a month in staff time and mistakes. Automating it could save about ${ngn(save_ * 12)} a year. Free audit: automancy.twellr.com`;
+  const msg = `Automation audit: "${task}" costs about ${ngn(cost)} a month in staff time and mistakes. Automating it could save about ${ngn(save_ * 12)} a year. Free audit: automancy.cc`;
   $("#auShare").href = "https://wa.me/?text=" + encodeURIComponent(msg);
   $("#corpPlans").innerHTML = CORP.map(planCard).join("");
 }
@@ -702,12 +702,12 @@ function renderEarn(){
   const code = refCode();
   $("#erCode").textContent = "Code: " + code;
   const links = [["Any course or plan","r/" + code],["Cohort bootcamp","r/" + code + "/cohort"],["Self-paced course","r/" + code + "/self-paced"],["Template packs","r/" + code + "/templates"],["Team workshop (business)","r/" + code + "/business"]];
-  $("#erLinks").innerHTML = links.map(([n, l]) => { const url = "automancy.twellr.com/" + l; const msg = encodeURIComponent(`I'm learning to build AI automations with Automancy Academy and it's been worth it. Join with my link and get 10% off: ${url} (I earn a commission if you join.)`); return `<div class="linkrow2"><div><b>${esc(n)}</b><code>${esc(url)}</code></div><button type="button" class="cta alt sm" data-copytext="${esc(url)}">Copy</button><a class="cta sm" href="https://wa.me/?text=${msg}" target="_blank" rel="noopener">WhatsApp</a></div>`; }).join("");
+  $("#erLinks").innerHTML = links.map(([n, l]) => { const url = "automancy.cc/" + l; const msg = encodeURIComponent(`I'm learning to build AI automations with Automancy Academy and it's been worth it. Join with my link and get 10% off: ${url} (I earn a commission if you join.)`); return `<div class="linkrow2"><div><b>${esc(n)}</b><code>${esc(url)}</code></div><button type="button" class="cta alt sm" data-copytext="${esc(url)}">Copy</button><a class="cta sm" href="https://wa.me/?text=${msg}" target="_blank" rel="noopener">WhatsApp</a></div>`; }).join("");
   $("#erWall").innerHTML = `<thead><tr><th>#</th><th>Referrer</th><th class="n">Earned this quarter</th></tr></thead><tbody><tr><td colspan="3" class="note" style="padding:14px 8px">No referrers yet. The wall starts when referrals open.</td></tr></tbody>`;
   const kit = [
-    ["WhatsApp status", `I just built [what you built] in Automancy Academy 🤖 [What it does for you]. If you've been wanting to learn AI automation, use my link for 10% off: automancy.twellr.com/r/${code} (I earn a commission if you join.)`],
-    ["Class or alumni group", `Hi all. I'm taking Automancy Academy's AI automation course (Zapier, Make, n8n, AI agents). It's practical: every lesson solves a real business problem. Base Camp is free if you want to try it first. My link gives 10% off the paid plans: automancy.twellr.com/r/${code}. Full disclosure: I earn a commission if you enrol.`],
-    ["LinkedIn", `[How long] ago I couldn't build an automation. This week I shipped [what you built, in one line]. If you want to learn to build AI automations that businesses pay for, Automancy Academy is where I learned. Link (10% off, and I earn a commission): automancy.twellr.com/r/${code}`]
+    ["WhatsApp status", `I just built [what you built] in Automancy Academy 🤖 [What it does for you]. If you've been wanting to learn AI automation, use my link for 10% off: automancy.cc/r/${code} (I earn a commission if you join.)`],
+    ["Class or alumni group", `Hi all. I'm taking Automancy Academy's AI automation course (Zapier, Make, n8n, AI agents). It's practical: every lesson solves a real business problem. Base Camp is free if you want to try it first. My link gives 10% off the paid plans: automancy.cc/r/${code}. Full disclosure: I earn a commission if you enrol.`],
+    ["LinkedIn", `[How long] ago I couldn't build an automation. This week I shipped [what you built, in one line]. If you want to learn to build AI automations that businesses pay for, Automancy Academy is where I learned. Link (10% off, and I earn a commission): automancy.cc/r/${code}`]
   ];
   $("#erKit").innerHTML = kit.map(([t, m]) => `<div class="panel2"><h3>${esc(t)}</h3><div class="msg2">${esc(m)}</div><div class="sharelinks"><button type="button" class="cta alt sm" data-copytext="${esc(m)}">Copy</button></div></div>`).join("");
   calcEarn();

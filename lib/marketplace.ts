@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
+import { PAYMENT_UNAVAILABLE, reportCheckoutFailure } from "@/lib/payment-alert";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL, adminEmails, hasPaystack, hasSupabase } from "@/lib/config";
 import { esc } from "@/lib/format";
 import { makeReference, moneyText, normaliseCode, type Currency } from "@/lib/money";
@@ -126,11 +127,11 @@ export const studioLink = (c: Pick<Course, "id">) => `${SITE_URL}/teach/studio/$
 
 // ── Purchases ─────────────────────────────────────────────────────────────────
 
-export type PurchaseResult = { ok: true; url: string } | { ok: false; error: string; placeholder?: boolean; enrolled?: boolean };
+export type PurchaseResult = { ok: true; url: string } | { ok: false; error: string; enrolled?: boolean };
 
 /**
  * Starts a Paystack checkout for a live course. Returns the Paystack authorization URL to redirect to.
- * Never charges in placeholder mode (no PAYSTACK_SECRET_KEY): returns { placeholder: true } instead.
+ * Never charges without PAYSTACK_SECRET_KEY: returns a friendly error and alerts the admin instead.
  * refCode is stored on the payment for attribution only; marketplace courses pay no referral commission (yet).
  */
 export async function startCoursePurchase(userId: string, email: string, courseId: string, refCode?: string | null, currency: Currency = "NGN"): Promise<PurchaseResult> {
@@ -140,7 +141,10 @@ export async function startCoursePurchase(userId: string, email: string, courseI
   if (c.creator_id === userId) return { ok: false, error: "You can't buy your own course. Use Preview instead." };
   if (await isEnrolled(userId, c.id)) return { ok: false, error: "You already have this course.", enrolled: true };
   if (!email) return { ok: false, error: "Your account has no email address. Contact support." };
-  if (!hasPaystack()) return { ok: false, placeholder: true, error: "Payments open soon." };
+  if (!hasPaystack()) {
+    await reportCheckoutFailure("PAYSTACK_SECRET_KEY is not set", { userId, email }, `course:${c.slug}`);
+    return { ok: false, error: PAYMENT_UNAVAILABLE };
+  }
 
   const usd = currency === "USD";
   if (usd && !(c.price_usd && c.price_usd > 0)) return { ok: false, error: "This course is priced in naira only." };

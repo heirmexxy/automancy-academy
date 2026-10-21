@@ -334,10 +334,6 @@ export async function buyCourse(formData: FormData) {
   const ref = (await cookies()).get("am_ref")?.value || null;
   const r = await startCoursePurchase(user.id, user.email || "", courseId, ref, currency);
   if (r.ok) redirect(r.url);
-  if (r.placeholder) {
-    if (user.email) await db().from("waitlist").upsert({ email: user.email.toLowerCase(), product: `course:${courseId}` }, { onConflict: "email,product", ignoreDuplicates: true });
-    redirect(`/courses/${slug}` + q({ soon: "1" }) + "#buy");
-  }
   if (r.enrolled) redirect(`/courses/${slug}`);
   redirect(`/courses/${slug}` + q({ error: r.error }) + "#buy");
 }

@@ -1,12 +1,12 @@
 # Placeholders · payments, referrals and admin (writer A)
 
-Until these are set, the app runs in **placeholder mode**: checkout shows "Payments open soon" and adds the learner to the `waitlist` table. No payment is ever simulated, and an admin grants access from Admin → Learners → (learner) → Grant access.
+Checkout is built as live: learners see the full checkout and Buy buttons. Until the keys are set, clicking Pay shows "We couldn't start your payment just now. No money was taken…", logs a `checkout_failed` row in `audit_log` and emails the admins (at most hourly). No payment is ever simulated; an admin can still grant access from Admin → Learners → (learner) → Grant access. Adding the keys and redeploying is all it takes to start charging.
 
 | What | Where it's used | Where to get the real value |
 |---|---|---|
 | `PAYSTACK_SECRET_KEY` | `lib/paystack.ts` (all API calls, webhook signature), `hasPaystack()` | Paystack Dashboard → Settings → API Keys & Webhooks. Use `sk_test_…` while testing and `sk_live_…` at launch. Server-only: never expose it. |
 | `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Not needed by the redirect checkout (kept in `.env.example` for later inline checkout) | Same page (`pk_test_…` / `pk_live_…`). |
-| Webhook URL | `app/api/paystack/webhook/route.ts` | In Paystack → Settings → API Keys & Webhooks, set **Webhook URL** to `${SITE_URL}/api/paystack/webhook` (e.g. `https://automancy.twellr.com/api/paystack/webhook`). Set it separately for Test and Live mode. Events used: `charge.success`, `refund.processed`. |
+| Webhook URL | `app/api/paystack/webhook/route.ts` | In Paystack → Settings → API Keys & Webhooks, set **Webhook URL** to `${SITE_URL}/api/paystack/webhook` (e.g. `https://automancy.cc/api/paystack/webhook`). Set it separately for Test and Live mode. Events used: `charge.success`, `refund.processed`. |
 | Callback URL | `lib/actions/payments.ts` sends `callback_url = ${SITE_URL}/checkout/callback` on every initialize | Nothing to set in the dashboard (it is per transaction). Make sure `NEXT_PUBLIC_SITE_URL` is the real domain. |
 | USD payments | Checkout "US dollars" option | Paystack only accepts USD once enabled on your business: Dashboard → Settings → Preferences → Currencies (requires a USD settlement account / approval). Until then, USD attempts fail at initialize and the learner sees "Try naira". You can hide the option by removing it from `app/(site)/checkout/[product]/page.tsx`. |
 | Pay with transfer / USSD / bank | Naira checkout | Enable the channels you want in Dashboard → Settings → Preferences → Payment channels. |

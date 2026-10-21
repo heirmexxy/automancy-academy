@@ -1,6 +1,6 @@
 # Automancy Academy
 
-The learning platform for **Automancy Academy**: an AI automation course (Zapier, Make, n8n, AI agents, growth and CRM automation, client work) for Nigerian and African learners, built with Kitovu. Live at **https://automancy.twellr.com** (PLACEHOLDER domain until demand justifies a dedicated one).
+The learning platform for **Automancy Academy**: an AI automation course (Zapier, Make, n8n, AI agents, growth and CRM automation, client work) for Nigerian and African learners, built with Kitovu. Live at **https://automancy.cc**.
 
 - Public landing page, pricing, careers, legal pages, certificate verification, Hire talent directory, creator-course catalogue.
 - Sign-up and login. Base Camp (lessons 0.1–0.6 and Boss 0) is free; everything else unlocks with a paid plan.
@@ -19,12 +19,12 @@ Everything below is a placeholder or a decision to confirm. Each writer's detail
 | Variable | What | Where to get it | Without it |
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Database and login | Supabase → Project settings → API | **App won't work** |
-| `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Payments | Paystack → Settings → API Keys & Webhooks. **Not stored in this repository: add them at go-live (see "Going live with Paystack" below).** | Checkout shows "Payments open soon" and records a waitlist |
+| `PAYSTACK_SECRET_KEY`, `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` | Payments | Paystack → Settings → API Keys & Webhooks. **Not stored in this repository: add them at go-live (see "Going live with Paystack" below).** | Checkout pages work as normal, but clicking Pay shows "We couldn't start your payment… no money was taken", and admins get an email |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | AI reviewer and Sage assistant | console.anthropic.com (set a monthly spend limit). Confirm the current model name (default `claude-sonnet-5-5`). | Submissions wait for a person in Admin → AI reviews; Sage is hidden |
 | `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION` | Natural Nigerian voices (`en-NG-AbeoNeural`, `en-NG-EzinneNeural`) and Story Mode MP3s | Azure portal → Speech resource → Keys and Endpoint | Browser voices are used |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Receipts, intro requests, creator emails | resend.com (verify the sending domain) | Emails are logged, not sent |
 | `ADMIN_EMAILS` | Accounts that become admins at first sign-in | Your email(s) | No admin access |
-| `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_PRIVACY_EMAIL` | Domain and contact inboxes | Your choice | Defaults to `automancy.twellr.com` addresses |
+| `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_PRIVACY_EMAIL` | Domain and contact inboxes | `https://automancy.cc`; create the support@ and privacy@ mailboxes on automancy.cc | Defaults to `automancy.cc` addresses |
 | `LINKEDIN_ORG_ID` (optional) | Links certificates to the LinkedIn company page | Your LinkedIn page admin URL | Plain-text organisation name |
 
 ### Business and legal
@@ -59,9 +59,9 @@ npm test                        # unit tests (money, referrals, reviewer)
 
 1. **Supabase** (new project, region near your users).
    - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0008). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
-   - Authentication → URL configuration: Site URL `https://automancy.twellr.com`; redirect URL `https://automancy.twellr.com/auth/callback` (add `http://localhost:3000/auth/callback` for local).
+   - Authentication → URL configuration: Site URL `https://automancy.cc`; redirect URL `https://automancy.cc/auth/callback` (add `http://localhost:3000/auth/callback` for local).
    - Authentication → Email: keep "Confirm email" on; customise the templates with the Automancy name. Set up custom SMTP (e.g. Resend) for reliable delivery.
-2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.twellr.com` (a CNAME on twellr.com's DNS pointing to Vercel). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
+2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.cc` in Vercel → Domains and set the DNS records Vercel shows at your domain registrar (an A record for `automancy.cc`, and a CNAME for `www` if you want it). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
 3. **Paystack**: see "Going live with Paystack" below.
 4. **First admin**: put your email in `ADMIN_EMAILS`, sign up at `/signup`, confirm the email. You'll see **Admin** in the header.
 5. **Admin → Lesson audio → Generate all lesson audio** once (after Azure keys are set), so Story Mode and Listen are instant.
@@ -73,12 +73,12 @@ The Paystack keys are deliberately **not** in this repository or its history. Do
 
 1. **Generate fresh keys.** Paystack Dashboard → Settings → API Keys & Webhooks → generate new Live keys. (Earlier keys were shared in chat during development; don't use them.)
 2. **Add them to Vercel**, never to the code: Project → Settings → Environment Variables → `PAYSTACK_SECRET_KEY` = the `sk_live_…` key (Production only) and `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY` = the `pk_live_…` key. For Preview deployments use the Test keys (`sk_test_…` / `pk_test_…`). For local work put them in `.env.local` (git-ignored).
-3. **Set the webhook**: same Paystack page → Live Webhook URL `https://automancy.twellr.com/api/paystack/webhook` (and the Test Webhook URL for your preview/local tunnel).
+3. **Set the webhook**: same Paystack page → Live Webhook URL `https://automancy.cc/api/paystack/webhook` (and the Test Webhook URL for your preview/local tunnel).
 4. **Enable channels**: card, bank transfer, USSD; enable USD only if your Paystack account is approved for it (otherwise remove the USD option at checkout).
 5. **Redeploy** so the new variables load, then **test the loop**: one purchase (test keys first, or a small live purchase), the confirmation page, access unlocked, then a refund from Admin → Refunds.
 6. **Keep the secret key secret**: only in Vercel/`.env.local`; never in code, chat, email or screenshots. If it's ever exposed, regenerate it in Paystack and update Vercel.
 
-Until the keys are added, checkout shows "Payments open soon" and records a waitlist; nothing is charged.
+Checkout is fully built: every price, Pay-in-3 option, referral code box and course Buy button is live on the site. The only missing piece is the keys. Until they are added, clicking Pay shows a polite "we couldn't start your payment, no money was taken" message, the attempt is logged (`audit_log`, action `checkout_failed`) and admins get an email (at most hourly). The moment the keys are in Vercel and you redeploy, the same buttons take real payments; no code change is needed.
 
 ## Updating the course
 

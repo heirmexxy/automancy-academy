@@ -9,6 +9,7 @@ import { PRODUCTS, REFERRAL, product } from "@/lib/pricing";
 import { addDays, makeReference, normaliseCode, quote, referralApplies, toMinor, withinRefundWindow, type Currency } from "@/lib/money";
 import { applyRefund, createTransferRecipient, initializeTransaction, listBanks, openInstalmentPlan, refundTransaction, resolveAccount } from "@/lib/paystack";
 import { findReferrer } from "@/lib/referrals";
+import { PAYMENT_UNAVAILABLE, reportCheckoutFailure } from "@/lib/payment-alert";
 
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const back = (pid: string, q: Record<string, string>) => `/checkout/${encodeURIComponent(pid)}?${new URLSearchParams(q).toString()}`;
@@ -39,8 +40,11 @@ export async function startCheckout(formData: FormData) {
   if (!user.email) redirect(back(pid, { error: "Your account has no email address. Contact support." }));
   if (p.comingSoon) { await addToWaitlist(user.email, p.id); redirect(back(pid, { waitlisted: "1" })); }
   if (p.hiddenUnlessCohortOpen && !(await getSettings()).cohort_open) redirect(back(pid, { error: "Cohort enrolment is closed right now. Join the waitlist and we'll tell you when it opens." }));
-  // Placeholder mode: never pretend a payment happened.
-  if (!hasPaystack()) { await addToWaitlist(user.email, p.id); redirect(back(pid, { waitlisted: "1" })); }
+  // No keys yet (or removed by mistake): never pretend a payment happened. Tell the learner, alert the admin.
+  if (!hasPaystack()) {
+    await reportCheckoutFailure("PAYSTACK_SECRET_KEY is not set", { userId: user.id, email: user.email }, p.id);
+    redirect(back(pid, { error: PAYMENT_UNAVAILABLE }));
+  }
 
   const db = createAdminClient();
   const wantsPlan = s(formData, "plan", 2) === "3";
@@ -84,7 +88,7 @@ export async function startCheckout(formData: FormData) {
   });
   if (!init.ok || !init.data?.authorization_url) {
     await db.from("payments").update({ status: "failed", raw: { init_error: init.message } }).eq("reference", reference);
-    console.error("[checkout] Paystack initialize failed", init.message);
+    await reportCheckoutFailure(`Paystack initialize failed: ${init.message}`, { userId: user.id, email: user.email }, p.id);
     redirect(back(pid, { error: currency === "USD" ? "Paystack couldn't start a dollar payment. Try naira, or contact support." : "Paystack couldn't start the payment. Please try again in a minute." }));
   }
   redirect(init.data.authorization_url);

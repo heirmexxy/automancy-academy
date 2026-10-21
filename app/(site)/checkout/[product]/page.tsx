@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getProfile, getEntitlements, requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SUPPORT_EMAIL, hasPaystack } from "@/lib/config";
+import { SUPPORT_EMAIL } from "@/lib/config";
 import { REFERRAL, product } from "@/lib/pricing";
 import { ngn, usd, fmtDate } from "@/lib/format";
 import { discountApplies, moneyText, normaliseCode, referralApplies } from "@/lib/money";
@@ -75,19 +75,7 @@ export default async function Checkout({ params, searchParams }: Props) {
       </section>
     );
   }
-  if (!hasPaystack()) {
-    return (
-      <section className="narrow stack">{head}
-        <Waitlist pid={p.id} title="Payments open soon" done={waitlisted}>
-          <p>We're finishing our payment setup, so you can't pay online yet and <b>no money will be taken</b>.</p>
-          <p>The price will be <b>{ngn(p.ngn)}</b>{p.usd ? <> (or {usd(p.usd)})</> : null}. Join the waitlist and we'll email {user.email} when checkout opens. If you've agreed access with us directly, an admin can switch it on for your account.</p>
-          <p className="note">Questions: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>
-        </Waitlist>
-      </section>
-    );
-  }
-
-  // Live checkout
+  // Checkout (works as soon as the Paystack keys are set; startCheckout handles a missing key gracefully)
   const plan = await openInstalmentPlan(user.id, p.id);
   let isRenewal = false;
   if (p.id === "member") {

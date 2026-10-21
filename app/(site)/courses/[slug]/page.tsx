@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SUPPORT_EMAIL, hasPaystack } from "@/lib/config";
+import { SUPPORT_EMAIL } from "@/lib/config";
 import { fmtDate, ngn, usd } from "@/lib/format";
 import { flatLessons, getCourseBySlug, getCurriculum, getRole, healEnrollment, isEnrolled, publicCreator, ratingSummary, progressFor } from "@/lib/marketplace";
 import { buyCourse, enrolFree, saveCourseReview } from "@/lib/actions/marketplace";
@@ -77,13 +77,6 @@ export default async function CoursePage({ params, searchParams }: Props) {
         user
           ? <form action={enrolFree}><input type="hidden" name="course_id" value={c.id} /><button className="btn" type="submit">Enrol free</button></form>
           : <Link className="btn" href={`/login?next=${encodeURIComponent(`/courses/${c.slug}`)}`}>Log in to enrol</Link>
-      ) : !hasPaystack() || sp.soon ? (
-        <div className="alert warn" role="status">
-          <p><b>Payments open soon.</b> {sp.soon ? "You're on the list: we'll email you when you can buy this course." : "Log in and tap the button to hear first."}</p>
-          {!sp.soon && (user
-            ? <form action={buyCourse} style={{ marginTop: 8 }}><input type="hidden" name="course_id" value={c.id} /><input type="hidden" name="slug" value={c.slug} /><button className="btn alt sm" type="submit">Tell me when it opens</button></form>
-            : <Link className="btn alt sm" href={`/login?next=${encodeURIComponent(`/courses/${c.slug}`)}`}>Log in</Link>)}
-        </div>
       ) : user ? (
         <form action={buyCourse} className="stack">
           <input type="hidden" name="course_id" value={c.id} /><input type="hidden" name="slug" value={c.slug} />

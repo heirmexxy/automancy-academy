@@ -123,14 +123,18 @@ test("boss: score is the clamped sum of rubric areas; pass at 80+ with every mus
 });
 
 test("redaction hides keys, passwords and real card numbers but keeps test cards and placeholders", () => {
+  // Fake secrets are assembled at run time so secret scanners don't mistake test data for real keys.
+  const fakeKey = ["sk", "live", "abcdefghijklmnop1234"].join("_");
+  const fakeBot = "1234567890" + ":" + "FAKE".padEnd(35, "x");
   const src = [
-    "PAYSTACK_SECRET_KEY=sk_live_abcdefghijklmnop1234",
+    "PAYSTACK_SECRET_KEY=" + fakeKey,
     "password: hunter2secret", "api_key = YOUR_KEY", "token: xxxxxx",
     "card 4111 1111 1111 1111", "test card 4084084084084081", "phone 08031234567",
-    "bot 1234567890:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsawq"
+    "bot " + fakeBot
   ].join("\n");
   const { text, found } = redactSecrets(src);
-  assert.ok(!text.includes("sk_live_abcdefghijklmnop1234"));
+  assert.ok(!text.includes(fakeKey));
+  assert.ok(!text.includes(fakeBot));
   assert.ok(!text.includes("hunter2secret"));
   assert.ok(!text.includes("4111 1111 1111 1111"));
   assert.ok(text.includes("4084084084084081"));

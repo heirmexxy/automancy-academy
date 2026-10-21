@@ -42,7 +42,7 @@ const CLIPS = {
     ], end:"Connected once, named clearly, and tested. Every Zap can use it now."},
 
     {id:"clip-09", title:"Use a Zapier template link", presenter:"male", url:"zapier.com/shared/…", steps:[
-      {screen:"Course template panel", url:"automancy.twellr.com/m-1-1", ui:[{label:"HL · Invoices → Drive", kind:"card"}, {label:"Open template link", kind:"button", highlight:true}],
+      {screen:"Course template panel", url:"automancy.cc/m-1-1", ui:[{label:"HL · Invoices → Drive", kind:"card"}, {label:"Open template link", kind:"button", highlight:true}],
         say:"Hello, I'm Emeka. Zapier templates come as a link. One click copies the whole Zap into your account. Let's try it with this lesson's invoice Zap.", show:["Template: HL · Invoices → Drive"]},
       {screen:"Shared Zap", ui:[{label:"1. Gmail · New Attachment", kind:"card"}, {label:"2. Google Drive · Upload File", kind:"card"}, {label:"Try it", kind:"button", highlight:true}],
         say:"You can see the steps before you take it: Gmail New Attachment, then Google Drive Upload File. Click Try it.", show:["Gmail → Google Drive"]},
@@ -89,7 +89,7 @@ const CLIPS = {
     ], end:"In the lesson, you'll add the email module and run it once."},
 
     {id:"clip-08", title:"Import a Make blueprint", presenter:"female", url:"make.com/scenarios/new", steps:[
-      {screen:"Course template panel", url:"automancy.twellr.com/m-2-1", ui:[{label:"HL · New order → email Tolu", kind:"card"}, {label:"Download blueprint", kind:"button", highlight:true}],
+      {screen:"Course template panel", url:"automancy.cc/m-2-1", ui:[{label:"HL · New order → email Tolu", kind:"card"}, {label:"Download blueprint", kind:"button", highlight:true}],
         say:"Hello, I'm Miracle. Our Make builds come as blueprints: one file that rebuilds the whole scenario. Let's import one.", show:["One .json file = the whole scenario"]},
       {screen:"Scenario editor", ui:[{label:"… More", kind:"menu"}, {label:"Import Blueprint", kind:"menu", highlight:true}, {label:"Save", kind:"button"}],
         say:"Create a new scenario. In the editor's menu, choose Import Blueprint. Pick the file you downloaded, and save.", show:["… menu › Import Blueprint"]},
@@ -142,7 +142,7 @@ const CLIPS = {
 
   "3.4": [
     {id:"clip-07", title:"Paste an n8n template", presenter:"male", url:"localhost:5678/workflow/new", steps:[
-      {screen:"Course template panel", url:"automancy.twellr.com/m-3-4", ui:[{label:"HL · Supplier prices → Sheet", kind:"card"}, {label:"Copy", kind:"button", highlight:true}],
+      {screen:"Course template panel", url:"automancy.cc/m-3-4", ui:[{label:"HL · Supplier prices → Sheet", kind:"card"}, {label:"Copy", kind:"button", highlight:true}],
         say:"Hello, I'm Emeka. Every n8n build in this course is a template you can paste. Click Copy. The whole workflow is now on your clipboard.", show:["Template: 3-4-supplier-prices.json"]},
       {screen:"New workflow", ui:[{label:"Click the canvas, then Ctrl+V (Cmd+V on a Mac)", kind:"card", highlight:true}],
         say:"In n8n, create a new workflow. Click on the empty canvas, then press Control V. On a Mac, Command V.", show:["Ctrl+V / Cmd+V"]},
@@ -167,7 +167,7 @@ const CLIPS = {
         say:"At 8:40 in the evening, the Grand Palm Hotel emails: add two crates of eggs to tomorrow. It lands in the Automation lane, and it's applied before nine. Tolu only sees it if something doesn't fit.", show:["“Please add 2 crates of eggs to tomorrow's delivery.”"]},
       {screen:"D3 · Data model", url:"Blueprint · D3 sheet", ui:[{label:"Order_Changes · CH-0001 · email · applied", kind:"card", highlight:true}, {label:"Orders.channel", kind:"text"}, {label:"Order_Items.unit_price", kind:"text"}],
         say:"The change lives in Order_Changes: one row, source email, applied yes or no. The order keeps its own unit price, so a price jump can't rewrite old orders.", show:["Order_Changes: CH-0001", "unit_price stored on each line"]},
-      {screen:"Lesson 0.3 · JSON lab", url:"automancy.twellr.com/m-0-3", ui:[{label:"Paste JSON: { \"customer\": \"Grand Palm Hotel\", … }", kind:"field", highlight:true}, {label:"Valid ✓", kind:"text"}],
+      {screen:"Lesson 0.3 · JSON lab", url:"automancy.cc/m-0-3", ui:[{label:"Paste JSON: { \"customer\": \"Grand Palm Hotel\", … }", kind:"field", highlight:true}, {label:"Valid ✓", kind:"text"}],
         say:"Here's the hotel's order as JSON, pasted into the lab from lesson 0.3. Valid. Every field has the type we said it would.", show:["Valid JSON"]},
       {screen:"AI prompt tester", url:"AI playground · test data", ui:[{label:"D5 prompt", kind:"card"}, {label:"Run", kind:"button", highlight:true}, {label:"type: change · eggs · 2 crates", kind:"card"}],
         say:"Now the AI step, run once with test data. It returns a change, not a new order: eggs, two crates. Then our checks: is it on the list, is the quantity sensible? Anything odd goes to Tolu.", show:["Spending cap set", "Post-AI checks before anything applies"]},

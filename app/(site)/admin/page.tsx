@@ -47,7 +47,7 @@ export default async function AdminHome() {
         <h1 style={{ fontSize: "2rem" }}>Overview</h1>
         <a className="btn alt sm" href="/api/admin/export">Download learners CSV</a>
       </header>
-      {!hasPaystack() && <p className="alert warn">Paystack isn't configured (placeholder mode): checkout shows a waitlist. Grant access from <Link href="/admin/learners">Learners</Link>.</p>}
+      {!hasPaystack() && <p className="alert bad">Payments are switched off: PAYSTACK_SECRET_KEY isn&apos;t set, so learners who click Pay see an error and you get an email. Add the keys in Vercel and redeploy (README: &ldquo;Going live with Paystack&rdquo;). Meanwhile you can grant access from <Link href="/admin/learners">Learners</Link>.</p>}
       <div className="grid4">
         <div className="kpi"><b>{n(signups)}</b><span>sign-ups ({n(signups7)} in 7 days)</span></div>
         <div className="kpi"><b>{n(payers)}</b><span>paying learners</span></div>

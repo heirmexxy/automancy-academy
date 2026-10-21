@@ -1,6 +1,8 @@
 node_modules/
 .next/
 out/
+# rendered WhatsApp videos (scripts/render-whatsapp-videos.mjs); uploaded to Storage, never committed
+out/whatsapp-media/
 .env
 .env.local
 .env.*.local

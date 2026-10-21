@@ -1,7 +1,7 @@
 /** Central configuration. Every PLACEHOLDER here is listed in README.md → "Placeholders to replace". */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://automancy.twellr.com").replace(/\/$/, ""); // PLACEHOLDER (domain)
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://automancy.cc").replace(/\/$/, ""); 
 export const SITE_NAME = "Automancy Academy";
-export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@automancy.twellr.com"; // PLACEHOLDER
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@automancy.cc"; // PLACEHOLDER
 export const COMPANY = {
   // PLACEHOLDER: the legal entity that sells the course, its address and registration number (shown in the legal pages and receipts)
   legalName: "Twellr Technologies Limited",
