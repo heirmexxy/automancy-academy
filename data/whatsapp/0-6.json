@@ -1,0 +1,163 @@
+{
+ "id": "0.6",
+ "title": "Keys, Logins & Safety",
+ "track": 0,
+ "free": true,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 0.6 · Keys, Logins & Safety*\n\n_≈ 90 minutes · with Miracle_\n\nAutomations hold the keys to your email, your customers' details and your payment accounts. This module makes sure the only person using those keys is you, and that you know exactly what to do on the day something leaks.\n\n*Your problem:* One leaked key or careless shortcut could cost you money, or your client's trust.\n*The plan:* Set up keys, logins, spending caps and test data the safe way, then fix Glitch's leaks.\n*After this lesson:* You'll build every automation after this safely by default."
+  },
+  {
+   "t": "text",
+   "body": "*The screenshot*\n\n*Thursday night:* Stuck on a Zap, Tolu posts a screenshot to a 412-member group chat. The secret key is right there in the picture.\n\n*Friday, 3 a.m.:* Someone copies the key. Thousands of AI requests run on Tolu's account overnight.\n\n*Friday, 8 a.m.:* The bill arrives. And while checking, Tolu finds a former rider can still edit the Orders sheet.\n\n*Friday, 8:05 a.m.:* Nodo arrives with a plan: stop the bleeding first, then find every other open door."
+  },
+  {
+   "t": "text",
+   "body": "*Passwords, API keys and tokens*\n\n- *Password*: Proves a _person_ is you. Used with two-factor authentication (2FA), it's the front door to an account.\n- *API key*: A long secret that lets _software_ act as your account. Often lasts until you delete it. Whoever has it can spend your money.\n- *Access token*: Issued after you approve access (OAuth). Usually expires and can be revoked. Platforms store and refresh these for you.\n- *Test vs. live keys*: Many providers give two sets. Paystack, for example, labels keys `sk_test_…` and `sk_live_…`. Build with test keys; switch to live only when ready.\n- *Public vs. secret*: A _public_ (publishable) key can sit in a web page. A _secret_ key never leaves your server or automation platform.\n\n*The cash rule:* treat every secret key like a bundle of naira notes. You wouldn't paste cash into a group chat, a spreadsheet, a screenshot or an AI prompt."
+  },
+  {
+   "t": "text",
+   "body": "*OAuth: \"Sign in with Google\", explained*\n\nWhen Zapier, Make or n8n asks to \"connect your Gmail\", you're using *OAuth*. You never give the app your password. You approve specific permissions, called *scopes*, and Google hands the app a token for just those.\n\n*Bolt:* You can see and remove every app connected to your Google account under *Google Account → Security → Your connections to third-party apps & services*. Check it once a quarter."
+  },
+  {
+   "t": "text",
+   "body": "*Where secrets live, and where they never go*\n\n*Safe homes*\n\n- The platform's credential store: Zapier connections, Make connections and keys, n8n credentials (stored encrypted).\n- A password manager (Bitwarden has a free plan).\n- Server environment variables, for self-hosted tools (Module 3.8).\n\n*Never here*\n\n- A spreadsheet cell, doc or note.\n- Group chats, emails, screenshots, screen recordings.\n- AI prompts or chat assistants.\n- Code shared on GitHub or pasted in forums.\n\n*One key, one home.* Store each key in exactly one credential, and let every workflow reuse it. Then rotating a key means changing it in one place, not hunting through 20 workflows."
+  },
+  {
+   "t": "text",
+   "body": "*Least privilege: give only what's needed*\n\nEvery person, app and key should have the smallest access that still does the job, and lose it when they no longer need it.\n\n- *A business account for automations*: Connect tools through a dedicated business Google account, not your personal one.\n- *Editors vs. viewers*: Riders need to see today's deliveries, not edit prices. Share views or filtered tabs.\n- *Offboarding*: When someone leaves, remove their access that day. Keep a list so you know where they had access.\n- *2FA everywhere*: Turn on two-factor authentication for email, automation platforms, AI providers and banking.\n- *Spending caps*: Set monthly budget limits and alerts at every AI and API provider that offers them.\n- *No \"anyone with the link can edit\"*: Share sheets with named people only."
+  },
+  {
+   "t": "text",
+   "body": "*Customer data and the law*\n\nNames, phone numbers and addresses are *personal data*. In Nigeria, the *Nigeria Data Protection Act 2023* governs how you collect and use it, overseen by the Nigeria Data Protection Commission. If you serve customers in the EU, the GDPR applies too. The core principles are the same and easy to follow:\n\n- *Collect the minimum*: Only what the job needs. A delivery needs an address; it doesn't need a birthday.\n- *Use it for the stated purpose*: Order data is for orders. Don't add customers to marketing without their agreement.\n- *Protect it and let it go*: Limit access, keep it secure, and delete what you no longer need. Customers can ask to see or remove their data."
+  },
+  {
+   "t": "text",
+   "body": "*Sending data to AI:* before any customer data goes to an AI provider, send only the fields the task needs, and read the provider's data-use terms for its API (they differ from its free chat app). While practising, use sample data like the messages in 0.5. _This is general guidance, not legal advice; for a client project involving sensitive data, check with a qualified adviser._"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _OAuth 2.0 explained with examples_ (ByteByteGo).\nLook for: Login-based access with scopes, versus sharing a password or key.",
+   "media": "walk:0.6",
+   "youtube": "https://www.youtube.com/watch?v=ZDuRmhLSLOY",
+   "app": "https://automancy.cc/learn#m-0-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the leaked-key response, and closing every open door*\n\n*The problem.* Tolu's AI provider key is public and being used. A former rider can edit the Orders sheet. Nobody knows what else is exposed. Here's what Nodo does, in order, and why the order matters.\n\nFIRST 10 MIN\n\n- *Revoke the key* in the provider's dashboard (API keys → delete). This stops the spending instantly. Don't wait to find out who used it.\n- *Create a new key* and paste it into the one credential your automations use.\n- *Delete the screenshot* from the group, knowing it may already be copied. Revoking, not deleting, is what protects you.\n\nFIRST HOUR\n\n- *Check usage and billing* for unfamiliar activity, and contact provider support with the dates; some will review abuse charges.\n- *Set a monthly spending limit and an alert* at 50% of normal spend.\n- *Turn on 2FA* on the provider account, email and automation platform.\n\nSAME DAY"
+  },
+  {
+   "t": "text",
+   "body": "- *Remove the former rider* from the Orders sheet. Change \"anyone with the link\" sharing to named people.\n- *Review connected apps* on the Google account; remove anything unused.\n- *Check the payment account:* confirm automations use test keys where they're still being built.\n\nTHIS WEEK\n\n- *Create an access register:* every tool, who has access, what level, which key.\n- *Move automations* to a dedicated business Google account.\n- *Write the rules down* in a one-page policy (below) and share it with staff."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Build the access register*\n\nA simple sheet, built with the rules from 0.4. It's how you'll know what to remove when someone leaves and what to rotate when something leaks.\n\n_tool · account_used · person_or_app · access_level · secret_stored_in · 2fa · last_reviewed_\n- *Google Sheets · Orders* · ops@harvestlane · Tolu · Owner · n/a · TRUE · 2026-10-09\n- *Google Sheets · Orders* · ops@harvestlane · Rider team · Viewer (separate \"Today's deliveries\" file, no customer data) · n/a · n/a · 2026-10-09\n- *AI provider* · ops@harvestlane · Zapier connection · API key, $10 monthly cap · Zapier connection only · TRUE · 2026-10-09\n- *Paystack* · ops@harvestlane · Make scenario · Test secret key · Make keychain · TRUE · 2026-10-09"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Write the one-page policy*\n\nShort enough that staff actually read it. Here's Harvest Lane's; the Gold mission asks you to write yours."
+  },
+  {
+   "t": "text",
+   "body": "*Why this order works*\n\n- Revoking first limits the damage while you investigate.\n- One credential per key makes replacement a one-minute job.\n- Caps and alerts turn the next leak into a small problem.\n- A register and policy turn one scare into lasting habits.\n\n*Common mistakes to avoid*\n\n- Deleting the message but not revoking the key.\n- Investigating for hours while the key is still live.\n- Pasting the new key into five places \"for convenience\".\n- Fixing the key but not the habit that leaked it."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt: safe or risky?*\n\n*Glitch:* I set up security for a friend's shop. Sort my choices into safe and risky. I'm sure they're all fine.\n\n_Decide for each one: Safe or Risky?_\n\n*A.* The AI key is saved in cell B1 of the Orders sheet so every Zap can read it.\n*B.* The Paystack test key is stored in Make's keychain and reused by three scenarios.\n*C.* The Orders sheet is shared as \"Anyone with the link can edit\" so riders don't need accounts.\n*D.* Zapier is connected to the owner's personal Gmail with full send-and-delete access.\n*E.* The AI provider account has a monthly cap and an alert at half the usual spend.\n*F.* To practise prompting, they pasted 200 real customer messages with phone numbers into a free chat app.\n*G.* Everyone uses the same password for the email, the automation tool and the bank, without 2FA.\n*H.* When the delivery supervisor left, their access was removed that afternoon using the access register."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* Risky\n*B:* Safe\n*C:* Risky\n*D:* Risky\n*E:* Safe\n*F:* Risky\n*G:* Risky\n*H:* Safe"
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Lock your own front doors",
+   "body": "- Open your Google Account's list of connected third-party apps. Remove at least three you no longer use.\n- Turn on 2FA for your email and one other important account.\n- Find one sheet shared as \"anyone with the link\" and change it to named people.\n\n*Done when:*\n- You can list what you removed and which accounts now have 2FA. (Don't screenshot any keys or codes.)"
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Run a leak drill with a real key",
+   "body": "- Set up a password manager if you don't have one.\n- Create an API key with an AI provider you'll use in this course. Set a spending limit and an alert, if the provider offers them.\n- Store the key in the password manager. Then practise the drill: revoke it, create a new one, update it in its one home, and time yourself.\n\n*Done when:*\n- The old key no longer works, the new one is stored in exactly one place, and your drill took under 10 minutes."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Write your business's security and data rules",
+   "body": "- Build an access register for your own business (or one you know) using the columns in the solved problem.\n- Adapt the one-page policy to fit, including what personal data you collect and why.\n- Add an incident card: the five steps to take in the first hour, with who does each one.\n\n*Done when:*\n- The register covers every tool that holds customer data or money, and the policy fits on one page."
+  },
+  {
+   "t": "quiz",
+   "q": "You spot your secret key in a public chat. What's the first thing to do?",
+   "options": [
+    "Delete the message",
+    "Ask the group not to use it",
+    "Revoke the key and create a new one",
+    "Check the bill at month end"
+   ],
+   "answer": 2,
+   "why": "Revoking stops the damage immediately. Deleting the message doesn't un-copy the key."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should an automation's API key be stored?",
+   "options": [
+    "In the platform's credential store, in one place",
+    "In a sheet so every workflow can read it",
+    "Inside the AI prompt",
+    "In a note on your phone"
+   ],
+   "answer": 0,
+   "why": "Credential stores keep keys encrypted and let every workflow reuse one copy."
+  },
+  {
+   "t": "quiz",
+   "q": "A Zap only needs to read emails with one label, but the consent screen asks to send and delete email. Best move?",
+   "options": [
+    "Allow it; it's a trusted company",
+    "Allow it, then change your password",
+    "Give up on automation",
+    "Look for a narrower option, or connect a separate business account"
+   ],
+   "answer": 3,
+   "why": "Least privilege: grant only what the job needs, and limit what a single token could reach."
+  },
+  {
+   "t": "quiz",
+   "q": "You're still building a payment automation. Which key should it use?",
+   "options": [
+    "The live secret key",
+    "The test secret key",
+    "The public key",
+    "No key; payments don't need one"
+   ],
+   "answer": 1,
+   "why": "Test keys let you run real-looking payments without moving real money."
+  },
+  {
+   "t": "quiz",
+   "q": "Before sending customer messages to an AI provider's API, you should…",
+   "options": [
+    "Send the full customer record for context",
+    "Nothing special; it's just text",
+    "Send only the needed fields and check the provider's API data terms",
+    "Ask the AI to promise to keep it private"
+   ],
+   "answer": 2,
+   "why": "Minimise the personal data you share, and know how the provider handles API data."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. A secret key is cash: never in chats, sheets, prompts, screenshots or code.\n2. Each key lives in one secure place and is reused from there.\n3. Read OAuth consent screens; grant the least access that works.\n4. 2FA everywhere, spending caps on every provider, test keys while building.\n5. On a leak: revoke first, replace, check usage, fix the cause.\n6. Collect the minimum personal data, use it only for its purpose, and protect it."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 0.6 complete!* _Keys, Logins & Safety_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Boss 0, _Boss 0: The Order Flood_."
+  }
+ ]
+}

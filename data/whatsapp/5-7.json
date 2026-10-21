@@ -1,0 +1,194 @@
+{
+ "id": "5.7",
+ "title": "One Inbox for Every Channel",
+ "track": 5,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.7 · One Inbox for Every Channel*\n\n_≈ 2 hours · with Miracle_\n\nCustomers don't think in channels. One person emails, then WhatsApps, then comments on Instagram, all about the same late order. If each channel is handled separately, they get three different answers, or the same answer three times. In this lesson you join email, WhatsApp, Instagram and Facebook into one customer record and one conversation history, with one agent that answers consistently in each channel's style and rules, and routes the hard ones to the right person on time.\n\n*Your problem:* Customers contact you everywhere, and the answers don't match.\n*The plan:* Bring email, WhatsApp and social messages into one conversation record with one agent and one set of rules.\n*After this lesson:* Every customer gets one consistent answer, whatever channel they use."
+  },
+  {
+   "t": "text",
+   "body": "*Three channels, three answers*\n\n*9:02 to 9:35 a.m.:* Mrs Adeyemi asks about her late order by email, then WhatsApp, then Instagram.\n\n*Sage:* \"Two bots, two memories, two answers. The customer screenshots both. Now nobody trusts either.\"\n\n*Glitch:* \"Same name? Same person! I merged them. Funke from Bodija can now see Funke from Mokola's orders. Efficient!\"\n\n*Echo:* \"One customer, one timeline, one answer, on the channel she used last. The other threads get a short note.\""
+  },
+  {
+   "t": "text",
+   "body": "*One customer, many identities*\n\nStore the person once, and each way of reaching them as a separate, verified identity."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (One customer, many identities): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-7"
+  },
+  {
+   "t": "text",
+   "body": "- *Normalise first*: 0803 000 1111, +234 803 000 1111 and 2348030001111 are the same number. Store phones in one format (+2348030001111) and emails in lowercase, or you'll create duplicates.\n- *One source of truth for decisions*: Refunds, credits and exceptions live in `decisions`. Every channel's agent reads it before answering, so all channels say the same thing."
+  },
+  {
+   "t": "text",
+   "body": "*Matching rules: proof, hints and names*\n\n_Evidence · Action · Why_\n- Exact phone or email already verified on a customer (e.g. from checkout) · Merge automatically · It's proof.\n- The customer tells you their number or email in another channel · Link the conversation for context, but verify (a code sent to that number) before sharing order or payment details · Anyone can type someone else's number.\n- Similar business name, same topic, no shared identifier · Suggest to a person; ask the customer · Probably the same, but not proven.\n- *Same personal name only* · Keep separate · Names are shared by thousands of people.\n\n*Sage:* A wrong merge is worse than a missed one. A missed merge costs a little consistency; a wrong merge shows a stranger someone's address and orders."
+  },
+  {
+   "t": "text",
+   "body": "*Identity lab: who is who?*\n\nSeven messages arrived this morning. Decide each pair. (Funke Adeyemi's checkout record has email funke.a@example.com and phone +2348030001111, both verified.)"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Identity lab: who is who?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-7"
+  },
+  {
+   "t": "text",
+   "body": "*One brain, many voices*\n\nThe same agent (Sage Desk, B4) answers every channel, with the same knowledge, tools and decisions. Only the reply's shape and rules change:\n\n_Channel · Reply style · Rules (from 5.1 and 5.5)_\n- *Email* · Full sentences, greeting, signature, order details allowed · Reply to the thread; marketing rules don't apply to service replies\n- *WhatsApp* · Short, friendly, one message, buttons where useful · Free-form only within 24 hours of their last message; otherwise a template\n- *Instagram and Messenger DMs* · Short and warm · 24-hour window; details only after identity is verified\n- *Public comments* · One line, no personal details · Move anything personal to private"
+  },
+  {
+   "t": "text",
+   "body": "- *Answer once*: Reply on the channel the customer used most recently. Close the other threads with \"We've replied on WhatsApp so everything's in one place.\"\n- *Read before writing*: Before every reply, the agent loads the whole timeline and the `decisions` table, so it never contradicts an earlier answer."
+  },
+  {
+   "t": "text",
+   "body": "*Routing, people and promises*\n\n- *Priority*: Safety or legal → complaint or refund → order problem → buying question → general question → praise.\n- *Assignment*: Each conversation that needs a person is assigned to one named person (Tolu, or her assistant Bisi), never \"the team\".\n- *Response targets*: Complaints: a person within 1 working hour. Order problems: 15 minutes. Questions: 5 minutes (the agent). A timer on every conversation; alerts when one is about to be missed.\n- *A screen for the team*: Telegram works for one or two people. For a bigger team, an open-source shared inbox such as Chatwoot can show every conversation in one place, while n8n and the agent work behind it."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How To Build An AI Customer Support Agent with n8n_ (Bart Slodyczka).\nLook for: One agent brain with memory; imagine the same brain behind several channel triggers.",
+   "media": "walk:5.7",
+   "youtube": "https://www.youtube.com/watch?v=cEpbSVkt_Qc",
+   "app": "https://automancy.cc/learn#m-5-7"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's one inbox*\n\n*The goal.* Email, WhatsApp, Instagram and Facebook messages all flow into one Supabase record per customer. One agent answers with the full history and the same decisions, in each channel's style and rules. Hard cases go to a named person with a response timer."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Doors in, one shape out*\n\nThree small \"adapter\" workflows: *Gmail Trigger*, the *WhatsApp* webhook (5.1), and the *Meta* webhook (5.5). Each turns its event into the same shape and calls one sub-workflow, *Inbox · Receive*:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Doors in, one shape out): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-7"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Resolve the identity*\n\n_(Code on screen in the app.)_\n\nSupabase: find a verified identity with that value. Found → that customer. Not found → a new customer with an unverified identity. Then check the message text for a phone or email the customer typed; if it matches another customer's verified identity, create a *link suggestion* (not a merge) and set `needs_verification = true`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Upsert the conversation*\n\nOne open conversation per customer per topic: if the customer has an open conversation about the same order, add the message there, whichever channel it came from. Update `last_customer_msg_at` and the channel they used most recently."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Answer with the whole picture*\n\nThe Sage Desk agent gets a tool `get_customer_context` that returns the timeline across channels, open orders and the `decisions` rows. The system message adds: \"Reply only on `reply_channel`, in its style; if `needs_verification`, don't share order or payment details.\" Allowed actions per channel come from code, as in 5.5. Refunds still need Tolu's approval, and approved decisions are written to `decisions` so every channel sees them."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Send through the right door, then tidy up*\n\nA Switch on `reply_channel` calls the Gmail, WhatsApp or Meta sender. Other open threads for the same customer get one short \"replied on WhatsApp\" note, then close."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Route and time*\n\nPriority and assignment are set in code from intent and urgency. A watchdog every 5 minutes checks `sla_due_at`; at 80% of the time it pings the assigned person, at 100% it escalates to Tolu. A daily digest at 18:00: conversations by channel, median response time, missed targets, open hand-overs.\n\n- *1* record per customer\n- *1* answer, on the latest channel\n- *0* merges on a name alone"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Identities are normalised and verified, so merges are safe.\n- Decisions live in one table every channel reads.\n- One agent, one memory, channel-specific voice and rules.\n- Each customer gets one answer, not three.\n- Named owners and timers keep promises.\n\n*Common mistakes to avoid*\n\n- A separate bot per channel.\n- Merging on names.\n- Phone numbers in mixed formats.\n- Sharing order details before verifying identity.\n- Replying on every channel at once."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I unified everything. Mostly. Here's the morning.\n\n*A:* A customer was told \"refund approved\" by email and \"no refunds for late deliveries\" on WhatsApp, an hour apart.\n*B:* Two different customers called Funke were merged. One was sent the other's address.\n*C:* A customer got the same answer three times: email, WhatsApp and Instagram.\n*D:* The customers table has 312 \"new\" customers who are really 140 people: 0803…, 234803… and +234803…\n*E:* A hotel's procurement manager got \"ok dey come\" by email at 3 a.m."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* each channel answered without the shared record. Store decisions in one table and make the agent read it before every reply.\n*B:* merged on a name. Merge only on verified identifiers; verify before sharing details.\n*C:* replied on every channel. Reply once on the latest channel, then close the others with a note.\n*D:* no normalisation. Store phones as +234… and emails in lowercase, then de-duplicate the existing records carefully.\n*E:* WhatsApp style on email, and no business-hours rule for business clients. Channel-specific style in the prompt; send non-urgent business replies in working hours."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Map a real business's channels",
+   "body": "- List every channel a real business uses, who answers each, their reply rules, and how long replies take now.\n- Write its matching rules and response targets.\n\n*Done when:*\n- The owner agrees with your map and targets, and you've found at least one customer who used two channels for the same issue."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Two channels, one record, one agent",
+   "body": "- Connect email and WhatsApp (or Instagram) to one customers/identities/conversations schema and one agent.\n- Test with one person writing on both channels, and two people with the same name.\n\n*Done when:*\n- The first person gets one consistent answer; the two namesakes are never merged."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run a unified inbox for two weeks",
+   "body": "- For a real business, run the one inbox across at least three channels for two weeks.\n- Report median response time per channel, merges made and suggested, and missed targets.\n\n*Done when:*\n- Response times improved against the previous two weeks, with zero wrong merges."
+  },
+  {
+   "t": "quiz",
+   "q": "Two messages come from customers both named \"Funke A.\". What do you do?",
+   "options": [
+    "Merge them",
+    "Merge them if they're in the same city",
+    "Keep them separate unless a verified identifier links them",
+    "Delete one"
+   ],
+   "answer": 2,
+   "why": "A wrong merge leaks private data. Names prove nothing."
+  },
+  {
+   "t": "quiz",
+   "q": "An Instagram user types the phone number of a known customer. What's safe?",
+   "options": [
+    "Link for context; verify by code before sharing order details",
+    "Share the order details straight away",
+    "Block them",
+    "Ignore the number"
+   ],
+   "answer": 0,
+   "why": "Anyone can type a number. Verify before revealing anything personal."
+  },
+  {
+   "t": "quiz",
+   "q": "Why does every channel's agent read the `decisions` table?",
+   "options": [
+    "To slow it down",
+    "So refunds and exceptions are the same answer everywhere",
+    "For marketing",
+    "It doesn't need to"
+   ],
+   "answer": 1,
+   "why": "One source of truth for decisions means one answer, whatever the channel."
+  },
+  {
+   "t": "quiz",
+   "q": "A customer wrote on email, then WhatsApp. Where do you reply?",
+   "options": [
+    "On both, with the same text",
+    "On email, always",
+    "On whichever is cheaper",
+    "On WhatsApp (the latest), with a short note on the email thread"
+   ],
+   "answer": 3,
+   "why": "Answer once, where they are now; keep the other thread tidy."
+  },
+  {
+   "t": "quiz",
+   "q": "Why normalise phone numbers to +234…?",
+   "options": [
+    "WhatsApp requires it for marketing",
+    "It looks nicer",
+    "So 0803…, 234803… and +234803… are recognised as one person",
+    "To hide the number"
+   ],
+   "answer": 2,
+   "why": "One format, or the same customer becomes three."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. One customer record, many verified identities, one timeline.\n2. Merge on proof, suggest on hints, never on a name.\n3. Decisions live in one place that every channel reads.\n4. One agent brain, channel-specific voice and rules; answer once, on the latest channel.\n5. Named owners and timers turn promises into practice."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.7 complete!* _One Inbox for Every Channel_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.8, _CRM Foundations: HubSpot and Zoho_."
+  }
+ ]
+}

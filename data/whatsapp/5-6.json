@@ -1,0 +1,176 @@
+{
+ "id": "5.6",
+ "title": "Email Campaigns That Land",
+ "track": 5,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.6 · Email Campaigns That Land*\n\n_≈ 2 hours · with Emeka_\n\nEmail is still the channel a business owns: no algorithm decides who sees it. But only if it reaches the inbox. In this lesson you set up a consented list, authenticate a domain so Gmail and Yahoo trust it, build welcome, newsletter and win-back sequences in Brevo or Mailchimp, let AI draft from real facts with a person approving, and measure what actually brings customers back.\n\n*Your problem:* Emails land in spam, or never get opened.\n*The plan:* Set up a consented list in Brevo or Mailchimp, authenticate your domain, and build sequences AI helps write.\n*After this lesson:* Your campaigns reach the inbox and bring customers back."
+  },
+  {
+   "t": "text",
+   "body": "*1,400 in spam*\n\n*Tolu:* \"My first newsletter went to 2,000 contacts from my Gmail. 1,400 landed in spam, and Gmail blocked my account for a day.\"\n\n*Glitch:* \"Not enough people? I bought you ten thousand more! Fresh off a flash drive. Totally verified.\"\n\n*Echo:* \"Inboxes trust senders who prove who they are, and who only email people who asked. Three keys, one rule.\"\n\n*Two months later:* A win-back email to customers quiet for 60 days brought 31 of them back. All from inboxes, not spam."
+  },
+  {
+   "t": "text",
+   "body": "*Permission first*\n\n- *Opt-in*: A clear, unticked box at checkout or on a form: \"Send me weekly prices and offers.\" Record when and where they said yes.\n- *Double opt-in*: A confirmation email they must click. It proves the address is real and keeps typos and traps off the list. Both Brevo and Mailchimp offer it.\n- *Not consent*: Having someone's email from an order, a WhatsApp chat or a business card isn't permission for marketing. Bought lists never are.\n- *The law*: Nigeria's data protection rules require consent for direct marketing and let people object at any time. Every email needs an easy unsubscribe, honoured promptly (Gmail and Yahoo ask within 2 days).\n- *Segments*: Group by behaviour: restaurants vs households, what they buy, how recently. Smaller, relevant sends beat one big blast."
+  },
+  {
+   "t": "text",
+   "body": "*Brevo or Mailchimp?*\n\n_Brevo · Mailchimp_\n- *Free plan* · 300 emails a day; up to 100,000 contacts stored; Brevo branding on emails · 250 contacts; 500 emails a month, at most 250 a day; 1 audience\n- *Automation on free* · Yes, for up to 2,000 contacts · One single-email automation (e.g. a welcome email); multi-step flows need a paid plan\n- *Also does* · Transactional email; SMS and WhatsApp campaigns on paid plans · Strong templates, reporting and integrations\n- *From n8n* · Brevo node (contacts, attributes, sending); HTTP Request for campaigns · Mailchimp node (members, tags, campaigns: replicate and send)\n- *From Make* · Brevo app · Mailchimp app\n- *Good fit* · Small Nigerian businesses starting free, with automation · Clients already on Mailchimp, or wanting its design tools\n\nPlans and limits checked Oct 2026; check each pricing page before quoting a client."
+  },
+  {
+   "t": "text",
+   "body": "*Three keys to the inbox*\n\n- *SPF*: A DNS record listing which services may send email for your domain. Think of it as the guest list at the gate. One record only, ending in `~all` or `-all`.\n- *DKIM*: A digital signature on every email, checked against a public key in your DNS. Like a sealed envelope: proof nobody changed it on the way.\n- *DMARC*: Tells inboxes what to do when SPF or DKIM fail, and sends you reports. Start with `p=none`, read the reports, then move to `quarantine`.\n- *One-click unsubscribe*: A header that lets people leave in one tap. Gmail and Yahoo require it for bulk senders; Brevo and Mailchimp add it for you.\n- *Complaint rate*: Keep \"marked as spam\" below 0.1% of emails; at 0.3% Gmail and Yahoo start filtering you.\n- *Your own domain*: Send from a subdomain such as `mail.harvestlane.example`, never from @gmail.com through an email tool, and start with small, engaged segments."
+  },
+  {
+   "t": "text",
+   "body": "*Deliverability lab*\n\nGlitch set up Harvest Lane's first campaign. Fix the records and settings until every check passes."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Deliverability lab. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-6"
+  },
+  {
+   "t": "text",
+   "body": "*Sequences, and what to measure*\n\n_Sequence · When · What it says_\n- *Welcome (3 emails)* · On opt-in; day 3; day 7 · Who Harvest Lane is; how ordering works; this week's best produce\n- *Weekly newsletter* · Thursday 5 p.m. · What's in season, prices, one kitchen tip, one customer story\n- *Re-order reminder* · The day before their usual order day · \"Your usual Friday order? Tomatoes are ₦X this week.\"\n- *Win-back* · 60 days with no order · \"We miss you\": what's new, and a reason to return that Tolu approved\n\n- *AI writes, from facts*: The AI drafts from the product sheet, prices and the customer's own order history. Discounts and promises come only from a list Tolu approved.\n- *Opens are unreliable*: Apple Mail's privacy protection loads images automatically, so many \"opens\" aren't real. Judge by clicks, replies and orders (tag links with UTM codes).\n- *Stop rules*: If complaints pass 0.1% or unsubscribes jump, pause and look at frequency and relevance before the next send."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Brevo Domain Authentication: DKIM & DMARC (Step-by-Step)_.\nLook for: Adding Brevo's DKIM, DMARC and SPF records, and checking they pass.",
+   "media": "walk:5.6",
+   "youtube": "https://www.youtube.com/watch?v=a0PuIji3TOQ",
+   "app": "https://automancy.cc/learn#m-5-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's email engine*\n\n*The goal.* Customers who opt in at checkout join a Brevo list automatically. They get a welcome series, a weekly newsletter that AI drafts and Tolu approves, a reminder before their usual order day, and a win-back email after 60 quiet days, all from an authenticated subdomain. The Mailchimp version of each step is noted."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Authenticate the domain*\n\nIn Brevo, add the sending domain `mail.harvestlane.example`. Brevo shows the records to add at your DNS provider (DKIM and a verification code); add a DMARC record (`v=DMARC1; p=none; rua=mailto:dmarc@harvestlane.example`) and check SPF has one record only. Press \"Authenticate\" in Brevo. In Mailchimp: Website → Domains → authenticate, with the same idea."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Consent at checkout → contact in Brevo*\n\nThe checkout form gets an unticked box: \"Send me weekly prices and offers\". In the payment workflow (HL·03 from the capstone), after a verified payment: if consent is true, the *Brevo* node creates or updates the contact with attributes `FIRSTNAME, SEGMENT (restaurant/household), FAV_CATEGORY, LAST_ORDER_DATE, USUAL_ORDER_DAY`, adds it to the \"Customers · opted in\" list, and stores `consent_at` and `consent_source` in Supabase. Mailchimp node: Member → Create, with tags."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Welcome and win-back automations*\n\nIn Brevo's automation builder: \"contact added to list\" → welcome email 1 → wait 3 days → email 2 → wait 4 days → email 3. For win-back, n8n updates `LAST_ORDER_DATE` on every order; a Brevo automation sends the win-back when that date is 60 days old, and stops if they order. (Mailchimp's free plan allows only one single-email automation, so a three-email series needs a paid plan, or let n8n schedule these sends.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · The weekly newsletter, drafted by AI, approved by Tolu*\n\nThursday 10:00, n8n reads the price list, what's in season and one approved customer story, and asks the AI for structured output: `{ subject_options[3], preview_text, sections[] }`. A Code node checks there are no prices or discounts that aren't in the sheet. Tolu picks a subject and approves on Telegram. Then an HTTP Request creates the campaign in Brevo (`POST /v3/emailCampaigns`, segment list, HTML from the template) and sends it at 17:00 (`/emailCampaigns/{id}/sendNow`, triggered on schedule). Mailchimp node: replicate last week's campaign, update content, Send."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Unsubscribes everywhere*\n\nA Brevo webhook (unsubscribed, hard bounce, spam complaint) calls n8n, which marks the person in Supabase so no other channel markets to them either, the same day. Mailchimp has the same webhooks."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Measure what matters*\n\nEvery link carries `utm_source=email&utm_campaign=week41`, so orders can be traced back. Monday's report adds: emails delivered, clicks, orders from email, unsubscribes and complaints, and pauses the next send automatically if complaints pass 0.1%.\n\n- *3* DNS records between spam and inbox\n- *0* contacts without consent\n- *1 tap* to unsubscribe, honoured everywhere"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Everyone on the list asked to be there.\n- The domain is authenticated, so inboxes trust it.\n- Sequences fire on real behaviour, not on a calendar alone.\n- AI drafts from facts; Tolu approves anything with a price or promise.\n- Success is measured in clicks and orders.\n\n*Common mistakes to avoid*\n\n- Bought or borrowed lists.\n- Sending from free Gmail through an email tool.\n- Two SPF records, or `+all`.\n- Celebrating open rates.\n- Discounts invented by the AI.\n- Unsubscribes ignored on other channels."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My campaign had an 80% open rate! Also, a few small problems.\n\n*A:* After importing the bought list, Brevo suspended sending pending review.\n*B:* Every email failed DMARC at Gmail. The From address was harvestlane.orders@gmail.com.\n*C:* The domain had two SPF records, one ending in +all.\n*D:* The newsletter promised \"20% off everything this weekend\". Nobody had approved it, and customers expected it.\n*E:* \"80% opened!\", yet clicks and orders were almost zero."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* bought lists mean complaints, bounces and spam traps; email tools suspend accounts for it. Delete the list; grow it with opt-ins.\n*B:* a free-mailbox From address can't pass DMARC through a third-party sender. Send from your own authenticated (sub)domain.\n*C:* only one SPF record is valid, and +all lets anyone send as you. Merge them into one record ending in ~all.\n*D:* the AI invented an offer. Offers come only from an approved list; a Code check blocks any discount not on it; a person approves every campaign.\n*E:* automatic image loading (such as Apple Mail's privacy protection) inflates opens. Measure clicks, replies and orders."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Authenticate a domain",
+   "body": "- Set up SPF, DKIM and DMARC for a domain you control (or a client's, with permission) in Brevo or Mailchimp.\n- Send a test to a Gmail account and open \"Show original\".\n\n*Done when:*\n- The message shows SPF, DKIM and DMARC all as PASS."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Welcome and win-back sequences",
+   "body": "- Build the consent-at-checkout flow into Brevo (or Mailchimp), plus the welcome series and the 60-day win-back.\n- Test with three test contacts at different order dates.\n\n*Done when:*\n- Each test contact receives exactly the right emails, and unsubscribing one stops everything for that contact the same day."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A real campaign with real results",
+   "body": "- For a real business with a consented list, run four weekly newsletters drafted by AI and approved by the owner.\n- Report clicks, orders from email, unsubscribes and complaints, against a baseline.\n\n*Done when:*\n- Complaints stayed under 0.1% and you can show orders that came from email."
+  },
+  {
+   "t": "quiz",
+   "q": "Which contacts can receive the newsletter?",
+   "options": [
+    "Everyone who ever ordered",
+    "People who ticked \"send me offers\" and confirmed",
+    "Everyone in your WhatsApp chats",
+    "A bought list of food lovers"
+   ],
+   "answer": 1,
+   "why": "Consent first. An order or a chat isn't permission for marketing."
+  },
+  {
+   "t": "quiz",
+   "q": "What does DKIM do?",
+   "options": [
+    "Lists which servers may send for you",
+    "Tells inboxes what to do with failures",
+    "Signs each email so inboxes can check it wasn't changed and really came from you",
+    "Unsubscribes people"
+   ],
+   "answer": 2,
+   "why": "SPF is the guest list, DKIM the sealed envelope, DMARC the instructions."
+  },
+  {
+   "t": "quiz",
+   "q": "Your free Mailchimp list has 2,000 contacts. What's the problem?",
+   "options": [
+    "The free plan holds 250 contacts and 500 sends a month",
+    "Nothing",
+    "Mailchimp doesn't work in Nigeria",
+    "It needs a Gmail address"
+   ],
+   "answer": 0,
+   "why": "Know the plan limits before you promise a client anything. Brevo's free plan sends 300 a day."
+  },
+  {
+   "t": "quiz",
+   "q": "Which result best shows a campaign worked?",
+   "options": [
+    "An 80% open rate",
+    "The number of emails sent",
+    "Number of hashtags",
+    "Clicks and orders traced from the email links"
+   ],
+   "answer": 3,
+   "why": "Opens are inflated by automatic image loading. Clicks and orders are real."
+  },
+  {
+   "t": "quiz",
+   "q": "Complaints reach 0.3%. What happens, and what do you do?",
+   "options": [
+    "Nothing; send more",
+    "Gmail and Yahoo start filtering you; pause, fix the list and frequency",
+    "Change the subject line only",
+    "Switch to a new Gmail account"
+   ],
+   "answer": 1,
+   "why": "Aim for under 0.1%. Fix the cause before the next send."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Only email people who agreed, and record when and how.\n2. SPF, DKIM, DMARC and one-click unsubscribe, from your own domain.\n3. Brevo's free plan includes automation; Mailchimp's free plan is small and allows only one single-email automation.\n4. AI drafts from facts; a person approves prices and promises.\n5. Measure clicks and orders; pause if complaints climb."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.6 complete!* _Email Campaigns That Land_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.7, _One Inbox for Every Channel_."
+  }
+ ]
+}

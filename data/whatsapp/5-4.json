@@ -1,0 +1,198 @@
+{
+ "id": "5.4",
+ "title": "The Social Media Manager Agent",
+ "track": 5,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.4 · The Social Media Manager Agent*\n\n_≈ 2 hours · with Emeka_\n\nSmall businesses post when they remember, so their pages go quiet for weeks. In this lesson you build an agent that plans a content calendar from the business's real products and seasons, drafts a version of each post for each platform, waits for the owner's approval, publishes on schedule within each platform's rules, and reports what worked, so next week's plan is better.\n\n*Your problem:* Posting is irregular, rushed, and the same everywhere.\n*The plan:* Build an agent that plans a calendar, drafts posts per platform, waits for approval and publishes on schedule.\n*After this lesson:* Your pages stay active and on-brand without eating your week."
+  },
+  {
+   "t": "text",
+   "body": "*Twice a month vs every day*\n\n*Tolu:* \"I posted twice this month. The new farm shop down the road posts every single day, and customers ask me if we've closed.\"\n\n*Glitch:* \"One caption, twelve hashtags, six platforms, 3 a.m. Efficiency!\"\n\n*Echo:* \"Same idea, six different shapes. Each platform has its own length, format, audience, and rules.\"\n\n*Friday, 4 p.m.:* Ten minutes on her phone: approve, tweak two captions, skip one. The pages stay alive all week."
+  },
+  {
+   "t": "text",
+   "body": "*A calendar built from the business, not from thin air*\n\nAn agent writes good posts when it has real material. Give it *content pillars* (recurring themes) and the facts to fill them.\n\n_Pillar · Fed by · Example_\n- *Product of the week* · Stock and price sheet · \"Ugu is in season: ₦1,200 a bunch, delivered tomorrow morning.\"\n- *Behind the scenes* · Tolu's phone photos in a Drive folder · 5 a.m. at the farm, loading the van.\n- *Customer stories* · Testimonials with written permission · A restaurant explains why they switched to Harvest Lane.\n- *Kitchen tips* · A recipe list · Three ways to keep tomatoes fresh for a week.\n- *Offers and dates* · A seasons-and-holidays sheet · Christmas pre-orders open on 1 December."
+  },
+  {
+   "t": "text",
+   "body": "- *Cadence*: Decide per platform: e.g. Instagram 4 a week, Facebook 3, LinkedIn 1, X daily, TikTok 2 videos, WhatsApp broadcast at most once a week to people who opted in.\n- *Brand voice*: A one-page guide the agent always reads: tone, words to use and avoid, emoji rules, and claims it must never make (health promises, \"cheapest in Ibadan\")."
+  },
+  {
+   "t": "text",
+   "body": "*What each platform lets an agent publish*\n\n_Platform · How · What to know_\n- *Facebook Page* · Meta Graph API (n8n Facebook Graph API node; Make Facebook Pages app) · Text, link, photo and video posts to a Page you manage.\n- *Instagram* · Instagram API, Business or Creator account · Two steps: create a media container from a public image or video URL, then publish it. No text-only posts.\n- *LinkedIn Page* · LinkedIn Posts API (n8n's LinkedIn node: Post → Create) · Posting as an organisation needs a page admin or content admin role.\n*X:* X API, pay per use (n8n's X node) · Each API post costs money: $0.015, or $0.20 if it contains a link (checked Oct 2026). Budget for it.\n- *TikTok* · Content Posting API · Until TikTok audits your app, posts made through the API are private (only visible to the account). Many teams send drafts and publish from the app."
+  },
+  {
+   "t": "text",
+   "body": "- *WhatsApp* · WhatsApp Cloud API (5.1) · Not a feed. Marketing messages go only to customers who opted in, as approved templates, and each one is charged."
+  },
+  {
+   "t": "text",
+   "body": "*Echo:* Platform rules and prices change. Read each platform's current docs before building for a client, and put the date you checked in your handover pack."
+  },
+  {
+   "t": "text",
+   "body": "*Post lab: one idea, six platforms*\n\nGlitch's post is below. Make it publishable everywhere you tick, without breaking any platform's rules. Write a separate short version for X, add the right media, and pick a sensible time."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Post lab: one idea, six platforms. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-4"
+  },
+  {
+   "t": "text",
+   "body": "*A person stays in charge*\n\n- *Approval*: Every post is approved before it's scheduled. Approve-all is fine once the owner trusts the agent, but the button stays.\n- *True facts only*: Prices, stock and dates come from the sheet at publish time, not from the model's memory. If the price changed since approval, the post waits.\n- *Image rights*: Use the business's own photos. People in photos (customers, staff) need permission. Don't pass off AI-generated images as real produce or real customers.\n- *Disclosure*: Paid partnerships and sponsored posts must be labelled. Follow each platform's rules for branded content and AI-generated media.\n- *Pause button*: A single setting that stops all scheduled posts, for bad news days, outages or national events."
+  },
+  {
+   "t": "text",
+   "body": "*Learn from results, every week*\n\nEach platform's insights API returns reach, engagement and clicks for your own posts. The agent stores them against each post and pillar, then next Friday's plan uses them:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Learn from results, every week): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-4"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _AI Social Media Content Calendar Automation with n8n_.\nLook for: Calendar-driven post drafts; add your own approval step before publishing.",
+   "media": "walk:5.4",
+   "youtube": "https://www.youtube.com/watch?v=H-CTKdiuY2I",
+   "app": "https://automancy.cc/learn#m-5-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's posting week*\n\n*The goal.* Every Friday at 2 p.m., the agent drafts next week's posts from the calendar, the price sheet and last week's results. Tolu approves on Telegram. Approved posts publish at their scheduled times on each platform, and every Monday a short report shows what worked."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · The sheets*\n\n*Calendar* (`date, time, pillar, idea, platforms, media_file, status`), *Posts* (one row per platform version: `calendar_id, platform, caption, alt_text, status, approved_by, post_id, published_at`), *Brand voice* (one cell of rules) and the existing *Price list*."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Draft*\n\nSchedule Trigger (Fridays 14:00) → read next week's Calendar rows → for each, an AI step with the brand voice, the idea, the product's current price and stock, and last week's top posts. Structured output, one object per platform:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Draft): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-4"
+  },
+  {
+   "t": "text",
+   "body": "A Code node checks each version against the platform's rules (the Card 3 checks) and the brand voice's banned phrases. Failures go back to the AI once, then to Tolu marked \"needs edit\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Approve*\n\nTelegram: one message per calendar item showing each platform version and the photo, with Approve, Edit and Skip. Edits come back as a reply and replace the caption. Approved rows get `status = approved`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Publish on time*\n\nA Schedule Trigger every 15 minutes picks approved posts that are due, checks the `posting_paused` setting, re-reads any price the post uses (and holds the post if it changed), then routes by platform:\n\n- *Facebook:* Graph API, POST a photo with a message to the Page.\n- *Instagram:* create a media container (public image URL + caption), then publish it.\n- *LinkedIn:* LinkedIn node, Post → Create as the organisation.\n- *X:* X node, Create Post, within the monthly API budget.\n- *TikTok:* send the video to Tolu as a draft to publish in the app (until the app is audited).\n- *WhatsApp:* the weekly offer as an approved marketing template, only to opted-in customers (5.1).\n\nSave each platform's returned post ID. Attach the error workflow (3.6): a failed post alerts Tolu, never fails silently."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Report*\n\nMonday 08:00: fetch insights for last week's post IDs, total them by platform and pillar in code, and let the AI suggest one change to the plan. Email plus a Telegram summary.\n\n- *10 min* of Tolu's time a week\n- *6* platform versions per idea\n- *0* posts without approval"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Posts come from real products, prices and photos.\n- Each platform gets a version that fits its rules and audience.\n- A person approves everything, and can pause it all.\n- Prices are re-checked at publish time.\n- Results feed next week's plan.\n\n*Common mistakes to avoid*\n\n- The same caption everywhere.\n- Posting at times nobody's online.\n- Prices from the model's memory.\n- Promising automated TikTok posting before the audit.\n- Using people's photos without permission.\n- Ignoring the X API bill."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I ran Harvest Lane's social media for a week. Engagement is… interesting.\n\n*A:* Every Instagram post failed. The log says the media was missing.\n*B:* A post promised tatashe at ₦18,000 a bag. The price had gone up to ₦21,000 on Wednesday.\n*C:* The X bill was much higher than planned: 14 posts a day, each with a link.\n*D:* A happy customer's family photo appeared in an ad. Nobody had asked her.\n*E:* Ten TikTok videos were \"published\", but nobody could see them."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* Instagram has no text-only posts. Every Instagram version needs a public image or video URL for the media container.\n*B:* the price came from the draft, not the sheet. Re-read prices at publish time and hold the post if anything changed.\n*C:* API posts with links cost more on X. Set a cadence and a monthly budget, and put links only where they earn their cost.\n*D:* no permission. Get written consent for people in photos, and record it next to the image.\n*E:* the TikTok app wasn't audited, so API posts were private. Send drafts to the owner to publish, or complete TikTok's audit first."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A four-week calendar",
+   "body": "- For a real business, write five pillars, a cadence per platform and a one-page brand voice.\n- Use AI to draft a four-week calendar of ideas from them.\n\n*Done when:*\n- The owner approves the calendar and every idea is backed by a real product, photo or fact."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Draft → approve → publish, on two platforms",
+   "body": "- Build the workflow for Facebook and Instagram (or LinkedIn) with Telegram approval and the price re-check.\n- Publish five real posts on schedule.\n\n*Done when:*\n- All five published on time, each platform version passed its checks, and a changed price held a post."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run a real page for a month",
+   "body": "- Run the agent for a real business across at least three platforms for four weeks.\n- Present the results by pillar and the changes you made each week.\n\n*Done when:*\n- The page posted on cadence all month, the owner spent under 15 minutes a week, and reach or enquiries improved against the month before."
+  },
+  {
+   "t": "quiz",
+   "q": "Why does every Instagram post need a photo or video?",
+   "options": [
+    "It doesn't; text posts are fine",
+    "Instagram publishing creates a media container from an image or video; there are no text-only posts",
+    "Only for ads",
+    "Because of the X API"
+   ],
+   "answer": 1,
+   "why": "Two steps: create the container from a public media URL, then publish it."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should the price in a post come from?",
+   "options": [
+    "The AI's draft from Friday",
+    "Last month's post",
+    "The model's general knowledge",
+    "The price sheet, re-read at publish time"
+   ],
+   "answer": 3,
+   "why": "Prices change. Check them when the post goes out, and hold it if they changed."
+  },
+  {
+   "t": "quiz",
+   "q": "A client wants fully automatic TikTok posting next week. What do you tell them?",
+   "options": [
+    "API posts stay private until TikTok audits the app; until then, drafts go to them to publish",
+    "No problem, it's instant",
+    "TikTok can't be automated at all",
+    "Use a password-sharing tool"
+   ],
+   "answer": 0,
+   "why": "Be honest about platform limits before you promise."
+  },
+  {
+   "t": "quiz",
+   "q": "How should WhatsApp fit into the content plan?",
+   "options": [
+    "Post to everyone in your contacts daily",
+    "Same as Instagram",
+    "Approved marketing templates, only to opted-in customers, sparingly",
+    "Not at all"
+   ],
+   "answer": 2,
+   "why": "WhatsApp isn't a feed: it's messages to people who agreed to hear from you, and each one is charged."
+  },
+  {
+   "t": "quiz",
+   "q": "What does the weekly results report change?",
+   "options": [
+    "Nothing; it's for show",
+    "Next week's plan: more of what worked, less of what didn't",
+    "The brand voice, every week",
+    "The platform's algorithm"
+   ],
+   "answer": 1,
+   "why": "Results feed the plan. That's what makes it a manager, not a scheduler."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Plan from pillars fed by real products, photos and dates.\n2. Write a version for each platform that fits its rules and audience.\n3. Know each API's limits and costs before you promise anything.\n4. A person approves; prices are re-checked at publish time; there's a pause button.\n5. Results shape next week's plan."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.4 complete!* _The Social Media Manager Agent_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.5, _The Social Inbox Agent_."
+  }
+ ]
+}

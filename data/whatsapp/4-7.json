@@ -1,0 +1,181 @@
+{
+ "id": "4.7",
+ "title": "Multi-Agent Systems",
+ "track": 4,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.7 · Multi-Agent Systems*\n\n_≈ 2 hours · with Miracle_\n\nOne agent with one brief does one job well. Some work is really several jobs: research, then writing, then editing. Splitting it across specialist agents can raise quality, but every extra agent adds cost, delay and new ways to fail. This module covers the main team shapes, when a team beats a single agent, and how to stop agents passing work back and forth forever.\n\n*Your problem:* One agent doing everything gets slow, confused and expensive.\n*The plan:* Split work across a small team of agents with clear hand-offs and limits.\n*After this lesson:* You know when a multi-agent design helps, and how to keep it cheap."
+  },
+  {
+   "t": "text",
+   "body": "*The Monday newsletter*\n\n*Sunday, 23:40:* Restaurant customers love Tolu's weekly \"what's cheap, what's dear\" note. It takes her three hours every Sunday night.\n\n*Attempt 1:* One agent researches, writes and checks itself. The result is chatty, unsourced, and has one wrong price.\n\n*Sage:* \"Give each job its own agent with its own brief. The researcher only collects facts. The writer only writes. The editor only checks.\"\n\n*Glitch:* \"I told the editor to be very strict and never satisfied. Enjoy your token bill.\""
+  },
+  {
+   "t": "text",
+   "body": "*Four team shapes*"
+  },
+  {
+   "t": "text",
+   "body": "*When is a team worth it?*\n\nAnthropic's write-up of its own multi-agent research system reports that, in its data, agents used about *4×* the tokens of a chat, and multi-agent systems about *15×*. The same article says teams suit work that splits into independent parallel parts, or that's too big for one context, and fit poorly where every agent needs the same shared context.\n\n_Use a team when… · Stay with one agent (or a workflow) when…_\n- Jobs need different instructions, tools or models (a strict fact-checker vs. a warm writer) · One brief covers the whole job\n- Parts can run in parallel (research five markets at once) · Each step depends tightly on the previous one\n- A separate reviewer clearly catches mistakes the author misses · A checklist in code would catch them more cheaply\n- The value of better output is high (a client newsletter, a report) · The task is quick and cheap (classify one email)"
+  },
+  {
+   "t": "text",
+   "body": "*Hand-offs are contracts*\n\nAgents fail at the joins. Pass *structured* data between them, not chat:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Hand-offs are contracts): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-7"
+  },
+  {
+   "t": "text",
+   "body": "Use structured output (an Output Parser or Information Extractor with a schema) so each hand-off can be checked by code: are all prices present, is every change sourced, is `approved` a real true/false?"
+  },
+  {
+   "t": "text",
+   "body": "*Count the cost of a team*\n\nChange the settings and watch what a newsletter team costs, and what happens without a cap on review rounds. The price is a placeholder; use your provider's current rate."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Count the cost of a team. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-7"
+  },
+  {
+   "t": "text",
+   "body": "*Building teams in n8n*\n\n- *Fixed pipeline*: Several AI Agent (or LLM Chain) nodes in a row, each with its own system message and model. The workflow, not an agent, decides the order. Most predictable; start here.\n- *Agents as tools*: The *AI Agent Tool* sub-node lets a lead agent call specialist agents as tools, on one canvas. Or use Call n8n Workflow tools that each run an agent workflow.\n- *Different models per role*: A small, cheap model for the researcher's lookups; a stronger one for writing; a careful one for editing.\n- *Caps everywhere*: Max iterations on every agent, a fixed number of review rounds, and a timeout on the workflow.\n- *Code frameworks*: CrewAI and LangGraph build the same patterns in Python (4.8). The ideas transfer."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Multi-Agent Systems Have Never Been Easier to Build (n8n)_ (Nate Herk).\nLook for: An orchestrator agent handing work to specialist agents set up as tools.",
+   "media": "walk:4.7",
+   "youtube": "https://www.youtube.com/watch?v=0iUNOmeU7O4",
+   "app": "https://automancy.cc/learn#m-4-7"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the newsletter team*\n\n*The goal.* Every Monday at 06:00, a three-agent pipeline produces \"This week at the market\": price moves from Harvest Lane's own data, a short readable note, and an edit pass, with at most two revision rounds. The result lands in Gmail as a *draft* for Tolu to send."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · The researcher: facts in a fixed shape*\n\n*Schedule Trigger* (Monday 06:00) → *AI Agent · Researcher* with read-only tools: `get_price_history` (the 3.4 Supplier prices sheet, this week vs. last) and `get_top_sellers` (Orders, last 7 days). A small model, temperature 0, and a *Structured Output Parser* requiring the Card 3 research shape. System message: _\"Collect facts only. Every price must come from a tool result, with its source. No opinions, no advice.\"_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Check the hand-off in code*\n\nA *Code* node checks the research: every item has `price_now`, `price_last_week` and `source`; `change_pct` is recalculated in code and overwritten. Anything missing → stop and alert Tolu (3.6). Facts must be right before anyone writes."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · The writer: voice and brevity*\n\n*AI Agent · Writer*, no tools, a stronger model. It receives the checked research and a short style guide: _\"Warm, practical, Nigerian English; 180–250 words; headline, three 'cheaper this week' and three 'dearer this week' items with naira prices, one tip for restaurants. Use only numbers from the research.\"_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · The editor, and a hard cap*\n\n*AI Agent · Editor* with a checklist and a structured verdict (`approved`, `issues`): every number matches the research, the length is within range, there's no advice beyond buying tips, and the tone is right. Then:\n\n1. *IF* approved → draft. Otherwise → *Writer (revision 1)* gets the draft plus the issues → *Editor* again.\n2. *IF* approved → draft. Otherwise → *Writer (revision 2)* → *Editor*.\n3. After round 2, whatever the verdict: *Gmail · Create a draft* to Tolu. If still not approved, the subject starts with \" Needs a human look\", and the editor's issues are listed at the top.\n\nUnrolling the rounds as nodes makes the cap impossible to miss. Set Max Iterations on each agent and a workflow timeout too.\n\n- *3* agents, each with one job and one brief\n- *2* review rounds maximum, then a human\n- *3 h → 5 min* Tolu's Sunday night, now a Monday read-through"
+  },
+  {
+   "t": "text",
+   "body": "*Nodo's test:* build a single-agent version too, and compare five weeks' newsletters on accuracy (numbers correct), Tolu's edit time and token cost. If the team doesn't clearly win, use the single agent. That decision is the skill."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Each agent has one job, one brief and the right model.\n- Structured hand-offs let code catch errors between agents.\n- Prices are verified in code before writing starts.\n- The review loop is capped, and ends with a human.\n- The output is a draft, never an automatic send.\n\n*Common mistakes to avoid*\n\n- A team where one agent would do.\n- Agents chatting in free text instead of structured hand-offs.\n- An editor with no checklist (\"make it better\").\n- No cap on review rounds.\n- Every agent on the most expensive model."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* More agents, more places to hide. Five finds.\n\n*A:* The writer and editor exchanged 37 drafts overnight. The workflow timed out and the bill jumped.\n*B:* The newsletter says ugu costs ₦15,000. The research said ₦1,500.\n*C:* The editor approves everything, including a 600-word draft full of advice.\n*D:* The writer can't find the prices: the researcher returned a friendly paragraph.\n*E:* The team version costs 12× more than one agent, and Tolu edits both versions about equally."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no cap on review rounds, and an editor told never to be satisfied. Cap rounds at 1–2, then hand to a person.\n*B:* nobody checked numbers against the research. Give the editor that check, and better still, check numbers in code after writing.\n*C:* a vague editor brief. Give a concrete checklist and a structured verdict.\n*D:* an unstructured hand-off. Require a schema (Output Parser) for the research.\n*E:* the team doesn't earn its cost. Go back to one agent (or a workflow with one AI step). Not every job needs a team."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A router with two specialists",
+   "body": "- Build a front-desk agent that hands customer messages to one of two specialists through AI Agent Tool nodes: an orders agent (4.2 tools) and a policy agent (4.4 search).\n- Test with ten messages, five for each.\n\n*Done when:*\n- At least nine of ten reach the right specialist (check the execution trace), and the front desk never answers policy questions itself."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Add a reviewer to something you've built",
+   "body": "- Take an AI step from an earlier module (the 3.7 draft replies, or the 4.4 policy answers) and add a reviewer agent with a checklist and a structured verdict.\n- Cap it at one revision round. Run 10 cases with and without the reviewer.\n\n*Done when:*\n- Your log shows the error count with and without the reviewer, the extra cost per case, and a keep-or-remove decision."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A multi-agent design for a real client",
+   "body": "- On paper, design a team for a real client task: roles, models, tools, hand-off schemas, caps, human checkpoints and an estimated cost per run (use Card 4).\n- Write the single-agent alternative and explain which you'd recommend, and why.\n\n*Done when:*\n- The design fits on one page, every hand-off has a schema, every loop has a cap, and the recommendation is backed by the cost and quality trade-off."
+  },
+  {
+   "t": "quiz",
+   "q": "Which task best suits a multi-agent team?",
+   "options": [
+    "Classifying one email",
+    "Sending a receipt",
+    "Researching five markets in parallel, then writing one report",
+    "Looking up an order status"
+   ],
+   "answer": 2,
+   "why": "Independent, parallel parts and a high-value output."
+  },
+  {
+   "t": "quiz",
+   "q": "What should pass between agents?",
+   "options": [
+    "Structured data that code can check",
+    "Long friendly messages",
+    "Screenshots",
+    "Nothing; they share a brain"
+   ],
+   "answer": 0,
+   "why": "Schemas make hand-offs reliable and checkable."
+  },
+  {
+   "t": "quiz",
+   "q": "Writer and editor keep revising forever. The fix?",
+   "options": [
+    "A bigger model",
+    "More agents",
+    "A stricter editor",
+    "A hard cap on rounds, then hand to a human"
+   ],
+   "answer": 3,
+   "why": "Every loop needs an exit you control."
+  },
+  {
+   "t": "quiz",
+   "q": "Anthropic's multi-agent write-up reported multi-agent systems using roughly how many times a chat's tokens?",
+   "options": [
+    "About the same",
+    "About 15×",
+    "Half",
+    "1,000×"
+   ],
+   "answer": 1,
+   "why": "In their data: agents about 4×, multi-agent systems about 15× a chat."
+  },
+  {
+   "t": "quiz",
+   "q": "The team costs 12× more but isn't clearly better. What do you do?",
+   "options": [
+    "Keep it: teams are more advanced",
+    "Add a fourth agent",
+    "Switch back to the simpler setup",
+    "Hide the cost from the client"
+   ],
+   "answer": 2,
+   "why": "Complexity must earn its place with measurable improvement."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Four shapes: pipeline, router, orchestrator–workers, reviewer loop.\n2. Teams cost far more; use them when parts are independent or roles truly differ.\n3. Hand-offs are contracts: structured, and checked by code.\n4. One job, one brief, and the right-sized model per agent.\n5. Cap every loop, then hand to a human.\n6. Compare against one agent, and keep the simpler setup unless the team clearly wins."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.7 complete!* _Multi-Agent Systems_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.8, _Code-First Agents_."
+  }
+ ]
+}

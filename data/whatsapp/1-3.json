@@ -1,0 +1,172 @@
+{
+ "id": "1.3",
+ "title": "Filters & Paths",
+ "track": 1,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 1.3 · Filters & Paths*\n\n_≈ 90 minutes · with Miracle_\n\nNot every order is the same. A ₦90,000 hotel order needs Tolu's attention now; an order from outside the city needs the logistics list; a test order needs to go nowhere. Filters and Paths let one Zap make those decisions.\n\n*Your problem:* Your automation treats every case the same, and wastes tasks on the ones that don't matter.\n*The plan:* Add filters and paths so each case goes the right way, and only when it should.\n*After this lesson:* Your Zaps make decisions, and cost less to run."
+  },
+  {
+   "t": "text",
+   "body": "*Three kinds of order, one inbox*\n\n*Wednesday:* Forty identical alerts. The ₦92,000 order from a caterer sits unread for three hours.\n\n*Thursday:* An order from Oyo town goes into the normal rider list. The rider finds out at 7 a.m.\n\n*Friday:* A test order from last week's building goes out on a real bike. Glitch is delighted.\n\n*Bolt:* \"Every order still enters on one track. We'll just add a junction.\""
+  },
+  {
+   "t": "text",
+   "body": "*Filters: a gate that says \"only continue if…\"*\n\nA *Filter* step checks conditions. If they pass, the Zap continues; if not, the run stops quietly and shows as *Filtered* in Zap history. Steps after a failed filter don't run, so they don't use tasks.\n\n- *Field*: The value to check, e.g. the Total from step 6.\n- *Condition*: How to compare: (Text) Contains, Exactly matches, Is in; (Number) Greater than, Less than; Exists; (Boolean) Is true.\n- *Value*: What to compare against: 50000, \"test\", \"Bodija\".\n\n*Type matters (0.3 again).* \"Number greater than\" compares numbers. If the field holds text like `₦26,500.00`, the comparison fails. Always filter on the plain number."
+  },
+  {
+   "t": "text",
+   "body": "*AND vs. OR*\n\n*AND: all must be true*\n\n- Total over 50,000 *AND* status is Paid.\n- Narrows the gate. Each extra AND lets fewer runs through.\n\n*OR: at least one must be true*\n\n- Total over 50,000 *OR* customer is VIP.\n- Widens the gate. Each extra OR lets more runs through.\n\n*Nodo:* Say your rule out loud as a sentence first. If you say \"and\" but your condition group says OR, you've found tomorrow's bug."
+  },
+  {
+   "t": "text",
+   "body": "*Paths: a junction with several tracks*\n\n*Paths by Zapier* splits a Zap into branches. Each branch has its own rules and its own steps. Branches are checked one at a time, left to right, and *every branch whose rules match will run*, not just the first. A *fallback* branch (one per path group, always rightmost) runs only when no other branch matched.\n\nPaths are on paid plans. Each path group allows up to 10 branches, and Path steps themselves don't use tasks; the actions inside a branch do."
+  },
+  {
+   "t": "text",
+   "body": "*Truth tables: proof that every case lands once*\n\nList every combination of the things your rules check, then write which branch each should take. If any row runs two branches or none, your rules have a hole.\n\n_Total · Zone · Should go to_\n- *≤ 50,000* · inside · C · Standard\n- *≤ 50,000* · outside · B · Outside zone\n- *> 50,000* · inside · A · Priority\n- *> 50,000* · outside · A · Priority (with its own logistics step)\n- *anything* · missing · C · Standard, flagged for Tolu to check"
+  },
+  {
+   "t": "text",
+   "body": "*Filter or Paths?*\n\n- *Use a Filter*: when some runs should simply stop: test orders, unpaid orders, emails from yourself.\n- *Use Paths*: when different runs need different actions.\n- *Use both*: A Filter at the top to drop junk, then Paths to route the real orders.\n- *Or split the Zap*: If branches share nothing, two simpler Zaps with filters can be easier to maintain than one giant one."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to use Paths by Zapier (Zapier 101)_ (Zapier).\nLook for: Branch rules with AND / OR conditions.",
+   "media": "walk:1.3",
+   "youtube": "https://www.youtube.com/watch?v=tbmpWKUoN0U",
+   "app": "https://automancy.cc/learn#m-1-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: route every order to the right place*\n\n*The goal.* Extend the 1.2 order Zap. Drop test orders. Then send big orders to Tolu immediately, out-of-zone orders to a Logistics tab, and everything else down the normal route. Prove it with a truth table."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Add a Filter right after the trigger*\n\nInsert *Filter by Zapier* as step 2. Rule: *Name* · (Text) Does not contain · `test`. Now test orders stop before any task is used, and appear as Filtered in Zap history."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Give every area a zone*\n\nNext to the fee lookup from 1.2, add another *Formatter · Utilities · Lookup Table*: Bodija, Mokola, Ring Road, Challenge → `inside`; fallback → `outside`. Now the zone is a clean, single word the Paths can check."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Write the truth table before building*\n\nUse the table in Card 4. Decide now that a big out-of-zone order goes to Priority, which will also log it for logistics. Writing this down first is what stops double alerts later."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Add the Paths step after the total is calculated*\n\nAfter the Formula and Format Currency steps, add *Paths by Zapier* and set up the branches:\n\n_Branch · Rules · Steps inside_\n- *A · Priority* · Total (the plain number) · (Number) Greater than · 50000 · Create Orders row · Email Tolu with \"PRIORITY\" in the subject · Create Logistics row _only if_ zone is outside (a small Filter inside the branch)\n- *B · Outside zone* · Total · (Number) Less than · 50001 *AND* Zone · (Text) Exactly matches · outside · Create Orders row · Create Logistics row\n- *C · Standard* · Set as the *fallback* branch · Create Orders row · normal email\n\n\"Less than 50001\" means \"50,000 or less\" when some number conditions don't offer \"less than or equal\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Test every row of the truth table*\n\nSubmit one form per row: a ₦26,500 Bodija order, a ₦13,500 Oyo town order, a ₦92,000 Bodija order, a ₦92,000 Oyo order, and one with \"Test\" in the name. In Zap history, each should show exactly one branch taken, and the test order should show Filtered.\n\nTry the design yourself below. Change the total and zone and compare Glitch's first attempt with the clean design."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Test every row of the truth table. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-1-3"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The filter drops junk before it costs tasks.\n- A single-word zone makes conditions simple and reliable.\n- Rules are written so no order can match two branches.\n- The fallback catches anything nobody predicted.\n\n*Common mistakes to avoid*\n\n- Assuming only the first matching branch runs.\n- Comparing numbers against a currency-formatted field.\n- No fallback: surprising data disappears silently.\n- Building first and writing the truth table never."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Four more complaints from Tolu. My rules looked perfect to me.\n\n*A:* Big out-of-zone orders create two Orders rows and two emails. · A: total > 50000 · B: zone is outside\n*B:* The priority branch never runs, even for ₦92,000 orders. · Formatted total (step 7) · Number greater than · 50000\n*C:* Orders from \"Bodija \" (with a space) go down the outside branch. · Raw Area field · Exactly matches · Bodija\n*D:* Every order is filtered out, including real ones. · Name does not contain \"test\" *AND* Email contains \"@\""
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* overlapping rules. Every matching branch runs. Add \"total ≤ 50000\" to B, or make Priority handle the logistics itself.\n*B:* the formatted total (₦92,000.00) is text, so the number comparison fails. Use the plain number from the formula step.\n*C:* exact matches are unforgiving. Trim and clean the area first (1.2), or compare the zone produced by the lookup table.\n*D:* the form has no email question, so \"Email contains @\" is never true, and with AND, one false condition blocks everything. Only check fields that exist, and test the filter with real data."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A junk filter",
+   "body": "- Add a Filter to one of your Zaps that stops test entries (name contains \"test\", in any capitalisation).\n- Submit two real and two test entries.\n- Find the two Filtered runs in Zap history and confirm they used no tasks.\n\n*Done when:*\n- Two runs show as successful and two as Filtered."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build the router and pass the truth table",
+   "body": "- Build the solved problem's filter, zone lookup and three branches.\n- Run the five test orders from the truth table.\n- Screenshot the Zap history for each (no keys visible) and mark which branch ran.\n\n*Done when:*\n- Every row takes exactly the branch the table says, and the test order is filtered."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Design a router for your own work",
+   "body": "- Pick a flow in your own business that needs at least four different outcomes (for example enquiries by product line and size, or leads by country and budget).\n- Write the truth table first, covering every combination plus a \"missing data\" row.\n- Build it with Paths and a fallback, test every row, and record the results.\n\n*Done when:*\n- Every truth-table row is tested, none runs two branches, and the fallback has caught at least one case."
+  },
+  {
+   "t": "quiz",
+   "q": "A Filter stops a run. What happens to the steps after it?",
+   "options": [
+    "They run anyway but show a warning",
+    "They don't run, use no tasks, and the run shows as Filtered",
+    "The Zap turns itself off",
+    "Zapier emails you an error"
+   ],
+   "answer": 1,
+   "why": "A filter is a quiet stop. Check Zap history for Filtered runs."
+  },
+  {
+   "t": "quiz",
+   "q": "Two path branches both match the same order. What happens?",
+   "options": [
+    "Only the first runs",
+    "Only the last runs",
+    "Both run, one after the other, left to right",
+    "Neither runs"
+   ],
+   "answer": 2,
+   "why": "Every matching branch runs. Write rules so each case matches only one."
+  },
+  {
+   "t": "quiz",
+   "q": "When does the fallback branch run?",
+   "options": [
+    "Only when no other branch's rules matched",
+    "Always, after the others",
+    "When a branch errors",
+    "Once a day"
+   ],
+   "answer": 0,
+   "why": "The fallback is the 'none of the above' track."
+  },
+  {
+   "t": "quiz",
+   "q": "\"Total · Number greater than · 50000\" never passes, even for big orders. Most likely cause?",
+   "options": [
+    "50000 is too high",
+    "Paths are turned off",
+    "The Zap isn't published",
+    "The field is the currency-formatted text, not the plain number"
+   ],
+   "answer": 3,
+   "why": "₦92,000.00 is text. Compare numbers to numbers."
+  },
+  {
+   "t": "quiz",
+   "q": "\"Treat an order as priority if it's over ₦50,000 or the customer is a VIP.\" Which logic?",
+   "options": [
+    "AND",
+    "OR",
+    "Two separate Zaps",
+    "A lookup table"
+   ],
+   "answer": 1,
+   "why": "Either condition is enough, so OR."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. A Filter stops a run quietly and saves tasks; look for Filtered in Zap history.\n2. AND narrows, OR widens. Say the rule as a sentence first.\n3. Every matching path branch runs, left to right. Design so only one can match.\n4. The fallback branch catches everything else. Always add one.\n5. Compare clean values: numbers as numbers, text after trimming.\n6. Write the truth table before you build, and test every row."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 1.3 complete!* _Filters & Paths_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 1.4, _Webhooks & Code Steps_."
+  }
+ ]
+}

@@ -1,0 +1,144 @@
+{
+ "id": "B3",
+ "title": "Boss 3: The Telegram Order Bot",
+ "track": 3,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 3: The Telegram Order Bot*\n\n_≈ 3–4 sessions · 6–8 hours · with Emeka_\n\nEverything from the Forge, in one product customers actually talk to. Harvest Lane's customers send a Telegram message in their own words; the bot understands it, prices it from the real price list, checks stock, asks when something is unclear, waits for a tap to confirm, logs the order, and gives Tolu a report every evening. It runs on your own server, and it tells you when anything breaks.\n\n*Your problem:* Tolu's customers want to order by chat at any hour.\n*The plan:* Build a Telegram order bot: AI reads orders, rules price them, Paystack takes payment.\n*After this boss:* You have a complete order bot for your portfolio, and the Self-Hosted badge."
+  },
+  {
+   "t": "text",
+   "body": "*\"Abeg, just let me order on Telegram\"*\n\n*The customers:* Restaurant owners don't want forms. They want to type an order the way they'd text a friend, and get an answer in seconds.\n\n*Today:* Tolu prices every order by hand, at all hours, from memory. Twice last week she quoted an old price.\n\n*Glitch:* \"A bot that reads messages? Let me write it some messages.\"\n\n*The team:* \"Sage reads the words,\" says Nodo. \"The price list sets the price. And nothing is final until the customer taps Confirm.\""
+  },
+  {
+   "t": "text",
+   "body": "*What the bot must do*\n- *Channel* · A Telegram bot, `@HarvestLaneBot` (your own name), running on your self-hosted n8n with HTTPS (3.8).\n- *Understand* · Free-text orders in everyday Nigerian English, including Pidgin and common local names (tatashe, rodo, ugu). Questions (\"what's the price of onions?\") get answers from the price list. Anything else goes politely to Tolu.\n- *Price* · Prices and stock come *only* from the Price_List sheet. Delivery ₦1,500, free from ₦30,000. The AI never sets or changes a price.\n- *Confirm* · The bot replies with an itemised summary and *Confirm / Change* buttons. Only a Confirm tap creates the order. Unclear items, unknown products, missing date or area, or too little stock → the bot asks, and creates nothing.\n- *Guardrails* · More than 50 units of anything, or orders over ₦500,000 → Tolu approves. Messages that try to change prices or rules are ignored as instructions."
+  },
+  {
+   "t": "text",
+   "body": "- *Record* · Confirmed orders go to Orders (with the customer's chat ID and an order number), and stock is reduced. Every conversation step is logged.\n- *Report* · At 20:00 daily, Tolu gets a Telegram summary: orders, revenue, top products, low stock, and anything waiting for her.\n- *Reliability* · Connected to HL · Error alerts (3.6); retries on outside calls; the uptime monitor (3.8) covers n8n being down. Customers always get a reply, even if it's \"Tolu will get back to you\".\n- *Privacy* · Store only what's needed (chat ID, name, phone, orders). Tell customers in the welcome message that orders are processed with AI help and reviewed by Harvest Lane."
+  },
+  {
+   "t": "text",
+   "body": "*One bot, three workflows, one sub-workflow*\n\n_The diagram, in words:_ Workflow 1, the conversation: Telegram Trigger, then Switch on update type. Messages go to customer lookup, Text Classifier, and for orders an Information Extractor, then a Code node that prices from the price list, then either a question to the customer or a summary with Confirm and Change buttons saved as pending. Button taps go to a confirm branch that re-checks stock, writes the order, reduces stock and replies. Workflow 2 is the 20:00 daily report. Workflow 3 is the shared error alerts workflow.\n\nA Telegram bot can only send updates to one webhook, so keep a single workflow with the Telegram Trigger and branch inside it."
+  },
+  {
+   "t": "text",
+   "body": "*The AI extracts, the rules price*\n\nThis is the heart of the bot, and of D4. The AI's only job is to turn the customer's words into the JSON below. Everything after that, prices, stock, fees, limits and what to ask, is plain, predictable rules. Edit the JSON (pretend you're the AI) and watch what the customer would see."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The AI extracts, the rules price. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "text",
+   "body": "*Sage:* Notice that Glitch's `\"price\": 1` is simply ignored: the rules never read a price from the AI. That's the real defence against prompt injection. Not a cleverer prompt, but a design where the AI can't touch the things that matter."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _Build a No-Code Telegram Order Bot with Google Sheets & n8n_.\nLook for: Telegram trigger, stock and price lookup in Sheets, order logging.",
+   "media": "walk:B3",
+   "youtube": "https://www.youtube.com/watch?v=z6HY7MW3OUA",
+   "app": "https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Eight deliverables, three phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Bot, server and sheets (3.1, 3.6, 3.8)*\n\nCreate the bot with @BotFather and set a description and welcome text. Sheets: *Price_List* (sku, name, unit, price, stock, aliases, active), *Customers* (chat_id, name, phone, area, created_at), *Pending* (pending_id, chat_id, items_json, total, status, created_at), *Orders* (order_id, chat_id, items_json, subtotal, delivery_fee, total, delivery_date, area, status, created_at), *Conversation_Log*. Confirm your n8n's webhook URLs show https (3.8)."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · Trigger, routing and first contact (3.3, 3.2)*\n\nOne *Telegram Trigger* listening for messages and callback queries. A *Switch* on update type: text message, button tap, or anything else (photo, voice, sticker → polite reply + forward to Tolu). Look up the customer by `chat.id`; new customers are asked for name and phone once (use `/start` as the trigger for that), then the original question is answered."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Understanding (3.7)*\n\nText Classifier: order · price question · change or cancel · other (with the Other branch on). For orders, an Information Extractor with a JSON Schema returning the shape used in the order brain above: items (product, qty), delivery_date (YYYY-MM-DD; resolve \"tomorrow\" using today's date in the system prompt), area. Build a 15-message test set and score it before moving on."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Pricing as a sub-workflow (3.5, 3.6)*\n\n`SUB · Price an order`: reads Price_List, matches products by aliases, checks quantities and stock, applies delivery and the 50-unit and ₦500,000 limits, and returns lines, questions and a route, exactly like the order brain. It's a Code node plus a Sheets read. Reused by the confirm step and your tests."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D5 · Confirm with buttons (3.2, 3.3)*\n\n\"Ready\" orders: save a Pending row, then send the summary with an inline keyboard: *Confirm* (callback data `c:<pending_id>`) and *Change* (`x:<pending_id>`). On a tap: answer the callback query (stops the spinner), check the Pending row belongs to this chat and is still open, *re-check stock*, write Orders with a new order ID, reduce stock, mark Pending done, and reply with the order number and delivery day."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint: Telegram limits",
+   "answer": "Callback data is limited to 64 bytes, so send a short ID, not the order. Each tap arrives as a `callback_query` update with `callback_query.data` and `callback_query.message.chat.id`."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Daily report (3.3, 3.5)*\n\nAt 20:00: today's confirmed orders and revenue, top three products, items with stock below a threshold, pending orders older than two hours, and messages waiting for Tolu, sent to her on Telegram as one tidy message."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D7 · Reliability and guardrails (3.4, 3.6, 3.8)*\n\nRetries on AI and Sheets nodes; every workflow connected to HL · Error alerts; if the AI step fails, the customer still gets \"Sorry, we'll reply shortly\" and Tolu is alerted. Prompt-injection tests from the test set have no effect on prices or limits. Nightly Git backup includes the bot."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D8 · Test report, cost and demo*\n\nRun the 15 conversations below. Report expected vs. actual, tokens per message and AI cost per order, and the monthly server cost compared with what n8n Cloud would need for the same volume. Record a 3-minute demo: a real order from message to Orders row to the evening report."
+  },
+  {
+   "t": "link",
+   "body": "The 15 test conversations. Send them from your own Telegram account; use made-up names and numbers. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of each phase*\n\n*Glitch:* Real customers are my best assistants.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 1*\nYou click \"Listen for test event\" on the Telegram Trigger to debug something. Meanwhile, real customers' messages stop reaching the published bot. Why, and what's your safe testing routine from now on?",
+   "answer": "*Testing steals the webhook:* a bot sends its updates to one webhook address. Listening for a test event registers the _test_ URL, replacing the production one until you stop listening and the workflow re-registers. Safe routine: create a second bot (`@HarvestLaneTestBot`) with its own credential for development, and duplicate the workflow for testing. Never debug on the live bot during business hours."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 2*\nCustomers write \"2 basket of pepper\". In Ibadan that could mean rodo or tatashe, two different products and prices. The AI picks one confidently. How does your bot stop guessing on ambiguous product names?",
+   "answer": "*Ambiguous names:* don't put \"pepper\" in any product's aliases. Give the extractor a rule (\"copy the product words exactly; don't map them to our catalogue\"), and let the pricing code decide. When a word matches no product or several, the bot asks with buttons: \"Which pepper? [Rodo] [Tatashe]\". The answer can teach a new alias for that customer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 3*\nTwo customers each see \"3 baskets of rodo left\" and both tap Confirm within seconds. Or one customer double-taps. How do you make sure stock never goes negative and no order is created twice?",
+   "answer": "*Races and double taps:* at Confirm, read the Pending row first. If its status isn't `open`, reply \"Already confirmed: HL-xxxx\" and stop. Otherwise immediately mark it `processing`, re-read stock, and only then write the order and reduce stock. If stock is now too low, mark the Pending row `failed_stock` and offer what's left. For high volume, move stock to a database with a proper transaction (Postgres); Sheets is fine at Harvest Lane's size if you re-check like this."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Area · Full marks when… · Points_\n- *Understanding* · At least 13 of 15 test conversations take the expected route; extraction test set scored and recorded · 20\n- *Pricing and guardrails* · Every price and fee comes from Price_List; limits enforced; injection test has no effect · 20\n- *Confirmation flow* · Buttons work; only Confirm creates an order; double taps and stock races handled · 15\n- *Daily report* · Accurate for a test day you can check by hand; arrives at 20:00 · 10\n- *Reliability and hosting* · Self-hosted with HTTPS; error workflow, retries, uptime monitor and Git backup all proven · 15\n- *Curveballs* · All three handled · 10\n- *Report and demo* · Test report, AI cost per order, server vs. Cloud comparison, 3-minute video · 10\n- *Total* · Win at 80 or more · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 3: The Telegram Order Bot",
+   "body": "Build eight deliverables, three phases:\n- Phase 1 · D1 · Bot, server and sheets (3.1, 3.6, 3.8)\n- Phase 1 · D2 · Trigger, routing and first contact (3.3, 3.2)\n- Phase 2 · D3 · Understanding (3.7)\n- Phase 2 · D4 · Pricing as a sub-workflow (3.5, 3.6)\n- Phase 2 · D5 · Confirm with buttons (3.2, 3.3)\n- Phase 3 · D6 · Daily report (3.3, 3.5)\n- Phase 3 · D7 · Reliability and guardrails (3.4, 3.6, 3.8)\n- Phase 3 · D8 · Test report, cost and demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "link",
+   "body": "*Nodo:* Your bot will look different from mine, and that's fine. Check your design against these answers for the parts that matter.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 3 demo · The Telegram Order Bot, with Emeka.\n\nMessage, summary, Confirm, order row, evening report. That's the demo. Record yours the same way.",
+   "media": "clip:B3:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-3"
+  },
+  {
+   "t": "text",
+   "body": "*Nodo's Forge complete*\n\n1. You run n8n on your own server, with HTTPS, backups, Git history, alerts inside and monitoring outside.\n2. You can move data between nodes with confidence: items, expressions, merges, loops, APIs with pagination, and code.\n3. You've built a customer-facing AI product where the AI reads and drafts, and rules and people decide.\n4. Next: Track 4, Sage's Tower. Your workflows follow steps you wrote. Agents choose their own steps to reach a goal. You'll learn when that's powerful, when it's dangerous, and how to give agents tools, memory and limits."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 3 complete!* _The Telegram Order Bot_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.1, _What Makes an Agent_."
+  }
+ ]
+}

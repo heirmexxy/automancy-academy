@@ -1,0 +1,203 @@
+{
+ "id": "5.3",
+ "title": "Social Listening & Sentiment",
+ "track": 5,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.3 · Social Listening & Sentiment*\n\n_≈ 2 hours · with Miracle_\n\nCustomers talk about a business every day: in comments, reviews and posts. Most small businesses only hear it when it's already a crisis. In this lesson you build a listening system: it gathers what people say from the places you're allowed to read, labels sentiment, topic and urgency with AI, alerts a person only when it matters, and sends a short weekly report on what to fix.\n\n*Your problem:* People talk about the business online, and nobody is listening until it's too late.\n*The plan:* Gather comments, reviews and mentions in one place, label sentiment with AI, and alert on what's urgent.\n*After this lesson:* You'll hear problems early and know what customers actually feel."
+  },
+  {
+   "t": "text",
+   "body": "*Nine days of silence*\n\n*Tolu:* \"Nine days. I never saw it. And two more customers have mentioned it under our Instagram posts.\"\n\n*Echo:* \"People are already telling you what to fix. Let's build ears that never sleep, and only wake you when it matters.\"\n\n*Glitch:* \"Midnight alarm! Someone says the bread is _sick_! Oh… they meant it's amazing? Too late, Tolu's awake.\"\n\n*Every Monday:* One page: how people feel, what they talk about, and the three things to fix this week."
+  },
+  {
+   "t": "text",
+   "body": "*What you can listen to, platform by platform*\n_Source · How · What to know_\n- *Your Facebook Page* · Meta Graph API (n8n's Facebook Graph API node; Make's Facebook Pages app) · Comments on your own posts. Needs a Page access token with the right permissions.\n- *Your Instagram account* · Instagram API, with a Business or Creator account · Read and reply to comments on your own media. Personal accounts aren't supported.\n- *Your LinkedIn Page* · LinkedIn Community Management API · Requires LinkedIn's approval of your app. Until then, check page comments by hand.\n*X:* X API, pay per use · Searching and reading posts costs money per post read. Set a monthly cap.\n- *TikTok* · Mostly manual for now · TikTok's APIs for organic comments are limited and need approval. Read comments in the app, or export them, and label them the same way."
+  },
+  {
+   "t": "text",
+   "body": "- *Google reviews* · Google Business Profile API (you request access), or review notification emails · Reviews of _your_ business. Email notifications can feed the same workflow through a Gmail trigger.\n- *Mentions across the web* · Talkwalker Alerts or Google Alerts (free, RSS or email); Brand24 or Mention (paid, with APIs) · News, blogs and forums that mention the brand. Paid tools cover more social sources.\n\n*Echo:* Listen to conversations _about the business_, not to collect files on people. Store the comment and its link, not a profile of the person, and delete old raw text on a schedule."
+  },
+  {
+   "t": "text",
+   "body": "*Four labels, not one*\n\n\"Sentiment\" alone isn't enough to act on. Ask the AI for four things, in a fixed shape:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Four labels, not one): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-3"
+  },
+  {
+   "t": "text",
+   "body": "- *Local language*: Give the model examples in Nigerian English and Pidgin: \"Una tomatoes fresh well well\" is praise; \"Price don cost o\" is about price, not anger.\n- *Slang and emoji*: \"Sick \", \"mad\", \"deadly\" can be compliments. often means sarcasm.\n- *Sarcasm*: \"Great, another 'fresh' delivery of soft tomatoes\" is negative. Include examples like this in the prompt.\n- *Confidence*: Treat it as a rough signal, not a guarantee. Models are often confidently wrong; that's why you measure."
+  },
+  {
+   "t": "text",
+   "body": "*Sentiment lab: label, compare, tune the alarm*\n\nTen comments from Harvest Lane's pages (invented for practice). First, label each one yourself. Then compare with the AI, and set an alert rule that wakes Tolu for every urgent problem, and only those."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Sentiment lab: label, compare, tune the alarm. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-3"
+  },
+  {
+   "t": "text",
+   "body": "*Measure the AI against people*\n\nBefore you trust the labels, check them, exactly like the evaluations in 4.9:\n\n1. Collect 50 real comments. Two people label them independently; settle disagreements together. That's your reference set.\n2. Run the AI on the same 50. Count agreement, and look at _which_ ones it gets wrong: usually slang, Pidgin, sarcasm and mixed feelings.\n3. Add those cases as examples in the prompt. Re-run. Keep the version that agrees most, and never ship one that misses an urgent case.\n4. Every month, add 10 new real comments to the set, because language changes.\n\n*Sage's rule:* anything that can hurt someone, such as food safety, a threat or a medical claim, alerts a person on a hard rule, not on a confidence score."
+  },
+  {
+   "t": "text",
+   "body": "*The Monday report*\n\nCode counts; AI explains. The workflow totals the week's labels (by sentiment, topic and source, compared with last week), then asks the AI for three fixes, each backed by real quotes."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The Monday report): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-3"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Media Monitoring & Sentiment Analysis Automation with n8n_.\nLook for: Pulling mentions, AI sentiment labels and routing alerts.",
+   "media": "walk:5.3",
+   "youtube": "https://www.youtube.com/watch?v=PkHMIvaEXL0",
+   "app": "https://automancy.cc/learn#m-5-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's listening post*\n\n*The goal.* Every 15 minutes, collect new comments from Harvest Lane's Facebook Page and Instagram, plus web mentions from Talkwalker Alerts. Label each one, alert Tolu on Telegram when something urgent arrives, and send a report every Monday at 8 a.m."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · The Mentions sheet*\n\nColumns: `source, item_id, link, posted_at, text, sentiment, topic, urgent, intent, confidence, alerted, handled_by`. `item_id` is the platform's comment ID, so the same comment is never processed twice. No phone numbers, no profiles of people."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Collect*\n\n- *Facebook:* Facebook Graph API node, GET your Page's recent posts with their comments (message, created time, comment ID).\n- *Instagram:* HTTP Request to the Instagram API: your recent media, then each item's comments (ID, text, timestamp).\n- *Web:* RSS Read node on your Talkwalker Alerts feed.\n- *Google reviews:* Gmail Trigger on review notification emails, until you have API access.\n\nMerge them into one shape (`source, item_id, link, text, posted_at`), then *Remove Duplicates* against the sheet."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Label*\n\nAn *Information Extractor* with the Card 2 schema, and a system message containing 12 local examples: slang, Pidgin, sarcasm, mixed feelings. Use a small, cheap model; labelling is a simple task, and volume adds up (4.9)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Alert rules, in code*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Alert rules, in code): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-3"
+  },
+  {
+   "t": "text",
+   "body": "*now* sends a Telegram alert immediately, with the text and link. *today* goes into a 6 p.m. summary. Everything else waits for Monday. Questions and leads (`intent`) go to the social inbox you'll build in 5.5."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · The Monday report*\n\nA Schedule Trigger (Mondays 08:00) reads the last 7 days, a Code node computes the counts and the change from last week, and the AI writes three fixes from the negative comments, quoting them. Email to Tolu, with a Telegram summary."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Housekeeping*\n\nMonthly: add 10 new comments to the reference set and re-measure agreement. Delete raw comment text older than 90 days, keeping only the labels and counts. Error workflow attached (3.6).\n\n- *15 min* from comment to label\n- *0* urgent items missed in the test set\n- *1 page* weekly report, three fixes"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Only sources you're allowed to read, through official routes.\n- Four labels make each comment actionable.\n- Agreement is measured against people, with local language in the examples.\n- Hard rules for anything dangerous; confidence for the rest.\n- Code computes the numbers; AI explains them.\n\n*Common mistakes to avoid*\n\n- Alerting on every negative label.\n- No duplicate check, so the same comment alerts again and again.\n- Trusting the AI's confidence as if it were a probability.\n- Building profiles of individual commenters.\n- Letting AI calculate the weekly numbers."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I tuned the listening post. Tolu has stopped reading the alerts. I can't think why.\n\n*A:* \"This bread is sick \" woke Tolu at midnight. So did \"deadly jollof\".\n*B:* One angry comment produced 30 alerts over a day.\n*C:* The report said \"positive sentiment up 40%\". Half the \"positive\" comments came from one spam account.\n*D:* Every comment in Pidgin was labelled neutral.\n*E:* The sheet now has every commenter's name, profile link, and a \"customer temperament\" column the AI fills in."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no slang examples, and alerts on any negative label. Add local slang examples; alert on topic plus high confidence; hard rules only for genuinely dangerous topics.\n*B:* no duplicate check. Store each `item_id` and skip ones already processed; mark alerted items.\n*C:* spam counted as customers. Label `intent: spam`, exclude it from the numbers, and report how many you excluded.\n*D:* no Pidgin in the examples or the reference set. Add Pidgin examples, have a fluent speaker check the labels, re-measure.\n*E:* profiling individuals. Delete those columns. Keep comments and labels, not dossiers, and delete raw text on a schedule."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Label 30 by hand, then compare",
+   "body": "- Collect 30 real public comments about a business you know.\n- Label them yourself with the Card 2 schema, then let an AI label them.\n\n*Done when:*\n- You've measured agreement and written down the three kinds of comment the AI gets wrong most."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): A working listening post",
+   "body": "- Build collect → dedupe → label → alert for one page and one other source.\n- Test with planted comments, including one urgent food-safety case.\n\n*Done when:*\n- The urgent case alerts within 15 minutes, no comment alerts twice, and praise in slang doesn't alert."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A month of listening for a real business",
+   "body": "- Run the listening post and Monday reports for four weeks.\n- Present the owner with the trend and the fixes they made.\n\n*Done when:*\n- The owner acted on at least one fix, and you can show whether negative mentions about it fell."
+  },
+  {
+   "t": "quiz",
+   "q": "\"Una tomatoes fresh well well, I go order again.\" The AI says neutral. Why?",
+   "options": [
+    "The comment really is neutral",
+    "The model is broken",
+    "No Pidgin examples in the prompt or reference set",
+    "Comments can't be labelled"
+   ],
+   "answer": 2,
+   "why": "Local language needs local examples, and a fluent speaker checking the reference labels."
+  },
+  {
+   "t": "quiz",
+   "q": "A food-safety complaint arrives with confidence 0.55. What should happen?",
+   "options": [
+    "Wait for the Monday report",
+    "Alert a person now: dangerous topics use hard rules",
+    "Ignore it: confidence is too low",
+    "Reply automatically with a refund"
+   ],
+   "answer": 1,
+   "why": "Some things can't wait for a confident model. Hard rules first."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you stop the same comment alerting 30 times?",
+   "options": [
+    "Alert less often",
+    "Use a bigger model",
+    "Turn alerts off",
+    "Store each comment ID and skip ones already processed"
+   ],
+   "answer": 3,
+   "why": "Deduplicate by the platform's own ID."
+  },
+  {
+   "t": "quiz",
+   "q": "Who should calculate \"71% positive, up from 64%\"?",
+   "options": [
+    "Code, from the labelled rows",
+    "The AI, by reading the comments",
+    "Tolu, by hand",
+    "The platform"
+   ],
+   "answer": 0,
+   "why": "Code calculates; AI explains."
+  },
+  {
+   "t": "quiz",
+   "q": "Which of these should a listening system store?",
+   "options": [
+    "Each commenter's phone number and profile",
+    "A personality rating for each customer",
+    "The comment, its link, and the labels",
+    "Everything, forever"
+   ],
+   "answer": 2,
+   "why": "Listen to conversations about the business, not build files on people. Delete raw text on a schedule."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Collect only what you're allowed to read, through official routes.\n2. Label sentiment, topic, urgency and intent, with local-language examples.\n3. Measure agreement with people before trusting the labels.\n4. Hard rules for danger; confidence and topic for the rest.\n5. Code counts, AI explains, and you delete raw text on a schedule."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.3 complete!* _Social Listening & Sentiment_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.4, _The Social Media Manager Agent_."
+  }
+ ]
+}

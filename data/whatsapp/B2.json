@@ -1,0 +1,136 @@
+{
+ "id": "B2",
+ "title": "Boss 2: Receipt-to-Books",
+ "track": 2,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 2: Receipt-to-Books*\n\n_≈ 3 sessions · 5–7 hours · with Miracle_\n\nEverything from the Weave Workshop, in one system an accountant would trust. Receipts and invoices arrive by email; Make reads them, checks them, files them, catches duplicates, asks Tolu about anything doubtful, and on the 1st of every month delivers a profit-and-loss summary before breakfast.\n\n*Your problem:* Receipts pile up and the books are always behind.\n*The plan:* Build receipt-to-books: AI extraction, validation, accounting sheet and monthly report.\n*After this boss:* You have a finance automation for your portfolio, and the Eight Arms badge."
+  },
+  {
+   "t": "text",
+   "body": "*\"Are we actually making money?\"*\n\n*November:* Fuel receipts, packaging bills, supplier invoices, airtime top-ups: a shoebox and three email inboxes.\n\n*The question:* A potential investor asks a simple question. Tolu can't answer it for three weeks.\n\n*Glitch:* \"Suppliers resend invoices all the time. Count them twice and costs look scarier!\"\n\n*The goal:* \"On the 1st of every month, by 7 a.m.,\" says Weave. \"Every naira accounted for.\""
+  },
+  {
+   "t": "text",
+   "body": "*What the books system must do*\n- *Inputs* · Supplier invoices (the Drive folder from 1.1) and expense receipts forwarded to a *Receipts* Gmail label: PDFs, phone photos, some handwritten. About 120 documents a month.\n- *Income* · Paid orders in the Orders sheet (1.2, 2.5).\n- *Categories* · Cost of goods (produce) · Fuel · Packaging · Airtime & data · Rider pay · Other.\n- *Accuracy* · Nothing reaches the books unless its arithmetic checks out or Tolu approved it. No document is ever counted twice.\n- *Monthly report* · On the 1st at 07:00: revenue, cost of goods, gross profit and margin, expenses by category, net profit, VAT shown separately, and the change from the previous month. Emailed to Tolu and the accountant, and saved to a Monthly_PL tab.\n- *Reliability* · Every external step has an error handler; failures are logged and alerted; outages don't lose documents."
+  },
+  {
+   "t": "text",
+   "body": "- *Budget* · State your monthly credit estimate and the plan it needs. Keep AI cost per document visible.\n- *Note* · This is bookkeeping support, not tax or accounting advice. The accountant reviews the numbers before any filing."
+  },
+  {
+   "t": "text",
+   "body": "*Three scenarios and a review loop*\n\n_The diagram, in words:_ Scenario 1 intake: Gmail and Drive sources, iterator over attachments, AI extract, parse, duplicate check in a data store, category rules, arithmetic checks, router to Expenses or Needs Review. Scenario 2 review: approved rows move to Expenses. Scenario 3 monthly: on the 1st, aggregate sales and expenses into a P&L email and a Monthly_PL row.\n\nYour design may differ; the rubric scores results."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _Automate Your Bookkeeping: Email Receipts into Organized Data (Make)_.\nLook for: Email receipt → AI field extraction → rows in a sheet.",
+   "media": "walk:B2",
+   "youtube": "https://www.youtube.com/watch?v=w86xbPFQgD0",
+   "app": "https://automancy.cc/learn#boss-2"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Eight deliverables, three phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · The books tables (0.4)*\n\n*Expenses* (expense_id, doc_date, supplier, invoice_number, category, amount_ex_vat, vat, total, source_link, dedupe_key, added_at), *Expense_Lines*, *Needs_Review* (same fields + review_reason, status: New · Approved · Rejected), *Errors*, and *Monthly_PL*. Validation on category and status."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · Extraction and checks (2.4, 2.7)*\n\nIterate attachments from both sources; extract with your 2.7 prompt (add a `doc_type` field: invoice, receipt, or not_a_receipt); parse; check line maths, subtotal + VAT = total, and required fields."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Never count twice (2.5)*\n\nBuild a dedupe key from the supplier and invoice number (lower-cased), check it in a data store before saving, and store it after. Receipts without numbers need a different key (Curveball 1)."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "`md5(lower(trim(supplier)) + \"|\" + lower(trim(invoice_number)))` gives a short, consistent key. For receipts with no number, try supplier + date + total."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Categories: rules first, AI second (2.2)*\n\nKnown suppliers get their category from a `switch()` rule (Farmgate → Cost of goods; TotalEnergies or NNPC stations → Fuel). Only unknown suppliers use the AI's suggested category, and those go to review the first time."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D5 · The review loop (2.3)*\n\nTolu corrects a Needs_Review row and sets status Approved. Scenario 2 moves Approved rows into Expenses (with dedupe) and marks them done; Rejected rows are logged and left out."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · The monthly P&L (2.2, 2.4)*\n\nOn the 1st at 07:00: search last month's paid orders and expenses, aggregate by category, calculate, and send a readable table plus a Monthly_PL row."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint: last month's date range",
+   "answer": "_(The code is on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D7 · Reliability (2.6)*\n\nHandlers on every external module: AI and HTTP calls → alert + Break with retries; one bad attachment → log + Ignore. All errors go to the Errors tab."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D8 · Test report, credit budget and demo*\n\nRun the 12 test documents below. Report expected vs. actual route, credits used, and AI cost per document. Estimate the month at 120 documents. Record a 3-minute demo ending with the P&L email."
+  },
+  {
+   "t": "link",
+   "body": "The 12 test documents. Create them yourself (typed PDFs, phone photos of printouts, one handwritten slip) so no real financial data is used. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-2"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of each phase*\n\n*Glitch:* Books are where small mistakes become big ones. Enjoy.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 1*\nFuel receipts have no invoice number, and Tolu fills up at the same station twice on the same day for the same amount. Your dedupe key must not merge two real purchases, but must still catch a receipt forwarded twice.",
+   "answer": "*Receipts without numbers:* use supplier + doc_date + total + an md5 of the attachment's content as the key. A forwarded copy carries the same file, so its key matches and it is stopped; two genuine fill-ups for the same amount are different photos or PDFs, so their keys differ and both are kept. (Don't use the email's message ID: a forward arrives as a new email with a new ID.)"
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 2*\nA supplier sends one PDF containing two separate invoices. Your AI step returns one invoice. How do you get two correct Expenses rows (and catch it if the AI misses one)?",
+   "answer": "*Two invoices in one PDF:* change the prompt to return an _array_ of invoices (`{\"invoices\": [ … ]}`) and iterate over it (2.4). Add a check: if the PDF has more pages than invoices returned and pages contain \"Invoice No\", send it to review."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 3*\nThe accountant asks: show every figure _excluding_ VAT, list VAT paid separately for the month, and compare each line with the previous month (amount and %). The investor wants gross margin as a percentage.",
+   "answer": "*Accountant's format:* store amount_ex_vat and vat separately from the start (D1 already does). The P&L scenario reads last month's Monthly_PL row to compute change: `(this − last) / last × 100`, rounded to one decimal place."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Area · Full marks when… · Points_\n- *Accuracy* · At least 11 of 12 test documents take the expected route · 20\n- *No double counting* · Resent documents stopped; two genuine same-day fuel purchases both kept · 15\n- *Review loop* · Doubtful items reach Tolu with reasons; approvals flow into Expenses exactly once · 10\n- *Monthly P&L* · Correct totals for a test month you can verify by hand; VAT separate; month-on-month change; arrives at 07:00 on the 1st · 20\n- *Reliability* · Handlers on every external module; failures logged and alerted; no lost documents in an outage test · 15\n- *Curveballs* · All three handled · 10\n- *Report and demo* · Test report, credit and AI cost estimate, 3-minute video · 10\n- *Total* · Win at 80 or more · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 2: Receipt-to-Books",
+   "body": "Build eight deliverables, three phases:\n- Phase 1 · D1 · The books tables (0.4)\n- Phase 1 · D2 · Extraction and checks (2.4, 2.7)\n- Phase 2 · D3 · Never count twice (2.5)\n- Phase 2 · D4 · Categories: rules first, AI second (2.2)\n- Phase 2 · D5 · The review loop (2.3)\n- Phase 3 · D6 · The monthly P&L (2.2, 2.4)\n- Phase 3 · D7 · Reliability (2.6)\n- Phase 3 · D8 · Test report, credit budget and demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-2"
+  },
+  {
+   "t": "link",
+   "body": "*Sage:* Different designs can all win. Use this to find the gaps in yours.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-2"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 2 demo · Receipt-to-Books, with Miracle.\n\nBookkeeping support, not tax advice: the accountant still reviews it. Record your demo the same way, ending with the P&L email.",
+   "media": "clip:B2:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-2"
+  },
+  {
+   "t": "text",
+   "body": "*The Weave Workshop complete*\n\n1. You can read bundles, write functions in fields, route, loop, aggregate, call APIs, remember with data stores, handle failure, and use AI safely, all in Make.\n2. You've built a bookkeeping system with proof, not hope: arithmetic checks, deduplication and a human review loop.\n3. Next: Track 3, Nodo's Forge. You'll run n8n on your own server and rebuild Harvest Lane's busiest flows with code, AI nodes and production habits."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 2 complete!* _Receipt-to-Books_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.1, _Setup & First Workflow_."
+  }
+ ]
+}

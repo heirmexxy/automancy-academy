@@ -1,0 +1,198 @@
+{
+ "id": "1.2",
+ "title": "Multi-Step Zaps & Formatter",
+ "track": 1,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 1.2 · Multi-Step Zaps & Formatter*\n\n_≈ 100 minutes · with Emeka_\n\nReal orders arrive messy: phone numbers in five styles, dates in three, prices nowhere. Today you build one Zap that cleans the order, looks up the price, adds the delivery fee, calculates the total, saves it and tells Tolu, in nine steps.\n\n*Your problem:* One-step automations can't handle real, messy work.\n*The plan:* Chain several steps and clean names, phones and dates with Formatter.\n*After this lesson:* You can build multi-step workflows that turn messy input into clean records."
+  },
+  {
+   "t": "text",
+   "body": "*Five ways to write one phone number*\n\n*The form:* Customers type their numbers however they like. The riders' dialler only works with one of these.\n\n*Last module:* Two Zaps chained through a sheet worked, but slowly, and the total still had to be done by hand.\n\n*Glitch:* \"Garbage in, garbage out. I'll keep the garbage coming.\"\n\n*Bolt:* \"One Zap. Clean it, price it, total it, save it, announce it.\""
+  },
+  {
+   "t": "text",
+   "body": "*Multi-step Zaps: data flows downhill*\n\nA multi-step Zap has one trigger and any number of actions. Each step can use the output of *any step above it*, not just the one directly above. Steps are numbered, and pills show which step they came from (for example \"2. Output\").\n\n*Think of a production line.* The order enters at the top. Each station does one job and passes the tray down. Any station can look at what every earlier station added to the tray.\n\n*Bolt:* Multi-step Zaps need a paid plan. New accounts usually get a free trial of paid features; check your account. If you're on the free plan, read along and use the chaining trick from 1.1, or come back when you're ready to upgrade."
+  },
+  {
+   "t": "text",
+   "body": "*Formatter: Zapier's cleaning station*\n\n*Formatter by Zapier* is a built-in app. Pick an event (Text, Numbers, Date/Time or Utilities), then a *transform*. Formatter steps don't use tasks.\n\n_Family · Useful transforms · Harvest Lane example_\n- *Text* · Capitalize, Trim Whitespace, Replace, Split Text, Extract Pattern, Default Value · \"mrs ADEBAYO \" → \"Mrs Adebayo\"\n- *Numbers* · Format Phone Number, Format Currency, Format Number, Spreadsheet-Style Formula · 0803… → +234803…; qty × price + fee\n- *Date/Time* · Format (with time zones), Add/Subtract Time · \"6/10/2026\" → \"2026-10-06\"; delivery = order + 1 day\n- *Utilities* · Lookup Table, Line Itemizer, Pick from List · Area → delivery fee"
+  },
+  {
+   "t": "text",
+   "body": "*Dates and time zones, again*\n\nMost data from apps carries a time zone, and Zapier converts using your account's time zone setting unless you say otherwise. Set your Zapier account time zone to *Africa/Lagos* first; then, in a Date/Time Format step, set the output format to `YYYY-MM-DD` for dates you'll store (Module 0.3).\n\n*A quick sanity test:* submit a test form at a time you note down, then check the timestamp Zapier shows. If it's an hour off, the time zone setting is the culprit."
+  },
+  {
+   "t": "text",
+   "body": "*Lookups: a table inside the Zap, or a sheet outside it*\n\n*Formatter Lookup Table*\n\n- A small key → value list typed into the step.\n- Always set a *fallback* for unknown keys.\n- Best for short lists that rarely change: area → delivery fee.\n\n*Google Sheets · Lookup Spreadsheet Row*\n\n- Searches a column in your sheet and returns the whole row.\n- Best for data that changes: product prices, stock.\n- Tolu updates the sheet; the Zap always uses today's price."
+  },
+  {
+   "t": "text",
+   "body": "*Store for machines, format for humans*\n\nRemember from 0.3: money is stored as a plain number. So calculate and save `35500`, and only create `₦35,500.00` with Format Currency for the email a person reads. Store the formatted version and the sheet can't add it up.\n\n- *Delay by Zapier*: Wait a set time, or until a date, before continuing. E.g. a thank-you message the day after delivery.\n- *Digest by Zapier*: Collect items over time and release them together, e.g. one 6 p.m. summary instead of 40 alerts. Check it's included in your plan.\n- *Name your steps*: Rename \"Formatter\" to \"Clean phone\". Future-you will read this Zap at midnight."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to use Formatter by Zapier (Zapier 101)_ (Zapier).\nLook for: Text, number and date transforms using earlier step outputs.",
+   "media": "walk:1.2",
+   "youtube": "https://www.youtube.com/watch?v=JG7-owzK5Ck",
+   "app": "https://automancy.cc/learn#m-1-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the one-Zap order line*\n\n*The goal.* A customer submits the order form. One Zap cleans the data, looks up the product's price in the Products sheet, adds the delivery fee for their area, calculates the total, saves a clean row to Orders, and emails Tolu a readable summary. Use the form from 1.1 Bronze, with an *Area* dropdown added."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Trigger and a real test response*\n\nTrigger: *Google Forms · New Form Response*. Submit a deliberately messy test: name \"mrs ADEBAYO \", phone \"0803 123 4567\", product \"Tomatoes (crate)\", quantity 2, date 6 October, area Bodija. Messy test data proves your cleaning steps work."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Clean the phone number*\n\nAdd *Formatter · Numbers · Format Phone Number*. Input: the phone pill. Country code: Nigeria (NG). Output format: the international format without spaces (shown as E.164 or similar, e.g. `+2348031234567`). Rename the step \"Clean phone\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Clean the delivery date*\n\nAdd *Formatter · Date/Time · Format*. Input: the date pill. To Format: `YYYY-MM-DD`. To Timezone: Africa/Lagos. Result: `2026-10-06`. Rename it \"Clean date\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Look up today's price in the Products sheet*\n\nAdd *Google Sheets · Lookup Spreadsheet Row*. Spreadsheet: your 0.4 workbook; Worksheet: Products; Lookup column: `name`; Lookup value: the product pill. The step returns the whole row, so you now have `sku` and `price_ngn` (12500). Tick the option to stop or flag the Zap if nothing is found, so an unknown product never slips through with no price.\n\n*Weave:* *Why the sheet, not a lookup table?* Prices change. Tolu edits one cell in Products, and every future order uses the new price, while old orders keep what they paid (0.4)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Delivery fee from a lookup table*\n\nAdd *Formatter · Utilities · Lookup Table*. Lookup key: the Area pill.\n\n_Key · Value_\n- *Bodija* · 1500\n- *Mokola* · 1500\n- *Ring Road* · 1500\n- *Challenge* · 2000\n- _Fallback value_ · 2500\n\nThe fallback charges a safe default for any new area instead of leaving the fee blank."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Calculate the total*\n\nAdd *Formatter · Numbers · Spreadsheet-Style Formula*. Build it from pills:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Calculate the total): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-2"
+  },
+  {
+   "t": "text",
+   "body": "*Step 7 · Make a display version of the total*\n\nAdd *Formatter · Numbers · Format Currency*. Input: step 6's output. Currency: NGN, locale English (Nigeria) if listed. Result: something like `₦26,500.00`. This is only for the email."
+  },
+  {
+   "t": "text",
+   "body": "*Step 8 · Save the clean row*\n\nAdd *Google Sheets · Create Spreadsheet Row* into Orders. Map the _clean_ values: phone from step 2, date from step 3, sku and unit price from step 4, fee from step 5, *total from step 6* (the plain number), status \"New\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 9 · Tell Tolu, then publish*\n\nAdd *Gmail · Send Email*. Subject: `New order · [name] · [date from step 3] · [currency from step 7]`. Body: each field on its own line. Test each step top to bottom, name the Zap *HL · Form order → Sheet + alert*, and publish.\n\n- *1 Zap* instead of two chained ones\n- *0* manual steps from form to sheet to alert\n- *26500* stored as a number; ₦26,500 shown to Tolu"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Cleaning happens once, at the top, so every later step gets good data.\n- Prices come from the sheet Tolu controls.\n- Fallbacks mean new areas and typos never create blank fees.\n- Machine and human versions of the total are kept apart.\n\n*Common mistakes to avoid*\n\n- Mapping the raw phone pill (step 1) instead of the cleaned one (step 2).\n- Saving the currency-formatted total in the sheet.\n- No fallback in the lookup table.\n- Leaving steps named \"Formatter\", \"Formatter\", \"Formatter\"."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I copied your Zap and \"tidied\" it. Five rows came out wrong. Diagnose each.\n\n*A:* created_at · 2026-10-06 07:14 · 2026-10-06 08:14\n*B:* phone · 0803 123 4567 · +2348031234567\n*C:* total · ₦26,500.00 · 26500\n*D:* delivery_fee · (blank) for area \"Apete\" · 2500\n*E:* unit_price · 12500 for an order placed after Tolu raised tomatoes to 14000 · 14000"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* one hour behind: the Zapier account time zone isn't Africa/Lagos, or the Format step's To Timezone is UTC.\n*B:* the raw phone pill from step 1 was mapped instead of step 2's output.\n*C:* the display value from Format Currency (step 7) was saved instead of step 6's plain number.\n*D:* the lookup table has no fallback value.\n*E:* Glitch swapped the Sheets lookup for a lookup table with prices typed in, so price changes in the sheet are ignored."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A name-cleaning line",
+   "body": "- Add Formatter steps to your 1.1 Bronze Zap (or a new one) that trim spaces and capitalise names, then split them into first and last name.\n- Test with \" mrs ADEBAYO \", \"tunde bakare\", and \"MAMA KEMI\".\n\n*Done when:*\n- All three come out neatly capitalised with no stray spaces, in separate first and last name columns."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "Order matters: Trim Whitespace, then Capitalize, then Split Text on a space. For \"Split Text\", choose which segment you want (first or last) in each step, or return all segments."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Rebuild the solved Zap and prove the maths",
+   "body": "- Build the nine-step Zap with your own products and areas.\n- Submit three test orders: a normal one, one from a new area (fallback fee), and one after you change a price in Products.\n- Check each total by hand, and confirm the sheet stores numbers while the email shows naira.\n\n*Done when:*\n- All three totals are correct, and the price change shows up only in the order placed after it."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): The 6 p.m. summary",
+   "body": "- Build a daily summary for Tolu: at 6 p.m., one email listing today's order count and total value.\n- Option 1: *Digest by Zapier*, adding each new order to a digest released daily at 18:00.\n- Option 2: *Schedule by Zapier* at 18:00, then read today's rows from the sheet (or a small Summary tab using COUNTIFS and SUMIFS from 0.4), then send the email.\n\n*Done when:*\n- One email arrives at 6 p.m. with the right count and total, and you've written two lines on which option you'd give a client, and why."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See a model answer for option 2",
+   "answer": "Add a Summary tab with `=COUNTIFS(Orders!B:B, \">=\"&TODAY())` for today's count and a matching SUMIFS for the total. The 6 p.m. Zap does a *Lookup Spreadsheet Row* on Summary and emails both values. It's robust, cheap in tasks, and Tolu can see the same numbers in the sheet any time."
+  },
+  {
+   "t": "quiz",
+   "q": "In a multi-step Zap, which data can step 7 use?",
+   "options": [
+    "Only step 6's output",
+    "Only the trigger's data",
+    "Output from any step above it",
+    "Any step, including step 9"
+   ],
+   "answer": 2,
+   "why": "Data flows downhill: any earlier step, never a later one."
+  },
+  {
+   "t": "quiz",
+   "q": "Which Formatter family turns 0803 123 4567 into +2348031234567?",
+   "options": [
+    "Numbers · Format Phone Number",
+    "Text · Capitalize",
+    "Date/Time · Format",
+    "Utilities · Lookup Table"
+   ],
+   "answer": 0,
+   "why": "Format Phone Number, with Nigeria as the country code."
+  },
+  {
+   "t": "quiz",
+   "q": "Product prices change every few weeks. Where should the Zap get them?",
+   "options": [
+    "A Formatter lookup table",
+    "Typed into the formula",
+    "From the customer",
+    "A Lookup Spreadsheet Row step on the Products sheet"
+   ],
+   "answer": 3,
+   "why": "Changing data belongs in the sheet Tolu controls; the Zap reads today's value."
+  },
+  {
+   "t": "quiz",
+   "q": "Which total should be saved in the Orders sheet?",
+   "options": [
+    "₦26,500.00",
+    "26500",
+    "\"26,500 naira\"",
+    "Both, in one cell"
+   ],
+   "answer": 1,
+   "why": "Store plain numbers so formulas work; format only for people."
+  },
+  {
+   "t": "quiz",
+   "q": "A new delivery area appears that isn't in your lookup table. What prevents a blank fee?",
+   "options": [
+    "Nothing; you must add every area in advance",
+    "A Filter step",
+    "The lookup table's fallback value",
+    "Formatting the fee as currency"
+   ],
+   "answer": 2,
+   "why": "The fallback applies whenever the key isn't found."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Any step can use data from any step above it.\n2. Clean data once, near the top, and map the cleaned version afterwards.\n3. Formatter: Text, Numbers, Date/Time, Utilities. Built-in, and free of tasks.\n4. Short, stable lists go in a lookup table with a fallback; changing data comes from the sheet.\n5. Store 35500; show ₦35,500.\n6. Name every step so the Zap reads like a recipe."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 1.2 complete!* _Multi-Step Zaps & Formatter_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 1.3, _Filters & Paths_."
+  }
+ ]
+}

@@ -1,0 +1,201 @@
+{
+ "id": "2.1",
+ "title": "Scenarios, Modules & Bundles",
+ "track": 2,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.1 · Scenarios, Modules & Bundles*\n\n_≈ 90 minutes · with Emeka_\n\nWelcome to the Weave Workshop. Make draws your automation as a map of bubbles, and shows you every piece of data flowing through them. Once you can read that map and count what it costs, you can build almost anything here.\n\n*Your problem:* Zapier gets expensive as volume grows, and Make looks confusing.\n*The plan:* Learn scenarios, modules and bundles by building a first Make scenario.\n*After this lesson:* You can read and build Make scenarios with confidence."
+  },
+  {
+   "t": "text",
+   "body": "*Eight arms, one map*\n\n*Monday:* Tolu arrives with the December maths from 1.6: 12,000 Zapier tasks a month for the order line.\n\n*Weave:* \"In my workshop, every step is a bubble, and you can watch the data travel between them.\"\n\n*Glitch:* \"Check for new rows every 15 minutes, day and night. Every check costs a credit, even when nothing's there.\"\n\n*Handover:* Bolt passes Weave a phrasebook. Everything you learned on Spark Street still applies, with new names."
+  },
+  {
+   "t": "text",
+   "body": "*Scenarios, modules and bundles*\n\nIn Make, an automation is a *scenario*. Each step is a *module*, drawn as a bubble. Each piece of data that travels through is a *bundle*: one row, one email, one order. The key rule: *a module runs once for every bundle that reaches it*."
+  },
+  {
+   "t": "text",
+   "body": "*Module types*\n\n- *Trigger*: Starts the scenario. _Polling_ triggers check on a schedule; _instant_ triggers (webhooks) run the moment data arrives.\n- *Action*: Creates, updates, sends or deletes: add a row, send an email.\n- *Search*: Finds records and can return many bundles: search rows where area = Bodija.\n- *Iterator and aggregator*: Split a list into bundles, or combine bundles into one (2.4).\n- *Flow control*: Router (branches), filters on the links between bubbles, repeater and more (2.3).\n- *Universal / HTTP*: Talk to any API directly, like Webhooks by Zapier (2.5)."
+  },
+  {
+   "t": "text",
+   "body": "*Credits: what Make counts*\n\nMake bills in *credits*. Each module action uses one credit per bundle it processes. According to Make's help centre, *filters and routers are free* (some third-party guides say otherwise, so confirm with a run's credit count in History), and *a polling trigger uses one credit for every check, even when it finds no new data*. The Free plan, as of Oct 2026, includes 1,000 credits a month, 2 active scenarios, 1 data store, and a shortest schedule of 15 minutes."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: how many credits will a scenario use?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-2-1"
+  },
+  {
+   "t": "text",
+   "body": "*Weave:* Try it: checking every 15 minutes, all day, burns 2,880 credits a month before a single order arrives. Run 7 a.m. to 9 p.m. every hour instead, or use an instant trigger, and the checking cost almost disappears."
+  },
+  {
+   "t": "text",
+   "body": "*Zapier → Make phrasebook*\n\n_On Spark Street (Zapier) · In the Workshop (Make)_\n- *Zap* · Scenario\n- *Step* · Module (bubble)\n- *One run's data* · Bundles (a run can carry many)\n- *Task (per successful action)* · Credit (per module action, per bundle, plus polling checks)\n- *Formatter* · Functions inside any field (2.2), free of credits\n- *Filter, Paths* · Filters on links, Router (2.3), free of credits\n- *Webhooks by Zapier* · Webhooks app and HTTP module (2.5)\n- *Zap history* · Scenario history, with the bubble inspector\n- *Publish / turn on* · Switch scheduling ON (make the scenario active)"
+  },
+  {
+   "t": "text",
+   "body": "*Run once, then read the bubbles*\n\n- *Run once*: Runs the scenario right now, once, so you can test.\n- *The bubble number*: After a run, each module shows a small count: how many bundles it processed.\n- *The inspector*: Click that count to see each bundle's input and output, field by field. It's the Zap-history detail you know, for every step at once.\n- *Module numbers*: Modules are numbered (1, 2, 3…). When you map, fields are labelled by module number, e.g. `1. Customer name`. Mapping from the wrong number is a classic bug."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Make.com Tutorial for Beginners 2026 (Full Guide)_.\nLook for: Scenario editor, modules, bundles, scheduling and credits in the current interface.",
+   "media": "walk:2.1",
+   "youtube": "https://www.youtube.com/watch?v=CLutx-rqGgc",
+   "app": "https://automancy.cc/learn#m-2-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Create your free Make account, with Miracle.\n\nYour workshop is open. Next, you'll build your first scenario and watch the bundles move.",
+   "media": "clip:2.1:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-2-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Connect Google Sheets in Make, with Emeka.\n\nIn the lesson, you'll add the email module and run it once.",
+   "media": "clip:2.1:1",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-2-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Import a Make blueprint, with Miracle.\n\nSave it. Switch scheduling on only when you're happy with the test and the credit estimate.",
+   "media": "clip:2.1:2",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-2-1"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: new-order alerts, rebuilt in Make, costed*\n\n*The goal.* Rebuild 1.1's Silver mission in Make: when a new row lands in the Orders sheet, email Tolu. Then read the bundles, count the credits, and set a schedule that fits the free plan."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Create the scenario and add the trigger*\n\nCreate a free Make account and a new scenario. Click the big plus, choose *Google Sheets · Watch New Rows*, and connect the business Google account (0.6). Pick the spreadsheet and the Orders sheet, and confirm the header row is row 1 (0.4). Set *Limit* (the most rows taken per run) to 10."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Choose where to start*\n\nMake asks where the trigger should start. Choose *From now on* (or equivalent). If you choose \"all\", the first run treats every old order as new and emails you about each one."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add the email module and map by module number*\n\nAdd *Gmail · Send an Email* (or the Email app). To: your address. Subject: `New order ·` then map `1. customer_name` and `1. total` from the mapping panel. The \"1.\" tells you the value comes from module 1."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Run once with three test rows*\n\nAdd three rows to Orders. Click *Run once*. The Sheets bubble shows 3 (three bundles) and the Gmail bubble shows 3 (it ran three times). Click each count to inspect a bundle's data. You'll get three emails.\n\n- *1* credit for the trigger check\n- *3* credits for three emails\n- *4* credits for this run"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Choose a schedule with the calculator*\n\nHarvest Lane gets about 10 orders a day, all between 7 a.m. and 9 p.m. Try the calculator above:\n\n_Schedule · Checking · Work · Total / month_\n- *Every 15 min, 24 hours* · 2,880 · 300 · 3,180\n- *Every 15 min, 14 hours* · 1,680 · 300 · 1,980\n- *Every 60 min, 14 hours* · 420 · 300 · 720\n\nHourly during business hours fits the free plan. Set it in the scenario's schedule settings (use the advanced options to limit the hours), then switch scheduling *ON*. For truly instant alerts, you'll use a webhook trigger in 2.5."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Name it and check the history*\n\nRename the scenario *HL · New order → email Tolu*. After the next scheduled run, open the scenario's History and inspect the run: bundles, credits and data, all in one place.\n\n*Bolt:* *Compared with Zapier:* the same alert in 1.1 used one task per order and no cost for checking. Here each order costs one credit, but every check costs one too. Make wins when there's lots of work per run; for \"rare event, check often\", instant triggers matter even more in Make."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Running once with test rows shows exactly how bundles flow.\n- \"From now on\" avoids a flood of old rows.\n- The schedule is chosen with numbers, not guessed.\n- Clear names and module numbers keep mapping readable.\n\n*Common mistakes to avoid*\n\n- Polling every 15 minutes all night for daytime orders.\n- Expecting one email when three bundles arrive.\n- Starting from \"all rows\" on a sheet with history.\n- Forgetting that the Free plan allows only two active scenarios."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My first week in Make. Five surprises. Explain them.\n\n*A:* The first run sent 480 emails, one for every order since January.\n*B:* The free credits ran out on day 10, though only 60 orders came in.\n*C:* Tolu wanted one summary of the morning's orders and got 12 separate emails.\n*D:* A third scenario won't switch on.\n*E:* Every email says \"New order · Tomatoes\", never the customer's name."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the trigger started from \"all\" rows, not \"from now on\".\n*B:* polling every 15 minutes, 24 hours a day: about 96 credits a day for checking alone.\n*C:* the email module runs once per bundle. Combining bundles needs an aggregator (2.4).\n*D:* the Free plan allows two active scenarios.\n*E:* the product field was mapped where the name should be. Check the field names and module numbers in the mapping panel."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Your first scenario, fully inspected",
+   "body": "- Build the solved scenario. Add three test rows and run once.\n- Open the inspector on both bubbles and write down, for bundle 2, three input and three output values.\n- Record the credits used by the run.\n\n*Done when:*\n- You can explain why the run used 4 credits, pointing at the bubbles."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Rebuild a Zap and compare costs",
+   "body": "- Pick one of your Zaps from Track 1 with at least three steps and rebuild it as a Make scenario.\n- Run both with the same five test items.\n- Compare: Zapier tasks used vs. Make credits used, and how long each took to build.\n\n*Done when:*\n- Both produce identical results, and you've written a three-line comparison with real numbers from Zap history and scenario history."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A December credit budget",
+   "body": "- List the five Harvest Lane automations from the Boss 0 blueprint.\n- For each, estimate bundles per day and modules per bundle at December volume, and choose a trigger type and schedule.\n- Total the credits with the calculator, then choose the smallest Make plan that covers it (from the current pricing page) and note the monthly cost.\n\n*Done when:*\n- Every automation has a justified schedule, the total fits a named plan, and you've identified which one should become an instant trigger to save the most credits."
+  },
+  {
+   "t": "quiz",
+   "q": "A trigger outputs 5 bundles. How many times does the next module run?",
+   "options": [
+    "Once",
+    "Twice",
+    "5 times",
+    "It depends on the schedule"
+   ],
+   "answer": 2,
+   "why": "A module runs once for every bundle that reaches it."
+  },
+  {
+   "t": "quiz",
+   "q": "A polling trigger checks and finds no new rows. Does it use a credit?",
+   "options": [
+    "No, only work counts",
+    "Yes, one credit per check",
+    "Only on paid plans",
+    "Only at night"
+   ],
+   "answer": 1,
+   "why": "Every check uses one credit, even with nothing new. Schedules matter."
+  },
+  {
+   "t": "quiz",
+   "q": "Which of these uses no credits?",
+   "options": [
+    "A router and the filters on its routes",
+    "A Gmail send",
+    "A Google Sheets search",
+    "A polling check"
+   ],
+   "answer": 0,
+   "why": "Per Make's help centre, filters and routers have no credit cost."
+  },
+  {
+   "t": "quiz",
+   "q": "In the mapping panel, what does \"3. total\" mean?",
+   "options": [
+    "The third total in the sheet",
+    "Total multiplied by 3",
+    "The total from 3 runs ago",
+    "The total field output by module number 3"
+   ],
+   "answer": 3,
+   "why": "Make labels mapped values with the number of the module they came from."
+  },
+  {
+   "t": "quiz",
+   "q": "Orders arrive 7 a.m.–9 p.m. Which schedule best fits the free plan?",
+   "options": [
+    "Every 15 minutes, 24 hours",
+    "Every minute, business hours",
+    "Every hour, 7 a.m.–9 p.m.",
+    "Every 15 minutes, weekends only"
+   ],
+   "answer": 2,
+   "why": "About 420 checking credits a month plus the work: comfortably under 1,000."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Scenario = modules (bubbles); data travels as bundles.\n2. Each module runs once per bundle that reaches it.\n3. Credits: one per module action per bundle; polling checks cost one each; filters and routers are free.\n4. Choose schedules with numbers; prefer instant triggers for rare events.\n5. Run once, then read the bubbles and the inspector.\n6. Watch module numbers when mapping."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.1 complete!* _Scenarios, Modules & Bundles_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.2, _Mapping & Functions_."
+  }
+ ]
+}

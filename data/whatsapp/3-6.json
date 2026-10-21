@@ -1,0 +1,199 @@
+{
+ "id": "3.6",
+ "title": "Errors, Sub-workflows & Logs",
+ "track": 3,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.6 · Errors, Sub-workflows & Logs*\n\n_≈ 2 hours · with Miracle_\n\nEvery automation fails eventually: an API goes down, a token expires, someone renames a column. Professionals don't build workflows that never fail. They build workflows that *fail loudly, recover where they can, and leave a trail*. This module gives Harvest Lane a single alarm system for every workflow, a library of reusable pieces, and logs worth reading.\n\n*Your problem:* Big workflows break in ways that are hard to find.\n*The plan:* Split work into sub-workflows, add an error workflow, and log what happens.\n*After this lesson:* Your n8n builds are tidy, reusable and easy to debug."
+  },
+  {
+   "t": "text",
+   "body": "*Silence at 3 a.m.*\n\n*03:12:* The supplier's API rejects the nightly price update. The workflow stops. Nobody is told.\n\n*11:40:* Hotel Grace's buyer calls, angry. Yesterday's prices are still showing. That's how Tolu finds out.\n\n*Nodo:* \"What you want at 03:12 is this message: which workflow, which node, what went wrong, and a link to the run.\"\n\n*Glitch:* \"Oh, you'll get an alert. It just won't tell you anything.\""
+  },
+  {
+   "t": "text",
+   "body": "*Error workflows: one alarm for everything*\n\nAn *error workflow* is an ordinary workflow that starts with the *Error Trigger* node. In any other workflow, open *Settings → Error workflow* and choose it. From then on, whenever an automatic run of that workflow fails, n8n starts the error workflow and hands it the details.\n\n- *When it runs*: When an _automatic_ (published) run fails. Failures while you click Execute in the editor show on your screen instead, so test with a real scheduled run.\n- *Stop And Error*: A node that fails the run on purpose, with your message, for business rules like \"payment total doesn't match\". It sets off the error workflow too.\n- *What it receives*: One item with two objects: `execution` (id, url, error, last node) and `workflow` (id, name). Explore it below."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Error workflows: one alarm for everything. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-6"
+  },
+  {
+   "t": "text",
+   "body": "If the failure happens in the trigger node itself, the shape is a little different (details sit under `trigger`, not `execution`). Use `??` fallbacks in your alert so it never says nothing."
+  },
+  {
+   "t": "text",
+   "body": "*Write the alert, and beat Glitch's \"undefined\"*\n\nThe alert message is a set of expressions. Point them at the wrong place and you get blanks (Telegram shows \"undefined\"). Fix Glitch's template so both test failures produce a useful alert."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Write the alert, and beat Glitch's \"undefined\". It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-6"
+  },
+  {
+   "t": "text",
+   "body": "*Per node: retry, continue, or stop?*\n\nEvery node has a *Settings* tab. Two settings decide what happens when it fails:\n\n- *Retry On Fail*: Try again automatically, with _Max Tries_ and _Wait Between Tries_. For temporary problems: 429, 5xx, timeouts.\n- *On Error → Stop Workflow*: The default. The run fails and the error workflow fires.\n- *On Error → Continue*: Pass the error along as normal output and carry on. Only for steps that truly don't matter.\n- *On Error → Continue (using error output)*: The node gets a second, red output for failed items. Route them somewhere useful (a Fix list, an alert) while the good items carry on.\n\n*Sort these.* For each situation, pick the best setting:\n\n_Decide for each one: Retry or Error output or Stop + alert?_"
+  },
+  {
+   "t": "text",
+   "body": "*A.* The supplier API sometimes answers 503 for a few seconds during its own updates.\n*B.* In a run of 200 reminders, 3 phone numbers are invalid and the messaging API rejects them.\n*C.* The Paystack amount doesn't match the order total.\n*D.* Google returns 401: the Sheets credential has expired.\n*E.* Writing a \"nice to have\" analytics row fails, but the customer's receipt must still be sent."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Reveal the answers",
+   "answer": "*A:* Retry\n*B:* Errout\n*C:* Stop\n*D:* Stop\n*E:* Errout"
+  },
+  {
+   "t": "text",
+   "body": "*Sub-workflows: build once, call everywhere*\n\nWhen several workflows repeat the same steps (normalise a phone, send an alert, look up a customer), move those steps into a *sub-workflow*:\n\n- *In the sub-workflow*: Start with the trigger *When Executed by Another Workflow*. Define its inputs: named fields (best: like a form), a JSON example, or accept all data.\n- *In the parent*: Add *Execute Sub-workflow*, choose the sub-workflow, and map the inputs. Whatever the sub-workflow's *last node* outputs comes back to the parent.\n- *Why bother*: Fix a bug once and every workflow gets the fix. Long workflows become readable chapters. And, per n8n's docs, sub-workflow runs don't count towards your plan's monthly execution limit.\n- *Watch out*: Change a sub-workflow's inputs and every parent must be updated. Name sub-workflows clearly, such as `SUB · Normalise phone`, and keep a list of who calls them."
+  },
+  {
+   "t": "text",
+   "body": "*Executions: your logbook*\n\n- *Read a failed run*: Open *Executions*, filter by _Error_, and open a run: each node shows exactly the data it received and produced. Start at the red node and look at its input.\n- *Retry a failed run*: From the execution, retry using the workflow as it was or as it is now (after your fix). Check that retrying won't double anything first, such as a second receipt.\n- *What gets saved*: In each workflow's settings: save failed runs, save successful runs, save manual runs, and a timeout. Self-hosted n8n prunes old runs automatically; by default it keeps runs up to 336 hours (14 days) old, up to 10,000 of them.\n- *Logs hold customer data*: Executions contain names, phones and amounts. Keep only what you need: for busy workflows full of personal data, consider not saving successful runs, and keep failures long enough to investigate."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to Add Error Handling to Any n8n Workflow (Retries + Telegram Alerts)_.\nLook for: Error Trigger workflow, retry on fail and a Telegram alert.",
+   "media": "walk:3.6",
+   "youtube": "https://www.youtube.com/watch?v=OdgrYJS7TEA",
+   "app": "https://automancy.cc/learn#m-3-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's alarm system*\n\n*The goal.* One error workflow that, whenever any Harvest Lane workflow fails, sends Tolu a Telegram message with the workflow, node, error and a link to the run, and logs the incident. Then prove it works with a deliberate failure."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Create a Telegram bot*\n\nIn Telegram, message *@BotFather*, send `/newbot`, choose a name (e.g. _Harvest Lane Alerts_) and copy the *token* it gives you. Treat it like a password. In n8n, create a *Telegram* credential with that token. Then send your new bot any message (\"hi\"), so it's allowed to message you back."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Find your chat ID*\n\nAfter messaging your bot, open this address in your browser, with your token in place of `<TOKEN>`:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Find your chat ID): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-6"
+  },
+  {
+   "t": "text",
+   "body": "Find `\"chat\":{\"id\":512349876 …` in the reply and note the number. (For a group, add the bot to the group, post a message there, and look again; group IDs start with a minus sign.) This address contains your token, so don't share it or save it in a workflow. Why not use n8n's Telegram Trigger? It needs a public web address to receive messages, which a laptop install doesn't have until 3.8."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Build the error workflow*\n\nNew workflow *HL · Error alerts*. Add *Error Trigger*, then *Edit Fields · Format*:\n\n_(Code on screen in the app.)_\n\nThen *Telegram · Send Message*: Chat ID = yours, Text:\n\n_(Code on screen in the app.)_\n\nSave it. The `?.` and `??` make the alert useful even when the error data has an unusual shape."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Connect every workflow to it*\n\nIn each Harvest Lane workflow (weather, prices, reminders, customers), open *Settings → Error workflow* and choose *HL · Error alerts*. Save. Add *Retry On Fail* (3 tries, 2,000 ms apart) to every node that calls an outside service, so short blips never wake Tolu."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Prove it with a deliberate failure*\n\nCreate *HL · Alarm test*: *Schedule Trigger* (every minute) → *Stop And Error* with the message `Test alarm: if you can read this, alerts work`. Set its error workflow to HL · Error alerts, publish it, wait a minute, and check your phone. Then *unpublish it* immediately.\n\n- *1* error workflow for every Harvest Lane workflow\n- *<1 min* from failure to Tolu's phone\n- *0* alerts for blips that a retry fixed\n\n*Bolt's comparison:* Zapier emails you about failed Zaps, and Make has its own error handlers and notifications (2.6). In n8n you build the alarm yourself, which means you choose exactly where it goes and what it says."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- One error workflow means one place to improve alerts for everything.\n- Retries absorb temporary failures; alerts are only for problems that need a person.\n- The alert carries the run link, so diagnosis starts with one tap.\n- A deliberate, scheduled failure proves the whole chain, not just the message.\n\n*Common mistakes to avoid*\n\n- Testing the error workflow with manual runs and concluding it doesn't work.\n- Expression paths like `$json.error.message` that miss `execution`.\n- Forgetting to set the error workflow in each workflow's settings.\n- Leaving the every-minute alarm test published.\n- Pasting the bot token into a node field instead of a credential."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Six ways I kept your alarm quiet, or made it useless.\n\n*A:* The alert arrives but reads \" undefined failed at undefined: undefined\".\n*B:* Tolu clicked Execute on a broken workflow ten times. No alert ever came.\n*C:* The Monday reminders failed overnight. Other workflows alert fine; this one didn't.\n*D:* Tolu's phone buzzed 1,440 times yesterday.\n*E:* Alerts arrive every few nights for a 503 that fixes itself a second later.\n*F:* Retrying a failed payment run from Executions sent two customers a second receipt."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the expressions point at `$json.workflow_name` and `$json.error.message`. The data lives at `$json.workflow.name`, `$json.execution.lastNodeExecuted` and `$json.execution.error.message`.\n*B:* error workflows run when automatic runs fail. Manual runs show the error on screen.\n*C:* that workflow's Settings → Error workflow was never set.\n*D:* the every-minute \"Alarm test\" workflow was left published: 60 × 24 = 1,440 alerts.\n*E:* no Retry On Fail on that HTTP node. Add 3 tries with a short wait; alert only if all fail.\n*F:* the retry reran steps that had already succeeded. Before retrying, check what already happened, and design steps to be safe to repeat (match on a key, record what was sent)."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Retries on every outside call",
+   "body": "- Go through every workflow you've built in Track 3 and list each node that calls an outside service.\n- Give each one Retry On Fail (3 tries, 2,000 ms) for timeouts and 429/5xx errors, and set the right On Error option, using Card 3's rules (a 401 needs fixing, not retrying).\n- Connect every workflow to HL · Error alerts.\n\n*Done when:*\n- You have a table: workflow, node, retry yes/no, on-error choice and a one-line reason. The alarm test has reached your phone once."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Split a long workflow into sub-workflows",
+   "body": "- Take your longest workflow (the 3.3 reminders or 3.5 customers).\n- Move one reusable part, such as phone normalising or message building, into a sub-workflow called `SUB · …` with defined input fields.\n- Call it from the original workflow _and_ from one other workflow.\n\n*Done when:*\n- Both parents produce exactly the same results as before, and changing one line in the sub-workflow changes both."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): An incident log that learns",
+   "body": "- Extend HL · Error alerts to append each failure to an *Incidents* sheet: time, workflow, node, message, run URL, and empty columns for cause, fix and minutes to resolve.\n- Add a Switch: messages containing \"401\" or \"credential\" also email Tolu (\"reconnect needed\"); others go to Telegram only.\n- After a week, fill in the cause and fix for each incident and write three lessons.\n\n*Done when:*\n- Every failure in the week has a row with cause and fix, credential problems arrive by email as well, and you've changed at least one workflow because of what the log showed."
+  },
+  {
+   "t": "quiz",
+   "q": "How does a workflow use your error workflow?",
+   "options": [
+    "You add an Error Trigger to every workflow",
+    "You choose it in the workflow's Settings → Error workflow",
+    "n8n finds it automatically by name",
+    "You call it with an HTTP Request"
+   ],
+   "answer": 1,
+   "why": "Each workflow points to its error workflow in Settings."
+  },
+  {
+   "t": "quiz",
+   "q": "Which expression gives the failing node's name in an error workflow?",
+   "options": [
+    "{{ $json.node }}",
+    "{{ $json.lastNodeExecuted }}",
+    "{{ $json.execution.lastNodeExecuted }}",
+    "{{ $json.workflow.node }}"
+   ],
+   "answer": 2,
+   "why": "It's inside the execution object."
+  },
+  {
+   "t": "quiz",
+   "q": "Three of 200 messages fail because of bad phone numbers. Best node setting?",
+   "options": [
+    "On Error: Continue (using error output) → Fix list",
+    "Retry 5 times",
+    "Stop the workflow",
+    "Delete the three customers"
+   ],
+   "answer": 0,
+   "why": "Bad data won't fix itself. Route failed items aside and let the rest succeed."
+  },
+  {
+   "t": "quiz",
+   "q": "What does a sub-workflow send back to its parent?",
+   "options": [
+    "Nothing",
+    "Its first node's output",
+    "An email",
+    "The output of its last node"
+   ],
+   "answer": 3,
+   "why": "The last node's items return to the Execute Sub-workflow node."
+  },
+  {
+   "t": "quiz",
+   "q": "Why think about how long execution data is kept?",
+   "options": [
+    "It makes workflows faster",
+    "Executions store customer data, and storage grows",
+    "n8n deletes workflows otherwise",
+    "It's required for Telegram"
+   ],
+   "answer": 1,
+   "why": "Logs contain personal data and fill the database: keep what you need, for as long as you need it."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. One error workflow, connected to every workflow in Settings.\n2. Alert with workflow, node, message and run link: `$json.execution…`.\n3. Error workflows fire on automatic runs; test with a scheduled failure.\n4. Retry temporary errors; route bad items aside; stop and alert on broken rules.\n5. Sub-workflows: build once, call everywhere, name them clearly.\n6. Executions are your logbook, and they hold customer data. Set retention on purpose."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.6 complete!* _Errors, Sub-workflows & Logs_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.7, _AI Nodes_."
+  }
+ ]
+}

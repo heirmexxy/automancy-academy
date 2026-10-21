@@ -1,0 +1,181 @@
+{
+ "id": "3.3",
+ "title": "Flow Control",
+ "track": 3,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.3 · Flow Control*\n\n_≈ 2 hours · with Emeka_\n\nReal workflows don't run in a straight line. They make decisions, join data from two places, and slow down so they don't upset the services they talk to. Five nodes do almost all of this in n8n: IF, Switch, Merge, Loop Over Items and Wait.\n\n*Your problem:* Real processes branch, loop and wait.\n*The plan:* Use IF, Switch, Merge, loops and waits on a real order flow.\n*After this lesson:* You can build complex logic without it turning into spaghetti."
+  },
+  {
+   "t": "text",
+   "body": "*200 reminders, one blocked number*\n\n*Month end:* 200 restaurant and retail customers owe Harvest Lane money. Tolu wants a polite reminder to each.\n\n*Last month:* A friend's shop sent 200 messages in four seconds. The messaging service flagged the number as spam.\n\n*Worse:* Chef Tunde paid yesterday. A reminder today would be embarrassing. Paid customers must be skipped.\n\n*Nodo:* \"We'll release them twenty at a time and wait between groups. And we'll cross off anyone who's paid.\" Glitch has already renamed a column."
+  },
+  {
+   "t": "text",
+   "body": "*IF and Switch: decisions*\n\n- *IF*: Two outputs, *true* and *false*. Each item goes to one of them. Conditions have a type (string, number, date, boolean…) and can be combined with AND or OR.\n- *Switch*: Many outputs, one per rule, for routing several kinds of item. By default an item goes to the first rule it matches; an option sends it to every matching output.\n- *Fallback output*: Switch can add an extra output for items that match no rule. Use it, and send those items to Tolu, so nothing disappears silently (the 1.3 lesson again).\n- *Filter*: A one-way IF: items that pass continue and the rest are dropped. Use it when the \"false\" items need no action at all."
+  },
+  {
+   "t": "text",
+   "body": "_Switch rule (Harvest Lane orders) · Output goes to_\n- `{{ $json.total }}` ≥ 100000 · 0 · Bulk: call the customer to confirm\n- `{{ $json.type }}` = subscription · 1 · Add to the weekly box list\n- `{{ $json.type }}` = pickup · 2 · Pickup slip\n- `{{ $json.type }}` = delivery · 3 · Rider list\n- *Anything else (fallback)* · 4 · Email Tolu\n\nOrder matters: a ₦150,000 delivery matches rules 0 and 3, and goes to Bulk because that rule comes first. That's intended here."
+  },
+  {
+   "t": "text",
+   "body": "*Merge: joining two streams*\n\nMerge waits for two (or more) inputs and combines them. The modes you'll use most:\n\n- *Append*: Input 1's items, then Input 2's. A simple stack.\n- *Combine · matching fields*: Pair items whose key fields are equal, like a lookup. Then choose what to output: *keep matches*, *keep non-matches*, *keep everything*, or *enrich* one input with data from the other.\n- *Combine · by position*: Item 0 with item 0, 1 with 1… Only safe when both lists are in exactly the same order.\n- *Choose branch*: Wait for both inputs, then pass on just one. Useful to rejoin after an IF.\n\n*Try it.* Input 1 is this month's unpaid *Invoices*; Input 2 is *Payments* received. Find the customers who still need a reminder. Then tick Glitch's box, see what breaks, and fix it by choosing the field Payments now uses."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Merge: joining two streams. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-3"
+  },
+  {
+   "t": "text",
+   "body": "*Do you even need a loop?*\n\nUsually not. Most n8n nodes already *run once per item* (3.2). Feed 200 items into a Gmail node and it sends 200 emails, no loop needed. Reach for *Loop Over Items* only when you need to:\n\n- *Pace the work*: Send in batches with a pause between them, to respect rate limits or avoid looking like spam.\n- *Handle one item fully before the next*: For example, a chain of API calls where each must finish first.\n- *Work with a node that only handles one item at a time*: Some nodes read only the first item; their docs say so."
+  },
+  {
+   "t": "text",
+   "body": "*Wait, and planning the pace*\n\nThe *Wait* node pauses the run: for a time interval, until a set date and time, or until a webhook or form submission arrives (useful for \"wait until Tolu approves\", Track 4). On n8n Cloud, a run with waits is still *one execution*. Plan the pace with numbers, not guesses. The limit below is an example; use your messaging provider's real one."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Batch planner. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-3"
+  },
+  {
+   "t": "text",
+   "body": "*Edit Fields: the glue*\n\nBetween flow-control nodes you'll constantly reshape items with *Edit Fields (Set)*: rename a column so two sources share a key, add a computed field, or keep only the fields the next node needs (turn off *Include Other Input Fields*). Small, tidy items make every Merge and IF easier to read.\n\n*Nodo:* When two sources call the same thing by different names (`customer_id` and `customerId`), fix it with Edit Fields _before_ the Merge, or simply pick the right field on each side in the Merge itself. Never rename the sheet's column to suit one workflow; another workflow may depend on it."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _n8n Advanced Course (1/8): Working with complex data flows_ (n8n).\nLook for: Execution order, Merge modes and IF branches (recorded before n8n 2.x; some screens differ).",
+   "media": "walk:3.3",
+   "youtube": "https://www.youtube.com/watch?v=TFTLMQLozCI",
+   "app": "https://automancy.cc/learn#m-3-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: polite reminders, paced, paid customers skipped*\n\n*The goal.* Every Monday at 09:00, remind each customer with an unpaid invoice, skip anyone who has paid since, set aside anyone without a phone number, send in batches of 20 with a minute between batches, and email Tolu one summary at the end. To practise safely, the \"Send\" step writes to a *Sent log* sheet with a timestamp. You'll swap in a real messaging node or API later (3.4 and Boss 3)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Two sources, in parallel*\n\nAdd a *Schedule Trigger* (weekly, Monday, 09:00). Connect it to two Google Sheets nodes: *Invoices* (Get Row(s) where `status` = Unpaid) and *Payments* (Get Row(s) from the payments log you built in 2.5, or a test sheet). Both run from the same trigger. Pin both outputs."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Cross off the payers with Merge*\n\nAdd *Merge*. Connect Invoices to *Input 1* and Payments to *Input 2*. Mode: *Combine* → by *matching fields*, `customer_id` on both sides. Output type: *keep non-matches*, with output data from *Input 1*. Result: invoices with no matching payment, exactly the simulator's goal in Card 2.\n\n*Weave:* *A Weave-style alternative:* Merge with \"enrich Input 1\", then an IF on \"reference is empty\". It's one node longer, but it lets you also catch _partial_ payments (paid < amount) in a third branch. Choose the one you can explain."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Set aside the ones you can't reach*\n\nAdd *IF*: `{{ $json.phone }}` · String · *is not empty*. The *false* output goes to Google Sheets · Append Row on a *Fix list* sheet, so Tolu can collect missing numbers. Nothing is silently dropped."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Batch, send, wait, loop back*\n\nFrom IF's *true* output, add *Loop Over Items* with batch size *20*. From its *loop* output:\n\n1. *Edit Fields · Build message*: `Good morning {{ $json.name }}, a gentle reminder that invoice {{ $json.invoice_id }} for ₦{{ Number($json.amount).toLocaleString('en-NG') }} is due. Pay here: {{ $json.pay_link }}. Thank you for buying from Harvest Lane!`\n2. *Google Sheets · Append Row · Send (log)*: customer_id, phone, message, and `sent_at` = `{{ $now.toFormat('HH:mm:ss') }}`.\n3. *Wait*: 60 seconds.\n4. Drag a connection from Wait's output *back into Loop Over Items*.\n\nTest with pinned data and a batch size of 2 and a wait of 5 seconds (so you're not waiting 10 minutes). The Sent log's `sent_at` times should come in clusters, one per batch."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · One summary at the end*\n\nFrom the *done* output, add *Gmail · Send* to Tolu: `Reminders sent: {{ $input.all().length }}`. The done output carries _all_ processed items, so Gmail would send one email per item. In the Gmail node's *Settings*, turn on *Execute Once*. Then set the batch back to 20 and the wait to 60, save and publish.\n\n- *10* batches for 200 reminders\n- *≈9 min* of waiting, never more than 20 a minute\n- *1* execution on n8n Cloud for the whole run"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Merge on a real key removes payers before a single message is built.\n- Every item ends somewhere visible: sent, on the Fix list, or in the summary.\n- The batch size and wait come from the provider's limit, calculated rather than guessed.\n- Testing with tiny batches and short waits makes the loop quick to check.\n\n*Common mistakes to avoid*\n\n- Adding a loop where n8n already runs once per item.\n- Forgetting to connect the last node back into Loop Over Items.\n- Putting the Wait after \"done\" instead of inside the loop.\n- Sending a summary per item instead of once.\n- Matching on name instead of an ID: two \"Mrs Adebayo\"s exist."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Six Mondays, six disasters. Which knob did I turn each time?\n\n*A:* On the same morning, two things break: the \"payments received\" report (a Merge set to keep matches) outputs nothing, and the reminder run reminds everyone, payers included.\n*B:* Chef Tunde, who paid, got a reminder anyway, along with everyone else.\n*C:* The first 20 reminders went out, then the run finished. 180 customers heard nothing.\n*D:* All 200 were sent within five seconds, even though there's a Wait node.\n*E:* Tolu received 200 summary emails.\n*F:* IF fails with a \"wrong type\" error on `amount > 50000` because amounts arrive as text."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the Payments column was renamed `customerId`, so no key matches anywhere. \"Keep matches\" finds nothing; \"keep non-matches\" lets everyone through. Choose the right field on each side, or rename it with Edit Fields before the Merge. (Try both modes in Card 2.)\n*B:* the Merge was set to Append (or keep everything), which keeps payers. Use keep non-matches from Input 1.\n*C:* the last node in the batch (Wait) isn't connected back into Loop Over Items, so it never asks for the next batch.\n*D:* the Wait sits on the \"done\" branch, after everything was already sent. It belongs inside the loop.\n*E:* the Gmail node on \"done\" ran once per item. Turn on Execute Once (or Aggregate first).\n*F:* the value is the text `\"58000\"`. Turn on the IF option to convert types where required, or compare `{{ Number($json.amount) }}`."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Route four order types with Switch",
+   "body": "- Build the Switch from Card 1 with five outputs, including the fallback.\n- Send each output to its own Edit Fields node that labels the route.\n- Test with eight pinned orders: two per type, one ₦150,000 delivery and one with type \"collection\" (a typo).\n\n*Done when:*\n- Every order lands on exactly one route, the ₦150,000 delivery goes to Bulk, and \"collection\" reaches the fallback."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Merge customers with orders by ID",
+   "body": "- Merge an Orders list with a Customers list on `customer_id`, three times: keep matches, enrich Input 1, and keep non-matches.\n- Include one order whose customer doesn't exist and one customer with no orders.\n- For each mode, record the item count and which records appear.\n\n*Done when:*\n- You can predict each mode's output before running it, and you've named a real Harvest Lane use for each."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Batch process your own list",
+   "body": "- Take a real contact list of your own (at least 50 rows; mask the details if you'll share screenshots).\n- Build the full reminder pattern: Merge to exclude a \"do not contact\" list, IF for missing data, Loop Over Items with Wait, and one summary at the end.\n- Choose the batch size and wait with the planner, using a real provider's published limit, and note the source.\n\n*Done when:*\n- The Sent log shows batches spaced as planned, no excluded contact appears, the Fix list catches every incomplete row, and exactly one summary arrives."
+  },
+  {
+   "t": "quiz",
+   "q": "50 items reach a Gmail node with no loop. What happens?",
+   "options": [
+    "Only the first email is sent",
+    "50 emails are sent",
+    "It errors without a loop",
+    "One email listing all 50"
+   ],
+   "answer": 1,
+   "why": "Most nodes run once per item. Loops are for pacing and one-at-a-time work."
+  },
+  {
+   "t": "quiz",
+   "q": "Which Merge setup returns unpaid invoices only?",
+   "options": [
+    "Append",
+    "Combine by position",
+    "Matching fields, keep non-matches, output from Input 1 (Invoices)",
+    "Matching fields, keep matches"
+   ],
+   "answer": 2,
+   "why": "Non-matches from Invoices are the invoices with no payment."
+  },
+  {
+   "t": "quiz",
+   "q": "A Switch has no fallback output. An order with an unknown type arrives. What happens?",
+   "options": [
+    "It goes nowhere, silently",
+    "It goes to output 0",
+    "The workflow errors",
+    "It goes to every output"
+   ],
+   "answer": 0,
+   "why": "Without a fallback, an item that matches no rule just stops. Add a fallback and send it to a human."
+  },
+  {
+   "t": "quiz",
+   "q": "In a batch loop, where does the Wait node go?",
+   "options": [
+    "Before Loop Over Items",
+    "On the done output",
+    "After the summary email",
+    "Inside the loop, connected back into Loop Over Items"
+   ],
+   "answer": 3,
+   "why": "The pause must happen between batches, which means inside the loop."
+  },
+  {
+   "t": "quiz",
+   "q": "200 messages, batches of 20, 60-second waits. How long does the waiting take?",
+   "options": [
+    "20 minutes",
+    "About 9 minutes",
+    "60 seconds",
+    "200 minutes"
+   ],
+   "answer": 1,
+   "why": "10 batches need 9 waits between them: 9 × 60 seconds."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. IF splits in two; Switch routes many ways. Always give Switch a fallback.\n2. Merge joins streams: append, or combine on a shared key (and pick what to keep).\n3. Match on IDs, never on names.\n4. You rarely need a loop. Use Loop Over Items to pace work or handle items one at a time.\n5. Wire the end of the batch back into the loop; put Wait inside it.\n6. \"done\" carries every item: use Execute Once for a single summary."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.3 complete!* _Flow Control_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.4, _HTTP Request Mastery_."
+  }
+ ]
+}

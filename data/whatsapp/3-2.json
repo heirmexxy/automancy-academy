@@ -1,0 +1,199 @@
+{
+ "id": "3.2",
+ "title": "Items & Expressions",
+ "track": 3,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.2 · Items & Expressions*\n\n_≈ 2 hours · with Miracle_\n\nThis is the module that makes n8n click. Data moves between nodes as a list of *items*, and *expressions* let any field reach into that data, including data from nodes further back. Get these two ideas right and most \"why is it doing that?\" moments in n8n disappear.\n\n*Your problem:* n8n's data model of items and expressions trips everyone up at first.\n*The plan:* Learn how items flow and write expressions to reach any value.\n*After this lesson:* You can move and transform data in n8n confidently."
+  },
+  {
+   "t": "text",
+   "body": "*Three orders, one name*\n\n*Wednesday:* Tolu's new workflow writes delivery messages for tomorrow's three orders. All three greet Mrs Adebayo.\n\n*Mr Okafor:* The one message that was sent went to the wrong person. Worse: it showed another customer's order.\n\n*Nodo:* \"Every node passes a list of items. Each item must stay matched to its own customer all the way down the line.\"\n\n*Glitch:* \"I swapped one word in the expression. Now every item looks at the first customer. Find me.\""
+  },
+  {
+   "t": "text",
+   "body": "*Items: n8n's unit of data*\n\nBetween nodes, n8n always passes a *list of items*. Each item is one record (one order, one row, one email) and holds its fields under `json`. Most nodes *run once for each item* they receive, and they keep track of which input item each output came from. n8n calls this *item linking* (or paired items).\n\n*Weave:* Items are my bundles under another name. The big difference: in n8n, items don't cost anything extra. The whole run is one execution."
+  },
+  {
+   "t": "text",
+   "body": "*Expressions and $json*\n\nAn expression is JavaScript inside `{{ }}`, in a field switched to *Expression* mode. The most used variable is `$json`: *the current item's data from the node directly before this one*."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Expressions and $json): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-2"
+  },
+  {
+   "t": "text",
+   "body": "You rarely type these by hand. *Drag a field from the Input panel* into a parameter and n8n writes the expression. The preview under the field shows the result for the current item. Read it every time."
+  },
+  {
+   "t": "text",
+   "body": "*Reaching back: $('Node')*\n\n`$json` only sees the node directly before. To use data from further back, name the node:\n\n_Expression · Gives you · Use it when_\n- `$('Orders').item.json.total` · The Orders item *linked to the current item* · Almost always. Each message gets its own order.\n- `$('Orders').first().json.total` · The *first* Orders item, for every item · Only when there's one shared value, such as a settings row\n- `$('Orders').last().json.total` · The last Orders item · Rarely; for example, the newest row\n- `$('Orders').all()` · Every Orders item as a list · Totals and summaries, e.g. `.all().length`\n- `$input.item.json` · Same as `$json` · When you want to be explicit\n- `$itemIndex` · The current item's position (0, 1, 2…) · Numbering and debugging\n\n*Try it.* The node \"Build message\" is running. Its input comes from \"Find customer\". Edit the template and watch all three items."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Reaching back: $('Node'). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-2"
+  },
+  {
+   "t": "text",
+   "body": "*Formatting dates, numbers and text*\n\nExpressions are JavaScript, so ordinary string and number methods work. For dates, n8n includes the *Luxon* library: `$now` and `$today` are Luxon dates, and `DateTime` turns text into one."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Formatting dates, numbers and text): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-2"
+  },
+  {
+   "t": "text",
+   "body": "*Nodo:* If an expression grows longer than one line, it belongs in a Code node (3.5). Expressions are for small, readable transformations."
+  },
+  {
+   "t": "text",
+   "body": "*Pin test data*\n\nEvery time you click Execute, n8n calls the real APIs again: slow, sometimes costly, and the data changes under you. *Pinning* freezes a node's output. Click the pin icon in a node's Output panel and n8n reuses that output instead of running the node again. You can also edit pinned data to create test cases, such as a customer with no phone number.\n\n- *Pinned data is for building*: n8n uses pinned data only in manual runs from the editor. Published, automatic runs always use real data.\n- *Edit to test edge cases*: Add an item with a missing field or a huge total, and check that every expression downstream copes.\n- *Unpin when the shape changes*: If you add a column to the sheet, stale pinned data won't have it, and you'll chase a bug that isn't there."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _n8n Data Flow Explained: JSON, Items & Drag-and-Drop Basics_.\nLook for: The item model and drag-to-map expressions.",
+   "media": "walk:3.2",
+   "youtube": "https://www.youtube.com/watch?v=9SFB5EuuOaM",
+   "app": "https://automancy.cc/learn#m-3-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: a WhatsApp-ready message for every order*\n\n*The goal.* Each evening, Tolu wants a ready-to-send WhatsApp message for every order delivering tomorrow, with the customer's name, order number, items, total and delivery day, plus a one-tap link that opens WhatsApp with the message filled in. Order data lives in the *Orders* sheet; names and phones live in *Customers*. Sending automatically comes later (Boss 3); for now the messages go into an *Outbox* sheet."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Get tomorrow's orders*\n\nStart with a *Manual Trigger* (swap in a Schedule Trigger at 18:00 once it works). Add *Google Sheets · Get Row(s)*, rename the node *Orders*, and add a filter: column `delivery_date` equals"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Get tomorrow's orders): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-2"
+  },
+  {
+   "t": "text",
+   "body": "Execute the step. With three orders for tomorrow, the Output says *3 items*. Now *pin* this output. From here on you build without touching the sheet."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Look up each customer*\n\nAdd another *Get Row(s)* on the Customers sheet and rename it *Find customer*. Filter: `customer_id` equals `{{ $json.customer_id }}` (drag it from the Input panel). Execute: the node runs *once per order* and outputs three items, each linked to its order. Pin this too.\n\n*Nodo:* *Rename nodes before you reference them.* Expressions use node names, so \"Orders\" beats \"Google Sheets1\". n8n updates references when you rename a node in the editor, but expressions you paste in from elsewhere won't know the new name."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Build the message with Edit Fields*\n\nAdd *Edit Fields (Set)*, rename it *Build message*, and add three fields. Its input is Find customer, so `$json` is the customer; the order is reached through `$('Orders').item`:\n\n_(Code on screen in the app.)_\n\nCheck the preview under the field, then use the arrows in the Input panel to step through items 0, 1 and 2: each preview must show a different customer *and* their own order."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Add the one-tap WhatsApp link*\n\nAdd a fourth field, `wa_link`. WhatsApp's click-to-chat links need the number without the plus sign, and the text URL-encoded:\n\n_(Code on screen in the app.)_\n\nTo put the *full* message in the link, you'd want to reuse the `message` field, but fields in the same Edit Fields node can't see each other. Add a second Edit Fields node after this one (with *Include Other Input Fields* on) and set `wa_link` there, using `{{ encodeURIComponent($json.message) }}` as the text."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Write to the Outbox and test the edge cases*\n\nAdd *Google Sheets · Append Row* on an Outbox sheet with columns `order_id · phone · message · wa_link`, mapped automatically. Then edit the pinned Orders data to add a fourth order whose `customer_id` doesn't exist, and run again. Find customer returns nothing for that item, so it silently disappears. Fix it: in Find customer's *Settings*, turn on *Always Output Data*, and in Build message use `{{ $json.name ?? 'Customer' }}`. Then Tolu sees the order and can fix the customer record.\n\n- *1* execution for the whole evening run\n- *4* orders, 4 messages, 0 mix-ups\n- *0* API calls while building, thanks to pinning"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- `.item` keeps every message matched to its own order through item linking.\n- Clear node names make expressions readable months later.\n- Pinned data makes testing fast and repeatable, and lets you invent edge cases.\n- Stepping through every item in the preview catches mix-ups before customers do.\n\n*Common mistakes to avoid*\n\n- Using `.first()` where you meant `.item`.\n- Checking only item 0 in the preview.\n- Field names in the wrong case: `Name` isn't `name`.\n- Forgetting that a lookup with no result drops the item.\n- Leaving stale pinned data after changing the sheet's columns."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Five broken outboxes. Use the simulator in Card 3 to test your theories.\n\n*A:* All three messages greet Mrs Adebayo, but each shows the correct order number.\n*B:* An expression copied from a YouTube tutorial fails with `Referenced node \"Google Sheets\" doesn't exist`.\n*C:* The message says `for [Object: {\"order_id\":\"HL-0071\",…}]`.\n*D:* Tolu added tomorrow's new orders to the sheet, clicked Execute workflow, and the Outbox still shows yesterday's three.\n*E:* Four orders go in, three messages come out. No error anywhere."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the name uses `$('Find customer').first()`, which is always item 0. Use `$json.name` (or `$('Find customer').item`). The order number used `.item`, which is why it was right.\n*B:* the expression names a node that isn't in this workflow. Change it to your node's name, `$('Orders')`.\n*C:* the expression returns a whole object, `$('Orders').item.json`. Add the field you need: `.json.items`.\n*D:* Orders still has pinned data from yesterday, and manual runs use it. Unpin it (or re-execute that node), then pin the fresh output.\n*E:* one order's `customer_id` has no match, so Find customer outputs nothing for it and the item disappears. Turn on Always Output Data and handle the empty customer, or flag the order for Tolu."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Build on pinned data",
+   "body": "- Build the solved workflow. Pin Orders and Find customer after their first run.\n- Edit the pinned data to add two edge cases: a customer with no `area`, and an order with a total of 250,000.\n- Run the workflow five times without either Sheets node calling Google.\n\n*Done when:*\n- Every message in the Outbox has the right name, order and formatted total, including the edge cases."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Five formatting expressions",
+   "body": "- Write and test expressions that produce: tomorrow's date as \"Tuesday 6 October\"; a total as \"₦34,000\"; 7.5% VAT rounded to the nearest naira; a phone number in local format (080…); and \"Free delivery\" for orders of ₦30,000 or more.\n- Paste each expression and its output for two different items into your log.\n\n*Done when:*\n- All five give correct results for both items, and none uses `.first()`."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Three sources, one message",
+   "body": "- Add a third sheet, *Riders* (area, rider_name, rider_phone), and a node that finds the rider for each customer's area.\n- Extend the message so it includes data from three different earlier nodes: the order, the customer and the rider (\"Your rider is Musa, 0803…\").\n- Make it survive a missing rider: the message should say \"Rider to be assigned\" instead of breaking.\n\n*Done when:*\n- All items are correct with five test orders across at least three areas, including one area with no rider. You can explain which expression reads from which node."
+  },
+  {
+   "t": "quiz",
+   "q": "A Google Sheets node outputs 4 items into a node that sends an email. How many emails?",
+   "options": [
+    "1",
+    "It depends on the plan",
+    "4",
+    "0 until you add a loop"
+   ],
+   "answer": 2,
+   "why": "Most nodes run once for each item they receive."
+  },
+  {
+   "t": "quiz",
+   "q": "In a node whose input comes from \"Find customer\", what is `$json`?",
+   "options": [
+    "The current item from Find customer",
+    "The first item of the trigger",
+    "All items from every node",
+    "The workflow's settings"
+   ],
+   "answer": 0,
+   "why": "$json is the current item's data from the node directly before."
+  },
+  {
+   "t": "quiz",
+   "q": "Every message shows the same customer. Which expression is the likely culprit?",
+   "options": [
+    "{{ $json.name }}",
+    "{{ $('Find customer').item.json.name }}",
+    "{{ $input.item.json.name }}",
+    "{{ $('Find customer').first().json.name }}"
+   ],
+   "answer": 3,
+   "why": ".first() returns item 0 every time. .item follows the link to the matching item."
+  },
+  {
+   "t": "quiz",
+   "q": "Does a published workflow use pinned data when its schedule fires?",
+   "options": [
+    "Yes, always",
+    "No, pinned data is only used in manual runs",
+    "Only on n8n Cloud",
+    "Only for the trigger node"
+   ],
+   "answer": 1,
+   "why": "Pinning is a building tool. Automatic runs always fetch real data."
+  },
+  {
+   "t": "quiz",
+   "q": "Which expression turns \"2026-10-06\" into \"Tuesday 6 Oct\"?",
+   "options": [
+    "{{ $json.delivery_date.format('Tuesday') }}",
+    "{{ $now.toFormat('cccc d LLL') }}",
+    "{{ DateTime.fromISO($json.delivery_date).toFormat('cccc d LLL') }}",
+    "{{ Date($json.delivery_date) }}"
+   ],
+   "answer": 2,
+   "why": "DateTime.fromISO parses the text; toFormat with cccc d LLL formats it. $now would give today, not the delivery date."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Data travels as a list of items; most nodes run once per item.\n2. `$json` is the current item from the node directly before.\n3. `$('Node').item` follows the item link back; `.first()` is item 0 for everyone.\n4. Name nodes clearly before you reference them.\n5. Format with JavaScript and Luxon; move long logic to a Code node.\n6. Pin data to build fast; unpin when the data's shape changes.\n7. Step through every item in the preview, not just the first."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.2 complete!* _Items & Expressions_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.3, _Flow Control_."
+  }
+ ]
+}

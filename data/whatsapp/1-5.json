@@ -1,0 +1,184 @@
+{
+ "id": "1.5",
+ "title": "AI Steps, Tables & Interfaces",
+ "track": 1,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 1.5 · AI Steps, Tables & Interfaces*\n\n_≈ 110 minutes · with Miracle_\n\nSage moves into Spark Street. Today you put the prompt skills from Module 0.5 inside a Zap, store the results in Zapier's own database, and give Tolu's staff a simple web page to work from. That's a complete customer inbox system, with no code.\n\n*Your problem:* You want AI inside your workflows, not in a separate chat window.\n*The plan:* Add AI steps that read, sort and write, and store results in Tables with a simple Interface.\n*After this lesson:* You can build small AI-powered tools a team can use."
+  },
+  {
+   "t": "text",
+   "body": "*Thirty emails before breakfast*\n\n*7 a.m.:* Orders, a complaint about wet tomatoes, three price questions, a hotel invoice query. All in one pile.\n\n*Kemi, the new admin:* Starts Monday. Nobody can tell her which emails matter or which were handled.\n\n*Glitch:* \"Just use the fanciest AI model for everything. Tolu loves big bills.\"\n\n*The plan:* Sage reads and labels every email; Bolt files it in a table; Kemi works from one page, most urgent first."
+  },
+  {
+   "t": "text",
+   "body": "*AI by Zapier: a prompt with typed outputs*\n\nThe *AI by Zapier* app's \"Analyze and Return Data\" action is Module 0.5 inside a Zap. You write a *Prompt* (insert earlier data with `/`), and under Settings you define *Output Fields*: each with a name, a type, a description and whether it's required. Every field becomes a pill for later steps.\n\n*Output fields are your JSON schema from 0.3*, filled in through a form. Typed fields (number, boolean, text) keep the answers consistent run after run, instead of one combined blob of text. There's also a \"Generate from prompt\" option; use it for a first draft, then check every field."
+  },
+  {
+   "t": "text",
+   "body": "*Model tiers: the cost multiplier*\n\nAI steps are billed in tasks, and the model tier multiplies the cost of every run:\n\n_Tier · Tasks per run · Good for_\n- *Standard* · 1× · Classifying, extracting, short summaries at volume\n- *Advanced* · 3× · Harder reasoning, using tools\n- Premium (the default for new steps on many accounts; check yours) · 5× · Complex analysis, multi-step reasoning\n- *Bring your own key* · 1× · Your own OpenAI, Anthropic, Gemini or other account; you also pay that provider\n\n- *900* emails a month (30 a day)\n- *900 tasks* on Standard\n- *4,500 tasks* on Premium, for the same emails\n\n*Sage:* Run your test set from 0.5 on Standard first. Only move up a tier if Standard fails it, and only for the step that needs it."
+  },
+  {
+   "t": "text",
+   "body": "Tier names and multipliers are from Zapier's help centre (Oct 2026). On Advanced and Premium, each tool call the AI makes costs the multiplier again, and a step pauses for your approval if one run reaches 75 tasks (the default cap). AI by Zapier requires a paid plan; on Free you can only preview an unpublished step."
+  },
+  {
+   "t": "text",
+   "body": "*Zapier Tables: a database that lives next to your Zaps*\n\n*Zapier Tables* stores records with typed fields, like the Airtable build in 0.4, but built into Zapier. Records can trigger Zaps instantly when created or updated, and a *button field* can start a Zap when someone clicks it.\n\n*Choose Tables when*\n\n- The data mainly exists to drive automations (an inbox, a queue, approvals).\n- You want instant record triggers and buttons.\n- It pairs with an Interface for staff.\n\n*Keep Google Sheets when*\n\n- You need formulas like SUMIFS and XLOOKUP (0.4).\n- An accountant or partner needs to open it.\n- The data is your long-term record (Orders)."
+  },
+  {
+   "t": "text",
+   "body": "*Interfaces: simple pages for people*\n\n*Zapier Interfaces* builds small web pages with components: forms, tables, kanban boards, text and buttons. Connect a component to a Table, and staff can view and edit records without ever seeing a Zap. A form submission can start a Zap.\n\n- *Staff page*: Today's messages, sorted by urgency, with a status staff can change.\n- *Intake form*: Kemi logs phone orders so they enter the same pipeline (Boss 0, Curveball 1).\n- *Access*: Set pages to restricted, with named people signing in. A public link to customer data breaks the rules from 0.6."
+  },
+  {
+   "t": "text",
+   "body": "*AI inside a pipeline: guard the edges*\n\n- *Send only what's needed*: The email's subject and body, not the whole thread with signatures and old replies. Less data, fewer tokens, better privacy.\n- *Make blanks honest*: Tell the model to leave a field empty if it isn't stated. Then check for blanks in a Filter or Paths step.\n- *A person stays in the loop*: AI labels and summarises; Kemi decides and replies. You'll let AI draft replies with approval in the Gold mission."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to use Zapier Tables in your automation (AI lead scoring)_.\nLook for: An AI step that scores leads and writes the result into a Zapier Table.",
+   "media": "walk:1.5",
+   "youtube": "https://www.youtube.com/watch?v=4FUm7_JaYbs",
+   "app": "https://automancy.cc/learn#m-1-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the HL Staff Desk*\n\n*The goal.* Every customer email is read by AI, labelled and summarised, stored in a Zapier Table, and shown on a staff page sorted by urgency, where Kemi marks each one handled. Plus an intake form for phone orders."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Build the Inbox table first*\n\nIn Zapier Tables, create *HL Inbox* with these fields (data first, as always):\n\n_Field · Type_\n- received_at · Date/time\n- from_email · Email\n- *category* · Dropdown: order · complaint · question · other\n- *summary* · Text\n- *urgency* · Number (1 low – 3 high)\n- *phone* · Text\n- *status* · Dropdown: New · In progress · Done\n- handled_by · Text"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Trigger on customer emails*\n\nNew Zap. Trigger: *Gmail · New Labeled Email* on a *Customers* label (a Gmail filter applies it, as in 1.1). Test with an email from your 0.5 Silver list."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add the AI step, on the Standard model*\n\nAdd *AI by Zapier · Analyze and Return Data*. Model: *Standard*. Prompt (insert the subject and body with `/`):"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Add the AI step, on the Standard model): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-5"
+  },
+  {
+   "t": "text",
+   "body": "Output fields:\n\n_Field name · Type · Description · Required_\n- *category* · Text · One of: order, complaint, question, other · Yes\n- *summary* · Text · 20 words max · Yes\n- *urgency* · Number · 1, 2 or 3 as defined · Yes\n- *phone* · Text · +234 format, empty if not stated · No"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Save to the table*\n\nAdd *Zapier Tables · Create Record* in HL Inbox. Map the AI outputs, the email's date and sender, and set status to `New`. Test, then publish."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Build the staff page*\n\nIn Zapier Interfaces, create a page called *HL Staff Desk*:\n\n- *Table component*: Source: HL Inbox. Filter: status is not Done. Sort: urgency, highest first. Allow editing of status and handled_by.\n- *Form component*: \"Log a phone order\": name, phone, items, delivery date. It creates a record with category order and urgency 2.\n- *Access*: Restricted to named staff (Tolu, Kemi). Never a public link."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Test with 20 messages and check the cost*\n\nSend yourself the 20 sample messages from Module 0.5's Silver mission as emails (or paste them into a test form). Check each record's category against the expected label. Then rerun your five hardest on the Premium tier to see whether it's actually better.\n\n- *18/20*: Standard · category correct (example result)\n- *19/20*: Premium · category correct (example result)\n- *5×*: Premium's task cost for one more correct answer\n\nIn this example, Standard wins: the one extra correct answer isn't worth five times the tasks, especially since Kemi reviews every record anyway. Your numbers will differ; the method is what matters."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Typed output fields make every AI answer usable by the next step.\n- The model tier is chosen by testing, not by habit.\n- Tables and an Interface give staff one clear place to work.\n- A human decides and replies; AI sorts and summarises.\n\n*Common mistakes to avoid*\n\n- Leaving the default Premium tier on a high-volume step.\n- A single free-text output instead of typed fields.\n- Sharing the staff page as a public link.\n- Sending entire email threads to the AI."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I set up a staff desk for another shop. Five things went wrong in the first week. Explain each.\n\n*A:* The monthly task allowance ran out in 6 days.\n*B:* The urgency column is empty on most records, though the AI's raw output says \"high\".\n*C:* A customer found her own phone number on a page someone shared in a WhatsApp group.\n*D:* Several records show phone numbers that customers never gave.\n*E:* Summaries mention \"Sent from my iPhone\" and old replies from last month."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the AI step was left on Premium (5× tasks per run). Test Standard first.\n*B:* urgency is a Number field, but the prompt never defined it as 1–3, so the model wrote \"high\". Define values in the prompt and the field description.\n*C:* the Interface was shared by public link. Restrict access to named staff.\n*D:* no \"leave empty if not stated\" rule, so the model filled the phone field with guesses.\n*E:* the whole thread and signature were sent. Map only the latest message's body (Gmail offers a plain-text body field) and tell the model to ignore quoted replies."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): One-line email summaries",
+   "body": "- Build a Zap: new email with a chosen label → AI by Zapier (Standard) with one output field, `summary` (max 15 words) → email or message to yourself.\n- Run it on five real emails.\n\n*Done when:*\n- All five summaries are accurate, under 15 words, and contain nothing that wasn't in the email."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build the Staff Desk and measure it",
+   "body": "- Build the HL Inbox table, the triage Zap and the HL Staff Desk page with its phone-order form.\n- Run the 20 sample messages. Record category accuracy and total tasks used.\n- Ask someone else to use the page for five minutes without instructions; note what confused them.\n\n*Done when:*\n- Category accuracy is at least 18/20 on Standard, the page is restricted, and you've fixed one thing your tester found confusing."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): AI-drafted replies with a human \"Send\" button",
+   "body": "- Add a `draft_reply` field to HL Inbox, filled by a second AI step: a polite, short reply in the customer's language style, which never promises refunds or prices.\n- Add a *button field* \"Approve & send\" to the table. A second Zap, triggered by the button, sends the draft from Gmail and sets status to Done.\n- Show the draft and button on the Staff Desk page.\n\n*Done when:*\n- No reply is ever sent without a click, every sent reply is logged with who approved it, and three test replies read naturally."
+  },
+  {
+   "t": "quiz",
+   "q": "What makes an AI step's answer easy for later steps to use?",
+   "options": [
+    "A longer prompt",
+    "Typed output fields with clear descriptions",
+    "The Premium model",
+    "Asking the AI to be brief"
+   ],
+   "answer": 1,
+   "why": "Each output field becomes its own pill, with a consistent type every run."
+  },
+  {
+   "t": "quiz",
+   "q": "900 emails a month run through an AI step on the Premium tier. Roughly how many tasks is that?",
+   "options": [
+    "900",
+    "1,800",
+    "2,700",
+    "4,500"
+   ],
+   "answer": 3,
+   "why": "Premium uses 5 tasks per run: 900 × 5 = 4,500. Standard would use 900."
+  },
+  {
+   "t": "quiz",
+   "q": "When is Zapier Tables a better home than Google Sheets?",
+   "options": [
+    "When the data mainly drives automations, like an inbox queue with buttons",
+    "When you need SUMIFS formulas",
+    "When your accountant needs to open it",
+    "Never"
+   ],
+   "answer": 0,
+   "why": "Tables shine for automation-driven records with instant triggers and buttons; Sheets for formulas and sharing."
+  },
+  {
+   "t": "quiz",
+   "q": "The staff page shows customer names and phone numbers. How should it be shared?",
+   "options": [
+    "A public link, so it's easy to open",
+    "A screenshot in the staff group",
+    "Restricted to named staff who sign in",
+    "Printed and pinned on the wall"
+   ],
+   "answer": 2,
+   "why": "Personal data stays behind a sign-in, shared only with people who need it (0.6)."
+  },
+  {
+   "t": "quiz",
+   "q": "The AI puts invented phone numbers into records. What's the best fix?",
+   "options": [
+    "Switch to Premium",
+    "Tell it to leave the field empty if not stated, and mark it not required",
+    "Remove the phone field",
+    "Ask customers to write their number twice"
+   ],
+   "answer": 1,
+   "why": "Give the model permission not to know. A required field pressures it to fill something in."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. AI by Zapier = prompt + typed output fields; each field becomes a pill.\n2. The model tier multiplies tasks: Standard 1×, Advanced 3×, Premium 5×. Test before upgrading.\n3. Say what \"empty\" means, and never make guessable fields required.\n4. Tables for automation-driven records; Sheets for formulas and long-term records.\n5. Interfaces give staff a simple page. Keep it restricted.\n6. AI sorts and drafts; people decide and send."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 1.5 complete!* _AI Steps, Tables & Interfaces_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 1.6, _Agents, Copilot, MCP & Knowing the Limits_."
+  }
+ ]
+}

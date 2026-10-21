@@ -1,0 +1,196 @@
+{
+ "id": "6.3",
+ "title": "Portfolio & Templates",
+ "track": 6,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 6.3 · Portfolio & Templates*\n\n_≈ 2 hours · with Miracle_\n\nNobody hires a builder they can't see. You've built more than thirty working systems in this course, and the proof-of-work logs to show it. Now turn the best of them into a portfolio that wins calls: short case studies with real numbers, three-minute demos, and clean, documented templates someone else can import and run, without your secrets or your customers' data hiding inside.\n\n*Your problem:* Clients want proof before they pay you.\n*The plan:* Build a case study, a demo and a sellable template, safely cleaned of secrets.\n*After this lesson:* You have a portfolio that wins work."
+  },
+  {
+   "t": "text",
+   "body": "*\"Show me something you've built\"*\n\n*The call:* A school administrator asks for examples. Tolu scrolls through 40 workflow screenshots, explaining each one. The call goes quiet.\n\n*The problem:* Clients don't buy nodes. They buy \"your orders are confirmed in seconds, and you got your evenings back\".\n\n*Tolu's fix:* Three stories, each one page and three minutes of video: the problem, what she built, and the numbers afterwards.\n\n*Glitch:* \"Share the template! It's only a JSON file. Nobody reads JSON.\" (Attackers do.)"
+  },
+  {
+   "t": "text",
+   "body": "*The one-page case study*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The one-page case study): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The one-page case study. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "text",
+   "body": "*Tolu:* Your proof-of-work logs already hold most of this. Course projects count too, labelled honestly as \"built for a fictional business, Harvest Lane, with test data\". Never invent a client or inflate a number. One true number beats five impressive guesses."
+  },
+  {
+   "t": "text",
+   "body": "*The three-minute demo*\n\n_Time · Show_\n- *0:00–0:30* · The problem, from the customer's side (\"Iya Basira sends an order at 9 p.m. and waits until morning\")\n- *0:30–1:45* · The solution working, from the customer's side: the phone, the reply, the confirmation\n- *1:45–2:30* · Behind the scenes, briefly: the workflow, one safety feature (approval, error alert)\n- *2:30–3:00* · The result in numbers, and one sentence on who this suits\n\nUse test data and test accounts on screen. Zoom in on what matters; hide your email, tokens and other tabs. Record twice; send the better one."
+  },
+  {
+   "t": "text",
+   "body": "*What a shareable template needs*\n\n- *No secrets*: Platforms don't export credential secrets, but anything you typed into a field (a header token, a key in a URL) goes along.\n- *No personal data*: Pinned test data travels inside an n8n workflow file. So do hard-coded emails, phone numbers and chat IDs.\n- *No hidden dependencies*: Sheet IDs, sub-workflow IDs and webhook paths point at _your_ accounts. Replace them with placeholders and explain them in the README.\n- *Sticky notes*: Short notes on the canvas: what each section does, what to change.\n- *Tested on a fresh account*: Import it into a clean n8n (or a new Make or Zapier account) and set it up from the README alone. Whatever you had to guess, add to the README.\n\nEach platform shares differently: n8n exports workflow JSON; Make exports a scenario blueprint; Zapier lets you share a copy of a Zap. The same rules apply to all three."
+  },
+  {
+   "t": "text",
+   "body": "*Try it: clean a workflow before sharing*\n\nPaste an exported n8n workflow (or use Glitch's sample). The checker finds common secrets and personal data, removes pinned data and shows a cleaned copy. Everything stays in your browser."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: clean a workflow before sharing. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "text",
+   "body": "*The README*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The README): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The README. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to Create Case Studies That Get Clients For Your Agency_.\nLook for: Problem, solution, result, with numbers.",
+   "media": "walk:6.3",
+   "youtube": "https://www.youtube.com/watch?v=L--97LvqKdI",
+   "app": "https://automancy.cc/learn#m-6-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Boss 3 as a sellable template*\n\n*The goal.* Turn the Telegram order bot into a package another business can buy and set up in 15 minutes: a clean workflow file, a sample sheet, a README, a setup video and a case study."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Generalise it*\n\nDuplicate the workflow. Rename \"Harvest Lane\" things to neutral names (\"Your shop\"). Move business settings (delivery fee, free-delivery threshold, 50-unit limit, Tolu's chat ID) into one *Edit Fields · Settings* node at the start, so buyers change them in one place. Add sticky notes for each section."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Clean it*\n\nUnpin all data. Move any typed-in key into a credential. Export, run the file through Card 4, and fix anything found at the source (not just in the file). Replace the sheet ID with `<YOUR_SHEET_ID>`. Read the final JSON once yourself."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Make a sample sheet*\n\nA Google Sheet with the Price_List, Customers, Pending and Orders tabs, ten fake products and two fake customers, shared as \"anyone with the link can make a copy\" (view-only for the original)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Test on a fresh account*\n\nCreate a new n8n Cloud trial (or a fresh Docker volume), a new Telegram test bot and a copy of the sheet. Follow only the README. Time it. Each time you had to look something up, fix the README. Target: under 15 minutes."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Write the case study and record the demo*\n\nFrom your Boss 3 log: problem (Tolu pricing orders by hand at night), build (bot, pricing from the sheet, confirm buttons, daily report), safety (prices never from AI; big orders to a human), results (your test numbers, labelled as test results). Record the three-minute demo following Card 2.\n\n- *15 min* setup on a fresh account, from the README alone\n- *0* secrets, phone numbers or pinned records in the file\n- *5* pieces: workflow, sheet, README, video, case study\n\n*Nodo's tip:* put each template in its own GitHub repository (or folder) with the workflow file, README and changelog. When n8n changes something, you update once and every buyer gets the fix."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Clients see outcomes and numbers, not node diagrams.\n- Settings in one node make the template easy to adapt.\n- Cleaning at the source stops secrets returning in the next export.\n- A fresh-account test proves the README actually works.\n- Honest labels (\"test data\") build trust.\n\n*Common mistakes to avoid*\n\n- Screenshots of nodes as a portfolio.\n- Sharing exports with pinned customer data.\n- Keys typed into header fields.\n- READMEs written from memory, never tested.\n- Invented clients or numbers."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I helped publish your templates. Five surprises.\n\n*A:* A buyer imports the template and every request fails: it's calling your Paystack account with your key.\n*B:* A buyer emails: \"Who is Funmi, and why is her order in my workflow?\"\n*C:* The buyer's import errors: \"Google Sheet not found\".\n*D:* Three buyers asked the same setup question in the first week.\n*E:* A prospect asks to speak to the \"pharmacy client\" in your case study. There isn't one."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* a key typed into a header field travelled with the export. Revoke that key now, move it into a credential, re-export, and tell buyers which credential to create.\n*B:* pinned test data with personal details shipped in the file. Unpin before export, and check with Card 4.\n*C:* a hard-coded sheet ID pointing at your sheet. Use a placeholder and a copyable sample sheet, explained in the README.\n*D:* the README wasn't tested on a fresh account. Add the answer, and test again.\n*E:* an invented client. Remove it. Use real clients (with permission) or clearly labelled course projects."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): One case study",
+   "body": "- Pick your strongest Boss Battle and write its one-page case study from your proof-of-work log.\n- Every number must come from your log, labelled \"test results\" where they are.\n\n*Done when:*\n- A non-technical friend can tell you, after one read, what problem it solves and what changed, with a number."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): A three-minute demo and a clean template",
+   "body": "- Record a three-minute demo of the same project using the Card 2 structure.\n- Package its workflow as a template: settings node, sticky notes, cleaned export, README and sample sheet.\n- Have someone else set it up from the README on a fresh account.\n\n*Done when:*\n- They succeed in under 20 minutes without asking you, and Card 4 finds nothing in the file."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Your portfolio page",
+   "body": "- Publish a portfolio page with three projects (case study, demo video and, where suitable, a template link), a short \"who I help\" line, your offer tiers from 6.2, and a booking link.\n- Send it to three people in your target market and ask one question: \"What would make you book a call?\"\n\n*Done when:*\n- The page is live, three people have seen it, and you've changed it based on their answers."
+  },
+  {
+   "t": "quiz",
+   "q": "What should a case study lead with?",
+   "options": [
+    "The list of nodes used",
+    "The result, with a number",
+    "Your certifications",
+    "The price"
+   ],
+   "answer": 1,
+   "why": "Clients buy outcomes: “orders confirmed in 30 seconds” beats a diagram."
+  },
+  {
+   "t": "quiz",
+   "q": "Which of these travels inside an exported n8n workflow file?",
+   "options": [
+    "Your credential passwords",
+    "Your n8n login",
+    "Your server's IP",
+    "Pinned data and anything typed into fields"
+   ],
+   "answer": 3,
+   "why": "Credential secrets stay behind; pinned data and typed-in values go along."
+  },
+  {
+   "t": "quiz",
+   "q": "A key was typed into a header and shared in a template. First step?",
+   "options": [
+    "Revoke the key immediately, then fix the template",
+    "Delete the template and hope",
+    "Ask buyers not to use it",
+    "Rename the node"
+   ],
+   "answer": 0,
+   "why": "Assume it's compromised: revoke, replace, then clean the source."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you know your README works?",
+   "options": [
+    "It's long",
+    "An AI wrote it",
+    "Someone sets the template up on a fresh account using only the README",
+    "You remember the steps"
+   ],
+   "answer": 2,
+   "why": "Test documentation like you test workflows."
+  },
+  {
+   "t": "quiz",
+   "q": "You only have course projects. How do you present them?",
+   "options": [
+    "As real clients, to look experienced",
+    "Honestly, as projects for a fictional business with test data, with real test numbers",
+    "Don't show them",
+    "Without any numbers"
+   ],
+   "answer": 1,
+   "why": "Honesty builds trust; real test numbers still show what you can do."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Show outcomes: problem → build → result, with honest numbers.\n2. Three minutes of demo, customer's view first.\n3. Templates carry what you typed and pinned. Clean at the source.\n4. Settings in one node, sticky notes, placeholders, a sample sheet.\n5. Test the README on a fresh account.\n6. Never invent clients; label course work clearly."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 6.3 complete!* _Portfolio & Templates_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Capstone 6.4, _Grand Capstone: Harvest Lane on Autopilot_."
+  }
+ ]
+}

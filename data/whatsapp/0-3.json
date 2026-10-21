@@ -1,0 +1,210 @@
+{
+ "id": "0.3",
+ "title": "Data Is the Cargo: JSON & Arrays",
+ "track": 0,
+ "free": true,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 0.3 · Data Is the Cargo: JSON & Arrays*\n\n_≈ 90 minutes · with Emeka_\n\nIn Module 0.2 you saw apps send each other JSON. Now you'll learn to read and write it fluently. Every workflow you'll ever build moves JSON from one step to the next, so this is the single most useful hour in Base Camp.\n\n*Your problem:* Messages arrive messy, and machines need data in a precise shape.\n*The plan:* Turn a real WhatsApp order into clean JSON and pull out exactly the values you need.\n*After this lesson:* You can read and write JSON, and you'll stop losing hours to date and number mistakes."
+  },
+  {
+   "t": "text",
+   "body": "*The sheet that added up to zero*\n\n*Monday:* Tolu's new sheet totals the week's sales. The answer: ₦0.\n\n*Tuesday:* Phone numbers lose their first zero. A delivery for \"06/10\" goes out in the wrong month.\n\n*Wednesday:* \"Your data isn't wrong,\" says Nodo. \"It's packed in the wrong boxes. Let me show you proper cargo.\"\n\n*Glitch:* \"Numbers stored as words! Dates nobody can read! My favourite kind of data.\""
+  },
+  {
+   "t": "text",
+   "body": "*Four types carry almost everything*\n\nJSON (JavaScript Object Notation) is plain text with strict rules. Each value in it is one of these types:\n\n- *String*: `\"Mrs Adebayo\"` Text, always in double quotes. Also phone numbers, IDs and codes.\n- *Number*: `12500` No quotes, no ₦, no commas. Anything you'll do maths with.\n- *Boolean*: `true` / `false` Yes or no. No quotes. \"paid\", \"delivered\", \"is_vip\".\n- *Null*: `null` Deliberately empty: \"we know there's no value\".\n\n*The phone number rule:* if you'd never add two of them together, it's a string. Phone numbers, account numbers and order IDs are strings, even though they're made of digits. That's how you keep the leading zero in 08031234567.\n\n*Nodo:* Store money as a plain number in one currency unit and say which in the field name: `unit_price_ngn: 12500` or `amount_kobo: 1250000`. Add the ₦ and commas only when showing it to a person."
+  },
+  {
+   "t": "text",
+   "body": "*Objects are labelled boxes*\n\nAn *object* groups related values under names, inside curly braces. Each name is a *key* (always a string in double quotes), followed by a colon and its *value*. Pairs are separated by commas."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Objects are labelled boxes): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-3"
+  },
+  {
+   "t": "text",
+   "body": "*Think of a crate with labelled compartments.* The label is the key; what's inside is the value. Order doesn't matter: you find things by label, not by position.\n\n- *Double quotes only*: `'name'` breaks JSON. Use `\"name\"`.\n- *No trailing comma*: The last pair has no comma after it.\n- *No comments*: JSON can't hold notes like `// check this`."
+  },
+  {
+   "t": "text",
+   "body": "*Arrays are numbered rows of crates*\n\nAn *array* is an ordered list inside square brackets. Positions are counted from *0*, so the first item is `[0]`. An array of objects is how JSON holds a table: each object is one row.\n\n*Weave:* One twist to remember for Track 2: in Make's mapping and its `get()` function, list positions start at *1*, not 0. JSON itself and n8n count from 0."
+  },
+  {
+   "t": "text",
+   "body": "*Nesting and paths: the address of a value*\n\nObjects can hold objects and arrays, which can hold more objects. A *path* is the address of one value: use a dot to open an object's key and `[n]` to pick an array position.\n\n- *n8n*: `{{ $json.items[1].qty }}`Counts from 0, exactly like JSON.\n- *Make*: `{{get(1.items; 2).qty}}`Counts from 1, so the second item is 2.\n- *Zapier*: Shows nested fields with friendly labels like \"Items Qty\" and handles lists as \"line items\". You'll rarely type a path, but knowing the shape explains its choices."
+  },
+  {
+   "t": "text",
+   "body": "*Dates, times and time zones*\n\nUse the international *ISO 8601* format: biggest unit first, so it can only be read one way and sorts correctly as text.\n\n_An ISO 8601 timestamp broken into parts:_\n- *Year*: 2026\n- **: -\n- *Month*: 10\n- **: -\n- *Day*: 06\n- *Time starts*: T\n- *Hour:min:sec*: 14:00:00\n- *Offset from UTC*: +01:00\n\n- *WAT = UTC+01:00*: Nigeria's time zone. Many servers work in UTC, one hour behind Lagos.\n- *Date only*: `\"2026-10-06\"` when time doesn't matter, like a delivery day.\n- *Unix timestamp*: Seconds since 1 Jan 1970, e.g. `1791291600`. Some APIs use it; platforms convert it for you.\n- *Never \"06/10\"*: It's 6 October in Nigeria and June 10 in the US. Convert at the edges; store ISO inside."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Learn JSON in 10 Minutes_ (Web Dev Simplified).\nLook for: Objects versus arrays, nesting, data types and null.",
+   "media": "walk:0.3",
+   "youtube": "https://www.youtube.com/watch?v=iiADhChRriM",
+   "app": "https://automancy.cc/learn#m-0-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: turn a WhatsApp order into clean cargo*\n\n*The problem.* This message arrived on Monday 5 October 2026 at 8:14 a.m. Turn it into JSON that any automation could use, then calculate the total from paths. Prices: tomatoes ₦12,500 per crate, big bag of tatashe ₦9,000, delivery ₦1,500.\n\n*Customer:*\n\nGood morning! Pls I need 2 crates of tomatoes and 1 big bag of pepper (tatashe). Deliver Tuesday afternoon to 14 Ring Road, Ibadan. Mrs Adebayo 08031234567"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Find the things in the message*\n\nRead it like a machine would need it. There are three groups: *who* (name, phone), *what* (two products, each with a quantity), and *where and when* (address, day, time of day). Tuesday after Monday 5 October is 6 October."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Choose a type for every field*\n\n_Field · Type · Why_\n- *phone* · string · Keeps the country code and leading digits; never added up.\n- qty, unit_price · number · You'll multiply them.\n- *items* · array of objects · An order can have any number of products.\n- *delivery.date* · string (ISO date) · \"2026-10-06\" can't be misread.\n- *paid* · boolean · Yes or no, nothing else.\n- *notes* · null · No notes this time, and we say so on purpose."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Write the JSON*\n\nGroup related fields into objects (`customer`, `delivery`), put products in an array, and give each product a stable code (`sku`) so later steps don't depend on how a customer spells \"tatashe\"."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Write the JSON): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-3"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Test it and pull values out with paths*\n\nThis lab holds the JSON above. Tap a path, or type your own, and see exactly what comes back and what type it is. Try editing the JSON too: delete a comma and watch it break."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Test it and pull values out with paths. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-0-3"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Calculate the total from paths*\n\n_(Code on screen in the app.)_\n\nOnly now, when showing it to Mrs Adebayo, does it become \"₦35,500\". Inside the data it stays `35500`, so every later step can do maths with it.\n\n*Sage:* *Coming in Module 0.5:* you'll write a prompt that makes an AI model produce exactly this JSON from any messy message. You now know what \"exactly this\" means, which is what makes that prompt reliable."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Flatten it into rows (a preview of 0.4)*\n\nSpreadsheets can't hold a list inside a cell cleanly. So the order becomes one row in an *Orders* table and one row _per item_ in an *Order items* table, linked by `order_id`.\n\n_order_id · sku · qty · unit_price · line_total_\n- *HL-0043* · TOM-CRATE · 2 · 12500 · 25000\n- *HL-0043* · PEP-TATASHE-L · 1 · 9000 · 9000"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Choosing types first prevents the ₦0 total and lost zeros.\n- Grouping into objects keeps paths short and readable.\n- An array handles one product or fifty with the same design.\n- A `sku` gives later steps a stable ID regardless of spelling.\n\n*Common mistakes to avoid*\n\n- Money written as `\"₦12,500\"` (a string).\n- Separate fields `item1`, `item2` instead of an array.\n- Relative dates like \"Tuesday\" kept in the data.\n- Reaching for `items[2]` when there are only two items."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I \"improved\" an order. It won't even load now. Fix it right here until the lab says Valid, then find the three sneaky type problems that still hide inside."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Glitch hunt. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-0-3"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*Two syntax errors* stop it loading:\n\n1. `'order_id'` uses single quotes. Keys need double quotes.\n2. A trailing comma after the last item in `items`.\n\n*Five type problems* load fine but break later:\n\n1. `phone` is a number: the leading 0 is gone. Use `\"+2348059876543\"`.\n2. `qty` is the string `\"3\"`. Use `3`.\n3. `unit_price` is `\"₦4,000\"`. Use `4000`.\n4. `date` is `\"07/10\"`. Use `\"2026-10-07\"`.\n5. `paid` is the string `\"no\"`. Use `false`."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Describe yourself in JSON",
+   "body": "- Write JSON about you and your work with at least 8 fields.\n- Include at least one of each: string, number, boolean, null, a nested object, and an array.\n- Paste it into the lab above (replace the order) until it says Valid, then write three paths and check each one.\n\n*Done when:*\n- It's valid, uses all six features, and all three paths return what you expected."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See a model answer",
+   "answer": "_(Code example on screen in the app.)_"
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Model three orders and total them",
+   "body": "- Write an array of three Harvest Lane orders, each with a customer object, an items array (at least one order with three items), a delivery fee and a `paid` flag.\n- Write the paths for: the second order's customer phone; the third item of whichever order has three; every `paid` value.\n- Calculate each order's total by hand from paths, then the grand total of unpaid orders only.\n\n*Done when:*\n- Your paths start from the top-level array, e.g. `[1].customer.phone`, and your unpaid total is correct."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "When the JSON starts with `[`, the whole thing is an array, so every path begins with a position: `[0].items[2].qty`. The lab above accepts paths that start this way."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Map a real API response",
+   "body": "- Call the Open-Meteo request from Module 0.2 (or the public holidays API) and paste the full response into the lab.\n- Write working paths for 10 values, including at least three inside arrays.\n- Design how you'd flatten it into a sheet: which table(s), which columns, one row per what?\n- Write each of three paths in both n8n and Make syntax, remembering Make counts from 1.\n\n*Done when:*\n- All 10 paths work in the lab, your table design has no lists inside cells, and your Make paths are shifted by one."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See part of a model answer",
+   "answer": "Open-Meteo's `daily` object holds parallel arrays, so the right flattening is *one row per day*: column `date` from `daily.time[n]`, column `rain_chance` from `daily.precipitation_probability_max[n]`, same n.\n\nTomorrow's rain chance: n8n `{{ $json.daily.precipitation_probability_max[1] }}` · Make `{{get(1.daily.precipitation_probability_max; 2)}}`."
+  },
+  {
+   "t": "quiz",
+   "q": "Which of these is valid JSON?",
+   "options": [
+    "{'qty': 2}",
+    "{qty: 2}",
+    "{\"qty\": 2}",
+    "{\"qty\": 2,}"
+   ],
+   "answer": 2,
+   "why": "Keys need double quotes, and there's no comma after the last pair."
+  },
+  {
+   "t": "quiz",
+   "q": "What type should a phone number like 08031234567 be?",
+   "options": [
+    "Number",
+    "String",
+    "Boolean",
+    "Array"
+   ],
+   "answer": 1,
+   "why": "You never do maths with it, and as a number it loses the leading zero."
+  },
+  {
+   "t": "quiz",
+   "q": "An order has three items. What does `items[1]` point to?",
+   "options": [
+    "The first item",
+    "The last item",
+    "Nothing; lists start at 1",
+    "The second item"
+   ],
+   "answer": 3,
+   "why": "JSON arrays count from 0, so [1] is the second item. (Make's get() is the exception, counting from 1.)"
+  },
+  {
+   "t": "quiz",
+   "q": "In the solved problem's order, what's the path to the delivery date?",
+   "options": [
+    "delivery.date",
+    "date.delivery",
+    "delivery[date]",
+    "items[0].date"
+   ],
+   "answer": 0,
+   "why": "Open the delivery object, then read its date key."
+  },
+  {
+   "t": "quiz",
+   "q": "Which date can only be read one way?",
+   "options": [
+    "06/10/2026",
+    "2026-10-06",
+    "Tuesday",
+    "6/10/26"
+   ],
+   "answer": 1,
+   "why": "ISO 8601 puts year, month, day in that order, so it's unambiguous and sorts correctly."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Four types: string, number, boolean, null. Pick the type by what you'll do with the value.\n2. Phone numbers and IDs are strings; money is a plain number in one stated unit.\n3. Objects are labelled boxes `{ }`; arrays are numbered lists `[ ]` counted from 0.\n4. A path is directions to a value: dots open keys, `[n]` picks a position.\n5. Double quotes, no trailing commas, no comments.\n6. Dates in ISO 8601; know whether a time is in UTC or Lagos time."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 0.3 complete!* _Data Is the Cargo: JSON & Arrays_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 0.4, _Spreadsheets as Databases_."
+  }
+ ]
+}

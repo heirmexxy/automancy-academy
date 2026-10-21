@@ -1,0 +1,198 @@
+{
+ "id": "3.8",
+ "title": "Production Ready",
+ "track": 3,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.8 · Production Ready*\n\n_≈ 2–3 hours · with Miracle_\n\nYour laptop was a fine workshop. It's a terrible factory: it sleeps, travels and runs out of battery. Harvest Lane now depends on n8n, so it needs a home that's always on, reachable over HTTPS, backed up every night, watched from outside, and documented well enough that someone else could fix it.\n\n*Your problem:* It works on your laptop, but is it ready for customers?\n*The plan:* Secure, back up, monitor and publish your n8n for production.\n*After this lesson:* Your server is ready to run a real business's automations."
+  },
+  {
+   "t": "text",
+   "body": "*The laptop went to Lagos*\n\n*Wednesday:* Tolu travels to Lagos for a supplier meeting. The laptop, and every workflow on it, travels too, closed in her bag.\n\n*The cost:* Nothing runs for two days. The new Telegram order bot (Boss 3) can't even receive messages: Telegram needs a public HTTPS address.\n\n*Nodo:* \"For less than a plate of jollof a week, n8n gets a home that never sleeps. Then we make it safe, watched and recoverable.\"\n\n*Glitch:* \"Moved to a server, have you? Shame every webhook still says _localhost_.\""
+  },
+  {
+   "t": "text",
+   "body": "*Where should n8n live?*\n\n_Option · Effort · Good for · Watch out for_\n- *n8n Cloud* · Lowest · No technical person; fastest to production · Execution limits per plan; monthly cost grows with volume\n- *Small VPS* (e.g. Hetzner, DigitalOcean; 2 GB RAM is a sensible start) · Medium: this module · Full control, unlimited executions, low fixed cost · You own updates, security and backups\n- *Platform hosts* (Railway, Render and similar, with n8n templates) · Low–medium · Quick deploys without managing a server · Free or sleeping tiers stop schedules and webhooks; check persistent storage and current pricing\n- *A computer in the office* · Medium · Data that must stay on site · Power cuts, changing internet IP addresses, no HTTPS without extra work\n\n*Nodo:* Choose a server region near your users and providers (Europe is often fine for Nigeria), and pay with a card that works for dollar or euro billing. Always check current prices yourself before quoting a client."
+  },
+  {
+   "t": "text",
+   "body": "*The production shape*\n\n- *Domain and DNS*: A subdomain such as `n8n.yourbusiness.com`, with an \"A\" record pointing at the server's IP address.\n- *Reverse proxy and HTTPS*: Caddy receives web traffic, gets and renews a free certificate automatically, and passes requests to n8n.\n- *Environment variables*: Settings passed to n8n at start-up (3.1's `-e`), kept in a private `.env` file.\n- *Database*: n8n uses SQLite by default, which is fine for a small business. Large or busy setups move to PostgreSQL, and very high volume uses _queue mode_ (Redis plus worker processes), which you won't need yet."
+  },
+  {
+   "t": "text",
+   "body": "*Generate your server files*\n\nThree small files run the whole thing. Fill in your details; the files and warnings update as you type."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Generate your server files. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-8"
+  },
+  {
+   "t": "text",
+   "body": "A minimal, teaching setup based on n8n's documented environment variables. n8n's own Docker Compose guide shows larger setups; read it before running anything business-critical."
+  },
+  {
+   "t": "text",
+   "body": "*Backups: three things, off the server*\n- *1 · The encryption key*: In your password manager, not only on the server. Without it, n8n's docs warn, a restored database or credential export can't be decrypted.\n- *2 · The data*: The `n8n_data` volume (the `.n8n` folder, with the database and config). Turn on your provider's automatic server backups, and export nightly with n8n's CLI:\n`docker compose exec n8n n8n export:workflow --backup --output=/home/node/.n8n/backups/workflows/`\n`docker compose exec n8n n8n export:credentials --backup --output=/home/node/.n8n/backups/credentials/`\n(`--backup` exports all, one readable file each. Credential exports stay encrypted unless you add `--decrypted`, which you shouldn't for routine backups.)"
+  },
+  {
+   "t": "text",
+   "body": "- *3 · The workflows, in Git*: A private GitHub repository holding every workflow's JSON gives you history: what changed, when, and the ability to roll back. The solved problem builds this with n8n itself.\n- *A backup you haven't restored is a hope*: Once a quarter, restore onto a fresh test server and check a workflow runs."
+  },
+  {
+   "t": "text",
+   "body": "*Watch it, update it, document it*\n\n- *Monitor from outside*: Your error workflow (3.6) can't send an alert if n8n itself is down. Point a free uptime monitor (such as UptimeRobot) at `https://your-domain/healthz`, which n8n's docs say is always enabled on the main server, and have it alert you by email or Telegram.\n- *Update on purpose*: Pin the version. Monthly: read the release notes (especially breaking changes), back up, change the number, `docker compose pull && docker compose up -d`, and test your key workflows.\n- *Lock the doors*: Firewall open only on 22, 80 and 443; SSH keys instead of passwords; a strong owner password with two-factor login; separate n8n accounts for each person.\n- *Runbook*: One page: where n8n runs, how to log in to the server, how to restart, restore and roll back, who to call, and where the key is. Written for a tired person at 3 a.m."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Deploy n8n to Production_.\nLook for: VPS, domain and HTTPS, environment variables and secrets.",
+   "media": "walk:3.8",
+   "youtube": "https://www.youtube.com/watch?v=n8YMpdzQLII",
+   "app": "https://automancy.cc/learn#m-3-8"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's n8n goes live*\n\n*The goal.* n8n running on a small server at `https://n8n.harvestlane.example`, with automatic HTTPS, nightly backups, workflows versioned in GitHub, an outside uptime check, and every Track 3 workflow moved over and working."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Server, domain, firewall*\n\nCreate an Ubuntu LTS server (2 GB RAM) with your SSH key, and turn on the provider's automatic backups. In your domain's DNS, add an *A record* for `n8n` pointing to the server's IP. On the server: update packages, install Docker, and allow only SSH, HTTP and HTTPS:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Server, domain, firewall): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-8"
+  },
+  {
+   "t": "text",
+   "body": "_Read any script before you pipe it into a shell. Docker's convenience script is widely used, but the habit matters._"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Start n8n*\n\nMake a folder (`mkdir ~/n8n && cd ~/n8n`), create the three files from Card 3 with a pinned version and a generated key, and save the key in your password manager. Then:\n\n_(Code on screen in the app.)_\n\nOpen `https://n8n.harvestlane.example`: a padlock, and the owner set-up screen. Create the owner account with a strong password and turn on two-factor login."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Move the workflows*\n\nOn the laptop: export each workflow (⋮ → Download), or use the CLI export from Card 4. On the server: import them, then *recreate the credentials* (they're encrypted with the laptop's key, so they don't travel). Open each Webhook or Telegram node and confirm the URL now starts with `https://n8n.harvestlane.example/`. Publish the workflows and switch off the laptop copies, so nothing runs twice.\n\n*Glitch's trap, defused:* if webhook URLs still show `http://localhost:5678`, n8n doesn't know its public address. Set `N8N_WEBHOOK_URL` (or `WEBHOOK_URL` on versions before 2.35) and `N8N_PROXY_HOPS=1`, run `docker compose up -d`, and re-publish workflows that use webhooks so they register the new URL."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Nightly workflow backup to GitHub*\n\nCreate a *private* GitHub repo `harvestlane-n8n` and a fine-grained token limited to that repo (contents: read and write). In n8n: *Settings → n8n API* → create an API key. Then build *HL · Backup workflows → GitHub*:\n\n1. *Schedule Trigger*: daily, 02:00.\n2. *n8n node · Get many workflows* (n8n API credential): every workflow as an item.\n3. *Code* (each item): `return { json: { path: `workflows/${$json.name.replace(/[^\\w-]+/g, '_')}.json`, content: JSON.stringify($json, null, 2) } };`\n4. *GitHub · Edit a file* at that path, commit message `nightly backup {{ $now.toISODate() }}`. Settings → On Error: *Continue (using error output)*.\n5. Error output → *GitHub · Create a file* with the same fields (for workflows that are new since last night).\n\nWorkflow JSON contains credential _names and IDs_, not the secrets themselves. Keep the repo private anyway. Connect the workflow to HL · Error alerts."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Watch from outside, and write the runbook*\n\nIn UptimeRobot (free plan), add an HTTP monitor for `https://n8n.harvestlane.example/healthz` every 5 minutes, alerting by email (and Telegram, if you link it). Test it: `docker compose stop n8n`, wait for the alert, then `docker compose start n8n`. Finally, fill in the runbook template in Mission Gold.\n\n- *24/7* workflows run whether the laptop is open or not\n- *3* kinds of backup: server, data export, Git\n- *2* alarms: inside (error workflow) and outside (uptime)"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Only the proxy faces the internet; n8n's port stays private.\n- A pinned version means no surprise updates.\n- The key lives in two places, so backups can always be decrypted.\n- Git gives history and rollback for every workflow.\n- An outside monitor catches the one failure the error workflow can't: n8n being down.\n\n*Common mistakes to avoid*\n\n- Opening port 5678 to the internet.\n- Running the `latest` image and being surprised by a breaking change.\n- Keeping the only copy of the encryption key on the server.\n- Leaving workflows active on both laptop and server.\n- Committing the `.env` file to GitHub."
+  },
+  {
+   "t": "text",
+   "body": "*Is it production ready?*\n\n*Reachable and secure*\n- HTTPS works with a valid certificate on your domain _(must)_\n- Webhook URLs in the editor show the public https address _(must)_\n- Firewall allows only 22, 80 and 443; port 5678 isn't reachable from outside _(must)_\n- SSH keys only, password login turned off\n- Owner account has a strong password and two-factor login\n\n*Recoverable*\n- Encryption key saved in a password manager, off the server _(must)_\n- Automatic server or volume backups switched on _(must)_\n- Nightly workflow backup to a private Git repository runs\n- A restore has been tested on a fresh server\n\n*Watched and maintained*\n- Every workflow is connected to the error workflow _(must)_\n- Outside uptime monitor on /healthz, tested by stopping n8n\n- Version pinned; monthly update routine written down\n- Runbook written and shared with a second person"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: the readiness check (tick it off for your score). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-8"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Production gives me so many new toys. Six incidents. Name the cause.\n\n*A:* Webhooks worked on the laptop. On the server, Telegram and Paystack never reach n8n, and the Webhook node shows `http://localhost:5678/webhook/…`.\n*B:* After restoring last night's backup to a new server, every credential fails to decrypt.\n*C:* A Monday restart pulled a new major version, and two workflows broke.\n*D:* Customers got every payment receipt twice for a week.\n*E:* n8n was down for six hours on Sunday. The error workflow sent nothing.\n*F:* A security scan finds the n8n login page open on `http://server-ip:5678`."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* n8n doesn't know its public address. Set `N8N_WEBHOOK_URL=https://your-domain/` (older versions: `WEBHOOK_URL`) and `N8N_PROXY_HOPS=1`, restart, and re-publish webhook workflows.\n*B:* the new server generated its own encryption key. Set `N8N_ENCRYPTION_KEY` to the original key, from the password manager, before starting n8n.\n*C:* the image was `latest`. Pin a version and update deliberately after reading the release notes, with a backup ready.\n*D:* the workflows were still published on the laptop as well as the server, so both ran. Unpublish (or delete) the old copies after moving.\n*E:* an error workflow runs inside n8n, so it can't report n8n being down. Add an outside uptime monitor on `/healthz`.\n*F:* port 5678 was published to the internet (`-p 5678:5678` or a firewall gap). Remove the port mapping so only Caddy can reach n8n, and close it in the firewall."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Deploy it",
+   "body": "- Deploy n8n to a VPS (or a platform host whose plan doesn't sleep) with your own domain and HTTPS.\n- Move your 3.1 weather workflow and 3.6 error workflow over, recreate their credentials, and publish.\n\n*Done when:*\n- The padlock shows, the weather row arrives at 06:30 while your laptop is off, and the alarm test reaches your phone from the server."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Workflows in Git, nightly",
+   "body": "- Build the GitHub backup workflow from the solved problem.\n- Change one workflow, wait for the next run (or execute once), and find the change in GitHub's commit history.\n- Roll back: import yesterday's version of that file into n8n.\n\n*Done when:*\n- The repo holds every workflow, GitHub shows a daily commit, and you've restored an older version successfully."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): The 3 a.m. runbook",
+   "body": "- Write a one-page runbook: server and provider, domain and DNS, how to log in, where the `.env` and key are kept (not the key itself), how to restart, check logs, restore from backup and roll back a version, plus contacts.\n- Test it: give it to someone else and have them restart n8n and find the latest backup using only the runbook.\n- Complete the go-live checklist above at 100%.\n\n*Done when:*\n- Your tester succeeds without asking you a question, and you've updated the runbook with anything they got stuck on."
+  },
+  {
+   "t": "quiz",
+   "q": "Webhook URLs on the server still show localhost. What fixes it?",
+   "options": [
+    "Reinstalling Docker",
+    "Setting N8N_WEBHOOK_URL to the public https address (WEBHOOK_URL on older versions)",
+    "Opening port 5678",
+    "Renaming the workflow"
+   ],
+   "answer": 1,
+   "why": "Behind a proxy, n8n needs to be told its public address."
+  },
+  {
+   "t": "quiz",
+   "q": "Which item, if lost, makes your backups unreadable?",
+   "options": [
+    "The Caddyfile",
+    "The server's IP address",
+    "The GitHub token",
+    "The encryption key"
+   ],
+   "answer": 3,
+   "why": "Credentials are encrypted with it; keep a copy off the server."
+  },
+  {
+   "t": "quiz",
+   "q": "Why can't the error workflow tell you n8n is down?",
+   "options": [
+    "It runs inside n8n",
+    "Telegram blocks it",
+    "It only runs on Cloud",
+    "It needs Git"
+   ],
+   "answer": 0,
+   "why": "If n8n is down, nothing inside it runs. Monitor from outside."
+  },
+  {
+   "t": "quiz",
+   "q": "Which ports should the internet reach?",
+   "options": [
+    "5678 only",
+    "All of them",
+    "22 (SSH), 80 and 443",
+    "None"
+   ],
+   "answer": 2,
+   "why": "SSH for you, 80/443 for Caddy. n8n's 5678 stays private."
+  },
+  {
+   "t": "quiz",
+   "q": "What's the safe way to update n8n?",
+   "options": [
+    "Use latest and restart often",
+    "Read the release notes, back up, change the pinned version, then test",
+    "Never update",
+    "Update during the morning order rush"
+   ],
+   "answer": 1,
+   "why": "Deliberate, reversible and tested, at a quiet time."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Production means always on, HTTPS, backed up, watched and documented.\n2. Only the reverse proxy faces the internet; n8n's port stays private.\n3. Tell n8n its public address: `N8N_WEBHOOK_URL` (older: `WEBHOOK_URL`).\n4. The encryption key lives off the server too, or backups are useless.\n5. Workflows in Git give history and rollback.\n6. Error workflow inside, uptime monitor outside.\n7. Pin versions; update deliberately; keep a runbook."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.8 complete!* _Production Ready_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Boss 3, _Boss 3: The Telegram Order Bot_."
+  }
+ ]
+}

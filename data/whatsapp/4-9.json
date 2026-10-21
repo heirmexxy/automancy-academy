@@ -1,0 +1,178 @@
+{
+ "id": "4.9",
+ "title": "Evals, Observability & Cost",
+ "track": 4,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.9 · Evals, Observability & Cost*\n\n_≈ 2 hours · with Miracle_\n\n\"It seems fine\" is not evidence. Before customers rely on an agent, and every time you change it, you need proof: a fixed test set that measures quality, traces that show what happened inside each run, and numbers for speed and cost. This is what turns an impressive demo into something you can sell, support and improve.\n\n*Your problem:* You can't tell whether a change made your agent better or worse.\n*The plan:* Build test sets, score automatically, trace runs and measure cost.\n*After this lesson:* You can prove your agent's quality and cost, in numbers."
+  },
+  {
+   "t": "text",
+   "body": "*\"Prove it\"*\n\n*The question:* Before Sage Desk answers real customers, Tolu wants numbers, not vibes.\n\n*Friday:* Tolu adds one line to the prompt: \"Be more concise.\" Answers get shorter. Everyone's happy.\n\n*Monday:* \"Concise\" also meant skipping the policy search. Two customers were promised refunds they weren't owed.\n\n*Glitch:* \"The average went up! Nobody looks past the average.\""
+  },
+  {
+   "t": "text",
+   "body": "*A test set worth trusting*\n\nA test set is a fixed list of inputs, each with what a good answer must contain (or must not), kept in a sheet or n8n data table. You've built small ones since 0.5. For an agent going live, aim for about 25 cases across:\n\n_Type · Example · How many_\n- *Everyday* · \"How much is tatashe?\" · \"Where is HL-0042?\" · 8–10\n- *Tricky phrasing* · Pidgin, typos, two questions in one · 4–5\n- *Edge cases* · Ambiguous product, unknown order, \"same as last time\" · 3–4\n- Should say \"I don't know\" · \"Do you deliver to Abuja?\" · 2–3\n- *Attacks* · Injection, other customers' data, card numbers · 3–4\n\nMark the cases where failure costs money, trust or privacy as *critical*. A release must pass _every_ critical case, whatever the average says. Add every real-world failure to the set as a new case, so it can never come back unnoticed."
+  },
+  {
+   "t": "text",
+   "body": "*How to score*\n\n- *Code checks (best when possible)*: Exact category, a price present and correct (₦9,000), an order number in the right format, the reply under 80 words, no phone numbers in the output.\n- *Tool checks*: Did the agent call `search_policies` for a refund question? Did it _not_ call `issue_refund` on an injection? Read from the trace.\n- *AI judge (with care)*: A second model scores answers against a written rubric (\"Does it state that only the delivery fee is refunded? yes/no\"). Check the judge against 10 answers you've scored by hand before trusting it, and ask for yes/no or 1–5, not essays.\n- *Human review*: A weekly sample of real conversations, read by Tolu. It finds the problems nobody thought to test.\n\n*Sage:* Asking me to grade my own work is like asking a student to mark their exam. Use code for anything code can check, and give the judge a precise rubric, ideally on a different model."
+  },
+  {
+   "t": "text",
+   "body": "*Try it: did the prompt edit help?*\n\nHere are Sage Desk's results on 25 cases before (v1) and after (v2) Tolu's \"be more concise\" edit."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: did the prompt edit help?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-9"
+  },
+  {
+   "t": "text",
+   "body": "*Observability: see inside every run*\n\nA *trace* records each step of a run: every model call (with its tokens and time), every tool call (with inputs and outputs), and the final answer. When a test fails, the trace shows _why_.\n\n- *In n8n*: Each execution already shows the agent's steps. For deeper tracing on self-hosted n8n, n8n's docs describe connecting to LangSmith with environment variables (`LANGCHAIN_TRACING_V2=true`, an API key, a project name).\n- *In code*: Langfuse (open source, self-hostable) and LangSmith record traces from SDK agents and frameworks, with dashboards for cost and latency.\n- *Watch weekly*: Accuracy on the test set; critical failures; median and slowest response times; cost per conversation; how often the agent hands over to Tolu.\n- *Privacy*: Traces contain customer messages. Apply the same retention rules as chat memory (4.3), and mask personal data where your tools allow."
+  },
+  {
+   "t": "text",
+   "body": "*Cutting cost without cutting quality*\n\n- *Route by difficulty*: A cheap classifier sends easy questions (prices, hours) to a small model and hard ones (complaints, refunds) to a stronger one.\n- *Trim the context*: Shorter system prompts, smaller tool results, a smaller memory window (4.2, 4.3).\n- *Fewer loops*: Better tool descriptions mean fewer wasted calls; caps stop runaway ones.\n- *Reuse*: Providers offer discounts for repeated prompt prefixes (prompt caching) and for non-urgent batch work. Check your provider's docs.\n- *Re-run the test set after every saving*: A cheaper agent that fails a critical case isn't cheaper."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Routing calculator (placeholder prices: use your provider's). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-9"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Langfuse Walkthrough: Agent Tracing, Evals and Experiments_ (Langfuse).\nLook for: The trace view for each step, then datasets, experiments and scores.",
+   "media": "walk:4.9",
+   "youtube": "https://www.youtube.com/watch?v=THfB4p2xCFY",
+   "app": "https://automancy.cc/learn#m-4-9"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: an eval harness for Sage Desk*\n\n*The goal.* Run Sage Desk (your support agent from 4.2–4.5) against 25 test cases inside n8n, score each automatically, record the metrics per run, and make \"no critical regressions\" the rule before any change goes live."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Write the dataset*\n\nA sheet (or n8n data table) *SageDesk_Tests* with columns: `id · question · category · critical · must_include · must_not_include · expected_tool · forbidden_tool`, plus empty output columns `answer · tools_called · pass · notes`. Use the 25 cases from Card 3, e.g.:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Write the dataset): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-9"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Wire the evaluation path*\n\nIn the agent workflow, add an *Evaluation Trigger* that reads SageDesk_Tests, feeding the same agent as the real trigger (map `question` to the agent's input). After the agent, an *Evaluation · Check If Evaluating* node sends evaluation runs down a scoring branch and real conversations down the normal reply branch, so test runs never message customers."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Score each case in code*\n\nA *Code* node (each item) checks the answer and the tools (turn on the agent's option to return intermediate steps, if your version offers it, or read the tool names from its output):\n\n_(Code on screen in the app.)_\n\nThen *Evaluation · Set Outputs* writes answer, tools_called and pass back to the dataset, and *Evaluation · Set Metrics* records `pass` (1 or 0) and the run's token count. For tone cases (24, 25), add an AI-judge check with a yes/no rubric."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Run, compare, decide*\n\nRun the evaluation from the workflow's *Evaluations* tab. (Per n8n's docs, Oct 2026: metric-based evaluations are on Cloud Pro and Enterprise and self-hosted Enterprise; registered Community and Starter users can use them on one workflow.) Make a change (a prompt edit, a model swap), run again, and compare the two runs side by side. Release rule, written at the top of the sheet: *every critical case passes, and overall accuracy doesn't drop*. Card 3's v2 fails the rule, so it doesn't ship. The fix: \"Be concise, _but always call searchpolicies for refund questions_\". Re-run until it passes.\n\n- *25* test cases, 9 of them critical\n- *~3 min* for a full evaluation run\n- *0* critical regressions allowed into production\n\n*Nodo's habit:* keep the test sheet in the same Git backup as the workflows (3.8). A workflow version, its test set and its score belong together; that's what you show a client when they ask \"how do you know it works?\""
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- A fixed test set makes every change comparable.\n- Code checks are cheap, fast and consistent; the AI judge handles only what code can't.\n- Tool checks catch \"right answer, wrong reason\" before it becomes \"wrong answer\".\n- Critical cases get a veto that averages can't override.\n- Evaluation runs never reach real customers.\n\n*Common mistakes to avoid*\n\n- Testing only friendly, everyday questions.\n- Shipping because the average went up.\n- An AI judge with a vague rubric, never checked by a human.\n- Changing the test set and the agent at the same time.\n- Forgetting cost and speed in the scorecard."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Measuring is easy to get wrong. Five ways.\n\n*A:* Accuracy rose from 84% to 88%, so v2 shipped. Refund complaints followed.\n*B:* The AI judge gave 10/10 to an answer with the wrong price.\n*C:* Running the evaluation sent 25 test replies to a real customer's Telegram.\n*D:* The agent scores 100%, then fails on day one with Pidgin and two-part questions.\n*E:* A cheaper model halved the bill. Nobody noticed it stopped calling the policy tool."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the average hid critical regressions. Check case by case; critical cases have a veto.\n*B:* a vague judge rubric, and price is checkable by code anyway. Use code for facts; give the judge yes/no questions; check it against your own scores.\n*C:* the evaluation path wasn't separated. Use Check If Evaluating so test runs skip the real reply.\n*D:* a test set of easy questions only. Add tricky phrasing, multi-part, edge and attack cases, and every real failure.\n*E:* the cost change wasn't re-evaluated, and tools weren't checked. Re-run the full set after every change, including tool checks."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Ten test cases for one agent",
+   "body": "- Write 10 cases for one of your agents, covering every type in Card 1, with must-include, must-not-include and tool expectations. Mark the critical ones.\n- Run them by hand and record pass or fail.\n\n*Done when:*\n- The sheet is complete, at least 3 cases are critical, and you've found at least one failure to fix."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Trace it and find the slowest step",
+   "body": "- Turn on tracing (n8n executions plus LangSmith, or Langfuse for a code agent).\n- Run your test set and find the slowest step and the most expensive step.\n- Make one change to fix the worse of the two, and re-run.\n\n*Done when:*\n- You have before-and-after numbers for time and tokens, with accuracy unchanged or better."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): An agent quality report for a client",
+   "body": "- Build the full 25-case harness for your best agent, with automated scoring in n8n Evaluations.\n- Run three versions (current, a prompt change, a cheaper model or routing).\n- Write a two-page report: test set summary, results per version, critical cases, cost per conversation, recommendation, and the release rule.\n\n*Done when:*\n- A non-technical client could read the report and understand what was tested, what passed, what it costs, and why you recommend one version."
+  },
+  {
+   "t": "quiz",
+   "q": "v2 scores higher overall but fails two critical cases v1 passed. Ship?",
+   "options": [
+    "Yes, the average is higher",
+    "Yes, if it's cheaper",
+    "No: critical cases must all pass",
+    "Ship to half the customers"
+   ],
+   "answer": 2,
+   "why": "Averages hide the failures that cost money and trust."
+  },
+  {
+   "t": "quiz",
+   "q": "\"The reply contains ₦9,000\": what's the best way to check it?",
+   "options": [
+    "A code check",
+    "An AI judge",
+    "Ask the customer",
+    "Don't check prices"
+   ],
+   "answer": 0,
+   "why": "If code can check it, code should: cheap, exact, consistent."
+  },
+  {
+   "t": "quiz",
+   "q": "What does a trace show you?",
+   "options": [
+    "Only the final answer",
+    "The customer's location",
+    "The model's training data",
+    "Every model and tool call, with inputs, outputs, tokens and timing"
+   ],
+   "answer": 3,
+   "why": "Traces explain why a test failed and where time and money go."
+  },
+  {
+   "t": "quiz",
+   "q": "Why use Check If Evaluating in the agent workflow?",
+   "options": [
+    "To make runs faster",
+    "So test runs are scored instead of replying to real customers",
+    "To skip the model",
+    "It's required for Telegram"
+   ],
+   "answer": 1,
+   "why": "Evaluation runs and real runs take different branches."
+  },
+  {
+   "t": "quiz",
+   "q": "You switch to a cheaper model. What next?",
+   "options": [
+    "Celebrate the savings",
+    "Shorten the test set to save money",
+    "Re-run the full test set, including tool checks, before releasing",
+    "Ask customers to report problems"
+   ],
+   "answer": 2,
+   "why": "Every change, including cost cuts, goes through the same gate."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. No test set, no release. About 25 cases, including edge cases and attacks.\n2. Critical cases have a veto over the average.\n3. Score with code first, tool checks second, an AI judge only for the rest, and check the judge.\n4. Traces show why: every call, input, output, token and second.\n5. Separate evaluation runs from real customers.\n6. Cut cost by routing and trimming, then re-run the tests.\n7. Every real failure becomes a new test case."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.9 complete!* _Evals, Observability & Cost_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Boss 4, _Boss 4: Sage Desk_."
+  }
+ ]
+}

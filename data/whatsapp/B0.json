@@ -1,0 +1,127 @@
+{
+ "id": "B0",
+ "title": "Boss 0: The Order Flood",
+ "track": 0,
+ "free": true,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 0: The Order Flood*\n\n_≈ 2–3 sessions · 3–5 hours · with Emeka_\n\nEverything from Base Camp, used at once on a real-sized problem. You'll produce the automation blueprint for Harvest Lane's busiest month: the plan Tracks 1–3 will then build, tool by tool. Real automation consultants deliver exactly this document before they build anything.\n\n*Your problem:* Harvest Lane is drowning in orders, and nobody has a plan.\n*The plan:* Combine everything from Base Camp into one automation blueprint for a real business.\n*After this boss:* You have a complete, professional blueprint: the first piece in your portfolio."
+  },
+  {
+   "t": "text",
+   "body": "*A contract, and a flood*\n\n*November:* The Grand Palm Hotel signs a supply contract: fresh produce every morning by 7 a.m., invoiced weekly.\n\n*The forecast:* With the hotel and the festive season, orders nearly triple to about 130 a day.\n\n*Glitch's plan:* \"A hundred and thirty orders a day, done by hand? I'll be busy all December.\"\n\n*The team:* \"Before we build anything,\" says Bolt, \"we draw the blueprint. You have everything you need from Base Camp.\""
+  },
+  {
+   "t": "text",
+   "body": "*Harvest Lane · facts sheet*\n- *Volume* · About 45 orders a day today, 6 days a week. December forecast: about 130 a day, including the hotel.\n- *Order channels* · WhatsApp messages about 70%, the order form about 20%, phone calls about 10%.\n- *New hotel client* · Grand Palm Hotel: standing daily order Monday–Saturday, delivered by 7 a.m.; changes emailed by 9 p.m. the night before; one invoice every Friday; pays by bank transfer within 14 days.\n- *People* · Tolu (owner), one new part-time admin assistant, four riders with basic Android phones and WhatsApp.\n- *Current tools* · Business Google Workspace account; the four-table order sheet from 0.4; Paystack payment links (test mode); WhatsApp Business app; AI provider account with a spending cap.\n- *Pain points* · Night-time orders missed until morning; payment checking; tomatoes run out on Saturdays; the hotel invoice will take about 3 hours every Friday if done by hand."
+  },
+  {
+   "t": "text",
+   "body": "- *Budget* · Up to ₦60,000 a month for tools.\n- *Must-haves* · Tolu approves every hotel invoice before it's sent. Customer data rules from 0.6 apply. Riders can't be asked to install new apps."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _How to map out your workflow process for automation_.\nLook for: Turning a messy manual process into an automatable map before touching any tool.",
+   "media": "walk:B0",
+   "youtube": "https://www.youtube.com/watch?v=NrNV31qUE7I",
+   "app": "https://automancy.cc/learn#boss-0"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Seven deliverables, three phases*\n\nWork through the deliverables in order. Each one has its own message below.\n\nWork in a folder of Google Docs and Sheets, or on paper and photos. Each deliverable draws on one Base Camp module. Use the hint only if you're stuck for more than 15 minutes."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Process maps: now and future (uses 0.1)*\n\nTwo swimlane maps for a normal customer order, and one for the hotel's daily cycle (order → change by email → 7 a.m. delivery → Friday invoice). For each, draw today's process, then the future process with automation steps marked."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "Lanes to use: Customer or Hotel · Automation · Tolu/Admin · Rider. In the future map, the Automation lane should do most of the copying and checking; humans keep judgment steps and approvals."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · Priority table and ROI (uses 0.1)*\n\nScore every step at December volume (130 orders a day). Pick your top 3–5 automations, check dependencies, and estimate weekly hours saved and monthly value."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "Rescale runs per week: 130 × 6 = 780 orders. The hotel invoice runs once a week but is 180 minutes with high error cost; don't let its low frequency hide it."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Data model (uses 0.3, 0.4)*\n\nExtend the four-table model to handle the hotel: standing orders, order changes, and weekly invoices. List every table, its ID format, fields and types. Write one complete hotel order as JSON."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "You'll probably need a `Standing_Orders` table (what the hotel gets by default each day) and an `Invoices` table. How does an order know which invoice it belongs to?"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Integration inventory (uses 0.2, 0.6)*\n\nA table with one row per system the automations must talk to: what triggers or is triggered, polling or webhook, how it authenticates, key type (test/live), and where the secret will live."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "Rows to consider: WhatsApp, the order form, Gmail (hotel changes), Google Sheets, Paystack, the AI provider, a weather API, a messaging channel for riders."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D5 · AI step specification (uses 0.5)*\n\nPick one AI step (order extraction is fine, or classifying the hotel's change emails). Write the prompt, a 10-message test set with expected outputs, your measured score, and the checks that run after the AI. Estimate monthly cost at December volume."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "At 130 orders a day, about 70% via WhatsApp, the AI step runs roughly 91 times a day, or about 2,400 times a month. Plug that into the estimator in 0.5."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Security and data plan (uses 0.6)*\n\nAn access register for every tool and person, the one-page policy adapted for December (new admin, four riders, the hotel), and an incident card."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D7 · One-page blueprint summary*\n\nThe page Tolu would read. What gets automated, in what order, what stays human, total hours saved, monthly tool cost against the ₦60,000 budget, and the main risks."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of each phase*\n\n*Glitch:* Real clients change their minds. Open one of my surprises at the start of each phase and update your blueprint to handle it.\n\n*Curveball 1 · open at the start of Phase 1*\nThe hotel's head chef sometimes phones at 6 a.m. to add items to that morning's delivery. Where does a phone call enter your process, and who records it?\n\n*Curveball 2 · open at the start of Phase 2*\nTomato prices rise 30% in mid-December. Old orders must keep their old prices; the hotel's contract price stays fixed until January; regular customers pay the new price. Does your data model handle all three?\n\n*Curveball 3 · open at the start of Phase 3*\nA rider's phone is stolen, unlocked, with the riders' WhatsApp group and a shared sheet open. What does your incident card say to do, and what would you change so this hurts less next time?"
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Deliverable · Full marks when… · Points_\n- *D1 Process maps* · Current and future maps for both flows; lanes, decisions and handoffs marked; phone calls handled · 15\n- *D2 Priorities and ROI* · All steps scored at December volume; dependencies checked; top picks justified; weekly hours and monthly value shown · 15\n- *D3 Data model* · Every table has an ID and typed fields; standing orders, changes and invoices covered; price changes handled; valid JSON example · 20\n- *D4 Integrations* · Every system listed with trigger type, auth, key type and secret location · 15\n- *D5 AI step* · Structured prompt with null rule and example; 10-item test set; measured score; post-AI checks; cost estimate · 15"
+  },
+  {
+   "t": "text",
+   "body": "- *D6 Security* · Register covers all tools and people; policy updated for December; incident card handles the stolen phone · 10\n- *D7 Summary* · Fits one page; order of work, what stays human, hours saved, cost vs. budget, top risks · 10\n- *Total* · Win at 80 or more · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 0: The Order Flood",
+   "body": "Build seven deliverables, three phases:\n- Phase 1 · D1 · Process maps: now and future (uses 0.1)\n- Phase 1 · D2 · Priority table and ROI (uses 0.1)\n- Phase 2 · D3 · Data model (uses 0.3, 0.4)\n- Phase 2 · D4 · Integration inventory (uses 0.2, 0.6)\n- Phase 3 · D5 · AI step specification (uses 0.5)\n- Phase 3 · D6 · Security and data plan (uses 0.6)\n- Phase 3 · D7 · One-page blueprint summary\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-0"
+  },
+  {
+   "t": "link",
+   "body": "*Sage:* There's more than one winning blueprint. Use this to spot gaps in yours, not to copy. If yours differs but you can defend the choice, that's a good sign.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-0"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 0 demo · The Order Flood blueprint, with Miracle.\n\nOne case, through every page, with no gaps. Now walk your own test case through yours.",
+   "media": "clip:B0:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-0"
+  },
+  {
+   "t": "text",
+   "body": "*What happens to your blueprint*\n\n1. Track 1 (Zapier) builds order capture and payment confirmation in their simplest form.\n2. Track 2 (Make) builds the hotel cycle and the Friday invoice with routers, loops and error handling.\n3. Track 3 (n8n) rebuilds the busiest flows on your own server, with AI nodes and stock alerts.\n4. Track 4 adds an agent that answers customers from your policies, with human approval."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 0 complete!* _The Order Flood_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 1.1, _Your First Zap_."
+  }
+ ]
+}

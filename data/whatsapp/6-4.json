@@ -1,0 +1,238 @@
+{
+ "id": "6.4",
+ "title": "Grand Capstone: Harvest Lane on Autopilot",
+ "track": 6,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Capstone 6.4 · Grand Capstone: Harvest Lane on Autopilot*\n\n_≈ 3 sessions · 6–8 hours · with Emeka_\n\nSeason finale. Over thirteen weeks you've built Harvest Lane's automations one at a time: order bots, payment checks, a support agent, reports, and the growth agents that bring customers in. Now they have to work as _one system_, across three platforms, watched by one set of alarms, explained in one handover pack, and proven with one set of numbers. Every guide shows up for this one. So does Glitch, and Glitch has brought friends.\n\n*Your problem:* Separate automations don't add up to a business that runs itself.\n*The plan:* Join everything into one monitored system, document it, and present the results.\n*After the capstone:* Your capstone, your certificate, and a system you can sell again and again."
+  },
+  {
+   "t": "text",
+   "body": "*The investor visits on Friday*\n\n*Tolu:* \"Friday, the investor comes to see the whole thing. Not five clever bots: one business that runs itself. And she wants numbers.\"\n\n*The team:* Bolt brings Zapier, Weave brings Make, Nodo brings the n8n server, Sage brings the agents. \"Who owns what?\" is the first question.\n\n*Glitch, plus friends:* \"Three of us, three faults, one morning. Two of them won't even raise an alarm. Good luck finding us before Friday.\"\n\n*Sage:* \"Investors don't buy workflows. They buy hours, orders and naira, measured honestly, with a plan for when things break.\""
+  },
+  {
+   "t": "text",
+   "body": "*The whole system on one page*\n\nBefore you build anything, draw the system so anyone can see it in ten seconds: what starts each flow, where data lives, which platform runs which part, and what watches it all.\n\n- *One owner per table*: Each piece of data has exactly one workflow that _creates or changes_ it. Everyone else reads. Orders are written by HL·02 and HL·03 only; the Make books sync only reads them.\n- *Correlation ID*: The `order_id` (e.g. HL-0412) travels through every workflow, every message and every log row. Ask \"what happened to HL-0412?\" and get one timeline.\n- *Events table*: A simple log every workflow appends to: `at, workflow, order_id, event, detail`. It powers the weekly report, the watchdog and your investigations.\n- *Data contract*: A written list of each table's columns and meaning. Renaming a column is a change to the contract, announced to every workflow that reads it."
+  },
+  {
+   "t": "text",
+   "body": "*Design decisions, explained*\n\nA good capstone isn't the one with the most tools. It's the one where every choice has a reason you can say in one sentence. Here are the reference build's decisions.\n_Decision · Choice · Why · Rejected, and why_\n- *Where the core runs* · Self-hosted n8n (Track 3) · High volume, AI agents, code where needed, predictable monthly cost · Everything in Zapier: costs rise with every task at this volume\n- *Bookkeeping export* · Make scenario · The accountant already uses Make and maintains it herself · Moving it to n8n: saves little, removes her control\n- *Supplier sign-up form* · Zapier · Tolu's assistant edits it without help; a few runs a month · A custom n8n form: only Nodo could change it\n- *Customer channel* · WhatsApp · Where customers already are (5.1) · A web app: nobody would install it\n- *Staff and rider channel* · Telegram bots · Free, quick to build, buttons for approvals · WhatsApp for staff: costs and template rules for internal messages"
+  },
+  {
+   "t": "text",
+   "body": "- *Where AI is used* · Reading messy messages; support answers; report wording · That's where language is messy · AI for prices, stock or payments: rules are exact and cheaper (Boss 3)\n- *Data home* · Supabase (Postgres) · One source of truth, safe concurrent writes, vectors for support · Sheets as the database: fine at first, fragile at this volume; kept as read-only views for Tolu\n- *Human approval* · Refunds, orders over ₦100,000, new bulk buyers · Money and new relationships need a person (4.5) · Full autonomy: one bad day costs more than the time saved\n\n*Bolt:* Notice that two of the three platforms are chosen for _who maintains them_, not for features. The best tool is often the one the person in charge of it can fix on a Sunday."
+  },
+  {
+   "t": "text",
+   "body": "*Monitor outcomes, not only errors*\n\nAn error workflow (3.6) catches the failures that _crash_. The dangerous failures don't crash: a workflow runs, shows green, and does the wrong thing. Watch the system in three layers.\n\n_Layer · Catches · How, in the reference build_\n- *1 · Errors* · Nodes that fail · Every workflow (n8n, Make and Zapier) sends failures to one alert channel, with the order_id and a link to the execution.\n- *2 · Heartbeats* · Workflows that silently stop running · Each workflow writes \"last success\" to the events table. A watchdog checks every 30 minutes: \"Weekly report: expected every 7 days, last success 9 days ago.\""
+  },
+  {
+   "t": "text",
+   "body": "- *3 · Outcome checks* · Green runs that do the wrong thing · Business sanity rules: paid orders ≈ payment events; 0 orders in a week is an alarm, not a report; more than 3 rejected payment signatures in 10 minutes is an alarm; stock can't go below zero.\nThen send Tolu one short health message each morning. She should be able to read it in ten seconds and know whether today needs her:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Monitor outcomes, not only errors): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "*Nodo's rule:* for every important workflow, ask \"how would I know if this stopped doing its job, even though it didn't crash?\" If the answer is \"a customer would tell us\", add an outcome check."
+  },
+  {
+   "t": "text",
+   "body": "*The handover pack*\n\nA system only one person understands is a liability. The handover pack lets someone else run it: Tolu, her new operations hire, or another builder if you're unavailable. Write it for a smart person who wasn't there.\n\n*Tolu:* The test of a handover pack: I follow section 4 alone, at 10 p.m., and fix the problem without calling you."
+  },
+  {
+   "t": "text",
+   "body": "*Present results as numbers*\n\nMeasure before and after: the minutes each order took, the orders that slipped away because nobody replied in time, and what the system costs to run. Then turn them into one headline sentence. Use Harvest Lane's numbers, or your own."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Present results as numbers. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "Count profit on won-back orders, not their full value: the investor will. And say how you measured \"before\" (e.g. a week of timing Tolu's order handling, and counting unanswered chats).\n\n- *1 · The problem (30 s)*: One customer story and one number: \"15 orders a week were lost because nobody replied in time.\"\n- *2 · The system (45 s)*: The one-page map. No node names.\n- *3 · Live demo (90 s)*: One order from WhatsApp message to rider, with the payment in test mode, while the audience watches the events table fill.\n- *4 · Results (45 s)*: The headline sentence and the five numbers above.\n- *5 · Safety (30 s)*: What it can't do without a person, and what happens when something breaks.\n- *6 · Next (15 s)*: One clear next step and what it would be worth."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _The Ultimate Guide to Building Production-Ready n8n Workflows_.\nLook for: Error workflows, monitoring and structure that make a system ready to hand over.",
+   "media": "walk:6.4",
+   "youtube": "https://www.youtube.com/watch?v=1yZq4uEtm-k",
+   "app": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the full reference build*\n\n*The goal.* A customer sends \"2 baskets of tomatoes and 1 crate of eggs to Bodija\" on WhatsApp. Within a minute they get a confirmed price and a Paystack link. When they pay, a rider gets the job on Telegram, the customer gets \"out for delivery\" and then \"delivered\", stock goes down, and the books update. Questions go to Sage Desk. Every Monday Tolu gets a report. When anything breaks, or quietly stops working, someone knows within 30 minutes. Most pieces you've already built; this is how they fit together."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Session 1 · Map and data contract*\n\nDraw the system map (Card 1) and create the Supabase tables. Write the contract before any workflow touches them."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Session 1 · Map and data contract): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "*Weave's tip:* `paystack_ref unique` makes duplicate webhooks (6.2) impossible at the database level, a second safety net under your workflow check."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Session 1 · The core loop*\n\n1. *HL·01 Intake* (WhatsApp Cloud API trigger, 5.1): log the message, then route. Order-like messages go to HL·02; questions to HL·05. A short classifier (3.7) decides, with \"unsure\" going to the agent that can ask.\n2. *HL·02 Order agent* (Boss 3 and 4.2): AI extracts items into JSON; code prices them from `stock`; orders over ₦100,000 wait for Tolu. Creates the order, sends the Paystack link inside the 24-hour customer service window.\n3. *HL·03 Payments* (2.5, 6.2): verify signature, verify the transaction, check the amount, mark paid, decrement stock in one database call, write `paid` to events.\n4. *HL·04 Dispatch*: assign the nearest free rider (a simple zone table), Telegram the job with Accept/Delivered buttons, message the customer with an approved template (the 24-hour window may have closed by delivery time).\n\nEach workflow is a *sub-workflow* called by the one before (3.6), and each writes to events with the order_id."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Session 2 · Support and reporting*\n\n- *HL·05 Support*: Sage Desk from Boss 4, now with a `get_order` tool that reads the same orders table, so \"where is my order?\" is always current.\n- *HL·06 Weekly report* (Monday 07:00): SQL computes the numbers (orders, revenue, top products, late deliveries, refunds, AI spend). The AI only writes three sentences of commentary around numbers it's given, and is told not to change them. Email plus a Telegram summary.\n\n*Sage's rule:* code calculates, AI explains. A model asked to \"summarise this week's sales\" from raw rows will sometimes add them up wrong, confidently."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Session 2 · The cross-platform edges*\n\n- *HL·07 Books sync (Make)*: every evening, reads paid orders from a read-only Supabase view and creates sales entries in the accountant's tool (Track 2). It writes its own heartbeat to events through an n8n webhook.\n- *HL·08 Supplier form (Zapier)*: a new supplier submits the form; the Zap posts it to an n8n webhook with a shared secret header, which validates and stores it, and asks Tolu to approve (Track 1).\n\nRules for every edge between platforms: a webhook with a secret header (2.5), a fixed JSON shape written in the contract, and the receiving side validates before trusting. Make and Zapier send their errors to the same alert channel as n8n: Make through an error-handler route (2.6), Zapier through its error notifications or a final webhook step."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Session 2 · The growth layer*\n\n- *HL·09 Social inbox* (5.5): comments and DMs on Facebook and Instagram are answered from the same price list, buyers get a private reply, and new leads land in the `customers` table with source and consent. Complaints hand over to Tolu.\n- *HL·10 Prospecting* (5.2): up to 20 approved outreach emails a day to restaurant kitchens, with the suppression list checked before every send.\n- *HL·11 Campaigns* (5.6): a weekly newsletter and a 60-day win-back sequence in Brevo, fed from paid orders in Supabase, from an authenticated domain.\n- *HL·12 CRM sync* (5.8, 5.9): every restaurant and hotel lead is upserted into HubSpot or Zoho free with company, contact, deal and source; scored; followed up with tasks; and a paid first order moves the contact to Customer. People move deal stages; the workflow never does."
+  },
+  {
+   "t": "text",
+   "body": "All four write to the events table with a `lead_id` or `order_id`, so you can trace a customer from first comment to first order. That's the number the investor will ask for."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Session 2 · The safety net*\n\n1. *HL·00 Error workflow* (3.6), set on every n8n workflow: alert to Tolu's Telegram with workflow, node, order_id and execution link.\n2. *Watchdog* (every 30 min): for each workflow, compare the last `success` event with its expected interval; alert if overdue.\n3. *Outcome checks* (every 30 min): paid orders vs payment events; rejected signatures in the last 10 minutes; orders stuck in \"paid\" for over 2 hours without dispatch; stock below zero.\n4. *Morning health message* at 07:30 (Card 3).\n5. *Kill switch*: a row in a `settings` table (`agent_enabled`) that HL·01 checks; off means \"a person will reply shortly\" and every message goes to Tolu."
+  },
+  {
+   "t": "text",
+   "body": "*Step 7 · Session 3 · Test day, handover and demo*\n\nRun the end-to-end tests with test data and Paystack test mode, from two phones. Then write the handover pack and rehearse the 4-minute presentation.\n\n- *< 1 min* message to price and payment link\n- *13* workflows on 3 platforms, one map\n- *30 min* worst-case time to notice any failure"
+  },
+  {
+   "t": "text",
+   "body": "*Why this design works*\n\n- Each platform is chosen for who maintains it, and each table has one owner.\n- One order_id and one events table make every order traceable.\n- AI handles language; code handles money, stock and numbers.\n- Three layers of monitoring catch crashes, silences and wrong answers.\n- A kill switch and a handover pack mean the business never depends on one person or one model.\n\n*Common mistakes to avoid*\n\n- Rebuilding everything on one platform to look impressive.\n- Two workflows writing the same table.\n- Only watching for errors.\n- Letting AI calculate the numbers in reports.\n- Secrets copied into several places, so a key change breaks one of them.\n- A demo with live keys or real customer data."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt: the incident room*\n\n*Glitch:* It's Friday, 10 a.m. The investor arrives at noon. My friends and I broke three things. Here's the morning's feed. Only one of us set off an alarm."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Glitch hunt: the incident room. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "*Could Tolu run this without you?*\n\n*Works end to end*\n- All 16 end-to-end tests pass, in test mode with test data _(must)_\n- Every table has one owner; the data contract is written down\n- One order_id traces any order across all workflows\n\n*Safe*\n- No money moves without verification, and refunds need Tolu _(must)_\n- Secrets live in one place each; none in documents or exports\n- Kill switch tested: agent off, messages go to Tolu\n\n*Watched*\n- Errors from all three platforms reach one alert channel _(must)_\n- Watchdog and outcome checks catch the three Glitch faults\n- Morning health message running; backups tested by a restore\n\n*Handed over*\n- Handover pack written, and someone else fixed a test fault using only section 4 _(must)_\n- Results measured before and after, with a headline sentence\n- 4-minute presentation rehearsed"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: the readiness check (tick it off for your score). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "task",
+   "tier": "capstone",
+   "title": "The Capstone (+25 XP): Rebuild Harvest Lane and present the numbers",
+   "body": "- Build the reference system with test data: at least HL·01–HL·04, HL·06 and HL·00, one cross-platform edge (Make or Zapier), and one growth workflow (HL·09, HL·10, HL·11 or HL·12).\n- Pass the end-to-end tests that apply, and the handover check.\n- Present for 4 minutes using the six-part structure and the results board (your own measured or clearly labelled estimated numbers).\n\n*Done when:*\n- Your capstone scores 80 or more on the rubric below, with every must-have passing."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Adapt it to a second industry",
+   "body": "The shape stays; the nouns change. Pick one and redraw the system map, the data contract and the outcome checks.\n\n_Harvest Lane · Pharmacy · School · Salon_\n- *WhatsApp order* · Refill request · Parent fee or absence message · Booking request\n- *Order agent* · Refill agent (pharmacist approves every item) · Parent desk agent · Booking agent with calendar tools\n- *Paystack payment* · Payment on collection or delivery · School fees, with instalments · Deposit to hold a slot\n- *Dispatch to rider* · Pickup-ready message · Receipt and bursar update · Reminder the day before\n- *Outcome check* · Refills due but not sent · Fees paid vs receipts issued · No-shows vs reminders sent\n- *Human approval* · Every prescription item · Fee waivers, discipline matters · Refunds of deposits\n\n*Done when:*\n- Your adapted map, contract and three outcome checks are reviewed by someone who works in that industry, and you've fixed what they flagged."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Deliver it for a real business",
+   "body": "- Use Track 6 end to end: discovery and scope (6.1), pricing and payment (6.2), build, handover pack, and a case study (6.3) with the owner's permission.\n- Run it for at least four weeks with monitoring on, and measure before and after.\n\n*Done when:*\n- The owner has paid, signed off the handover, and approved a case study with real numbers that you can publish."
+  },
+  {
+   "t": "text",
+   "body": "*The capstone rubric: 80 points to earn Autopilot*\n\n_Area · Full marks when… · Points_\n- *Works end to end* · All applicable end-to-end tests pass; one order traceable by order_id; one customer traceable from first comment or email to first order · 20\n- *Design* · Map, data contract, one owner per table, each platform choice justified in one sentence · 15\n- *Safety* · Verified payments, human approval for money, secrets in one place, kill switch · 15\n- *Monitoring* · Errors from all platforms, watchdog, outcome checks; all three Glitch faults would be caught · 20\n- *Handover pack* · Someone else fixes a test fault from it alone · 15\n- *Results and presentation* · Before-and-after numbers, honest method, 4-minute presentation in six parts · 15\n- *Total* · Win at 80 or more, with every must-have in the handover check passing · 100"
+  },
+  {
+   "t": "quiz",
+   "q": "Two of Glitch's three faults showed green \"success\". What's the lesson?",
+   "options": [
+    "n8n's execution status is unreliable",
+    "Add more retries",
+    "Monitor outcomes, not only errors",
+    "Turn off the error workflow"
+   ],
+   "answer": 2,
+   "why": "A run can succeed and still do the wrong thing. Outcome checks catch what error alerts can't."
+  },
+  {
+   "t": "quiz",
+   "q": "Why does the order_id travel through every workflow and log row?",
+   "options": [
+    "So one order can be traced end to end, across platforms",
+    "Paystack requires it",
+    "To make the database bigger",
+    "So the AI can guess the price"
+   ],
+   "answer": 0,
+   "why": "One ID, one timeline: “what happened to HL-0412?” gets a single answer."
+  },
+  {
+   "t": "quiz",
+   "q": "Which rule prevents two workflows from fighting over the same data?",
+   "options": [
+    "Use Google Sheets for everything",
+    "Let the AI decide who writes",
+    "Write to every table from every workflow",
+    "Each table has one owner that writes it; others read"
+   ],
+   "answer": 3,
+   "why": "One owner per table, written in the data contract."
+  },
+  {
+   "t": "quiz",
+   "q": "In the weekly report, who should calculate the totals?",
+   "options": [
+    "The AI, from the raw rows",
+    "Code or SQL; the AI only writes words around the numbers",
+    "Tolu, by hand",
+    "Nobody: estimates are fine"
+   ],
+   "answer": 1,
+   "why": "Code calculates, AI explains. Models can add up wrong, confidently."
+  },
+  {
+   "t": "quiz",
+   "q": "Why does the Make books sync stay on Make instead of moving to n8n?",
+   "options": [
+    "Make is always cheaper",
+    "n8n can't connect to accounting tools",
+    "The accountant already uses Make and can maintain it herself",
+    "Mixing platforms is required for the badge"
+   ],
+   "answer": 2,
+   "why": "Choose platforms for who maintains them, not only for features."
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Grand Capstone demo · Harvest Lane on Autopilot, with Miracle.\n\nErrors, silences and wrong answers are all watched. And Tolu can run it without us. That's the capstone.",
+   "media": "clip:6.4:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-6-4"
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Draw the whole system on one page before you build.\n2. One owner per table, one order_id everywhere, one events log.\n3. Choose each platform for who will maintain it.\n4. Code calculates; AI handles language and explains.\n5. Watch errors, heartbeats and outcomes. Green isn't the same as right.\n6. A handover pack and a kill switch make the system the business's, not yours.\n7. Present results as hours, orders and naira, with an honest method."
+  },
+  {
+   "t": "text",
+   "body": "*You're an Orchestrator*\n\n*Tolu:* Thirteen weeks ago I was answering every order by hand at midnight. Now the business runs and grows while I sleep, and I know the moment something breaks. Thank you.\n\n- *Certificate criteria*: All lessons ticked; all six boss battles at 80+; this capstone at 80+ with every must-have; a proof-of-work log for every module.\n- *Your portfolio*: Six boss builds, a capstone, a case study and a sanitised template (6.3). That's a stronger portfolio than most freelancers have.\n- *Keep learning*: The free courses below go further on agents, and the n8n Academy offers certificates to add to your profile.\n- *Get hired or paid*: Join the Hire talent page, enter the weekly challenges, and post your capstone to your learning journal as a case study.\n\n*Glitch:* Fine. You win this season. But tools change, APIs change, and businesses change their minds. I'll be back. Keep your monitoring on."
+  },
+  {
+   "t": "done",
+   "body": "*Capstone 6.4 complete!* _Grand Capstone: Harvest Lane on Autopilot_ is done and saved to your progress, on WhatsApp and in the app.\n\nThat's the whole course. Well done: you built it all."
+  }
+ ]
+}

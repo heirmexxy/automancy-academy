@@ -1,0 +1,201 @@
+{
+ "id": "5.2",
+ "title": "Prospecting Agents",
+ "track": 5,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.2 · Prospecting Agents*\n\n_≈ 2 hours · with Emeka_\n\nEvery business wants more customers, and most cold outreach fails: it's generic, it goes to the wrong people, or it breaks a platform's rules and gets an account banned. In this lesson you build an agent that finds the right businesses from sources you're allowed to use, researches each one, scores the fit, and writes a short, true, personal message, which a person approves before anything is sent.\n\n*Your problem:* You need new customers, and cold messages either get ignored or get you banned.\n*The plan:* Build an agent that finds businesses from allowed sources, researches them, and drafts outreach a person approves.\n*After this lesson:* You can fill a sales pipeline without spam, scraping or risk to your accounts."
+  },
+  {
+   "t": "text",
+   "body": "*Twenty new kitchens*\n\n*Tolu:* \"Harvest Lane runs itself now. Next: twenty restaurant kitchens buying from us every week. Where do I even find them?\"\n\n*Glitch:* \"Easy. Scrape every restaurant owner off LinkedIn, buy a list, and blast them all tonight. Volume wins!\"\n\n*Echo:* \"Volume gets you banned. Relevance gets replies. Twenty right kitchens beat five thousand wrong inboxes.\"\n\n*Every morning:* Tolu gets the day's drafts on her phone. She approves, edits or skips each one. Nothing sends without her."
+  },
+  {
+   "t": "text",
+   "body": "*Your ideal customer, written as rules*\n\nAn agent can't prospect for \"good customers\". It can check rules. Write your ideal customer profile (ICP) so each line is something the agent can test against a source.\n\n_Harvest Lane's ICP · Rule the agent checks · Where the answer comes from_\n- *Busy kitchens* · Google rating 4.0+ and 100+ reviews · Google Places API\n- *Cook every day, in volume* · Offers delivery or office lunches · The business's own website\n- *Within our delivery zone* · Address in Bodija, Mokola, Ring Road, Akobo, Dugbe… · Google Places API\n- *Restaurants, not bakeries (for now)* · Category is restaurant · Google Places API\n- *Reachable the right way* · A published business email, or a contact form · The business's own website\n\n- *Fit score*: Points for each rule met, calculated in code. AI can add reasons, but the score itself should be repeatable.\n- *Disqualifiers*: Rules that rule a lead out completely, whatever the score: outside the zone, no allowed way to contact."
+  },
+  {
+   "t": "text",
+   "body": "*Where leads may come from, and where they may not*\n_Source · Allowed? · What to know_\n- *Google Places API* · Yes, within its terms · Search businesses by type and area. Its policies forbid keeping copies of Places content, except the place ID (store that, and fetch fresh details when you need them). Free monthly caps apply per field group; after that you pay per 1,000 calls.\n- *The business's own website* · Yes · Public business information: menu, services, news, a published business email. Respect the site's terms and don't hammer it with requests.\n- Directories, associations, events, referrals · Yes · Trade groups, market associations, event exhibitor lists and introductions from happy customers. Often the best leads of all.\n- LinkedIn, by hand or with Sales Navigator · Yes, manually · Search and message from your own account, as a person. LinkedIn's paid Sales Navigator is built for this."
+  },
+  {
+   "t": "text",
+   "body": "- Scraping LinkedIn or automating your account · *No* · LinkedIn's User Agreement (section 8.2) bans scrapers, bots and browser extensions that copy profiles or automate messages. Accounts get restricted or shut down.\n- *Bought or rented email lists* · *No* · No one on them agreed to hear from you. Nigeria's data protection rules require consent for direct marketing, and bought lists wreck your sending reputation.\n\n*Echo:* On LinkedIn, the agent can still help: it researches a company from its website and drafts a note. _You_ open LinkedIn and send it yourself. The human does the clicking."
+  },
+  {
+   "t": "text",
+   "body": "*The prospecting pipeline*"
+  },
+  {
+   "t": "text",
+   "body": "*Prospect lab: score, check, approve*\n\nEight Ibadan businesses the agent found (invented for practice). Adjust the ICP, then fix the outreach template until every check passes. Watch which leads the rules rule out, and why."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Prospect lab: score, check, approve. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-2"
+  },
+  {
+   "t": "text",
+   "body": "*The rules that keep you safe*\n- *Consent and objection*: Nigeria's Data Protection Act lets anyone object to direct marketing at any time, and the 2025 implementation directive (GAID) requires consent for direct marketing. A single, relevant message to a business's published business address, with an instant opt-out, is common B2B practice, but it's a grey area: never message personal emails or phones without consent, stop the moment someone objects, and take legal advice for client projects. This isn't legal advice.\n- *SMS and WhatsApp*: Don't cold-message on either. Nigeria's NCC do-not-disturb service (text STOP to 2442) covers unsolicited SMS and calls, and WhatsApp business messaging needs the customer's opt-in (5.1).\n- *Sending limits*: Free Gmail blocks you for up to 24 hours after more than 500 emails a day; Google Workspace allows about 2,000. For outreach, start at 20–30 a day from a separate sending domain or subdomain, so a mistake can't damage the business's main email."
+  },
+  {
+   "t": "text",
+   "body": "- *Suppression list*: Everyone who says STOP, unsubscribes or bounces goes on it, and every send checks it first. No exceptions, no \"one last follow-up\".\n- *Truth*: Every personal line must be a fact you found. An agent that flatters with invented details damages the brand faster than no outreach at all."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Lead Generation with n8n & Google Places API_.\nLook for: Calling the official Places API from n8n into Sheets. Ignore any volume or blast framing: add research, approval and caps.",
+   "media": "walk:5.2",
+   "youtube": "https://www.youtube.com/watch?v=Pu19yIeYx1Q",
+   "app": "https://automancy.cc/learn#m-5-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's prospecting agent*\n\n*The goal.* Find restaurants in Harvest Lane's delivery zone, research each one, score the fit, draft a short email that uses one true fact, get Tolu's approval on Telegram, send at most 20 a day, and sort the replies. Build it in n8n. Test with your own second email address before any real business sees it."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Set up the sheets*\n\n*ICP* (one row per rule and its points), *Prospects* (`place_id, status, fit_score, reasons, fact, fact_source, draft, approved_at, sent_at, reply_type`) and *Suppression* (`email, reason, date`). Notice what's missing: no copied Google data. You keep the place ID and your own research."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Find: Google Places Text Search*\n\nAn *HTTP Request* node, one call per area. The field mask decides what you pay for, so ask only for what you need:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Find: Google Places Text Search): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-2"
+  },
+  {
+   "t": "text",
+   "body": "Rating, review count and website sit in a higher-priced field group than the ID alone. Check which group your mask triggers on Google's pricing page, and set a budget alert in Google Cloud before you start."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Research: read the website, extract facts*\n\nFor each place with a website: *HTTP Request* (GET the home and menu pages, 2-second wait between businesses), *HTML* node to extract text, then an *Information Extractor* with this schema:\n\n_(Code on screen in the app.)_\n\nThen the most important node in the lesson, a *Code* node that checks the AI didn't invent anything:\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Score in code, not by feel*\n\nA Code node reads the ICP sheet and adds points: rating, reviews, delivery, office lunch, in-zone address. Disqualify when there's no published business email (send those to a \"manual\" list for a contact form or a call). Keep only `fit_score ≥ 60`. Same input, same score, every time."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Draft with guardrails*\n\nAn AI step writes the email from the template, filling only `{{business}}` and `{{fact}}`. If `fact` is null, the instruction says to use a general line about kitchens in the area. Then a Code node lints the draft, like the lab in Card 4: word count, one question, no spam words, and it _appends_ the opt-out and Harvest Lane's identity itself, so the AI can never forget them."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Approve on Telegram*\n\n*Telegram · Send and Wait for Response* (you met it in 4.5): the business name, fit score, reasons, the fact with its source link, and the draft, with Approve, Edit and Skip buttons. Approved drafts get `status = approved`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 7 · Send slowly, check the suppression list every time*\n\nA *Schedule Trigger* on weekdays at 9 a.m. takes up to 20 approved prospects. For each: look up the email in Suppression (skip if found), send with the *Gmail* node from the outreach subdomain, wait a random 3–9 minutes, log `sent_at`. One follow-up after 5 working days, only if there's no reply and no STOP."
+  },
+  {
+   "t": "text",
+   "body": "*Step 8 · Sort replies*\n\nA *Gmail Trigger* on the outreach inbox and a *Text Classifier*: _interested, not now, stop, out of office, bounce, other_. STOP and bounces go straight to Suppression. \"Interested\" sends Tolu a Telegram alert with the thread and a booking link to reply with. Every outcome updates the Prospects sheet.\n\n- *0* emails without Tolu's approval\n- *20* maximum a day\n- *1* reply to opt out, forever\n\n*Sage's reminder:* this is the 4.5 pattern again. The agent proposes, a person disposes, and code enforces the limits the AI can't be trusted with."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Only allowed sources, so no account bans or policy problems.\n- Facts are verified against the page, so nothing is invented.\n- Scoring is code, so it's consistent and explainable.\n- A person approves every message before it goes.\n- Caps, a separate domain and a suppression list protect deliverability and people's choices.\n\n*Common mistakes to avoid*\n\n- Scraping LinkedIn or using \"automation\" extensions.\n- Buying lists.\n- Letting AI write compliments with no source.\n- Sending hundreds on day one from the main domain.\n- Follow-ups to people who said stop.\n- Keeping copies of Google Places data."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I ran Tolu's agent my way for one week. Here's what happened.\n\n*A:* An email said \"Loved your Lagos branch!\" to a restaurant that has never been to Lagos. The owner posted a screenshot.\n*B:* The agent sent 400 emails on Monday from Tolu's main address. By Wednesday, Harvest Lane's invoices were landing in customers' spam.\n*C:* A restaurant replied \"STOP\" on Tuesday and got a cheerful follow-up on Friday.\n*D:* Half the \"leads\" were owners' personal Gmail addresses collected by a LinkedIn browser extension.\n*E:* The Google Cloud bill was ten times the estimate. The field mask was `*`."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no fact check. Make the extractor return the exact quote, verify it appears in the page text in code, and fall back to a general line when there's no verified fact.\n*B:* no daily cap and the main domain used for outreach. Cap at 20–30 a day, send from a separate outreach subdomain, and grow slowly.\n*C:* the suppression list wasn't checked before the follow-up. Check it before every single send, and put STOP replies on it instantly.\n*D:* banned source and personal data. Delete them, remove the extension, and only use business addresses published by the business.\n*E:* `*` requests every field, at the highest price group. List only the fields you need, and set a budget alert."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): ICP and hand scoring",
+   "body": "- Write an ICP as rules for a business you know (or Harvest Lane).\n- Find 20 businesses by hand from allowed sources and score each one.\n\n*Done when:*\n- Every rule can be checked from a named source, and someone else gets the same scores from your rules."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Research and draft, with approval, sending nothing",
+   "body": "- Build find → research → verify → score → draft → approve for 10 real businesses.\n- Send the approved drafts to your own test inbox only.\n\n*Done when:*\n- Every draft passes the lint, every personal fact is verified against its page, and no draft reaches a real business."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A two-week outreach pilot for a real client",
+   "body": "- With the client's approval of the ICP, the template and the rules, run the agent for two weeks.\n- Report: prospects found, approved, sent, replies by type, meetings booked, opt-outs.\n\n*Done when:*\n- Zero complaints, every opt-out honoured within a day, and the client decides from your report whether to continue."
+  },
+  {
+   "t": "quiz",
+   "q": "Which lead source is allowed?",
+   "options": [
+    "A browser extension that scrapes LinkedIn profiles",
+    "Google Places API, plus each business's own website",
+    "A list of 10,000 emails bought online",
+    "Personal numbers from a WhatsApp group"
+   ],
+   "answer": 1,
+   "why": "Official APIs and public business information. LinkedIn bans scraping; bought lists and personal numbers have no consent."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you stop the agent inventing personal details?",
+   "options": [
+    "Ask it nicely to be honest",
+    "Use a bigger model",
+    "Remove personalisation completely",
+    "Require an exact quote and check in code that it appears on the page"
+   ],
+   "answer": 3,
+   "why": "Verify, don't trust. No verified fact means a general line."
+  },
+  {
+   "t": "quiz",
+   "q": "Who decides whether each message is sent?",
+   "options": [
+    "A person, approving each draft",
+    "The AI, if the fit score is high",
+    "Nobody: it sends automatically",
+    "The recipient's spam filter"
+   ],
+   "answer": 0,
+   "why": "The agent proposes; a person approves; code enforces the limits."
+  },
+  {
+   "t": "quiz",
+   "q": "Someone replies \"STOP\". What happens?",
+   "options": [
+    "One last follow-up, then stop",
+    "Ask why on WhatsApp",
+    "They go on the suppression list, checked before every send",
+    "Nothing; it's B2B"
+   ],
+   "answer": 2,
+   "why": "People can object to direct marketing at any time. Honour it immediately and permanently."
+  },
+  {
+   "t": "quiz",
+   "q": "Why send outreach from a separate subdomain at 20–30 a day?",
+   "options": [
+    "It's required by Google Places",
+    "To protect the main domain's reputation and avoid looking like spam",
+    "To hide who's sending",
+    "Because Gmail has no limits"
+   ],
+   "answer": 1,
+   "why": "Slow, relevant sending builds reputation. The sender is still clearly named in every email."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Write the ideal customer as rules an agent can check.\n2. Use allowed sources: official APIs, websites, directories, referrals. Never scrape LinkedIn or buy lists.\n3. Verify every personal fact in code; no fact means a general line.\n4. Score in code. Let a person approve every message.\n5. Send slowly from a separate domain; check the suppression list before every send."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.2 complete!* _Prospecting Agents_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.3, _Social Listening & Sentiment_."
+  }
+ ]
+}

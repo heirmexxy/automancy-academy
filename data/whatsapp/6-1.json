@@ -1,0 +1,198 @@
+{
+ "id": "6.1",
+ "title": "Discovery & Scoping",
+ "track": 6,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 6.1 · Discovery & Scoping*\n\n_≈ 2 hours · with Miracle_\n\nBuilding is now the easy part. The hard part, and the part clients pay for, is finding the right problem, measuring what it costs, and agreeing exactly what you'll deliver. This module turns a friendly \"can you do this for me?\" into a discovery call, a process map, a money case and a scope document that protects both you and the client.\n\n*Your problem:* Clients ask for “an AI bot” without knowing what they need.\n*The plan:* Run a discovery call, map the value, and write a scope that protects you both.\n*After this lesson:* You can turn a vague request into a clear, priced project."
+  },
+  {
+   "t": "text",
+   "body": "*\"Can you do this for me?\"*\n\n*Saturday:* Tolu's friend Mrs Okonkwo runs a pharmacy in Bodija. \"I saw your WhatsApp bot. Can you do one for me?\"\n\n*The wish list:* Seven ideas in five minutes. No budget, no priorities, and one idea that's a very bad idea.\n\n*Tolu:* \"Before any bot, let's find where your week really goes, and what it costs you.\"\n\n*Glitch:* \"Just write 'automate the pharmacy'. You'll be fine. For about eleven months of free extras.\""
+  },
+  {
+   "t": "text",
+   "body": "*The 30-minute discovery call*\n\n_Minutes · Goal · Ask_\n- *0–5* · Context · \"Tell me about the business: customers, staff, busiest days. What made you call now?\"\n- *5–15* · Find the pain · \"Walk me through last Monday, hour by hour. Where did time go? What went wrong last week?\"\n- *15–25* · Dig into one process · \"What starts it? Who does each step? Which apps? How often? How long? What happens when it goes wrong, and what does that cost?\"\n- *25–30* · Success and limits · \"If this worked perfectly, what would be different in three months? What tools must stay? Who decides? What budget range is realistic?\"\n\n*Tolu:* Ask about last week, not \"usually\". People describe their ideal process; last Monday tells you the real one. And talk less than a third of the time."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The 30-minute discovery call): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The 30-minute discovery call. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "text",
+   "body": "*Map it before you fix it*\n\nDraw the process as it is today, then as it would be. Mark each step *manual*, *automated* or *human decision*. The map is what the client signs off, before any building."
+  },
+  {
+   "t": "text",
+   "body": "*Find the money*\n\nOwners buy outcomes, not workflows. Count three kinds of value: *time* saved (at what the time costs), *errors* avoided (stock-outs, expired stock, missed refills), and *revenue* gained (customers who come back). Use the client's own numbers from the call, and be conservative: only count the share of the task the automation really takes over."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Okonkwo Pharmacy: refill reminders and reorder alerts. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "text",
+   "body": "*The scope document*\n\nOne to two pages, in plain words, signed before you build. Its most valuable section is the one beginners skip: *out of scope*."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The scope document): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The scope document. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "text",
+   "body": "*When to say no*\n\n_Decide for each one: Take it or Reshape it or Decline?_\n\n*A.* \"Can the AI tell customers which medicine to take for their symptoms?\"\n*B.* \"Automate everything in the pharmacy\" with a budget of ₦100,000.\n*C.* Refill reminders for consenting customers, with a clear owner, data in a notebook she'll type into a sheet, and a realistic budget.\n*D.* \"Scrape all the phone numbers from a competitor's Facebook page and WhatsApp them our prices.\"\n*E.* \"The process changes every week; we'll figure it out as you build.\""
+  },
+  {
+   "t": "reveal",
+   "prompt": "Reveal the answers",
+   "answer": "*A:* No\n*B:* Change\n*C:* Yes\n*D:* No\n*E:* Change"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _The Exact Script to Close AI Agency Clients on a Discovery Call_.\nLook for: Questions that find the costly process and put a number on the pain.",
+   "media": "walk:6.1",
+   "youtube": "https://www.youtube.com/watch?v=IWNNb6VOVz8",
+   "app": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: from call notes to signed scope*\n\n*The goal.* Turn Mrs Okonkwo's 30-minute call into a scope she can sign: one process, mapped, priced and bounded."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Sort the wish list*\n\nFrom her seven ideas, score each 1–5 on *pain* (time and money lost), *feasibility* (data available, clear rules) and *risk*. The AI doctor is declined outright. Refill reminders plus low-stock alerts score highest: about 12 hours a week, six costly errors a month, and customers lost to other pharmacies. The WhatsApp bot can be phase 2."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Confirm the numbers*\n\nFrom her notes: ~12 hours a week (two staff) on calls and stock checks; about six stock-outs or expiries a month at ~₦20,000 each; refill customers who don't return. With the Card 3 figures, the value is ≈ ₦238,000 a month, net ≈ ₦208,000 after running costs, so a ₦450,000 build pays back in a little over two months. Write the source of every number in the scope."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Write the scope*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Write the scope): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-1"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Walk her through it, then sign*\n\nBook 20 minutes. Show the before-and-after map first, then the numbers, then the out-of-scope list (\"so we're both clear what this isn't\"). Ask her to name one more thing she expected; if it's not there, decide together: add it (with price) or put it in phase 2. Only then send the scope for signature and the first invoice (6.2).\n\n- *7 → 1* ideas narrowed to one strong project\n- *~2 months* payback on the example numbers\n- *6* things explicitly out of scope\n\n*Nodo's note:* the scope's acceptance tests are your evaluation set (4.9) in business language. Write them so you can run them, not just read them."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- It starts with last week's reality, not the wish list.\n- The money case uses the client's own numbers.\n- One process, done well, beats seven half-done.\n- Out-of-scope and acceptance tests prevent arguments later.\n- Sensitive data and regulated advice are handled up front.\n\n*Common mistakes to avoid*\n\n- Pitching tools before understanding the process.\n- Inflated savings the client doesn't believe.\n- No out-of-scope section.\n- Acceptance criteria like \"works well\".\n- Building before the client signs."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I wrote the pharmacy's scope while you were out. Five things went wrong.\n\n*A:* Three weeks in, the client asks for the staff rota \"since it was always part of automating the pharmacy\".\n*B:* At handover, the client says \"it doesn't work well enough\" and won't pay the second half.\n*C:* Go-live slips by a month waiting for WhatsApp business verification.\n*D:* The proposal promised \"₦2 million saved a year\". The owner laughed and stopped reading.\n*E:* A reminder said \"Your hypertension medicine is due\". The customer was upset that her neighbour saw it."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no out-of-scope section. List nearby items explicitly, and handle new ones as change requests.\n*B:* vague acceptance criteria. Agree specific, testable criteria in the scope, and run them together at handover.\n*C:* a client dependency wasn't listed or started early. Put \"client provides\" items and their deadlines in the scope, and start verification in week one.\n*D:* numbers that weren't the client's own. Use her figures, be conservative, and show the working.\n*E:* health details in a message. Keep reminders generic, get consent, and treat health data as sensitive by design."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Interview one business owner",
+   "body": "- Using the discovery template, interview a real small-business owner (a friend, family member or local shop) for 30 minutes about last week.\n- Draw one process as a before-and-after map.\n\n*Done when:*\n- Your notes include at least three numbers in the owner's own words (time, frequency, cost), and the owner agrees your map is accurate."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Write a scope for one automation",
+   "body": "- Turn the Bronze interview into a scope using the template: in scope, at least five out-of-scope items, client responsibilities, acceptance tests, timeline and price.\n- Add the payback calculation with your sources.\n\n*Done when:*\n- A friend who wasn't on the call can read it and tell you exactly what will and won't be delivered, and how you'll prove it works."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Your reusable discovery kit",
+   "body": "- Build a reusable kit: a questionnaire (a form the client fills in before the call), your call script, a map template, the payback sheet, and the scope template.\n- Automate it: when the form is submitted, n8n creates a notes doc from your template, books the call link, and emails you a pre-call summary.\n\n*Done when:*\n- A test submission produces a filled notes document and a summary email without you touching anything."
+  },
+  {
+   "t": "quiz",
+   "q": "The best discovery question is usually…",
+   "options": [
+    "\"What tools do you want?\"",
+    "\"Walk me through last Monday.\"",
+    "\"How much is your budget?\" (first)",
+    "\"Have you heard of AI agents?\""
+   ],
+   "answer": 1,
+   "why": "Real recent events reveal the real process and its cost."
+  },
+  {
+   "t": "quiz",
+   "q": "Which section most prevents scope creep?",
+   "options": [
+    "Background",
+    "Price",
+    "Timeline",
+    "Out of scope"
+   ],
+   "answer": 3,
+   "why": "Listing what you're not doing makes new requests clearly new."
+  },
+  {
+   "t": "quiz",
+   "q": "A good acceptance criterion is…",
+   "options": [
+    "\"20 test reminders sent and logged correctly\"",
+    "\"Works well\"",
+    "\"Client is happy\"",
+    "\"Uses AI\""
+   ],
+   "answer": 0,
+   "why": "Specific, testable, agreed in advance."
+  },
+  {
+   "t": "quiz",
+   "q": "Value ₦240,000 a month, running cost ₦30,000, build ₦420,000. Payback?",
+   "options": [
+    "1 month",
+    "1.75 months",
+    "2 months",
+    "14 months"
+   ],
+   "answer": 2,
+   "why": "Net ₦210,000 a month; 420,000 ÷ 210,000 = 2 months."
+  },
+  {
+   "t": "quiz",
+   "q": "A client wants an AI to recommend medicines. You…",
+   "options": [
+    "Build it with a disclaimer",
+    "Decline that part, and offer admin help such as reminders",
+    "Charge double",
+    "Use a bigger model"
+   ],
+   "answer": 1,
+   "why": "Regulated professional advice isn't an automation job. Say no clearly and offer what you can do."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Discovery first: last week's reality beats the wish list.\n2. One process, mapped before and after, signed off by the client.\n3. Find the money: time, errors, revenue, in the client's own numbers.\n4. The scope's best friend is the out-of-scope list.\n5. Acceptance criteria are tests you can run.\n6. Decline regulated advice, spam and chaos; reshape oversized wishes."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 6.1 complete!* _Discovery & Scoping_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 6.2, _Pricing, Packaging & Getting Paid_."
+  }
+ ]
+}

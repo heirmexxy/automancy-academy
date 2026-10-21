@@ -1,0 +1,191 @@
+{
+ "id": "4.8",
+ "title": "Code-First Agents",
+ "track": 4,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.8 · Code-First Agents*\n\n_≈ 2–3 hours · with Emeka_\n\nn8n is a great home for agents, but some clients need the agent inside their own app: a website, a mobile backend, an internal tool. Then you write the agent in code. Good news: an agent is just the loop you've been watching all track. About 60 lines of Python reproduce it exactly, and once you've written that loop yourself, every framework makes sense.\n\n*Your problem:* No-code limits start to show on bigger agent projects.\n*The plan:* Build an agent in Python with the SDKs, step by step.\n*After this lesson:* You can build and run agents in code when you need to."
+  },
+  {
+   "t": "text",
+   "body": "*\"Can it live inside our app?\"*\n\n*The deal:* A restaurant-ordering app wants Harvest Lane's price-and-order agent inside its own app, not in n8n.\n\n*Sage:* \"Same brain, same tools, same loop. Just written as code instead of nodes.\"\n\n*The loop:* Ask the model. If it asks for a tool, run it and send back the result. Repeat until it answers, or a limit says stop.\n\n*Glitch:* \"I unplugged the price sheet for one second. Your whole program died. In front of the client.\""
+  },
+  {
+   "t": "text",
+   "body": "*Just enough Python*\n\n- *A project folder and a virtual environment*: Keeps this project's packages separate: `python3 -m venv .venv`, then `source .venv/bin/activate` (Windows: `.venv\\Scripts\\activate`).\n- *Packages*: `pip install anthropic` installs the official SDK.\n- *Secrets in the environment*: The SDK reads `ANTHROPIC_API_KEY` from the environment. Set it in your terminal or a `.env` file that is in `.gitignore`. Never type a key into the code.\n- *The Python you need*: Functions (`def`), dictionaries (`{\"price\": 12500}`), lists, `for` loops, `json.dumps`, and `try / except` for errors. Python for Everybody covers all of it, free."
+  },
+  {
+   "t": "text",
+   "body": "*Watch the messages list grow*\n\nThe whole agent is one list of messages that you keep adding to and sending back. Step through one question:"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Watch the messages list grow. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-8"
+  },
+  {
+   "t": "text",
+   "body": "*Errors are messages, not crashes*\n\nWhen a tool fails (timeout, bad input, unknown product), don't let the program die. Catch the error and send it back as a tool result marked `is_error`. The model can then apologise, try different input, or tell the customer to wait. Also cap the number of turns, exactly like Max Iterations in n8n."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Errors are messages, not crashes): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-8"
+  },
+  {
+   "t": "text",
+   "body": "*Frameworks at a glance*\n\n_Option · What it gives you · Reach for it when…_\n- *Your own loop* (this module) · Full control, no extra layers · Small agents, learning, or when you want to see everything\n- *Anthropic SDK Tool Runner* · Runs the tool loop for you (`client.beta.messages.tool_runner`) · You want the same thing with less code\n- *Claude Agent SDK* · The agent harness behind Claude Code: built-in tools, permissions, sessions, custom tools as in-process MCP servers. Python and TypeScript. · Agents that work with files, commands and long tasks\n- *OpenAI Agents SDK* · Agents, tools, hand-offs between agents, guardrails, tracing · Teams using OpenAI models, or multi-agent hand-offs\n- *LangGraph* · Agents as graphs with explicit state, branches, loops and human checkpoints · Complex flows where you need control over every step"
+  },
+  {
+   "t": "text",
+   "body": "- *CrewAI* · Role-based agent \"crews\" with tasks · Quick multi-agent prototypes (4.7)\nInstall names and imports change between versions: always copy them from each project's current quick-start."
+  },
+  {
+   "t": "text",
+   "body": "*Using AI coding assistants safely*\n\nClaude Code, Cursor and similar tools can write most of this module for you. Use them like a fast junior developer you supervise:\n\n- *Commit first*: Put the project in Git and commit before asking for changes, so you can see and undo every edit.\n- *Read every diff*: Ask it to explain anything you don't understand before accepting.\n- *Keep secrets out*: Never paste keys or real customer data into prompts. Keep `.env` out of the repository.\n- *Make it prove it*: Ask for small tests (unknown product, tool error, turn limit) and run them yourself.\n- *Approve commands*: Read terminal commands before letting a coding agent run them, especially anything that installs, deletes or deploys."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Claude Agent SDK [Full Workshop]_ (AI Engineer (Anthropic speaker)).\nLook for: Watch the opening on the agent loop and built-in tools; skip the deep dives.",
+   "media": "walk:4.8",
+   "youtube": "https://www.youtube.com/watch?v=TqC1qOfiVcQ",
+   "app": "https://automancy.cc/learn#m-4-8"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: a terminal agent with two tools*\n\n*The goal.* A Python agent, run from the terminal, that answers price and order-status questions using two tools, recovers from tool errors, and never loops more than six turns. Sample data lives in the file for now; Mission Silver connects it to the real sheet or your n8n workflows."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Set up the project*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Set up the project): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-8"
+  },
+  {
+   "t": "text",
+   "body": "Create an API key in the Claude Console, set a monthly spend limit there first, and keep the key out of the code."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Write agent.py*\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Write agent.py. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-8"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Run it, and read the trace*\n\n_(Code on screen in the app.)_\n\n(Your wording will differ; the tool calls and facts should match.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Prove the safety nets*\n\n- *Tool error:* temporarily add `raise ConnectionError(\"price sheet unavailable\")` at the top of `get_price`. Ask for a price: the agent apologises; the program keeps running.\n- *Unknown product:* \"Do you have yam?\" The tool returns `found: false` with suggestions, and the agent asks rather than inventing.\n- *Turn limit:* set `max_turns=1` and ask a two-part question. You get the polite fallback, not an endless loop.\n\n- *~60* lines for a complete agent loop\n- *2* tools, same design rules as n8n\n- *0* crashes when a tool fails\n\n*Nodo's bridge:* your tools don't have to be Python. A tool function can call an n8n webhook with `requests.post(…)` and return its JSON. Then the client's app gets the agent, and your tested n8n workflows still do the real work."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Writing the loop yourself shows exactly what every framework hides.\n- Tools are small functions with clear descriptions and schemas.\n- Errors go back to the model as messages, so the agent recovers.\n- A turn limit guarantees the loop ends.\n- The key lives in the environment, never in the code.\n\n*Common mistakes to avoid*\n\n- Not appending the assistant's tool request before sending results (the API rejects the mismatch).\n- Returning results without the matching `tool_use_id`.\n- No try/except around tools.\n- No turn limit.\n- Hard-coding the API key and pushing it to GitHub."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Code gives me new hiding places. Five bugs.\n\n*A:* When the price sheet is briefly down, the script crashes with a traceback and the app shows an error page.\n*B:* The API returns an error saying the tool_result doesn't match a tool_use in the previous message.\n*C:* The code ran fine on Tolu's laptop. On the server: \"authentication error\".\n*D:* An API key appears in the project's public GitHub history.\n*E:* A confusing question made the script call tools 40 times and run up a bill."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no try/except around the tool call. Catch the error and return it as a tool_result with `is_error: True`.\n*B:* the assistant message containing the tool_use wasn't appended to `messages` before the results (or the IDs don't match). Append `resp.content` unchanged, then reply with the same `tool_use_id`.\n*C:* `ANTHROPIC_API_KEY` isn't set on the server. Set it in the server's environment or secret manager, not in the code.\n*D:* the key was hard-coded or a `.env` file was committed. Revoke the key in the Console immediately, create a new one, remove it from the repo, and add `.env` to `.gitignore`.\n*E:* no turn limit. Cap the loop (`max_turns`) and set a spend limit in the Console."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Run an official quick-start",
+   "body": "- Follow the current quick-start of one framework: the Claude Agent SDK, or the OpenAI Agents SDK (with your own API key and a spend limit).\n- Run its example, then change one thing: the instructions, or a new simple tool.\n\n*Done when:*\n- It runs, and you can point to where the framework hides the loop you wrote by hand in this module."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): A third tool, connected to real data",
+   "body": "- Add `check_delivery_date(date, area)` to agent.py.\n- Replace one sample-data tool with a call to your n8n webhook or sheet (using `requests`), with a timeout and error handling.\n- Write three small tests: normal, unknown input, tool failure.\n\n*Done when:*\n- All three tests pass, and switching off n8n produces a polite reply instead of a crash."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Port your n8n agent to code, and compare",
+   "body": "- Take your best n8n agent from this track and rebuild it in code (your own loop or a framework), with the same tools and instructions.\n- Run the same 10-question test set through both. Compare accuracy, speed, cost, and how long each took to build and change.\n- Write a one-paragraph recommendation: when you'd use n8n and when you'd use code for a client.\n\n*Done when:*\n- Both versions pass the same tests, and your recommendation is backed by your own numbers."
+  },
+  {
+   "t": "quiz",
+   "q": "What does `stop_reason: \"tool_use\"` mean?",
+   "options": [
+    "The model finished its answer",
+    "The model wants your code to run a tool and send back the result",
+    "The API key is wrong",
+    "The tool crashed"
+   ],
+   "answer": 1,
+   "why": "Run the requested tool(s), append a tool_result, and call the model again."
+  },
+  {
+   "t": "quiz",
+   "q": "How should a tool error be handled?",
+   "options": [
+    "Let the program crash so you notice",
+    "Ignore it and send nothing",
+    "Send it back as a tool_result with is_error, so the model can respond",
+    "Retry forever"
+   ],
+   "answer": 2,
+   "why": "Errors become information the agent can work with."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should the API key live?",
+   "options": [
+    "In an environment variable or secret manager",
+    "In agent.py",
+    "In the system prompt",
+    "In the README"
+   ],
+   "answer": 0,
+   "why": "Never in code or repositories. And set a spend limit."
+  },
+  {
+   "t": "quiz",
+   "q": "What does a turn limit (max_turns) protect against?",
+   "options": [
+    "Slow internet",
+    "Wrong prices",
+    "Typos",
+    "Endless tool loops and runaway costs"
+   ],
+   "answer": 3,
+   "why": "The same idea as Max Iterations in n8n."
+  },
+  {
+   "t": "quiz",
+   "q": "An AI coding assistant offers a big change to agent.py. Best practice?",
+   "options": [
+    "Accept it all; it's probably right",
+    "Commit first, read the diff, ask about anything unclear, then test",
+    "Paste your API key so it can test",
+    "Reject all AI help"
+   ],
+   "answer": 1,
+   "why": "Supervise it like a fast junior developer: reviewable, reversible, tested."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. An agent in code is a loop over a growing messages list.\n2. Tool request → run → tool_result with the same ID → call again.\n3. Errors go back to the model as results, never as crashes.\n4. Cap the turns; set a spend limit.\n5. Keys in the environment, never in code or Git.\n6. Frameworks hide the loop; choose them for what they add.\n7. AI coding assistants: commit, read, test, and keep secrets out."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.8 complete!* _Code-First Agents_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.9, _Evals, Observability & Cost_."
+  }
+ ]
+}

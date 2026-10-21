@@ -1,0 +1,210 @@
+{
+ "id": "3.4",
+ "title": "HTTP Request Mastery",
+ "track": 3,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.4 · HTTP Request Mastery*\n\n_≈ 2 hours · with Miracle_\n\nEvery app has an API, but not every app has an n8n node. The HTTP Request node is your universal key. This module covers the four things that separate a demo from a dependable integration: authentication, pagination, rate limits and retries, and turning API documentation into a working request in seconds.\n\n*Your problem:* Every API is a little different, and pagination and rate limits catch you out.\n*The plan:* Master the HTTP Request node: auth, pagination, batching and limits.\n*After this lesson:* You can connect n8n to any API properly."
+  },
+  {
+   "t": "text",
+   "body": "*Page 1 of 8*\n\n*Thursday:* Agro Depot, Harvest Lane's main supplier, publishes its daily price list as an API. No n8n node exists for it.\n\n*The catch:* The API returns 50 products at a time. There are 400. One request isn't enough.\n\n*Attempt 1:* Tolu fires all eight requests at once. The supplier allows two per second. Request three bounces.\n\n*Nodo:* \"One node, four settings: who you are, which page, how fast, and what to do when it says no.\""
+  },
+  {
+   "t": "text",
+   "body": "*Authentication: proving who you are*\n\nIn the HTTP Request node, set *Authentication* to either a *predefined credential type* (reuse a credential n8n already knows, such as Google or Slack, for an endpoint its node doesn't cover) or a *generic credential type*:\n\n_The API docs say… · Use generic type · What you fill in_\n- \"Send `Authorization: Bearer YOUR_KEY`\" · Header Auth · Name `Authorization`, value `Bearer sk_live_…`\n- \"Send header `x-api-key`\" · Header Auth · Name `x-api-key`, value: the key\n- \"Add `?api_key=…` to the URL\" · Query Auth · Name `api_key`, value: the key\n- \"Username and password\" · Basic Auth · User and password\n- \"Register an app, users log in, you get a token\" · OAuth2 API · Authorization URL, Access Token URL, Client ID, Client Secret, Scope. Copy n8n's redirect URL into the app's settings."
+  },
+  {
+   "t": "text",
+   "body": "*Nodo:* If you can see a key in a URL, a header field or a body, it's in the wrong place. Credentials are encrypted, reusable and left out of exports. And with OAuth2, n8n refreshes expiring tokens for you."
+  },
+  {
+   "t": "text",
+   "body": "*Pagination: getting every page*\n\nAPIs return big lists in pages. Read the docs to find which of three styles the API uses:\n\n- *Page number*: `?page=1&per_page=50`, then `page=2`… Usually starts at *1*.\n- *Offset / skip*: `?limit=50&skip=0`, then `skip=50`, `skip=100`… Starts at *0*.\n- *Next URL or cursor*: The response includes the next page's address or a cursor token: `\"next\": \"https://…?cursor=abc\"`. You follow it until it's empty.\n\nThe HTTP Request node does this for you under *Options → Pagination*:"
+  },
+  {
+   "t": "text",
+   "body": "- *Mode*: _Update a Parameter in Each Request_ (page number or offset) or _Response Contains Next URL_.\n- *$pageCount*: How many pages have been fetched so far, *starting at 0*. Page numbers: `{{ $pageCount + 1 }}`. Offsets: `{{ $pageCount * 50 }}`.\n- *$response*: The last response, e.g. `{{ $response.body.next }}` for next-URL APIs.\n- *Pagination complete when*: The response is empty, a specific status code arrives, or your own expression is true, such as `{{ $response.body.products.length < 50 }}`.\n- *Safety settings*: _Limit Pages Fetched_ (a maximum, so a bug can't loop forever) and _Interval Between Requests_ in milliseconds."
+  },
+  {
+   "t": "text",
+   "body": "*Rate limits, 429s and retries*\n\nAPIs limit how fast you can call them. Go over and they answer `429 Too Many Requests`, often with a `Retry-After` header saying how long to wait. Other temporary failures, such as `500`, `502`, `503` and timeouts, deserve a retry too. A `400` or `401` won't get better if you repeat it.\n\n- *Slow down: pagination*: Set _Interval Between Requests_, e.g. 500 ms for \"2 requests per second\".\n- *Slow down: many items*: When the node runs once per item (100 customers → 100 calls), use _Options → Batching_: items per batch and batch interval.\n- *Retry*: In the node's *Settings*: _Retry On Fail_, _Max Tries_ and _Wait Between Tries_.\n- *See the limits*: _Options → Response → Include Response Headers and Status_ shows headers like `Retry-After` or `X-RateLimit-Remaining`. _Never Error_ lets you handle error responses yourself with an IF."
+  },
+  {
+   "t": "text",
+   "body": "*Try it.* The supplier has 400 products, 50 per page, and allows 2 requests per second. The settings below are broken in three ways. Fix them until you get every product exactly once."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Rate limits, 429s and retries. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-4"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Stuck? The three fixes",
+   "answer": "1. *Speed:* set the interval to 500 ms (2 per second), or turn on Retry On Fail. Do both in production.\n2. *Start:* page numbers start at 1, but `$pageCount` starts at 0. Use `{{ $pageCount + 1 }}`, or switch to the offset style with `{{ $pageCount * 50 }}`.\n3. *Stop:* never hard-code the page count. \"Response is empty\" or \"fewer than 50 products\" both work and adapt when the list grows."
+  },
+  {
+   "t": "text",
+   "body": "*Import from cURL*\n\nMost API docs show examples as *cURL* commands. Read one like this:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Import from cURL): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-4"
+  },
+  {
+   "t": "text",
+   "body": "In the HTTP Request node, click *Import cURL*, paste, and n8n fills in the method, URL, query, headers and body. Then do the two things import can't do for you:\n\n- *Move secrets into a credential*: Delete the `Authorization` header that came in with the example, and select a Header Auth credential instead.\n- *Replace sample values with expressions*: `skip=0` becomes pagination; `customer_id=123` becomes `{{ $json.customer_id }}`."
+  },
+  {
+   "t": "text",
+   "body": "*From response to rows*\n\nWith pagination on, the HTTP Request node outputs *one item per page*, each holding a list (`products: [50 items]`). Before saving, turn the lists into one item per product:\n\n- *Split Out*: Takes a list field (`products`) and outputs one item per entry. 8 pages × 50 → 400 items.\n- *Edit Fields*: Keep and rename only the fields you need, add `fetched_at`.\n- *Append or Update Row*: In Google Sheets, match on a unique column (`sku`), so running again updates prices instead of duplicating rows."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Mastering HTTP Requests in n8n (Step-by-Step)_.\nLook for: Authentication, cURL import and pagination options.",
+   "media": "walk:3.4",
+   "youtube": "https://www.youtube.com/watch?v=DC-DgmSGBBU",
+   "app": "https://automancy.cc/learn#m-3-4"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Paste an n8n template, with Emeka.\n\nThat's every template in this course: paste, pick credentials, replace the capitals, test, publish.",
+   "media": "clip:3.4:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-3-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the whole price list, every morning*\n\n*The goal.* Every morning at 07:00, pull the supplier's full product list, all pages, and update a *Supplier prices* sheet, one row per product. Agro Depot is fictional, so we practise on *DummyJSON*, a free public test API with about 200 products that uses offset pagination (`limit` and `skip`) and needs no key. The steps are the same for a real supplier."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Test by hand first*\n\nIn Hoppscotch (0.3), send `GET https://dummyjson.com/products?limit=50&skip=0&select=title,price,stock,category`. Read the response: `products` (a list of 50), `total`, `skip`, `limit`. Change `skip` to 50 and confirm the first product changes. Now you know the style (offset), where the list lives and how to tell when you've finished."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Import the request*\n\nNew workflow *HL · Supplier prices → Sheet*. Add a *Schedule Trigger* (daily, 07:00), then *HTTP Request* → *Import cURL*:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Import the request): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-4"
+  },
+  {
+   "t": "text",
+   "body": "n8n fills in GET, the URL and four query parameters. Delete the `skip` parameter from the list: pagination will manage it. Execute: one item, 50 products."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Turn on pagination, with brakes*\n\n*Options → Pagination*:\n\n_(Code on screen in the app.)_\n\nExecute: about four items come out, one per page; the last page holds fewer than 50 products, which ends the loop. In the node's *Settings*, turn on *Retry On Fail* (Max Tries 3, Wait Between Tries 2,000 ms)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Split, shape and save*\n\n1. *Split Out* on field `products` → one item per product (about 200).\n2. *Edit Fields*: `sku` = `{{ $json.id }}`, `name` = `{{ $json.title }}`, `price`, `stock`, `category`, and `fetched_at` = `{{ $now.toISO() }}`. Turn off Include Other Input Fields.\n3. *Google Sheets · Append or Update Row* on *Supplier prices*, column to match on: `sku`.\n\nRun it twice. The second run updates the same rows; the row count doesn't change.\n\n- *≈4* API requests, 500 ms apart\n- *≈200* rows, each product once\n- *1* execution a day on n8n Cloud\n\n*Sage's preview:* once the price list lives in a sheet, an AI step can answer \"which items rose more than 10% since last week?\" in plain language. Track 4 builds that. Clean, complete data comes first."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Testing by hand first tells you the pagination style and where the data lives.\n- The stop rule adapts when the supplier adds products; nothing is hard-coded.\n- The interval, page limit and retries protect both you and the supplier.\n- Append or Update on a unique key makes the workflow safe to rerun.\n\n*Common mistakes to avoid*\n\n- Starting page numbers at 0.\n- Hard-coding \"fetch 8 pages\".\n- Retrying 401s and 400s, which will never succeed.\n- Leaving the example's `Authorization` header in place after import.\n- Saving one row per page instead of per product."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Six price-list mornings, six mistakes. Diagnose each one.\n\n*A:* Pages 1 and 2 arrive, then the node fails with `429 Too Many Requests`. The sheet isn't updated at all.\n*B:* Using Append Row, one run adds 450 rows for 400 products: the first 50 products appear twice.\n*C:* Since the supplier added 80 products, only the old 400 ever show up.\n*D:* A request imported from the docs returns `401 Unauthorized`, though the credential is set up correctly.\n*E:* The sheet has 8 rows, each with a huge block of text in one cell.\n*F:* Every morning the sheet grows by another 400 rows."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* requests went out faster than 2 per second. Set Interval Between Requests (500 ms) and turn on Retry On Fail.\n*B:* a page-number API with `{{ $pageCount }}`: the API treated page 0 as page 1, so page 1 came twice. Use `{{ $pageCount + 1 }}`. (If the page count were also hard-coded at 8, the last page would go missing too.)\n*C:* the stop rule (or Limit Pages Fetched) is hard-coded at 8 pages. Stop on an empty or short page, and keep the page limit well above the real count.\n*D:* the imported example kept its own `Authorization: Bearer YOUR_TOKEN` header, which overrides the credential. Delete it.\n*E:* one item per page went straight to the sheet. Add Split Out on `products`.\n*F:* the Sheets node uses Append Row. Use Append or Update Row, matching on `sku`."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): From docs to node in five minutes",
+   "body": "- Pick a public API with cURL examples in its docs (Paystack's \"List Banks\" endpoint, or DummyJSON's users).\n- Import the cURL into n8n, move any key into a credential and delete the pasted header.\n- Run it, and replace one hard-coded value with an expression.\n\n*Done when:*\n- The request works, no secret is visible anywhere in the node, and you can name every part of the original cURL."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Two pagination styles",
+   "body": "- Build the solved workflow on DummyJSON (offset style).\n- Then paginate the Rick and Morty API (`https://rickandmortyapi.com/api/character`), which returns `info.next`: use \"Response Contains Next URL\" with `{{ $response.body.info.next }}`, and stop when it's empty.\n- Split Out the results and count them.\n\n*Done when:*\n- Both counts match the API's own `total` / `info.count`, with no duplicates (check with a Remove Duplicates node or a sheet formula)."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): OAuth2 without a node",
+   "body": "- Choose a service that offers OAuth2 and has an endpoint n8n's built-in node doesn't cover (or no n8n node at all).\n- Register an app in its developer console, create a Generic OAuth2 credential in n8n (paste n8n's redirect URL into the app), and connect.\n- Call one endpoint, and make the workflow cope with a 429: Include Response Headers and Status, then use an IF on the status code.\n\n*Done when:*\n- The token refreshes on its own (it still works the next day), and you've written a half-page \"how to connect\" guide another learner could follow."
+  },
+  {
+   "t": "quiz",
+   "q": "Docs say \"send `Authorization: Bearer <key>`\". Where does the key go in n8n?",
+   "options": [
+    "In the URL",
+    "In a header field of the node",
+    "In a Header Auth credential",
+    "In the workflow description"
+   ],
+   "answer": 2,
+   "why": "Credentials are encrypted, reusable and left out of exports."
+  },
+  {
+   "t": "quiz",
+   "q": "A page-number API starts at page 1. Which value is right?",
+   "options": [
+    "{{ $pageCount }}",
+    "{{ $pageCount + 1 }}",
+    "{{ $pageCount * 50 }}",
+    "{{ 1 }}"
+   ],
+   "answer": 1,
+   "why": "$pageCount starts at 0, so add 1 for APIs that number pages from 1."
+  },
+  {
+   "t": "quiz",
+   "q": "Which errors are worth retrying automatically?",
+   "options": [
+    "429 and 503",
+    "401 and 403",
+    "400 and 404",
+    "All of them, forever"
+   ],
+   "answer": 0,
+   "why": "429 (slow down) and 5xx (server trouble) are often temporary. 4xx errors like 401 or 400 need a fix, not a retry."
+  },
+  {
+   "t": "quiz",
+   "q": "With pagination on, the node outputs 8 items. What's in each?",
+   "options": [
+    "One product",
+    "A page number only",
+    "An error message",
+    "One page's response, with its list of products"
+   ],
+   "answer": 3,
+   "why": "One item per page; use Split Out to get one item per product."
+  },
+  {
+   "t": "quiz",
+   "q": "The workflow runs daily. How do you stop the sheet filling with duplicates?",
+   "options": [
+    "Delete the sheet each morning",
+    "Run it only once a week",
+    "Append or Update Row, matching on a unique sku",
+    "Use Append Row twice"
+   ],
+   "answer": 2,
+   "why": "Matching on a unique key turns a rerun into an update: the workflow is safe to repeat."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. No node? The HTTP Request node plus the API docs is enough.\n2. Keys live in credentials: Header, Query, Basic or OAuth2.\n3. Learn the pagination style by hand first; `$pageCount` starts at 0.\n4. Stop on an empty or short page, with a page limit as a safety net.\n5. Slow down with an interval or batching; retry 429 and 5xx, fix 4xx.\n6. Import cURL, then move secrets out and expressions in.\n7. Split Out, then Append or Update on a unique key."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.4 complete!* _HTTP Request Mastery_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.5, _The Code Node_."
+  }
+ ]
+}

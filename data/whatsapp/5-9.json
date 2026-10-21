@@ -1,0 +1,224 @@
+{
+ "id": "5.9",
+ "title": "CRM Automation and Integration",
+ "track": 5,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.9 · CRM Automation and Integration*\n\n_≈ 2.5 hours · with Miracle_\n\nTolu now has a clean CRM. But nobody wants to type every comment, email and WhatsApp lead into it, and a CRM that relies on typing falls behind within a week. In this lesson your automations do the typing: leads from Growth Desk arrive in the CRM with their company, source and consent; a score decides who Tolu should call first; stage changes create the right tasks; stuck deals get flagged; Monday's pipeline report writes itself, and a CRM Ops Agent checks the CRM's health every week and proposes fixes for Tolu to approve. You'll do it on the free plans, where the CRM's own automation is limited, by putting the logic in n8n."
+  },
+  {
+   "t": "text",
+   "body": "*Your problem:* Nobody has time to type every lead into the CRM, so it falls behind.\n*The plan:* Connect your channels to the CRM with n8n or Make, and add an agent that checks the CRM weekly and proposes fixes you approve.\n*After this lesson:* A CRM that stays current by itself and tells you who to call first."
+  },
+  {
+   "t": "text",
+   "body": "*The CRM that fell behind*\n\n*Two weeks later:* Tolu updated the CRM every evening for four days. Then a busy week came.\n\n*Nodo:* \"People shouldn't type what a machine already knows. Every lead your agents capture can land in the CRM by itself.\"\n\n*Glitch:* \"When a deal changes, n8n updates it. When n8n updates it, the deal changes. I've made a perpetual motion machine!\"\n\n*Tolu:* \"I open my phone at 8 a.m. and it tells me who to call and which deal is going cold. That, I'll use.\""
+  },
+  {
+   "t": "text",
+   "body": "*Where the automation lives*\n\nCRMs have their own automation, but on free plans it's thin. Put each job where it fits the client's plan and skills.\n\n_Job · Inside the CRM · In n8n or Make_\n- Create a task when a deal reaches a stage · Zoho Free workflow rules; HubSpot from Starter · Any plan, via the API\n- *Lead scoring* · HubSpot: Professional or Enterprise only · Any plan: score in code, write to a property\n- Bring in leads from WhatsApp, Instagram, outreach · Only from the CRM's own forms and chat · Yes: every channel from 5.1–5.7\n- *AI summaries, Telegram alerts, payments* · Limited or paid · Yes"
+  },
+  {
+   "t": "text",
+   "body": "- *Rule of thumb*: If the client will pay for a higher CRM plan and has an admin, use the CRM's workflows: they're easier for the client to maintain. Otherwise run logic in n8n, and document it so it isn't a mystery box.\n- *Access*: HubSpot: create a _private app_ (free plans included) and use its access token, with only the scopes you need. Zoho and the Make HubSpot app use OAuth; in Make, a HubSpot Super Admin must approve the app first."
+  },
+  {
+   "t": "text",
+   "body": "*Syncing without duplicates or loops*\n\n- *Upsert, don't create*: \"Create or update\" by a unique key: email for contacts, domain for companies. n8n's HubSpot node has a _Create or Update_ contact operation; the Zoho CRM node has _Upsert_.\n- *Associate every time*: After upserting, link contact ↔ company ↔ deal. A deal with no company is invisible in most reports.\n- *Remember the CRM's ID*: Store `crm_contact_id` and `crm_deal_id` in your Supabase tables (5.7), so later updates go straight to the right record.\n- *No loops*: When the CRM triggers n8n and n8n writes back, the write can trigger n8n again. Only react to the fields you care about, ignore changes made by your own integration user, and never write a value that's already there.\n- *Rate limits*: HubSpot's free plan allows about 100 API requests every 10 seconds per private app. For big imports, use batch endpoints or slow the loop (n8n's batching settings)."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Syncing without duplicates or loops): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "text",
+   "body": "*Lead scoring lab: calibrate against what really happened*\n\nA score is only useful if high scores really buy. Here are eight leads from last quarter and whether each became a customer. Set the points and the threshold so Tolu's \"call first\" list catches all four buyers, without sending her any of the others."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Lead scoring lab: calibrate against what really happened. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "text",
+   "body": "*Echo:* Email opens feel like interest, but Apple Mail and some security tools \"open\" emails automatically. Weight what people _do_ (ask for prices, book a tasting) above what software reports."
+  },
+  {
+   "t": "text",
+   "body": "*Follow-ups that happen by themselves*\n\n_When · Automation_\n- *Score crosses the threshold* · Lifecycle → Sales qualified lead; task \"Call today\" for the owner; Telegram ping\n- *Deal moves to Tasting booked* · Task the day before; WhatsApp reminder to the customer (template, with consent)\n- *Proposal sent, no reply in 3 days* · Task \"Follow up\" for the owner; AI drafts a short follow-up for approval\n- *Deal won* · Lifecycle → Customer; onboarding flow (6.2); welcome series (5.6)\n- *Deal lost* · Lost reason required; nurture list if they consented; task in 6 months if \"current supplier\"\n- *No activity for 7 days on an open deal* · Morning alert: \"going cold\" list\n\n- *Log conversations, don't copy them*: Write a short note on the contact (\"WhatsApp, 3 Oct: asked for Saturday delivery; answered\") with a link to the full conversation in Supabase. Don't paste whole chats or payment details into the CRM."
+  },
+  {
+   "t": "text",
+   "body": "*Reports people trust, and AI that stays honest*\n\n- *Weighted pipeline*: Each open deal's value × its stage's win chance, added up. A forecast, not a promise; compare it with what actually closed each month and adjust the win chances.\n- *Monday report*: New deals by source, value by stage, stuck deals, won and lost with reasons, and the weighted forecast. Sent to Telegram; the full dashboard stays in the CRM.\n- *AI deal summaries*: An AI can summarise a deal's notes into \"where we are, what they want, next step\". It must quote only what's in the notes, say \"not recorded\" when something's missing, and never change a stage by itself: a person moves deals."
+  },
+  {
+   "t": "text",
+   "body": "*The CRM Ops Agent: it proposes, a person approves*\n\nWorkflows follow fixed rules. An agent can look at the whole CRM, notice what's wrong and suggest what to do about it. Every Monday, Harvest Lane's CRM Ops Agent runs a health check:\n\n- *Data*: Duplicate companies and contacts, empty required fields, values outside the dropdowns (\"IG\", \"insta\").\n- *Pipeline*: Deals stuck past their stage's time limit, deals with no owner or next step, stages nobody uses.\n- *Score*: Did last month's buyers score above the threshold? If not, the score needs re-calibrating (Card 3).\n- *Adoption*: Who logged activity this week, and whose deals have none.\n\nIt then writes a short report and a list of *proposals*. It can read anything, but it can't change anything. Changes happen only when Tolu approves, and then a plain workflow (not the agent) carries them out from a fixed list of allowed actions."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The CRM Ops Agent: it proposes, a person approves): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "text",
+   "body": "*Approval lab.* This Monday's proposals. For each one, decide what Tolu should do."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The CRM Ops Agent: it proposes, a person approves. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to Connect HubSpot CRM to n8n: Step-by-Step Automation Tutorial_.\nLook for: Creating the credential and a create-or-update contact. Use a private app token, never a pasted key in a node.",
+   "media": "walk:5.9",
+   "youtube": "https://www.youtube.com/watch?v=bwWKDsxSyv8",
+   "app": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Growth Desk feeds the CRM*\n\n*The goal.* Every business lead captured in 5.2–5.7 lands in HubSpot with company, contact, deal, source and consent; it's scored; Tolu gets a \"call first\" list and follow-up tasks; stuck deals are flagged; and the Monday pipeline report arrives on Telegram. Free HubSpot plan; all logic in n8n."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Connect safely*\n\nIn HubSpot: _Settings → Integrations → Private apps_ (HubSpot may list these under legacy apps). Create \"n8n Growth Desk\" with only contact, company and deal read/write scopes. Paste the token into an n8n HubSpot credential, never into a node or a sheet. Use a test portal or a few test records first."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · One sub-workflow: CRM · Upsert lead*\n\nCalled by every engine when a business lead appears (outreach reply, Instagram comment, WhatsApp, email). Input: name, email, phone, company, domain, business_type, lead_source, consent, intent."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (One sub-workflow: CRM · Upsert lead): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-9"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Score in code, write it back*\n\n_(Code on screen in the app.)_\n\nWrite `harvest_score` to a custom contact property (one of the 2 spare from 5.8). If `ready` and the lifecycle stage is below Sales qualified lead, move it up and create a \"Call today\" task for the owner."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · React to stage changes, without looping*\n\nA *HubSpot Trigger* on \"deal property changed: dealstage\" (or a 15-minute schedule that searches recently modified deals, if the trigger isn't available on your setup). A Switch on the new stage creates the Card 4 tasks. The workflow only _creates tasks and notes_; it never changes the deal stage, so it can't trigger itself."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Morning list and Monday report*\n\nEvery day at 7:30: search open deals; \"call first\" = ready contacts without a call logged; \"going cold\" = no activity for 7 days. One Telegram message to Tolu. Every Monday at 8:00: new deals by source, value by stage, won and lost with reasons, weighted forecast, and the three oldest stuck deals with an AI one-line summary from their notes.\n\n- *0* leads typed by hand\n- *1* morning list for Tolu\n- *0* changes without Tolu's approval"
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · The CRM Ops Agent (every Monday, 7:00)*\n\nAn n8n *AI Agent* node with *read-only* tools: search companies, contacts and deals; get the pipeline and properties; get last quarter's won and lost deals. Plus one write tool, `propose_change`, which only adds a row to a Supabase `crm_proposals` table:\n\n_(Code on screen in the app.)_\n\nThe system message: \"Find problems in data, pipeline, score and adoption. Propose only actions on the allowed list, each with evidence. Never propose deleting, changing a stage, messaging customers or changing permissions.\" The agent ends with a five-line health report."
+  },
+  {
+   "t": "text",
+   "body": "A Telegram message shows each proposal with *Approve* and *Reject* buttons (Wait node, as in 4.5). A separate *executor* workflow takes approved rows, checks the action is on the allow-list _in code_, saves the before-values, calls HubSpot (the n8n HubSpot node, or an HTTP Request node for merges), and logs the result. Next Monday, the agent's report starts with what last week's changes achieved."
+  },
+  {
+   "t": "text",
+   "body": "*Step 7 · Zoho or Make instead?*\n\nZoho: the n8n *Zoho CRM* node upserts leads; convert to contact, account and deal when qualified. Zoho Free's workflow rules can create the stage-change tasks, so n8n only does scoring, channels and reports. Make: the *HubSpot CRM* and *Zoho CRM* apps have the same building blocks (watch, search, create, update)."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- One upsert sub-workflow, used by every channel.\n- Keys (email, domain) stop duplicates.\n- The score is calibrated against real outcomes.\n- Automation creates tasks; people move deals.\n- The agent proposes; code checks; a person approves.\n\n*Common mistakes to avoid*\n\n- \"Create contact\" instead of \"create or update\".\n- Deals with no company association.\n- Workflows that write back the field that triggered them.\n- Scores that reward email opens.\n- Whole chats and payment details pasted into notes.\n- Giving the agent write access to the CRM."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* The CRM is fully automatic now. Possibly too automatic.\n\n*A:* The workflow ran 48,000 times overnight and hit HubSpot's daily API limit.\n*B:* Every Instagram comment from the same restaurant created a new contact.\n*C:* The \"call first\" list is full of students and a Lagos hotel Harvest Lane can't deliver to.\n*D:* The AI moved a deal to \"Won\" because the customer wrote \"sounds great\".\n*E:* The HubSpot token is in a Set node, visible in every shared screenshot.\n*F:* The Ops Agent \"tidied up\" by deleting 300 old contacts, including 40 with paid orders."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* a loop: the stage-change workflow wrote to the deal, which triggered it again. React only to the field you need, ignore your integration's own changes, and never write the triggering field.\n*B:* \"create\" instead of \"create or update\", and no key. Upsert contacts by email (or phone in a custom property) and companies by domain.\n*C:* a score that rewards opens and follows, with no zone rule. Recalibrate on real outcomes and make \"outside the zone\" a knock-out rule.\n*D:* AI changing stages. AI may summarise and suggest; people move deals.\n*E:* secrets in a node. Store the token as an n8n credential, rotate it now, and limit its scopes.\n*F:* the agent had write tools. Give it read-only tools and `propose_change` only; the executor accepts approved actions from the allow-list, and deletion is never on it. Restore from HubSpot's recently deleted records quickly, while they can still be recovered."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Map the CRM automations",
+   "body": "- For the business from 5.8, list every lead source and every follow-up rule, and decide for each: inside the CRM, or in n8n/Make, and why.\n\n*Done when:*\n- Each rule has a trigger, an action, an owner, and a note on the plan it needs."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Upsert, score and follow up",
+   "body": "- Build the CRM · Upsert lead sub-workflow and connect at least two channels to it.\n- Add the score and one stage-change follow-up.\n- Add the CRM Ops Agent with read-only tools and Telegram approval.\n\n*Done when:*\n- The same test lead sent twice from two channels gives one contact, one company and one deal, no workflow runs more than once per change, and a rejected proposal changes nothing."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run it for a real business for a month",
+   "body": "- Connect the client's real channels to their CRM, calibrate the score on their last quarter, and send the Monday report and the Ops Agent's health check for four weeks.\n\n*Done when:*\n- Leads arrive with no typing, the client can name a deal won or saved because of a follow-up or \"going cold\" alert, and the health report shows fewer data problems in week 4 than in week 1."
+  },
+  {
+   "t": "quiz",
+   "q": "A client is on HubSpot Free and wants lead scoring. What do you do?",
+   "options": [
+    "Turn on HubSpot's lead scoring tool",
+    "Tell them it's impossible",
+    "Score in n8n and write the result to a custom property",
+    "Score by hand once a year"
+   ],
+   "answer": 2,
+   "why": "HubSpot's own lead scoring is on Professional and Enterprise. n8n can score on any plan through the API."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you stop the same restaurant becoming five contacts?",
+   "options": [
+    "Upsert by email, and companies by domain",
+    "Create a new contact each time and clean up monthly",
+    "Only accept leads by email",
+    "Turn off Instagram"
+   ],
+   "answer": 0,
+   "why": "A unique key with create-or-update keeps one record per person and company."
+  },
+  {
+   "t": "quiz",
+   "q": "A stage-change workflow is running thousands of times. The most likely cause?",
+   "options": [
+    "Too many customers",
+    "HubSpot is broken",
+    "The token expired",
+    "It writes to the deal, which triggers itself again"
+   ],
+   "answer": 3,
+   "why": "A loop. React only to the field you need and never write the field that triggered you."
+  },
+  {
+   "t": "quiz",
+   "q": "Why weight \"asked for prices\" above \"opened 3 emails\"?",
+   "options": [
+    "Emails are old-fashioned",
+    "Actions predict buying better, and some opens are automatic",
+    "HubSpot can't count opens",
+    "It doesn't matter"
+   ],
+   "answer": 1,
+   "why": "Calibrate on outcomes: what people do beats what software reports."
+  },
+  {
+   "t": "quiz",
+   "q": "What should the CRM Ops Agent be able to do?",
+   "options": [
+    "Fix anything it finds, straight away",
+    "Delete inactive contacts to keep the CRM tidy",
+    "Read everything and propose changes with evidence; a person approves, and code applies only allowed actions",
+    "Move deals to Lost when customers go quiet"
+   ],
+   "answer": 2,
+   "why": "Read-only tools plus proposals. Approval and an allow-list in code keep mistakes from becoming disasters."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. On free plans, put the logic in n8n or Make; on paid plans, consider the CRM's own workflows.\n2. Upsert by key, associate every record, store the CRM's IDs.\n3. Never write the field that triggered you.\n4. Calibrate scores against real outcomes; use knock-out rules for must-haves.\n5. Automation creates tasks and reports; people move deals.\n6. A CRM Ops Agent reads everything, proposes with evidence, and changes nothing until a person approves."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.9 complete!* _CRM Automation and Integration_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Boss 5, _Boss 5: Growth Desk_."
+  }
+ ]
+}

@@ -1,0 +1,224 @@
+{
+ "id": "3.1",
+ "title": "Setup & First Workflow",
+ "track": 3,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.1 · Setup & First Workflow*\n\n_≈ 2 hours · with Emeka_\n\nWelcome to the Forge. n8n is the most flexible of the three platforms: you can run it on your own machine, see the raw data at every step, and pay per workflow run instead of per step. Today you install it, find your way around the editor and put a real workflow live.\n\n*Your problem:* Per-task pricing limits what you can build, and you want full control.\n*The plan:* Install n8n on your own server with Docker and build your first workflow.\n*After this lesson:* You run your own automation server."
+  },
+  {
+   "t": "text",
+   "body": "*Why rent the workshop?*\n\n*Monday:* Tolu has run Harvest Lane on Zapier and Make for weeks. December volume is coming, and so are bigger bills.\n\n*Nodo:* \"Why rent the workshop when you can own it? On my machine, a workflow with 30 steps costs the same as one with 3.\"\n\n*Tuesday:* Tolu's first n8n workflow passed every test on Monday. At 06:30 on Tuesday, nothing happened.\n\n*Glitch:* \"You saved it. You tested it. You never pressed the button that tells it to run on its own.\""
+  },
+  {
+   "t": "text",
+   "body": "*n8n Cloud or self-hosted?*\n\nn8n comes two ways. *n8n Cloud*: n8n runs it for you and you pay a monthly plan. *Self-hosted Community Edition*: free, open software that you run on your own computer or a rented server. Either way n8n counts *executions*: *one execution is one complete run of a workflow, however many steps it has*."
+  },
+  {
+   "t": "text",
+   "body": "_n8n Cloud · Self-hosted (Community)_\n- *Who runs it* · n8n · You\n- *Cost* · Monthly plan with an execution allowance (as of Oct 2026, Starter is about €20 a month billed annually, a little more monthly, for 2,500 executions; the 14-day free trial gives Pro features capped at 1,000 executions) · Software free; you pay for the machine (a small server is a few dollars a month) and your time\n- *Executions* · Limited by plan · Unlimited: only your server's power limits you\n- *Updates and backups* · Done for you · Your job (Module 3.8)\n- *Connecting Google and similar apps* · Usually simpler sign-in · You often create your own OAuth app first\n- *Best for* · Getting started fast; teams without a tech person · High volume, data that must stay with you, learning how it really works"
+  },
+  {
+   "t": "text",
+   "body": "*Nodo:* In this track, learn on your own laptop with Docker: it's free and teaches you the most. A laptop sleeps, though, so anything Harvest Lane relies on will move to Cloud or a server in 3.8. Check n8n's pricing page for current plans before you quote a client."
+  },
+  {
+   "t": "text",
+   "body": "*Docker in five words*\n\nDocker runs software in a sealed box so it works the same on every computer. You only need five words:\n\n- *Image*: A packaged, read-only copy of the software: `n8nio/n8n`.\n- *Container*: A running copy of an image. You can stop, delete and recreate it.\n- *Volume*: Storage that lives outside the container. n8n keeps its database, settings and encryption key in `/home/node/.n8n`, so that folder must be on a volume.\n- *Port*: The door between your laptop and the container. `-p 5678:5678` means \"laptop port 5678 leads to n8n's port 5678\".\n- *Environment variable*: A setting passed in with `-e`, such as the timezone."
+  },
+  {
+   "t": "text",
+   "body": "*Build your start command*\n\nThis is the command from n8n's Docker guide. Change the settings and watch what the command, and the risks, become."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Build your start command. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "text",
+   "body": "Based on n8n's \"Install with Docker\" guide. Commands evolve, so check the guide if anything fails."
+  },
+  {
+   "t": "text",
+   "body": "*A tour of the editor*\n- *Canvas and nodes*: Each step is a *node*, joined by connections. A workflow starts with a *trigger node* (Schedule, Webhook, Form, an app event), followed by action and logic nodes.\n- *The node panel*: Open a node and you see three columns: *Input* (what arrived) · *Parameters* (settings) · *Output* (what it produced). Switch the data view between Schema, Table and JSON.\n- *Execute step / Execute workflow*: Run one node, or the whole workflow, right now, with test data. Nothing goes live.\n- *Executions*: The history of every run: when, success or error, and the data at each node. Your n8n version of Zap history.\n- *Fixed vs. Expression*: Every field can be fixed text or an *expression* in `{{ }}` that pulls in data, such as `{{ $json.total }}`. Drag a field from the Input panel and n8n writes the expression for you. You'll master this in 3.2."
+  },
+  {
+   "t": "text",
+   "body": "- *Save vs. Publish*: In n8n 2.x, *Save* stores your draft. *Publish* makes it the live version that runs on its own; *Unpublish* is in the ⋮ menu. (Older 1.x versions used an Active toggle instead.)"
+  },
+  {
+   "t": "text",
+   "body": "*Credentials, and the phrasebook*\n\nA *credential* is a saved login or API key that nodes use. n8n stores credentials *encrypted* in its database, using an encryption key kept in the `.n8n` folder. Lose the volume and you lose both. Two rules: never type a key directly into a node field, and never share a workflow export that contains one (exports leave credentials out, but pasted keys go along).\n\n_Zapier · Make · n8n_\n- *Zap* · Scenario · Workflow\n- *Step* · Module · Node\n- *One run's data* · Bundles · Items (3.2)\n- *Task per action* · Credit per module, per bundle · Execution per whole run (Cloud); unlimited self-hosted\n- *Zap history* · Scenario history · Executions\n- *Connected account* · Connection, keychain · Credential\n- *Turn on / publish* · Scheduling ON · Publish (2.x) · Active toggle (1.x)"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Self-Host Your Own Automation Platform with n8n + Docker_ (Techno Tim).\nLook for: Docker setup with a volume and timezone, and first login. Recorded before n8n 2.x: where it shows an Active toggle, you Publish.",
+   "media": "walk:3.1",
+   "youtube": "https://www.youtube.com/watch?v=gyn8bcOLdcA",
+   "app": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Start n8n in Docker (or a Cloud trial), with Emeka.\n\nNo Docker? Start an n8n Cloud trial instead, and check the current plan on the pricing page. Either way, you're ready for your first workflow.",
+   "media": "clip:3.1:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Create a Google Sheets credential in n8n, with Miracle.\n\nOn n8n Cloud, you just sign in with Google. Either way, do this once, and every workflow can use it.",
+   "media": "clip:3.1:1",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the morning weather log*\n\n*The goal.* Rain changes Harvest Lane's day: riders need tarpaulins, deliveries run late and leafy vegetables sell differently. Every morning at 06:30, Ibadan's weather forecast should land in a Google Sheet, with a plain-language note for the riders. Four nodes: *Schedule → HTTP Request → Edit Fields → Google Sheets*. The weather comes from *Open-Meteo*, a forecast API that needs no key and is free for non-commercial use, which covers learning. Before a business relies on it, check Open-Meteo's terms; it offers a paid plan for commercial use."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Start n8n and create the owner account*\n\nInstall Docker Desktop and open it. In a terminal, run the two commands from Card 3 with Africa/Lagos selected and the volume ticked. When the log says the editor is accessible, open `http://localhost:5678` and create the owner account. This is a local login; use a strong password anyway. _No Docker?_ Start an n8n Cloud trial instead and skip to the next step."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Add the Schedule Trigger*\n\nCreate a workflow and name it *HL · Morning weather → Sheet*. Add *Schedule Trigger*: trigger interval *Days*, days between triggers 1, hour *6am*, minute *30*. Because you set `GENERIC_TIMEZONE`, that means 06:30 in Lagos. You can also set a timezone per workflow in its settings."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Call the weather API*\n\nAdd *HTTP Request*. Method GET. URL:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Call the weather API): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "text",
+   "body": "Paste it as one line. (You can also use the *Send Query Parameters* option to enter each one separately; it's tidier.) Click *Execute step* and switch the Output view to *JSON*. Something like this comes back:"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Call the weather API. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-1"
+  },
+  {
+   "t": "text",
+   "body": "Notice that each daily value is a *list*, even with one day of forecast. You need `[0]` to get the number itself. (0.3's JSON skills, paying off.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Shape the data with Edit Fields*\n\nAdd *Edit Fields (Set)*. Mode: manual mapping. Add five fields. Switch each value to *Expression*:\n\n_(Code on screen in the app.)_\n\nSet the type of the number fields to Number. Execute the step: the Output shows one tidy item with five fields, which is exactly the row you want."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Connect Google and append the row*\n\nCreate a sheet *HL Weather* with headers `date · max_temp_c · rain_chance · rain_mm · advice`. Add *Google Sheets · Append Row*. Create a credential:\n\n- *On n8n Cloud:* sign in with Google in the credential window.\n- *Self-hosted:* follow n8n's Google credential guide. You create an OAuth client in Google Cloud Console and paste in the *OAuth Redirect URL* that the n8n credential window shows (on your laptop it starts with `http://localhost:5678`). It takes about 15 minutes the first time, once per n8n install.\n\nChoose the spreadsheet and sheet, and set mapping to *Map Automatically*: because your field names match the headers exactly, n8n fills each column for you."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Test the whole thing, then publish*\n\nClick *Execute workflow*. A row appears in the sheet. Open *Executions* to see that test run listed. Now *Save*, then *Publish*. Tomorrow at 06:30, check Executions for a run that you didn't start, and a new row.\n\n- *30* n8n executions a month (1 a day)\n- *≈90* Zapier tasks for the same job (3 actions × 30)\n- *≈120* Make credits (4 modules × 30)\n\n*Nodo:* *The laptop catch:* on your own machine, the schedule only fires if Docker is running and the laptop is awake at 06:30. That's fine for learning. Harvest Lane's real workflows move to an always-on server or Cloud in 3.8."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The volume and timezone are set before the first workflow, not fixed afterwards.\n- Execute step shows the real JSON, so the paths are read, not guessed.\n- Edit Fields shapes one clean item, so the Sheets node maps itself.\n- Publishing is a deliberate, final step, and Executions proves it ran.\n\n*Common mistakes to avoid*\n\n- Running Docker without a volume, then losing everything on restart.\n- Leaving the timezone at its default.\n- Typing `{{ }}` into a field left in Fixed mode.\n- Testing successfully and never publishing.\n- Relying on a sleeping laptop for a business-critical schedule."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Six sabotaged mornings in the Forge. Name the cause of each.\n\n*A:* Every test passed on Monday. On Tuesday morning, Executions shows no runs at all.\n*B:* The weather row arrives every day at 11:30 instead of 06:30.\n*C:* After a laptop restart, n8n asks Tolu to create an owner account again. Every workflow is gone.\n*D:* The sheet's advice column literally says `{{ $json.daily.precipitation_probability_max[0] >= 60? … }}`.\n*E:* Connecting Google fails with `redirect_uri_mismatch`.\n*F:* Max temperature shows `[30.4]`, in brackets, and Sheets treats it as text."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the workflow was saved but never published. Only the published version runs on its own.\n*B:* no timezone was set, so n8n used its default, America/New_York. Set `GENERIC_TIMEZONE` (and `TZ`), or set the workflow's timezone in its settings.\n*C:* the container ran with `--rm` and no volume, so n8n's data was deleted with the container. Always mount `n8n_data` to `/home/node/.n8n`.\n*D:* the field is in Fixed mode, so n8n wrote the text exactly as typed. Switch it to Expression.\n*E:* the redirect URL saved in Google Cloud Console doesn't exactly match the OAuth Redirect URL shown in n8n's credential window. Copy it again, character for character.\n*F:* the expression points at the list, `temperature_2m_max`, not the first value, `temperature_2m_max[0]`."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Your own Forge, with a live workflow",
+   "body": "- Install n8n with Docker using a volume and your timezone (or open a Cloud trial).\n- Build the solved workflow and publish it.\n- Stop and restart the container, then confirm the workflow and credential are still there.\n\n*Done when:*\n- Executions shows at least one run that you didn't start, and the sheet has that morning's row."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Rebuild Boss 1's intake in n8n",
+   "body": "- Use n8n's *Form Trigger* to recreate the lead form from Boss 1 (name, phone, business type, message).\n- Add Edit Fields to clean the phone number into +234 format and stamp a `received_at` time.\n- Append each submission to a copy of the Leads sheet. Test with five leads, including one with a messy phone number.\n\n*Done when:*\n- All five leads land correctly in the sheet, and you've written down how many Zapier tasks the same five would have used versus n8n executions."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Read someone else's workflow",
+   "body": "- From n8n's workflow template library, import a template with at least six nodes that doesn't need paid services.\n- Run it with test data. For every node, write one sentence: what goes in, what it does and what comes out.\n- Find one thing you'd change for Harvest Lane, such as a missing error path, a hard-coded value or a timezone, and change it.\n\n*Done when:*\n- Someone who has never seen n8n can follow the workflow from your node-by-node notes, and your change is tested."
+  },
+  {
+   "t": "quiz",
+   "q": "On n8n Cloud, a workflow with 12 nodes runs once. How many executions is that?",
+   "options": [
+    "12",
+    "1",
+    "11",
+    "It depends on the plan"
+   ],
+   "answer": 1,
+   "why": "One execution is one complete workflow run, however many nodes it has."
+  },
+  {
+   "t": "quiz",
+   "q": "What does the volume in the Docker command protect?",
+   "options": [
+    "The internet connection",
+    "The n8n image",
+    "The browser's cookies",
+    "n8n's database, settings and encryption key"
+   ],
+   "answer": 3,
+   "why": "/home/node/.n8n holds the data. On a volume, it survives when the container is removed."
+  },
+  {
+   "t": "quiz",
+   "q": "A workflow tests perfectly but never runs on its schedule. What's the first thing to check?",
+   "options": [
+    "Whether it has been published (or set Active in 1.x)",
+    "Whether the API needs a key",
+    "The Google Sheet's headers",
+    "The browser zoom level"
+   ],
+   "answer": 0,
+   "why": "Saved drafts only run when you click. Triggers fire on their own only for the published version."
+  },
+  {
+   "t": "quiz",
+   "q": "The API returns `\"temperature_2m_max\": [30.4]`. Which expression gives you 30.4?",
+   "options": [
+    "{{ $json.temperature_2m_max }}",
+    "{{ $json.daily.temperature_2m_max }}",
+    "{{ $json.daily.temperature_2m_max[0] }}",
+    "{{ daily.temperature_2m_max.0 }}"
+   ],
+   "answer": 2,
+   "why": "The value sits inside the daily object, in a list, so you need the full path and [0]."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should an API key live in n8n?",
+   "options": [
+    "Typed into the URL field",
+    "In a credential",
+    "In a sticky note on the canvas",
+    "In the workflow's name"
+   ],
+   "answer": 1,
+   "why": "Credentials are stored encrypted and are left out of workflow exports. Keys typed into fields are not."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Workflow = nodes; n8n Cloud counts one execution per complete run.\n2. Self-hosted is free software, but you own uptime, updates and backups.\n3. Docker: always use a volume for `/home/node/.n8n`, and set the timezone.\n4. Execute step, read the JSON, then write the path, using `[0]` for lists.\n5. Keys go in credentials, never in fields.\n6. Save is a draft; Publish makes it live; Executions proves it ran."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.1 complete!* _Setup & First Workflow_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.2, _Items & Expressions_."
+  }
+ ]
+}

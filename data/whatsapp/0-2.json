@@ -1,0 +1,204 @@
+{
+ "id": "0.2",
+ "title": "How Apps Talk: APIs & Webhooks",
+ "track": 0,
+ "free": true,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 0.2 · How Apps Talk: APIs & Webhooks*\n\n_≈ 90 minutes · with Miracle_\n\nZapier, Make and n8n are, underneath, machines that send messages between apps. Learn to read and write those messages yourself and every platform in this course becomes easier to understand and to fix.\n\n*Your problem:* Tools “connect” by magic, and when they don't, you can't tell why.\n*The plan:* Send real requests to a real API, read the reply, and learn what each status code means.\n*After this lesson:* You can read API docs, make a request, and fix the common errors yourself."
+  },
+  {
+   "t": "text",
+   "body": "*The day it rained*\n\n*9:10 a.m.:* \"Have you sent the money?\" \"Yes.\" Tolu refreshes the bank app for the fourteenth time.\n\n*9:12 a.m.:* The same customer paid a pharmacy with a payment link. The receipt arrived instantly. How did the pharmacy's system know?\n\n*Yesterday:* Rain soaked six crates of tomatoes on the way to customers. Nobody checked the forecast.\n\n*Evening:* Bolt brings a friend. \"Nodo reads raw data for fun,\" Bolt says. \"She'll show you what the apps actually say.\""
+  },
+  {
+   "t": "text",
+   "body": "*An API is a waiter between two systems*\n\nAn *API* (application programming interface) is a set of doors one app opens so other apps can ask it for things or tell it to do things. The app asking is the *client*. The app answering is the *server*. Each door is an *endpoint*: a specific web address for one job.\n\n*Why this matters:* every \"app\" or \"module\" in Zapier, Make and n8n is a friendly wrapper around an API. When an app has no ready-made module, you call its API directly with an HTTP step. That skill is what separates beginners from builders."
+  },
+  {
+   "t": "text",
+   "body": "*The anatomy of a request*\n\nEvery request has up to four parts: a *method* (what you want to do), a *URL* (where), *headers* (extra instructions, like your key), and a *body* (the data you're sending). Here's the URL from today's solved problem, taken apart:\n\n_URL broken into parts:_\n- *Scheme*: https://\n- *Host*: api.open-meteo.com\n- *Path / endpoint*: /v1/forecast\n- *Query starts*:?\n- *Param*: latitude=7.38\n- *and*: &\n- *Param*: longitude=3.94\n- *and*: &\n- *Param*: daily=precipitation_probability_max\n- *and*: &\n- *Param*: timezone=Africa/Lagos\n\nThe method says what kind of job it is. Five cover almost everything you'll do:\n\n- *GET*: Read something. Changes nothing. \"Show me tomorrow's forecast.\"\n- *POST*: Create something or send an event. \"Here's a new order.\"\n- *PUT*: Replace a whole record. \"This is the full updated customer.\"\n- *PATCH*: Change part of a record. \"Set status to Paid.\"\n- *DELETE*: Remove a record. Use with care."
+  },
+  {
+   "t": "text",
+   "body": "- *Query parameters*: Options after the `?`, joined by `&`. Mostly used with GET.\n- *Headers*: Labels on the envelope: `Content-Type`, `Authorization`.\n- *Body*: The letter inside, usually JSON. Used with POST, PUT, PATCH.\n- *Base URL*: The part every endpoint shares, like `https://api.open-meteo.com/v1`."
+  },
+  {
+   "t": "text",
+   "body": "*Status codes tell you who to blame*\n\nEvery response starts with a three-digit number. The first digit tells you almost everything.\n\n*2xx · Success*\n\nIt worked.\n\n- *200* OK, here's your data\n- *201* Created\n- *204* Done, nothing to return\n\n*3xx · Moved*\n\nLook somewhere else.\n\n- *301* Moved for good\n- *304* Not modified, use your copy\n\n*4xx · Your side*\n\nFix your request.\n\n- *400* Bad request (missing or wrong data)\n- *401* Not signed in (bad or missing key)\n- *403* Signed in, but not allowed\n- *404* Wrong address\n- *429* Too many requests, slow down\n\n*5xx · Their side*\n\nWait and retry.\n\n- *500* Server error\n- *502 / 503* Server down or overloaded\n- *504* Server took too long\n\n*Nodo:* A 4xx means stop and change something; retrying won't help. A 5xx means it's not your fault; wait and try again. You'll build exactly this rule into n8n in Module 3.6."
+  },
+  {
+   "t": "text",
+   "body": "*Proving who you are*\n\nMost APIs need to know who's calling, both to protect data and to bill you. You'll meet three patterns:\n\n- *No key*: Open, public data. Open-Meteo works this way for non-commercial use, which is why we start there.\n- *API key*: A secret string sent in a header or parameter, e.g. `Authorization: Bearer sk_test_…`.\n- *OAuth*: The \"Sign in with Google\" screen. You approve access; the app gets a token. Covered in Module 0.6.\n\n*Treat keys like cash.* Anyone holding your key can spend as you. Never paste one into a chat, a shared sheet or a screenshot."
+  },
+  {
+   "t": "text",
+   "body": "*Polling vs. webhooks: mailbox or doorbell*\n\n*Polling* means your system asks \"anything new?\" on a timer. *A webhook* means the other system calls _your_ URL the moment something happens. Tolu refreshing the bank app is polling. The pharmacy's instant receipt was a webhook.\n\n*Polling is fine when*\n\n- The app offers no webhooks.\n- A few minutes' delay doesn't matter.\n- You're checking on a schedule anyway (the daily weather check).\n\n*Webhooks win when*\n\n- Speed matters (payments, new orders).\n- Events are rare; polling would waste requests and credits.\n- You need to react to every single event."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _API vs. Webhook: What's the Difference?_ (IBM Technology).\nLook for: Request and response versus pushed events: when to poll and when to use a webhook.",
+   "media": "walk:0.2",
+   "youtube": "https://www.youtube.com/watch?v=Dt4HKRD9YI4",
+   "app": "https://automancy.cc/learn#m-0-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: will it rain on tomorrow's deliveries?*\n\n*The problem.* Tolu wants a daily answer by 6 p.m.: \"Is there a real chance of rain tomorrow?\" If yes, riders pack waterproof covers. Then Tolu wants to see how an instant payment notice would reach Harvest Lane. We'll do both by hand, with no automation platform, so you see exactly what the platforms do for you later."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Find the API and read the menu*\n\nOpen-Meteo is a free weather API that needs no key for non-commercial use. Its documentation page has a builder: choose a location and the variables you want, and it writes the URL for you. We need one daily value, `precipitation_probability_max` (the highest chance of rain during the day, in %), for Ibadan (latitude 7.38, longitude 3.94)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Build the request in Hoppscotch*\n\nOpen hoppscotch.io in your browser (free, no sign-up). Set the method to *GET* and paste:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Build the request in Hoppscotch): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-2"
+  },
+  {
+   "t": "text",
+   "body": "Hoppscotch splits the query into a parameter table automatically. That table is exactly what you'll fill in on an HTTP step in Zapier, Make or n8n.\n\n_Parameter · Why it's there_\n- `latitude`, `longitude` · Where. Change these for your own town.\n- `daily` · Which daily values to return, comma-separated.\n- `timezone` · So \"tomorrow\" means tomorrow in Nigeria, not in London.\n- `forecast_days` · Keep the answer short: today plus two days."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Send it and read the response*\n\nPress *Send*. You should see status *200 OK*, a `content-type` header of `application/json`, and a body shaped like this (your numbers will differ):\n\n_(Code on screen in the app.)_\n\nNotice the shape: `daily` holds lists that line up by position. Position 0 is today, position 1 is tomorrow. So tomorrow's chance of rain is `daily.precipitation_probability_max[1]`, which is 70. (Module 0.3 is all about reading shapes like this.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Turn the answer into a decision*\n\nTolu and Bolt agree a simple rule: *if tomorrow's chance is 50% or more, pack covers.* 70 ≥ 50, so tonight's message to riders is \"Pack covers.\" That rule, plus a 6 p.m. schedule and a message step, is a complete automation. You'll build it for real in Track 1.\n\n*Sage:* *No AI needed.* A number compared to a threshold is a rules job. This is Card 2 from Module 0.1 in action: use the simplest level that works."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Break it on purpose*\n\nDelete the `latitude` parameter and send again. You'll get a *400 Bad Request*, and the body explains which parameter is missing. Now change `/v1/forecast` to `/v1/forcast`: that's a *404*, because the door doesn't exist. Learning to cause errors on purpose makes them far less scary when they happen by accident."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Receive a webhook yourself*\n\nNow flip roles. Open webhook.site: it gives you a unique URL that records anything sent to it. That URL plays the part of \"Harvest Lane's system\". In Hoppscotch, send a *POST* to it, pretending to be a payment company:\n\n_(Code on screen in the app.)_\n\nSwitch to the webhook.site tab: the request appears instantly, with its method, headers and JSON body. That's exactly what the pharmacy's system received. In a real setup, the payment company sends this when a customer pays, and your automation marks order HL-0042 as Paid.\n\n*Nodo:* *Why \"amount_kobo\"?* Many Nigerian payment APIs count in kobo, not naira, to avoid decimals. 1,250,000 kobo is ₦12,500. Always check the unit in the docs before doing maths with an amount."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Doing it by hand first shows what every platform's HTTP step hides.\n- Reading the docs builder avoids guessing parameter names.\n- Breaking the request teaches the two most common errors in two minutes.\n- Playing both client and server makes webhooks click.\n\n*Common mistakes to avoid*\n\n- Forgetting the time zone, so \"tomorrow\" is off by a day at night.\n- Reading position 0 (today) instead of 1 (tomorrow).\n- Sending JSON without `Content-Type: application/json`.\n- Treating kobo as naira."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I \"helped\" Tolu send four requests. None of them work. Can you tell why from the code alone?"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Glitch hunt): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-2"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* typo in the endpoint, `forcast`. 404 means the address doesn't exist. Copy paths from the docs; don't retype them.\n*B:* the key is missing the `Bearer` prefix. Most APIs expect `Authorization: Bearer <key>`. 401 means \"I don't know who you are\".\n*C:* the header says plain text, so the receiver doesn't parse the JSON. Use `Content-Type: application/json`.\n*D:* 429 means too many requests. Everyone is in the same city, so call once and reuse the answer. When you must make many calls, batch them and wait between batches (Module 3.3)."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Call three public APIs",
+   "body": "- Weather for your own town: Open-Meteo, with your latitude and longitude.\n- Public holidays: `https://date.nager.at/api/v3/PublicHolidays/2026/NG` (change the year or country code).\n- Exchange rates: `https://open.er-api.com/v6/latest/USD`.\n- For each, write down the method, full URL, status code, and one value you pulled out of the response.\n\n*Done when:*\n- All three return 200, and you can point to exactly where your chosen value sits in the JSON."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See a model answer",
+   "answer": "*Holidays:* GET, 200. The body is a list; each item has `date`, `localName` and `name`. First item's `name` is New Year's Day.\n\n*Exchange rates:* GET, 200. The naira rate sits at `rates.NGN`. The response also shows when rates were last updated, which matters before you quote a price."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Be the receiver: webhook.site drills",
+   "body": "- Send three POSTs to your webhook.site URL: a normal order, one missing `customer_phone`, and one with `amount_kobo` as text (\"12500\") instead of a number.\n- Add a custom header, e.g. `X-Source: harvest-lane-test`, and find it on the receiving side.\n- Write a short checklist: what should Harvest Lane's system check before trusting an incoming payment webhook?\n\n*Done when:*\n- Your checklist has at least four checks, and each one is linked to a test you sent."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See a model checklist",
+   "answer": "- Required fields exist (order_id, amount, event).\n- Types are right: amount is a number, not text.\n- The amount matches the order's total in our sheet.\n- The event is one we expect (`payment.success`), not a refund or test.\n- We haven't already processed this order_id (no double counting).\n- The request really came from the payment company: real providers sign each webhook with a secret, and we verify the signature (Module 2.5)."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Read real docs and make a real call",
+   "body": "- Create a Telegram bot with @BotFather (free) and get its token. Message your bot once, so it's allowed to reply to you.\n- From the Telegram Bot API docs, work out the method, URL and body for `getUpdates` (to find your chat_id) and `sendMessage`.\n- Use Hoppscotch to make your bot send you tomorrow's rain decision from the solved problem.\n- Then, using the Paystack docs, write out (don't send) the request to create a ₦12,500 payment for a customer. Mind the unit.\n\n*Done when:*\n- Your phone shows the bot's message, and your written Paystack request has the right method, URL, headers and amount in kobo."
+  },
+  {
+   "t": "reveal",
+   "prompt": "See the model answer",
+   "answer": "_(Code example on screen in the app.)_\n\nThe amount is 1,250,000 because Paystack counts in kobo. Keep secret keys out of screenshots; use test keys while learning."
+  },
+  {
+   "t": "quiz",
+   "q": "You want to read tomorrow's forecast without changing anything. Which method?",
+   "options": [
+    "GET",
+    "POST",
+    "PATCH",
+    "DELETE"
+   ],
+   "answer": 0,
+   "why": "GET reads data and changes nothing on the server."
+  },
+  {
+   "t": "quiz",
+   "q": "A request returns 401. What's the most likely cause?",
+   "options": [
+    "The server crashed",
+    "The endpoint path has a typo",
+    "The key is missing, wrong, or badly formatted",
+    "You sent too many requests"
+   ],
+   "answer": 2,
+   "why": "401 means the server doesn't know who you are. A typo is 404, overload is 5xx, too many requests is 429."
+  },
+  {
+   "t": "quiz",
+   "q": "Which best describes a webhook?",
+   "options": [
+    "Your system checks another app every five minutes",
+    "Another app calls your URL the moment an event happens",
+    "A secret key for signing in",
+    "A type of spreadsheet formula"
+   ],
+   "answer": 1,
+   "why": "A webhook is the doorbell: the other system calls you. Checking on a timer is polling."
+  },
+  {
+   "t": "quiz",
+   "q": "In `…/v1/forecast?latitude=7.38&timezone=Africa/Lagos`, what is `timezone=Africa/Lagos`?",
+   "options": [
+    "A header",
+    "The endpoint",
+    "The request body",
+    "A query parameter"
+   ],
+   "answer": 3,
+   "why": "Everything after the? is query parameters, joined by &."
+  },
+  {
+   "t": "quiz",
+   "q": "You get 503 from a courier's API at 2 a.m. What should your automation do?",
+   "options": [
+    "Wait and retry a few times, then alert a person",
+    "Change the API key",
+    "Delete the order",
+    "Rewrite the request body"
+   ],
+   "answer": 0,
+   "why": "5xx is the server's problem. Retrying after a pause usually works; if not, a human should know."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. An API is a menu of endpoints one app offers to others. The caller is the client; the answerer is the server.\n2. A request is method + URL (with query parameters) + headers + body.\n3. GET reads, POST creates or sends events, PUT replaces, PATCH updates, DELETE removes.\n4. 2xx worked, 4xx fix your request, 5xx wait and retry.\n5. Polling asks on a timer; a webhook rings your doorbell the moment something happens.\n6. Check units (kobo vs. naira) and time zones before trusting any number."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 0.2 complete!* _How Apps Talk: APIs & Webhooks_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 0.3, _Data Is the Cargo: JSON & Arrays_."
+  }
+ ]
+}

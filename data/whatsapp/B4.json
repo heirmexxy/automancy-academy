@@ -1,0 +1,135 @@
+{
+ "id": "B4",
+ "title": "Boss 4: Sage Desk",
+ "track": 4,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 4: Sage Desk*\n\n_≈ 4 sessions · 8–10 hours · with Emeka_\n\nEverything from Sage's Tower, in one agent customers can talk to at any hour. Sage Desk answers from Harvest Lane's policies with the section named, looks up prices and orders with real tools, remembers each customer safely, proposes refunds that only Tolu can approve, shrugs off manipulation, and hands over to a person gracefully. And you'll prove it with an evaluation report before it goes live.\n\n*Your problem:* Support messages pile up overnight, and the investor wants proof it's safe.\n*The plan:* Build Sage Desk: a support agent with RAG, tools, memory, approvals and an evaluation report.\n*After this boss:* You have a production-grade agent for your portfolio, and the Agent Tamer badge."
+  },
+  {
+   "t": "text",
+   "body": "*\"Can it run while I sleep?\"*\n\n*Every night:* Questions keep arriving after Tolu stops: refund rules, order status, \"same as last time\". 47 are waiting by morning.\n\n*The condition:* The investor will fund a second van if support scales without Tolu working until midnight, and if it's demonstrably safe.\n\n*Sage:* \"Four tools, one memory, one rule above all: anything involving money goes to Tolu.\"\n\n*Glitch:* \"A desk that never sleeps? Neither do I. I'll be every difficult customer you've ever had, all night.\""
+  },
+  {
+   "t": "text",
+   "body": "*What Sage Desk must do*\n- *Channel* · Telegram (Boss 3's bot, or a separate support bot), on your self-hosted n8n with HTTPS. Optional: n8n's web chat as a second channel.\n- *Answers* · Policies via RAG, naming the section and quoting money rules exactly (4.4). Prices via `get_price`; order status and \"same as last time\" via tools, with identity from the channel only (4.2, 4.3).\n- *Refunds* · The agent can _propose_ a refund through `issue_refund`, behind Telegram human review by Tolu, with hard limits in code: owner of the order, paid, not already refunded, ≤ order total, ≤ ₦50,000. Paystack *test mode* only (4.5).\n- *Memory* · Chat memory per customer in Postgres or Supabase, window 8; 30-day retention; no card numbers or secrets stored (4.3).\n- *Safety* · Input guardrails (jailbreak, PII masking), output checks (no unapproved promises, no other customers' data), least-privilege tools, a decision log (4.5)."
+  },
+  {
+   "t": "text",
+   "body": "- *Hand-over* · On request, on anger, after two failed attempts, or for anything out of scope: a short summary goes to Tolu, and the customer is told when to expect a reply.\n- *Quality* · An evaluation harness with at least 25 cases (at least 8 critical, at least 5 attacks), automated scoring, and a written quality report (4.9). Release rule: all critical cases pass.\n- *Reliability and cost* · Error workflow and uptime monitoring (3.6, 3.8); max iterations set; cost per conversation measured, and model routing considered (4.7, 4.9).\n- *Honesty* · The welcome message says customers are talking to an AI assistant that a person supervises, and how to reach a person."
+  },
+  {
+   "t": "text",
+   "body": "*One agent, four tools, five safety layers*\n\n_The diagram, in words:_ Telegram Trigger to input guardrails, then the Sage Desk agent with chat model, Postgres memory keyed by chat ID, and four tools: search_policies, get_price, get_order and issue_refund behind Tolu's approval. Then an output check, a reply to the customer, and a decision log. Side workflows: evaluation harness, hand-over to Tolu, error alerts, and nightly backups.\n\nYour design may differ; the rubric scores behaviour and evidence."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _How To Build An AI Customer Support Agent with n8n_ (Bart Slodyczka).\nLook for: A support agent answering from a knowledge base with tools; compare it with the Sage Desk brief.",
+   "media": "walk:B4",
+   "youtube": "https://www.youtube.com/watch?v=cEpbSVkt_Qc",
+   "app": "https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Eight deliverables, four phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Knowledge and data (4.4)*\n\nWrite (or reuse) a policy document with at least five sections and a version date; load it into Supabase with metadata (`source`, `section`, `version`). Prepare Price_List, Orders and Customers sheets with fake data, including at least two customers with the same first name."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · The evaluation set, first (4.9)*\n\nBefore building the agent, write at least 25 test cases with must-include, must-not-include, expected and forbidden tools, and the critical flag. Writing tests first forces you to decide what \"good\" means."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · The agent and its tools (4.1, 4.2)*\n\nAI Agent with a full system message (role, goal, tools and when to use them, unknown-case rule, refund rule, hand-over rule, tone, refusals) and four tools, each with a description passing the 4.2 checklist. Max iterations 6."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Memory and identity (4.3)*\n\nPostgres Chat Memory keyed by `tg-{chat_id}`, window 8. `get_order` and `issue_refund` take `chat_id` from the trigger, never from the model. A scheduled 30-day clean-up."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D5 · Guardrails and approvals (4.5)*\n\nInput Guardrails (jailbreak check; PII sanitise for card numbers), human review on `issue_refund` via Telegram with full context, code limits inside the refund sub-workflow, an output check for unapproved promises and other customers' data, and a Decisions log."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Hand-over to a human*\n\nA `handover_to_tolu` tool (or a branch) that sends Tolu a three-line summary (who, what they want, what's been tried), tells the customer when to expect a reply (based on the time of day), and marks the conversation as handed over so the agent stops replying until Tolu releases it."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D7 · Evaluate, fix, prove (4.9)*\n\nRun the harness with n8n Evaluations. Fix failures and re-run until every critical case passes. Then run all 15 conversations below by hand from two Telegram accounts."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D8 · Quality report and demo*\n\nA two-page report for Tolu and the investor: what Sage Desk does and doesn't do, the test set, results by version, critical cases, attack results, cost per conversation and monthly estimate, monitoring, and known limits. Plus a 4-minute demo: one policy answer, one order lookup, one refund approved on Tolu's phone, one attack refused, one hand-over."
+  },
+  {
+   "t": "link",
+   "body": "The 15 test conversations. Run them from two Telegram accounts (A and B); use made-up data only. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "text",
+   "body": "*Is Sage Desk ready for customers?*\n\n*Correct*\n- Every critical test case passes in the latest evaluation run _(must)_\n- Overall accuracy at least 90% on 25+ cases\n- Policy answers name the section; money rules are quoted\n\n*Safe*\n- No money moves without Tolu's approval, and limits are enforced in code _(must)_\n- Identity comes from the channel; account B can't see A's orders _(must)_\n- All attack cases refused, with no harmful tool calls _(must)_\n- Card numbers masked; 30-day memory clean-up runs\n\n*Humane*\n- Customers are told it's an AI assistant and how to reach a person _(must)_\n- Hand-over sends Tolu a useful summary and pauses the agent\n\n*Run-able*\n- Error workflow, uptime monitor and nightly backups cover Sage Desk\n- Cost per conversation measured; monthly estimate in the report\n- Quality report written; release rule agreed with Tolu"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: the readiness check (tick it off for your score). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of phases 2, 3 and 4*\n\n*Glitch:* The real world changes its mind. So will I.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 2*\nTolu updates the policy: late deliveries now get the delivery fee _plus 10% of the goods_ back. The new PDF is loaded. Half of Sage Desk's answers still quote the old rule. Fix it, and make sure it can't happen again.",
+   "answer": "*Policy update:* the old version's chunks are still in the store. Delete by `version` (or `source`) before loading the new one, ideally in the same \"Load policies\" workflow, so it can't be forgotten. Add test case \"late delivery refund\" with must-include \"10%\", and re-run the harness after every policy load."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 3*\nA loyal customer writes in Yorùbá: \"Ẹ jọ̀wọ́, ṣé ẹ ní tòmátì lónìí? Mo fẹ́ apẹ̀rẹ̀ méjì.\" Another mixes Pidgin and English in every message. What should Sage Desk do, and how do you test it?",
+   "answer": "*Languages:* decide a rule with Tolu: reply in the customer's language when confident, otherwise in English with an offer of a person. Add Yorùbá and Pidgin cases to the test set (have a fluent speaker check the expected answers), and make sure tools still receive clean inputs (\"tomatoes\", quantity 2). Never let language uncertainty change a price."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 4*\nA storm delays every delivery by four hours. Thirty angry customers message within twenty minutes. Every one triggers a hand-over, and Tolu's phone becomes unusable. Redesign the hand-over so Tolu stays in control.",
+   "answer": "*Hand-over storm:* group hand-overs. When the same issue (here \"late delivery\") arrives more than five times in 30 minutes, stop individual alerts and send Tolu one summary (\"18 customers, all late-delivery complaints, Bodija route\"). The agent replies to each customer with an honest status message Tolu approves once. Individual hand-overs continue only for new issues."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Area · Full marks when… · Points_\n- *Correct answers* · ≥ 90% on the evaluation set; policy answers cite sections; prices and orders exact · 20\n- *Safety* · All critical and attack cases pass; refunds only after approval, with code limits; no cross-customer leaks · 25\n- *Memory and hand-over* · Conversations hold together; \"same as last time\" works; hand-overs are useful and pause the agent · 15\n- *Evidence* · Automated harness, version comparison, quality report a non-technical reader understands · 15\n- *Operations and cost* · Monitoring, backups and alerts in place; cost per conversation measured · 10\n- *Curveballs* · All three handled · 10\n- *Demo* · 4-minute video covering all five moments · 5\n- *Total* · Win at 80 or more, with every critical case passing · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 4: Sage Desk",
+   "body": "Build eight deliverables, four phases:\n- Phase 1 · D1 · Knowledge and data (4.4)\n- Phase 1 · D2 · The evaluation set, first (4.9)\n- Phase 2 · D3 · The agent and its tools (4.1, 4.2)\n- Phase 2 · D4 · Memory and identity (4.3)\n- Phase 3 · D5 · Guardrails and approvals (4.5)\n- Phase 3 · D6 · Hand-over to a human\n- Phase 4 · D7 · Evaluate, fix, prove (4.9)\n- Phase 4 · D8 · Quality report and demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "link",
+   "body": "*Sage:* Many designs can win. Use these to find gaps, not to copy.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 4 demo · Sage Desk, with Miracle.\n\nPolicy answer, order lookup, approved refund, attack refused, hand-over. That's the demo.",
+   "media": "clip:B4:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-4"
+  },
+  {
+   "t": "text",
+   "body": "*Sage's Tower complete*\n\n1. You can decide when an agent is the right tool, and when a workflow is better.\n2. You give agents clear tools, safe memory, grounded knowledge, hard limits and human approval.\n3. You can connect agents to anything with MCP, build them in code, and coordinate teams of them.\n4. You prove quality with evaluations, traces and cost numbers, before customers depend on it.\n5. Next: Track 5, The Signal Tower. Meet customers on every channel and build agents that find, win and serve them. Then Track 6, Launchpad: scoping, pricing, portfolio and your capstone."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 4 complete!* _Sage Desk_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.1, _Channels: WhatsApp, Telegram & Voice_."
+  }
+ ]
+}

@@ -1,0 +1,131 @@
+{
+ "id": "B1",
+ "title": "Boss 1: The Lead Machine",
+ "track": 1,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 1: The Lead Machine*\n\n_≈ 2–3 sessions · 4–6 hours · with Miracle_\n\nEverything from Spark Street in one working system: webhooks, Formatter, filters, paths, code, AI, delays and alerts. You'll build a machine that catches every new business enquiry, scores it, replies within minutes, alerts Tolu about the best ones and follows up so no lead is forgotten.\n\n*Your problem:* Leads arrive and go cold because nobody follows up fast enough.\n*The plan:* Build a lead machine: qualify with AI, record, reply and alert, automatically.\n*After this boss:* You have a working lead system to show clients, and the First Spark badge."
+  },
+  {
+   "t": "text",
+   "body": "*The caterer who got away*\n\n*After the hotel deal:* Word spreads. Restaurants, caterers and schools fill in the \"Become a supply partner\" form: 15 a week.\n\n*The loss:* A caterer worth ₦150,000 a week waits eight days for a reply, then signs with a competitor.\n\n*Glitch:* Meanwhile, spam and test entries bury the real enquiries.\n\n*Bolt:* \"Every lead in, sorted, answered, and chased. Tolu only talks to the hot ones.\""
+  },
+  {
+   "t": "text",
+   "body": "*Scoring rules*\n\n- *Input* · The website's partner form sends each enquiry to a webhook: business name, business type, area, weekly budget (free text), start date, contact name, email, phone, message.\n- *Volume* · About 60 enquiries a month, plus spam and tests.\n- *Speed* · Every genuine lead gets a personalised acknowledgement within 15 minutes. Hot leads alert Tolu within 5 minutes.\n- *Scoring* · Budget, business type, location and start date decide the tier (rules below). The AI reads and extracts; the score is calculated by rules, not guessed by AI.\n- *Follow-up* · Warm leads who haven't replied after 3 days get one friendly follow-up. Nobody gets more than one.\n- *Record* · Every lead is logged in a Leads sheet with its score, tier, status and dates.\n- *Must not* · Quote prices or promise discounts in automatic emails. Email spam or test entries. Break the rules in 0.6.\n- *Budget* · Keep the whole machine under about 500 Zapier tasks a month."
+  },
+  {
+   "t": "text",
+   "body": "_Signal · Points_\n- Weekly budget ₦200,000 or more / ₦100,000–199,999 / under ₦100,000 / not stated · 3 / 2 / 1 / 0\n- Business type is hotel, caterer or restaurant · 2\n- Area is inside the delivery zone (lookup table from 1.3) · 2\n- *Wants to start within 30 days* · 1\n- *Tier:* 7–8 hot · 4–6 warm · 0–3 cold · spam flag → spam · max 8"
+  },
+  {
+   "t": "text",
+   "body": "*Three Zaps working together*\n\n_The diagram, in words:_ Zap 1 Intake: webhook, filter tests, AI extract, zone lookup, code score, save to Leads sheet, then paths for hot, warm, cold and spam. Zap 2 Reply catcher: Gmail new email, find lead, mark replied. The warm path waits 3 days, re-checks the lead, and sends a follow-up if still not replied.\n\nYou may design it differently; the rubric scores results, not this exact shape."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _Automate Lead Enrichment & Routing with AI in Zapier_.\nLook for: New lead → AI enrichment and qualification → routing and notification.",
+   "media": "walk:B1",
+   "youtube": "https://www.youtube.com/watch?v=Y2XszcRZAsM",
+   "app": "https://automancy.cc/learn#boss-1"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Eight deliverables, three phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Leads sheet (0.4)*\n\nDesign the Leads tab: `lead_id`, received_at, business, type, area, zone, weekly_budget (number), start_date, contact, email, phone, message, score, tier, status (New · Contacted · Replied · Followed up · Spam · Won · Lost), contacted_at, followed_up_at. Dropdowns for tier and status."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · AI extraction spec and test (0.5, 1.5)*\n\nAn AI by Zapier step (Standard) with typed output fields: `type`, `weekly_budget` (number, empty if not stated; convert monthly to weekly), `start_date` (YYYY-MM-DD or empty), `is_spam` (boolean), `first_name`, `summary`. Test it on the 12 leads below before building anything else."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hint",
+   "answer": "Give the model today's date for start dates, and tell it that ₦1.5m a month is about ₦346,000 a week (divide by 4.33). Spam = selling something to Harvest Lane, gibberish, or no genuine business need."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Scoring code (1.4)*\n\nA Code by Zapier step that applies the scoring rules exactly and outputs `score` and `tier`. Same inputs must always give the same tier."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Zap 1 Intake (1.2–1.4)*\n\nWebhook in, test filter, AI extract, zone lookup, score, Leads row, then Paths: hot, warm, cold and a spam fallback. Emails use the lead's first name and a line from their message. No prices."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D5 · Zap 2 Reply catcher (1.1, 1.2)*\n\nWhen a lead emails back, find their row by email address and set status to Replied."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Follow-up (1.2, 1.3)*\n\nOn the warm path: wait 3 days, look up the lead again, continue only if the status is still Contacted, send one follow-up, and set status to Followed up."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D7 · Test report and task budget*\n\nRun all 12 test leads. Record tier expected vs. actual, emails sent, alerts, and tasks used per lead. Estimate monthly tasks at 60 leads."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D8 · Two-minute demo*\n\nRecord a short screen video: submit a hot lead, show the email and alert arriving, show the Leads row. This becomes your first portfolio piece (Module 6.3)."
+  },
+  {
+   "t": "link",
+   "body": "The 12 test leads. Copy them, send each to your webhook from Hoppscotch as JSON (or through a test form), and compare the tier you get with the expected one. Assume today is the day you run the test. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-1"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of each phase*\n\n*Glitch:* Machines that only work on nice data aren't machines. Try these.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 1*\nLead 9 gives a _monthly_ budget, and lead 11 gives none. Does your AI step convert the first and leave the second empty, and does your score treat \"empty\" as 0 rather than crashing?",
+   "answer": "*Monthly and missing budgets:* the AI prompt converts monthly to weekly (÷ 4.33) and leaves missing values empty; the code's `Number(...) || 0` treats empty as 0."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 2*\nTolu will be at a trade fair for a week. Hot-lead alerts must also go to Kemi, and the hot-lead email must say \"our team will call you\" rather than \"Tolu will call you\". How do you change it so it's easy to switch back?",
+   "answer": "*Tolu away:* keep a tiny *Settings* tab in the sheet with `alert_to` and `caller_name`. The hot path looks it up and uses those values, so switching back is one cell edit, not a Zap edit."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 3*\nA competitor submits 40 fake leads in an hour, all from the same email address. Your AI flags some as spam, but not all. What stops the machine sending 40 emails and burning 200 tasks?",
+   "answer": "*Flood of fakes:* before the AI step, look up the Leads sheet for the same email in the last 24 hours; if found, filter out. Add a hidden \"honeypot\" field to the website form that real people never fill; if it has a value, filter out. Both stop the run before AI and email tasks are used."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Area · Full marks when… · Points_\n- *Accuracy* · At least 11 of 12 test leads land in the expected tier; the test lead is filtered · 20\n- *Speed* · Acknowledgements within 15 minutes; hot alerts within 5 (instant trigger) · 10\n- *Follow-up* · Exactly one follow-up to un-replied warm leads; none to replied ones · 15\n- *Data* · Every lead logged with typed fields, score, tier and correct status changes · 15\n- *Safety* · No prices or promises in automatic emails; spam and tests get nothing; secrets stored properly · 15\n- *Resilience* · All three curveballs handled · 15\n- *Report and demo* · Test report, task estimate under ~500 a month, two-minute video · 10\n- *Total* · Win at 80 or more · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 1: The Lead Machine",
+   "body": "Build eight deliverables, three phases:\n- Phase 1 · D1 · Leads sheet (0.4)\n- Phase 1 · D2 · AI extraction spec and test (0.5, 1.5)\n- Phase 2 · D3 · Scoring code (1.4)\n- Phase 2 · D4 · Zap 1 Intake (1.2–1.4)\n- Phase 2 · D5 · Zap 2 Reply catcher (1.1, 1.2)\n- Phase 3 · D6 · Follow-up (1.2, 1.3)\n- Phase 3 · D7 · Test report and task budget\n- Phase 3 · D8 · Two-minute demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-1"
+  },
+  {
+   "t": "link",
+   "body": "*Sage:* Use this to find gaps, not to copy. If your design differs but passes the rubric, it's a good design.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-1"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 1 demo · The Lead Machine, with Emeka.\n\nOne hot lead handled in under a minute. Record yours the same way.",
+   "media": "clip:B1:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-1"
+  },
+  {
+   "t": "text",
+   "body": "*Spark Street complete*\n\n1. You can connect anything with webhooks, clean data with Formatter, and route it with Filters and Paths.\n2. You can put AI inside a workflow safely: typed outputs, tested prompts, rules for scoring, humans for decisions.\n3. You know what each run costs, and when to move a workflow elsewhere.\n4. Next: Track 2, The Weave Workshop. Weave the octopus rebuilds Harvest Lane's busiest flows in Make, with loops, routers and serious error handling."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 1 complete!* _The Lead Machine_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.1, _Scenarios, Modules & Bundles_."
+  }
+ ]
+}

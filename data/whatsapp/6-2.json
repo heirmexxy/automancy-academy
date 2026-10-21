@@ -1,0 +1,177 @@
+{
+ "id": "6.2",
+ "title": "Pricing, Packaging & Getting Paid",
+ "track": 6,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 6.2 · Pricing, Packaging & Getting Paid*\n\n_≈ 2 hours · with Emeka_\n\nMost new automation builders charge for their hours and wonder why they're always busy and never well paid. Clients don't buy hours; they buy outcomes. This module shows how to price from the value you create, package it into offers clients can choose between, and get paid automatically, with an onboarding experience that runs itself.\n\n*Your problem:* You don't know what to charge, and you're tempted to charge too little.\n*The plan:* Price from value, package in tiers, and get paid automatically.\n*After this lesson:* You can quote with confidence and collect payment without chasing."
+  },
+  {
+   "t": "text",
+   "body": "*₦30,000 for ₦400,000 a month*\n\n*Last month:* Tolu built a stock-and-reminder system for a supermarket friend. She charged ₦30,000, about three evenings' \"pay\".\n\n*Three months later:* The supermarket says it saves about ₦400,000 a month in staff time and expired stock.\n\n*And every month:* Tolu fixes things for free: an expired token, a renamed column, a new product. There's no monthly fee, so it's all unpaid.\n\n*Glitch:* \"Charge less than everyone! What could possibly go wrong with working for free forever?\""
+  },
+  {
+   "t": "text",
+   "body": "*Floor, value, and the space between*\n\n- *Cost floor*: Hours to build (estimate, then add 30%) × the rate you need, plus the tools you pay for. Never go below it.\n- *Value*: From discovery (6.1): monthly time, errors and revenue, in the client's numbers.\n- *A common rule of thumb*: Many consultants aim for a setup fee the client recovers within 2–6 months, and a retainer worth roughly a tenth of the monthly value. Treat these as starting points, not laws."
+  },
+  {
+   "t": "text",
+   "body": "*Setup fee plus monthly retainer*\n\nAutomations need looking after: tokens expire, apps change, the business grows. A *retainer* pays you for that, and gives you steady income. Spell out what it includes and where it stops:\n\n_The monthly fee covers · It doesn't cover (quoted separately)_\n- Hosting and monitoring; fixing anything that breaks · New automations or channels\n- AI and messaging usage up to an agreed cap (e.g. 3,000 messages) · Usage above the cap (billed at cost plus a margin)\n- *Up to 2 hours of small changes* · Rebuilds after the client changes core tools\n- A short monthly report: runs, savings, issues · On-site training days\n\n*Tolu:* Many of your tools bill in dollars; your client pays in naira. Add a clause: \"Monthly fee reviewed if the exchange rate moves more than 15% from the date of this agreement.\" It protects both of you and avoids awkward surprises."
+  },
+  {
+   "t": "text",
+   "body": "*Three tiers*\n\nOffer three packages. Clients compare options instead of asking \"yes or no?\", and most choose the middle. Build the middle one as the one you want them to choose.\n\n_Starter · Growth (most chosen) · Partner_\n- *What* · Refill reminders and stock alerts · Starter + a WhatsApp assistant for prices and hours · Growth + monthly improvements and a quarterly review\n- *Setup* · ₦450,000 · ₦850,000 · ₦1,200,000\n- *Monthly* · ₦30,000 · ₦60,000 · ₦120,000\n- *Included use* · 1,000 messages · 3,000 messages, AI included up to a cap · 8,000 messages, 6 h of changes\n- *Support* · Fixes within 2 working days · Fixes within 1 working day · Same-day fixes; priority\n\nIllustrative prices for a small Ibadan pharmacy, based on the 6.1 numbers. Your market, costs and client's value decide your real prices."
+  },
+  {
+   "t": "text",
+   "body": "*Price check*"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Price check. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-6-2"
+  },
+  {
+   "t": "text",
+   "body": "*Agreements and getting paid*\n\n- *Payment terms*: 50% of setup to start, 50% at go-live (acceptance tests passed). Monthly fees start at go-live, paid in advance.\n- *Paystack options*: A payment page or invoice for setup fees; a *plan* with *subscriptions* for monthly fees (Paystack sends events such as `subscription.create`, `charge.success` and `invoice.payment_failed`). Sources differ on whether Paystack retries a failed subscription charge, so check Paystack's subscriptions docs and plan your own follow-up either way.\n- *Who owns what*: State it: the client owns their data and accounts; you may reuse your general know-how and templates. Workflows run in the client's accounts where possible, so they're never held hostage."
+  },
+  {
+   "t": "text",
+   "body": "- *If they stop paying*: Say what happens: a reminder, a grace period, then monitoring and changes stop, with a handover pack. Never switch off a client's business without warning.\n- *Not legal advice*: For larger contracts, have a lawyer review your template once. It's worth it."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _The BEST Way to Price Your AI Automation Service (No More Guessing)_ (Dan Wardrope).\nLook for: Value-based pricing and the setup fee plus retainer structure.",
+   "media": "walk:6.2",
+   "youtube": "https://www.youtube.com/watch?v=KIDEJBTKnvg",
+   "app": "https://automancy.cc/learn#m-6-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: pay → verified → onboarded*\n\n*The goal.* When a client pays the 50% deposit (or starts a monthly subscription), n8n verifies the payment with Paystack, then automatically sends a welcome pack, creates the client record, books the kick-off, and alerts Tolu. A failed monthly charge triggers a polite reminder, not a shutdown. Everything in *test mode* first."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Set up Paystack products*\n\nIn the Paystack dashboard (test mode): a payment page for each tier's deposit (e.g. \"Growth: 50% setup, ₦425,000\"), and a plan for each monthly fee (interval: monthly). Add a custom field \"Business name\" on the payment pages, and put the tier in the page's metadata or name."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Receive and verify*\n\nWorkflow *FF · Payments in*: a *Webhook* node (POST, raw body available) at a production HTTPS URL; paste it into Paystack's webhook settings. Then, as in 2.5:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Receive and verify): open it in the app.",
+   "url": "https://automancy.cc/learn#m-6-2"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Route by event*\n\nA *Switch* on `{{ $json.body.event }}`:\n\n- *charge.success* for a deposit → onboarding (next step).\n- *subscription.create* → mark the client \"retainer active\", record the next payment date.\n- *invoice.payment_failed* → friendly email with a payment link, a Telegram note to Tolu, and a check-in 3 days later. No automatic cut-off.\n- Fallback → log it for review."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Onboard automatically*\n\n1. *Google Sheets · Append* to Clients: business, contact, tier, amount, reference, date, status \"Onboarding\".\n2. *Gmail · Send* the welcome pack: thank-you, the signed scope, what happens next (week by week), the kick-off booking link, and the intake form (accounts to share, data, contacts).\n3. *Telegram* to Tolu: \" New client: Okonkwo Pharmacy · Growth · deposit ₦425,000 received (test).\"\n4. A follow-up after 2 days if the intake form isn't submitted.\n\nConnect the workflow to your error workflow (3.6). A payment that arrives but fails onboarding must alert you immediately.\n\n- *< 1 min* from payment to welcome email\n- *2* verifications before anything happens\n- *0* clients who pay and hear nothing\n\n*Weave's reminder:* this is the 2.5 payment pattern, now running your own business. If you built it in Make then, you can reuse it; the rules are the same."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Prices sit between your floor and the client's value, and you can explain both.\n- A retainer pays for the care automations need.\n- Payments are verified twice and de-duplicated before onboarding.\n- The first experience after paying is fast, warm and organised.\n- Failed payments start a conversation, not a shutdown.\n\n*Common mistakes to avoid*\n\n- Hourly pricing for high-value work.\n- No retainer, and endless free fixes.\n- Unlimited AI or message usage included.\n- Trusting webhook data without verifying it.\n- Live keys while testing."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Money attracts me like nothing else. Five problems.\n\n*A:* Two clients paid deposits last week. Neither got a welcome email; Tolu found out from an angry call.\n*B:* A fake POST to the webhook \"onboarded\" a client who never paid.\n*C:* One client received three welcome packs.\n*D:* A client's monthly AI bill exceeded their entire retainer.\n*E:* The naira fell sharply; tool costs in dollars rose, and Tolu was losing money on every client."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the webhook URL in Paystack still pointed at the test URL (or the workflow wasn't published). Use the production URL, publish, and connect the error workflow.\n*B:* no verification. Check the signature and verify the transaction with Paystack before acting.\n*C:* Paystack can send an event more than once. Record each reference and skip duplicates.\n*D:* unlimited usage was included. Set caps in the scope, monitor usage, and bill overages.\n*E:* no currency clause. Add an exchange-rate review clause, and review prices at least yearly."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Price three modules as services",
+   "body": "- Choose three things you've built in this course (e.g. 3.7 inbox triage, Boss 3 bot, 4.4 policy assistant).\n- For each, write the client value for a realistic business, your cost floor, a setup fee and a monthly fee, using the price check.\n\n*Done when:*\n- Every price clears your floor, gives the client payback within six months, and has a one-line justification."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Payment link to onboarding, in test mode",
+   "body": "- Build the solved workflow with a Paystack test payment page and one test plan.\n- Test: a real test payment, a fake POST, a duplicate event and a failed subscription charge.\n\n*Done when:*\n- The real payment onboards once, the fake is rejected, the duplicate is skipped, and the failed charge produces a reminder, not a shutdown."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Your offer page",
+   "body": "- Write a one-page offer: who it's for, the problem in their words, three tiers, what each includes and excludes, a real example with numbers, payment terms, and how to book a call.\n- Publish it (a simple page or a shareable doc) with your Paystack deposit links.\n- Show it to two business owners and note their questions.\n\n*Done when:*\n- Both owners can tell you, unprompted, which tier fits them and why, and you've updated the page for their questions."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should a price sit?",
+   "options": [
+    "Below your costs, to win the job",
+    "At your hours × rate, always",
+    "Between your cost floor and the client's value",
+    "Above the client's yearly value"
+   ],
+   "answer": 2,
+   "why": "Cover your costs; leave the client a clear payback."
+  },
+  {
+   "t": "quiz",
+   "q": "Why charge a monthly retainer?",
+   "options": [
+    "Because clients like paying more",
+    "Automations need ongoing care, and it gives you steady income",
+    "Paystack requires it",
+    "To avoid writing a scope"
+   ],
+   "answer": 1,
+   "why": "Tokens expire, apps change, businesses grow. Someone should be paid to look after it."
+  },
+  {
+   "t": "quiz",
+   "q": "A payment webhook arrives. What comes first?",
+   "options": [
+    "Send the welcome pack",
+    "Thank the client on WhatsApp",
+    "Add them to the sheet",
+    "Verify the signature and the transaction with Paystack"
+   ],
+   "answer": 3,
+   "why": "Never act on payment data you haven't verified."
+  },
+  {
+   "t": "quiz",
+   "q": "Your tools bill in dollars; clients pay in naira. Protect yourself with…",
+   "options": [
+    "An exchange-rate review clause",
+    "Hope",
+    "Unlimited usage",
+    "Cheaper prices"
+   ],
+   "answer": 0,
+   "why": "Agree in advance when the fee is reviewed."
+  },
+  {
+   "t": "quiz",
+   "q": "A client's monthly subscription charge fails. Best response?",
+   "options": [
+    "Switch off their automations immediately",
+    "Ignore it",
+    "A friendly reminder with a payment link, a note to you, and a follow-up",
+    "Charge them twice next month"
+   ],
+   "answer": 2,
+   "why": "Paystack's docs say failed subscription charges aren't retried, so you follow up, politely."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Price between your cost floor and the client's value, closer to value.\n2. Setup fee plus retainer; spell out what the retainer covers and caps.\n3. Three tiers; make the middle one the one you want chosen.\n4. Protect against usage spikes and exchange-rate moves in writing.\n5. Verify every payment, skip duplicates, then onboard automatically.\n6. Failed payments start a conversation, not a shutdown."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 6.2 complete!* _Pricing, Packaging & Getting Paid_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 6.3, _Portfolio & Templates_."
+  }
+ ]
+}

@@ -1,0 +1,199 @@
+{
+ "id": "1.4",
+ "title": "Webhooks & Code Steps",
+ "track": 1,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 1.4 · Webhooks & Code Steps*\n\n_≈ 110 minutes · with Emeka_\n\nWhat if the app you need isn't in Zapier's list? Tolu's new website isn't. Today you give Zapier its own doorbell (a webhook), let any system ring it, and write a small piece of JavaScript that checks the order before anything is saved.\n\n*Your problem:* The app you need isn't in the list, or the built-in step can't do what you want.\n*The plan:* Catch data with webhooks and add small code steps where no-code stops.\n*After this lesson:* You can connect almost anything to Zapier."
+  },
+  {
+   "t": "text",
+   "body": "*The website that couldn't talk*\n\n*Launch day:* Tolu's cousin built a website with its own order form. It looks great.\n\n*The problem:* A custom-built site has no ready-made Zapier app. Orders pile up in the cousin's inbox.\n\n*The danger:* Anything a browser sends can be edited. Glitch tries ordering 10 crates for ₦1.\n\n*Nodo:* \"Give the website a doorbell to ring. Then I'll check every order that comes through it. Twenty lines of code.\""
+  },
+  {
+   "t": "text",
+   "body": "*Catch Hook: give your Zap a doorbell*\n\n*Webhooks by Zapier* gives a Zap its own unique URL. When any system sends an HTTP request to it (Module 0.2), the Zap runs instantly. It's how you connect anything that can send a webhook, even with no Zapier app.\n\n- *Catch Hook*: Zapier reads the incoming data (JSON, form data or XML) and turns it into fields. Nested JSON is flattened with double underscores: `customer.phone` becomes `customer__phone`.\n- *Catch Raw Hook*: Gives you the request exactly as sent, as one block of text, plus its headers. Useful when you want to parse and check the JSON yourself in code.\n- *Retrieve Poll*: Checks a URL on a timer instead: polling, for systems that can't send webhooks.\n\n*Two gotchas from Zapier's docs:* the URL always replies \"success\" to the sender, even if your Zap is off or fails later, and a completely empty request is ignored. So the sender can't tell whether your Zap worked; you must alert on problems yourself."
+  },
+  {
+   "t": "text",
+   "body": "*Webhook actions: ring someone else's doorbell*\n\nThe same app has actions (*POST*, *GET*, *PUT*, *Custom Request*) that send requests out. It's the HTTP step you practised in Hoppscotch, now inside a Zap: send a new order to a courier's system, a delivery app, or any API with no Zapier integration.\n\nWebhooks by Zapier is available on paid plans (Professional and up), not on Free."
+  },
+  {
+   "t": "text",
+   "body": "*Code by Zapier: a tiny program in one step*\n\nWhen Formatter can't do it, a *Code by Zapier* step can. It runs JavaScript (Node.js) or Python. You pass values in through *Input Data* (named fields you map from earlier steps), and your code sets an `output` object whose keys become pills for later steps."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Code by Zapier: a tiny program in one step): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-4"
+  },
+  {
+   "t": "text",
+   "body": "- *inputData*: Your named inputs: `inputData.qty`. Names are case-sensitive.\n- *Number()*: Turns \"12500\" into 12500. Without it, `\"25000\" + \"1500\"` becomes `\"250001500\"`.\n- *output*: An object (or list of objects). Each key becomes a field. Returning a list makes later steps run once per item, unless you wrap it in a `line_items` key.\n- *Limits*: Code steps have run-time limits that vary by plan and can make only a couple of HTTP requests. Keep them small: calculate and check; let app steps do the talking."
+  },
+  {
+   "t": "text",
+   "body": "*Just enough JavaScript*\n\n_You write · It means_\n- `const total = 0;` · A named value that won't be replaced. Use `let` if it will change.\n- `JSON.parse(text)` · Turn JSON text into an object you can read with paths (0.3).\n- `order.items.map(it => …)` · Do something to every item in a list and collect the results.\n- `if (qty <= 0) errors.push(\"bad qty\")` · Check a condition and remember a problem.\n- `errors.join(\"; \")` · Turn a list into one readable line of text.\n\n*Sage:* You can ask me to write a Code step, and I'm good at it. Then test it with messy data, read every line, and never paste real keys or customer data into the chat. You're the one responsible for what runs."
+  },
+  {
+   "t": "text",
+   "body": "*Never trust the doorbell*\n\nAnyone who learns your webhook URL can send it anything, and anything a browser sends can be edited. Two habits protect you:\n\n- *Recalculate everything*: Totals, fees, discounts: work them out again from quantities and your own prices. Treat a total sent from outside as a claim to check.\n- *Check a shared token*: The website includes a secret token; the Code step rejects requests without it. Real payment providers go further and sign each webhook (Module 2.5).\n- *Alert on failure*: Since the sender always sees \"success\", send invalid requests to Tolu instead of dropping them silently."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to use Zapier webhooks (trigger instantly)_.\nLook for: Catch Hook URL, sending a test payload, mapping the parsed fields.",
+   "media": "walk:1.4",
+   "youtube": "https://www.youtube.com/watch?v=4nhf1yFSVxY",
+   "app": "https://automancy.cc/learn#m-1-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: website orders, checked and saved*\n\n*The goal.* The website sends each order as JSON to a Zap. The Zap checks the token, recalculates every total, and then either saves the order with its line items or alerts Tolu with the exact problems. You'll play the website using Hoppscotch, as in 0.2."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Create the doorbell*\n\nNew Zap. Trigger: *Webhooks by Zapier · Catch Raw Hook*. Copy the URL Zapier gives you. Treat it like a key: share it only with the website's developer (0.6)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Ring it from Hoppscotch*\n\nSend a *POST* to the hook URL with `Content-Type: application/json` and this body, then click *Test trigger* in Zapier. The raw body and headers appear as fields."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Ring it from Hoppscotch): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-4"
+  },
+  {
+   "t": "text",
+   "body": "In a real build, the website's server would send this, using prices from the same Products list, and the token would be a long random string kept out of the page's public code."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Write the Code step*\n\nAdd *Code by Zapier · Run JavaScript*. In Input Data, add `raw` → the raw body pill, and `secret` → type `hl-web-7Q2x`. Then the code:\n\n_(Code on screen in the app.)_\n\n*Nodo:* *Where should prices come from?* Here the code checks that the maths adds up and nothing is zero or negative. For full protection, compare each `unit_price` with the Products sheet (a Lookup step per product, or the courier-style POST in the Gold mission). A mismatch means someone edited the price."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Try the code right here*\n\nThis tester runs the same logic as the Code step on this page. Load a sample, or edit the JSON: change a price to 1, delete the token, make qty \"two\"."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try the code right here. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-1-4"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Split valid from invalid*\n\nAdd *Paths* (1.3). Branch A: `valid` · (Boolean) Is true → *Google Sheets · Create Spreadsheet Row* in Orders (order_id, phone, items_total, delivery_fee, total) → *Create Multiple Spreadsheet Rows* in Order_Items from `line_items`. Fallback branch: *Gmail · Send Email* to Tolu: \"Rejected website order [order_id]: [errors]\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Test with bad requests, then publish*\n\nSend all four samples from Hoppscotch. The good one lands in both tabs; each bad one produces an alert naming its exact problems. Publish, and give the developer the URL and token.\n\n- *Instant* no 15-minute polling wait\n- *₦1* orders rejected automatically\n- *2 tabs* filled from one request (Orders and Order_Items)"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- A webhook connects a system with no Zapier app, instantly.\n- Parsing the raw body yourself lets you catch broken JSON.\n- Recalculating defeats edited prices and totals.\n- Every rejection reaches a person, with a reason.\n\n*Common mistakes to avoid*\n\n- Adding text values with `+` (they join instead of adding).\n- Forgetting to set `output`.\n- Returning a bare list, so later steps run once per item.\n- Publishing the hook URL in a public web page with no token check."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I wrote four Code steps of my own. Each one \"works\" in a way you'll hate."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Glitch hunt): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-4"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* inputs arrive as text, and `+` joins text. Use `Number(inputData.subtotal) + Number(inputData.fee)`.\n*B:* the result is calculated but never put in `output`, so no fields come out.\n*C:* returning a bare list makes every later step run once per item. Wrap it: `output = { line_items: [...] }`.\n*D:* it trusts the total sent from outside and never recalculates. Always compute totals yourself."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Your first doorbell",
+   "body": "- Build a Zap with *Catch Hook* (not raw) and send it the good order from Hoppscotch.\n- Look at how Zapier flattened the fields (`customer__phone`) and handled the items list.\n- Map three fields into an email to yourself.\n\n*Done when:*\n- The email arrives, and you can explain in one sentence what the double underscore means."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build the checked website order line",
+   "body": "- Build the solved problem end to end: Catch Raw Hook, Code, Paths, Sheets, alert.\n- Send the four samples plus two bad requests you invent yourself.\n- Check Orders, Order_Items and your inbox against what you expected.\n\n*Done when:*\n- Only valid orders reach the sheet, every invalid one produces an alert with the right reasons, and a 3-item order creates one Orders row and three Order_Items rows."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Pass it on: notify the courier",
+   "body": "- Add a *Webhooks by Zapier · POST* action to the valid branch that sends a delivery request to a webhook.site URL (playing a courier's API): order_id, phone, address, number of items.\n- Add a Code step before it that builds a short, WhatsApp-ready message: \"HL-0051 · 3 items · Ring Road · call +234…\".\n- Add a custom header `X-Source: harvest-lane` and confirm it arrives.\n\n*Done when:*\n- webhook.site shows each valid order's delivery request with your header, and nothing is sent for invalid ones."
+  },
+  {
+   "t": "quiz",
+   "q": "Your custom website has no Zapier app. How can it start a Zap instantly?",
+   "options": [
+    "It can't",
+    "Poll the website every 15 minutes",
+    "Send a request to a Catch Hook URL",
+    "Email Zapier support"
+   ],
+   "answer": 2,
+   "why": "A webhook trigger gives the Zap a URL any system can call."
+  },
+  {
+   "t": "quiz",
+   "q": "In a Code step, `inputData.subtotal + inputData.fee` gives \"250001500\". Why?",
+   "options": [
+    "The inputs are text, so + joins them",
+    "JavaScript can't add",
+    "The fee is negative",
+    "The Zap isn't published"
+   ],
+   "answer": 0,
+   "why": "Convert with Number() before doing maths."
+  },
+  {
+   "t": "quiz",
+   "q": "You return a list of 3 items from a Code step, and the next step runs 3 times. How do you make it run once?",
+   "options": [
+    "Add a Filter",
+    "Use Python instead",
+    "Sort the list",
+    "Put the list under a line_items key in the output object"
+   ],
+   "answer": 3,
+   "why": "Zapier treats line_items as one field holding a list, instead of separate runs."
+  },
+  {
+   "t": "quiz",
+   "q": "A website sends `\"total\": 11` for 10 crates. What should your Zap do?",
+   "options": [
+    "Save it; the website knows the price",
+    "Recalculate the total and reject the mismatch",
+    "Round it up",
+    "Ask the AI to decide"
+   ],
+   "answer": 1,
+   "why": "Anything from outside is a claim to check. Compute totals yourself."
+  },
+  {
+   "t": "quiz",
+   "q": "Your Zap is switched off, and the website sends an order to its hook. What does the website see?",
+   "options": [
+    "An error",
+    "Nothing",
+    "A success reply, even though nothing will happen",
+    "A redirect"
+   ],
+   "answer": 2,
+   "why": "Zapier always replies success. That's why you monitor the Zap and alert on problems yourself."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Catch Hook gives any system an instant way to start your Zap.\n2. Webhook actions (POST, GET, PUT) let your Zap talk to any API.\n3. Code steps: inputData in, `output` out; convert text to numbers first.\n4. Wrap lists in `line_items` unless you want one run per item.\n5. Recalculate everything from outside; check a token; alert on failures.\n6. The hook URL and token are secrets (0.6)."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 1.4 complete!* _Webhooks & Code Steps_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 1.5, _AI Steps, Tables & Interfaces_."
+  }
+ ]
+}

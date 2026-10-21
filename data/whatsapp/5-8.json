@@ -1,0 +1,194 @@
+{
+ "id": "5.8",
+ "title": "CRM Foundations: HubSpot and Zoho",
+ "track": 5,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.8 · CRM Foundations: HubSpot and Zoho*\n\n_≈ 2 hours · with Emeka_\n\nYour growth agents now find leads, answer comments and capture enquiries. But where do those leads go? If the answer is \"a sheet nobody opens\" or \"Tolu's WhatsApp\", deals are lost quietly. A CRM (customer relationship management system) is where every customer, company and deal lives, with a clear stage, an owner and a next step. In this lesson you set up a real CRM the way a client would need it: the right records, a pipeline with honest stages, clean data, and a team that actually uses it. Automating it comes next, in 5.9.\n\n*Your problem:* Leads arrive, then get lost across WhatsApp, sheets and inboxes.\n*The plan:* Set up a CRM with honest pipeline stages, clean data and an owner for every deal.\n*After this lesson:* Every opportunity has a stage, an owner and a next step, and nothing slips."
+  },
+  {
+   "t": "text",
+   "body": "*The hotel deal nobody followed up*\n\n*Week 1:* A hotel asks Harvest Lane for a ₦1.2 million-a-month supply quote. Tolu means to reply \"tomorrow\".\n\n*Echo:* \"Your agents capture leads beautifully. Then they land in four places, and nobody owns the next step.\"\n\n*Glitch:* \"I made a CRM! Sixty fields, fourteen stages, and I imported every phone contact Tolu has. Twice.\"\n\n*Tolu:* \"Five stages I understand, one owner per deal, and a reminder when something sits too long. That's all I need.\""
+  },
+  {
+   "t": "text",
+   "body": "*The four building blocks*\n\nAlmost every CRM, from HubSpot to Zoho to Salesforce, is built from the same blocks. Learn them once and you can work in any of them.\n\n_Block · What it is · Harvest Lane example_\n- *Contact* · A person · Mrs Bello, procurement manager\n- *Company* (Zoho: Account) · The business they work for · Bodija Suites hotel\n- *Deal* (Zoho: Deal or Potential) · A possible sale, with a value and a stage · Weekly vegetables, ₦1.2m a month\n- *Activity* · Emails, calls, meetings, notes and tasks logged on any of the above · \"Tasting on Thursday, 10 a.m.\" (task for Tolu)\n\n- *Associations*: The links between records: Mrs Bello belongs to Bodija Suites, and the deal is linked to both. Without associations, you have three lists, not a CRM.\n- *Leads in Zoho*: Zoho also has a separate _Leads_ module for people not yet qualified. When a lead qualifies, you _convert_ it into a contact, an account and (optionally) a deal. HubSpot uses a _lifecycle stage_ on the contact instead."
+  },
+  {
+   "t": "text",
+   "body": "*Two ladders: lifecycle stage and deal stage*\n\nBeginners mix these up. They answer different questions.\n\n- *Lifecycle stage (on the contact)*: \"How well do we know this person?\" HubSpot's defaults: Subscriber → Lead → Marketing qualified lead (MQL) → Sales qualified lead (SQL) → Opportunity → Customer → Evangelist. It should only move forward.\n- *Deal stage (on the deal, inside a pipeline)*: \"Where is this sale right now?\" One contact can have several deals over time, each moving through the pipeline to _won_ or _lost_.\n\nEach deal stage needs an *exit rule*: a fact that must be true before a deal moves on. Harvest Lane's pipeline:"
+  },
+  {
+   "t": "text",
+   "body": "_Stage · Exit rule (move on when…) · Win chance_\n- *New enquiry* · A business has asked about supply or prices · 10%\n- *Tasting booked* · A date and time are agreed for a tasting or sample · 25%\n- *Proposal sent* · A written price and schedule has been sent · 50%\n- *Trial order* · The first paid order has been delivered · 75%\n- *Won / Lost* · A supply agreement is signed, or they said no (with a reason) · 100% / 0%\n\n*Echo:* Stages are things the _customer_ did, not things you hope. \"Proposal sent\" is a fact. \"Very interested\" is a feeling."
+  },
+  {
+   "t": "text",
+   "body": "*Pipeline lab: where does each deal sit?*\n\nTolu's notes from this week. Place each one using Harvest Lane's exit rules from Card 2."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Pipeline lab: where does each deal sit?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-8"
+  },
+  {
+   "t": "text",
+   "body": "*Clean data: properties, imports and duplicates*\n\nA CRM is only as good as what goes in. Most \"the CRM doesn't work\" complaints are really data problems.\n\n- *Properties are fields*: Use dropdowns, not free text, for anything you will filter or report on: `lead_source` (Instagram, outreach, referral…), `business_type`, `delivery_zone`, `lost_reason`. \"insta\", \"IG\" and \"Instagram\" in a text box become three sources in your report.\n- *Few, not many*: HubSpot's free plan allows only 10 custom properties in total, so choose the ones the report needs. That limit is a good discipline on any plan.\n- *Duplicates*: HubSpot matches contacts on email address and companies on website domain when you import. Normalise first: lowercase emails, phones as +234…, one domain per company (no \"www.\").\n- *Consent travels with the record*: Store how and when each person agreed to marketing (from 5.6). Importing WhatsApp contacts does not give you consent to email them."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Clean data: properties, imports and duplicates): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-8"
+  },
+  {
+   "t": "text",
+   "body": "*Choosing a CRM, and making people use it*\n\n_HubSpot Free · Zoho CRM Free · Salesforce_\n- *Best for* · Small teams starting out; strong free email, forms and chat · Small teams who need more records and simple workflow rules free · Larger companies with admins; big job market\n- *Free plan limits (Oct 2026)* · 2 users, 1,000 contacts, 1 pipeline, 10 custom properties · 3 users, 5,000 records (check storage on the current plan) · No free plan for a business; a free Developer Edition for learning\n- *Automation on free* · Very little; basic workflows from Starter, full workflows from Professional · Up to 5 workflow rules · (paid editions)\n- *API on free* · Yes, with a private app token · Yes · Developer Edition\n\nLimits and prices change often. Check the vendor's pricing page on the day you advise a client, and write the date in your proposal."
+  },
+  {
+   "t": "text",
+   "body": "- *Adoption beats features*: A CRM nobody updates is worse than a sheet. Keep stages few, make the mobile app the default, and let automation (5.9) do the typing.\n- *Permissions*: Each person sees and edits what their role needs. Owners are named people, never \"sales\".\n- *One dashboard, one weekly meeting*: Deals by stage and value, deals stuck too long, won and lost this month with reasons. Review it every Monday; the pipeline stays honest because people know it will be looked at."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _HubSpot CRM Tutorial for Beginners 2026 (Step-by-Step)_.\nLook for: Contacts, companies and deals, and setting up a pipeline. Keep your stages fewer than you see.",
+   "media": "walk:5.8",
+   "youtube": "https://www.youtube.com/watch?v=t8QM5zunC44",
+   "app": "https://automancy.cc/learn#m-5-8"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's first CRM*\n\n*The goal.* Every restaurant and hotel lead from Track 5 lives in HubSpot's free CRM with a company, a contact, a deal in the right stage, an owner and a next step. Tolu reviews one dashboard every Monday. (Using Zoho? Every step has a Zoho equivalent, noted in brackets.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Write the design on one page first*\n\nBefore clicking anything: the objects you'll use (contacts, companies, deals), the pipeline stages with exit rules (Card 2), the custom properties (no more than 10), the owners (Tolu, and Bisi for households), and the four numbers the dashboard must show. Get Tolu to agree to this page."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Create the account and the pipeline*\n\nSign up for HubSpot's free CRM with Harvest Lane's own domain email. In _Settings → Objects → Deals → Pipelines_, rename the default stages to Harvest Lane's, and set each win chance. (Zoho: _Setup → Customization → Pipelines_, or edit the Stage picklist.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add the properties that drive the report*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Add the properties that drive the report): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-8"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Import, carefully*\n\nExport the leads sheet from Growth Desk, clean it with the Card 4 checklist, and import companies first, then contacts (matched to companies by domain), then open deals. Import 10 rows, check that each deal shows its company and contact, then import the rest."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Owners, views and the phone*\n\nAssign every open deal an owner. Save a view \"My deals needing a next step\" (no task, or next step date passed). Install the HubSpot mobile app on Tolu's phone and log one call from it together, so she sees how quick it is."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · The Monday dashboard*\n\nFour reports: open deal value by stage; deals in the same stage for more than 14 days; won and lost this month with reasons; new deals by `lead_source`. Book a 20-minute Monday review with Tolu for the next four weeks.\n\n- *5* stages with exit rules\n- *8* custom properties\n- *0* deals without an owner"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The design is agreed before anything is built.\n- Stages describe what the customer did.\n- Dropdowns keep the reports clean.\n- Every deal has an owner and a next step.\n- A weekly review keeps people using it.\n\n*Common mistakes to avoid*\n\n- Copying a big company's 12-stage pipeline.\n- Free-text fields for sources and reasons.\n- Importing everything at once, unchecked.\n- Treating WhatsApp contacts as email consent.\n- Setting it up and never reviewing it."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My CRM is very complete. Tolu just doesn't open it.\n\n*A:* The pipeline has 14 stages, including \"Very interested\" and \"Will call back\".\n*B:* The lead source report shows \"IG\", \"insta\", \"Instagram\" and \"instagram ad\" as four sources.\n*C:* Bodija Suites appears as three companies: bodijasuites.example, www.bodijasuites.example and \"Bodija Suites Hotel\".\n*D:* Glitch imported 3,000 phone contacts and sent them all the newsletter.\n*E:* Half the open deals have no owner and no next step. The forecast says ₦9 million."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* stages based on feelings. Cut to five stages, each with an exit rule the customer meets.\n*B:* free text. Make `lead_source` a dropdown and fix the old values in one bulk edit.\n*C:* unnormalised domains and a company with no domain. Strip \"www.\", add the domain to every company, then merge the three records.\n*D:* no consent. Phone contacts didn't agree to email. Remove them from marketing, apologise if needed, and ask for opt-in (5.6).\n*E:* no owners, no next steps, so nobody chases and the forecast is fiction. Assign owners, require a next step date, and review stuck deals every Monday."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Design a CRM on one page",
+   "body": "- For a real business, write the objects, pipeline stages with exit rules, up to 10 custom properties, owners and the four dashboard numbers.\n\n*Done when:*\n- The owner agrees each stage describes something the customer does."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Set it up in HubSpot or Zoho free",
+   "body": "- Build your design in a free account; import at least 30 cleaned records with companies, contacts and deals associated.\n- Build the Monday dashboard.\n\n*Done when:*\n- No duplicates, every open deal has an owner and next step, and the dashboard shows all four numbers."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run a real pipeline for four weeks",
+   "body": "- Set up the CRM for a real business, train the team, and run four Monday reviews.\n- Report how many deals were found stuck and what happened to them.\n\n*Done when:*\n- The team updated it themselves every week, and at least one stuck deal was rescued or honestly closed."
+  },
+  {
+   "t": "quiz",
+   "q": "What's the difference between a lifecycle stage and a deal stage?",
+   "options": [
+    "They're the same thing",
+    "Lifecycle is about the person; deal stage is about one sale in a pipeline",
+    "Lifecycle stages are only for Zoho",
+    "Deal stages are for marketing emails"
+   ],
+   "answer": 1,
+   "why": "One person moves up the lifecycle once; they can have many deals over time."
+  },
+  {
+   "t": "quiz",
+   "q": "What makes a good pipeline stage?",
+   "options": [
+    "A hopeful name like \"Very interested\"",
+    "As many stages as possible",
+    "An exit rule based on something the customer did",
+    "A stage for each salesperson"
+   ],
+   "answer": 2,
+   "why": "Exit rules make stages facts, so the forecast can be trusted."
+  },
+  {
+   "t": "quiz",
+   "q": "Why make lead source a dropdown?",
+   "options": [
+    "So the report doesn't split one source into many spellings",
+    "Dropdowns are cheaper",
+    "HubSpot doesn't allow text fields",
+    "To hide the source"
+   ],
+   "answer": 0,
+   "why": "Free text gives you IG, insta and Instagram as three sources."
+  },
+  {
+   "t": "quiz",
+   "q": "A client has 4,000 customers, three staff and no budget. Which free plan fits best on the limits in this lesson?",
+   "options": [
+    "HubSpot Free",
+    "Salesforce Developer Edition",
+    "None; a CRM is never free",
+    "Zoho CRM Free"
+   ],
+   "answer": 3,
+   "why": "Zoho Free allows 3 users and 5,000 records; HubSpot Free is 2 users and 1,000 contacts. Check current limits before advising."
+  },
+  {
+   "t": "quiz",
+   "q": "Can you import a client's WhatsApp contacts and send them the newsletter?",
+   "options": [
+    "Yes, they're customers",
+    "No; record consent and ask them to opt in first",
+    "Yes, if the CRM allows it",
+    "Only on weekends"
+   ],
+   "answer": 1,
+   "why": "Being a contact isn't consent to marketing. Consent travels with each record."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Contacts, companies, deals and activities, linked by associations.\n2. Lifecycle stage is about the person; deal stage is about one sale.\n3. Every stage has an exit rule the customer meets.\n4. Dropdowns, normalised data and consent make the CRM trustworthy.\n5. Owners, next steps and a weekly review make people use it."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.8 complete!* _CRM Foundations: HubSpot and Zoho_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.9, _CRM Automation and Integration_."
+  }
+ ]
+}

@@ -1,0 +1,199 @@
+{
+ "id": "0.5",
+ "title": "Talking to AI: LLM Essentials",
+ "track": 0,
+ "free": true,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 0.5 · Talking to AI: LLM Essentials*\n\n_≈ 100 minutes · with Emeka_\n\nLarge language models can read messy human messages and turn them into the clean data you learned to design in 0.3 and 0.4. This module teaches how they work, what they cost, and how to write and test prompts you can trust inside an automation.\n\n*Your problem:* AI gives you different answers every time, and some of them are wrong.\n*The plan:* Write, test and improve a prompt until it extracts orders reliably, then make it return JSON.\n*After this lesson:* You can get consistent, checkable results from AI models."
+  },
+  {
+   "t": "text",
+   "body": "*Sage wakes up*\n\n*Monday, 5 October:* The order form from 0.1 helps, but many customers still just type. In English, Pidgin, Yoruba, or all three.\n\n*Enter Sage:* The owl who thinks. \"Rules can't read Pidgin,\" says Sage. \"I can. Mostly.\"\n\n*The catch:* Tolu's first try invents an address and a total. Glitch loves a confident guess.\n\n*The fix:* \"Don't trust me because I sound sure,\" says Sage. \"Trust me because you tested me.\""
+  },
+  {
+   "t": "text",
+   "body": "*What an LLM actually does*\n\nA large language model breaks text into small pieces called *tokens*, then predicts the most likely next token, over and over, based on patterns learned from huge amounts of text. That simple loop is enough to read, summarise, classify, translate and write.\n\n*Good at*\n\n- Understanding messy, mixed-language text\n- Extracting fields into a fixed format\n- Classifying and summarising\n- Drafting replies in a set tone\n\n*Unreliable at*\n\n- Arithmetic on money (use formulas)\n- Facts it wasn't given (it may invent them)\n- Today's date, prices, stock (send them in)\n- Being right 100% of the time (so test)"
+  },
+  {
+   "t": "text",
+   "body": "*Tokens, context and cost*\n\nProviders charge per token, with separate prices for *input* (what you send) and *output* (what it writes). A rough rule for English: 1 token ≈ 4 characters, or about ¾ of a word. Pidgin, Yoruba and other languages often use more tokens per word. The *context window* is the most text one call can hold, including your instructions and its answer.\n\n*What drives cost:* the length of your prompt (sent on every call), the length of the answer, how many calls you make, and which model you pick. A long prompt repeated 10,000 times a month adds up; a short answer format saves money every time."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: estimate an AI step's cost. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-0-5"
+  },
+  {
+   "t": "text",
+   "body": "*Anatomy of a reliable prompt*\n\nWrite a prompt the way you'd brief a sharp new staff member on their first day: who they are, the job, what they need to know, the rules, and exactly what to hand back. Most AI steps take two messages: a *system* message with the standing instructions, and a *user* message with the item to process.\n\n- *Role*: You are the order-intake assistant for Harvest Lane, a produce delivery business in Ibadan.\n- *Task*: Read one customer message and extract the order.\n- *Context*: The product catalogue and SKUs; today's date; the languages customers use.\n- *Rules*: Use null when something isn't stated. Never guess addresses. Only use catalogue SKUs.\n- *Output format*: Only JSON, in exactly this shape, with no extra words.\n- *Examples*: One or two message → output pairs, including a tricky one.\n\n*Sage:* Examples are the most powerful part. One good example teaches me the format better than a paragraph of rules. It's called \"few-shot\" prompting."
+  },
+  {
+   "t": "text",
+   "body": "*Structured output: make the answer machine-readable*\n\nAn automation's next step needs JSON it can parse, not a friendly paragraph. Three habits get you there:\n\n- *Show the exact shape*: Include the JSON template with every key and its type.\n- *Say \"only JSON\"*: No explanations and no markdown fences (```), which break parsing.\n- *Use platform features*: Many APIs offer a JSON or structured-output mode, and n8n has a Structured Output Parser. Use them when available; they enforce the shape.\n- *Low temperature*: _Temperature_ controls randomness. Use 0–0.3 for extraction and classification; higher only for creative writing."
+  },
+  {
+   "t": "text",
+   "body": "*Hallucinations and how to catch them*\n\nA *hallucination* is when a model states something that isn't true or wasn't in the input, usually in a confident tone. You can't eliminate it, but you can design around it.\n\n- *Give it permission to not know*: \"If it isn't in the message, return null.\" Models guess less when guessing isn't required.\n- *Check after the model*: Does the JSON parse? Are SKUs in the catalogue? Is qty a number? Let rules check the AI.\n- *Test on a set, not one example*: Run 10–20 real messages with known right answers and count how many it gets right.\n\n*Which model?* Claude, GPT and Gemini all handle this well, and cheaper small models often do too. Pick the smallest, cheapest model that passes your test set. You'll compare models properly in Module 3.7."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How Large Language Models Work_ (IBM Technology).\nLook for: What an LLM is: predicting the next token from training data.",
+   "media": "walk:0.5",
+   "youtube": "https://www.youtube.com/watch?v=5sLYAQS9sWQ",
+   "app": "https://automancy.cc/learn#m-0-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: a prompt that turns any order message into clean JSON*\n\n*The problem.* Build a prompt that reads customer messages in English, Pidgin or Yoruba and returns order JSON Harvest Lane's sheet can use. It must not invent anything. We'll test it on 10 real-style messages, measure, and improve until it scores 10 out of 10. You can do all of this in a free chat app by pasting the prompt and then each message."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Build the test set first*\n\nBefore writing the prompt, collect 10 messages that cover the normal cases and the tricky ones, and write down the right answer for each. This is your exam; the prompt is the student."
+  },
+  {
+   "t": "text",
+   "body": "*1:* Good morning! Pls 2 crates of tomatoes and 1 big bag tatashe. Tuesday afternoon, 14 Ring Road. Mrs Adebayo 08031234567 · Normal, complete order\n*2:* abeg bring 3 bag onion come Bodija tomorrow morning. Tunde 0809 555 1212 · Pidgin; relative date; phone with spaces\n*3:* I want tomatoes · No quantity, no address, no date\n*4:* Ẹ kú àárọ̀. 1 small crate tomato and rodo big bag, deliver Friday. Mama Kemi, Mokola · Yoruba greeting; \"rodo\" is local name\n*5:* Same as last week pls · Nothing extractable\n*6:* 2 crates tomato + 2 bags ugwu · Ugwu isn't in the catalogue\n*7:* Please send three bags of onions to 5 Adeola Street on Saturday · Number in words\n*8:* Can I get 1 crate tomatoes and 1 small crate? For Sunday evening. +2348023456789 · Two different SKUs for tomatoes\n*9:* Tomatoes 2, pepper 1 (the red one), my usual address · \"Red pepper\" means tatashe; address not given\n*10:* Hi, how much is onions this week? · Not an order at all"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Version 1: the obvious prompt*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Version 1: the obvious prompt): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-5"
+  },
+  {
+   "t": "text",
+   "body": "It \"works\" on message 1. On the full set, only *4 of 10* are usable. Four answers came wrapped in markdown fences, which a parser rejects. Message 3 got an invented quantity and address. Message 5 produced a made-up order. Message 6 turned ugwu into \"pepper\". Message 7 kept \"Saturday\" as text. Phone formats varied."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Version 2: rules and a catalogue*\n\nAdd a role, the SKU list, \"only JSON\", \"use null if not stated\", \"unmatched products go in `unmatched`\", and ISO dates using today's date. Score: *8 of 10*. Message 4 put \"rodo\" in `unmatched` because the catalogue only said \"scotch bonnet\", and message 9 guessed rodo for \"the red one\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Version 3: local names, an example, and a confirmation flag*\n\nAdd the local names customers actually use, one worked example, a language rule, and a `needs_confirmation` flag so humans check uncertain orders. Score: *10 of 10*. Here's the final prompt:\n\n_(Code on screen in the app.)_\n\nThe parts in {{double braces}} are filled in by the automation each time. In a chat app, replace them yourself: type today's date, then paste each test message."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Compare the three versions*\n\n- *4/10*: v1 · one sentence\n- *8/10*: v2 · role, rules, catalogue\n- *10/10*: v3 · local names, example, flag\n\nTwo expected outputs from v3, so you can check your own runs:\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Decide what the AI is not allowed to do*\n\nNotice the prompt has no prices and asks for no total. The AI reads and structures; the sheet from Module 0.4 looks up prices and calculates totals with formulas. Each part does what it's reliable at.\n\n*Nodo:* *Belt and braces:* in the real automation, a rules step checks every AI answer: does it parse, are the SKUs in the catalogue, is every qty a number above 0? Anything that fails, or has `needs_confirmation: true`, goes to Tolu instead of straight into the sheet. You'll build that in Tracks 1–3."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- A test set turns \"seems fine\" into a number you can improve.\n- Each version fixes the failures the last one revealed.\n- Local names and an example teach the model your world.\n- Maths and prices stay with formulas, not the model.\n\n*Common mistakes to avoid*\n\n- Testing on one easy message and calling it done.\n- Asking the AI to calculate totals from prices it wasn't given.\n- Forgetting to tell it today's date.\n- Letting uncertain answers flow into the sheet unchecked."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My prompt is shorter AND more fun. The output even has a total! Find six problems."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Glitch hunt): open it in the app.",
+   "url": "https://automancy.cc/learn#m-0-5"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "1. *\"Be creative\" and temperature 1.2:* exactly wrong for extraction. Ask for accuracy; use 0–0.3.\n2. *\"Work out the address from context\":* an invitation to invent. The rule should be: not stated → null.\n3. *Asking for a total without prices:* the model made up ₦37,500. Totals come from the sheet.\n4. *An API key pasted into the prompt:* keys never go into prompts or chats (Module 0.6). Revoke it now.\n5. *No output format:* chatty text and markdown fences around the JSON break the parser; \"date\": \"tomorrow\" isn't ISO; qty 3 was invented.\n6. *Biggest model by default:* costs more for no gain on a simple task. Start small and test."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Run the v3 prompt on three models",
+   "body": "- Open free chat versions of two or three assistants (for example Claude, ChatGPT and Gemini, or Google AI Studio).\n- Paste the v3 prompt with today's date, then messages 2, 4, 6, 9 and 10 from the test set, one at a time.\n- Score each answer against the expected result: fully right, partly right, or wrong.\n\n*Done when:*\n- You have a small table: model × message × score, and one sentence on which you'd choose and why."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build and measure a message classifier",
+   "body": "- Write a prompt that labels each message as exactly one of: `order` (new or change), `complaint`, `question`, `other`. Output only the label.\n- Run it on the 20 messages below and count how many match the expected label. Improve the prompt until you reach at least 18 of 20.\n\n*Done when:*\n- You reach 18/20 or better, and you've written down which messages were hardest and what fixed them."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Hints",
+   "answer": "- Define each label in one line inside the prompt, with an example.\n- Messages 13 and 19 are edge cases: say that changes and cancellations count as `order`, and that when a message contains an order plus a question, `order` wins.\n- Ask for the label only, lowercase, one word."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Your own extraction prompt, tested to 95%",
+   "body": "- Pick a messy input from your own work: supplier invoices pasted as text, enquiry emails, farmer reports, CV summaries.\n- Design the JSON output (use Module 0.3), write a v1 prompt, and build a test set of 20 real examples with expected outputs in a sheet.\n- Score by field: for each example, count correct fields out of total fields. Iterate to 95% field accuracy.\n- Use the estimator on this page to cost it at your expected monthly volume.\n\n*Done when:*\n- Your sheet shows at least three versions with their scores, and your final prompt includes a null rule, an output shape and at least one example."
+  },
+  {
+   "t": "quiz",
+   "q": "Which best describes what an LLM does?",
+   "options": [
+    "Looks answers up in a database of facts",
+    "Predicts likely next text based on patterns it learned",
+    "Runs calculations exactly like a spreadsheet",
+    "Remembers every past conversation automatically"
+   ],
+   "answer": 1,
+   "why": "It predicts tokens from patterns. That's why it can read Pidgin, and also why it can confidently invent things."
+  },
+  {
+   "t": "quiz",
+   "q": "For extracting order details, which temperature fits best?",
+   "options": [
+    "Low (0–0.3)",
+    "High (1.0+)",
+    "It makes no difference",
+    "As high as the platform allows"
+   ],
+   "answer": 0,
+   "why": "Low temperature gives consistent, less random answers, which is what you want for extraction and classification."
+  },
+  {
+   "t": "quiz",
+   "q": "A message has no delivery address. What should a good prompt make the model do?",
+   "options": [
+    "Use the customer's last known address",
+    "Guess from the area mentioned elsewhere",
+    "Return null for the address",
+    "Refuse to answer"
+   ],
+   "answer": 2,
+   "why": "Null is honest and easy for the next step to catch. A later rule sends it to a person."
+  },
+  {
+   "t": "quiz",
+   "q": "Who should calculate an order's total?",
+   "options": [
+    "The AI, from prices it knows",
+    "The AI, if you ask it to double-check",
+    "The customer",
+    "Formulas in the sheet, using stored prices"
+   ],
+   "answer": 3,
+   "why": "The AI structures the order; the sheet does the maths reliably with real prices."
+  },
+  {
+   "t": "quiz",
+   "q": "Your prompt works on one example. What next?",
+   "options": [
+    "Put it into production",
+    "Test it on a varied set of real messages and count the correct answers",
+    "Make it longer",
+    "Switch to the most expensive model"
+   ],
+   "answer": 1,
+   "why": "Only a test set tells you how reliable a prompt really is, and what to fix next."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. An LLM predicts text from patterns. It knows only what you send it in that call.\n2. You pay per token, in and out; long prompts cost money on every call.\n3. Prompt = role + task + context + rules + output format + examples.\n4. For automations: only JSON, low temperature, null when unsure.\n5. Let formulas do maths and rules check the AI's answer.\n6. Trust a prompt only after it passes a test set."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 0.5 complete!* _Talking to AI: LLM Essentials_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 0.6, _Keys, Logins & Safety_."
+  }
+ ]
+}

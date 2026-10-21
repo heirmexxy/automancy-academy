@@ -1,0 +1,197 @@
+{
+ "id": "2.5",
+ "title": "HTTP, Webhooks & Data Stores",
+ "track": 2,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.5 · HTTP, Webhooks & Data Stores*\n\n_≈ 110 minutes · with Emeka_\n\nMoney time. Today Harvest Lane's payments confirm themselves: the payment company rings a webhook, Make double-checks the payment with the payment company's own API, remembers which payments it has already handled, and marks the order paid. These three tools, webhooks, HTTP and data stores, let Make talk to almost anything safely.\n\n*Your problem:* You need an app Make doesn't support, and somewhere to remember things between runs.\n*The plan:* Call any API with the HTTP module, receive webhooks, and store data in data stores.\n*After this lesson:* You can connect Make to almost anything and keep state between runs."
+  },
+  {
+   "t": "text",
+   "body": "*Paid twice, or not at all?*\n\n*Every morning:* Tolu matches the payment dashboard against the order sheet by hand. Forty minutes.\n\n*The scare:* A test automation sent Mrs Adebayo two receipts. Did she pay twice?\n\n*Glitch:* \"Anyone can send a message that _looks_ like a payment. I'll just post one to your webhook.\"\n\n*The plan:* \"I'll remember every payment I've handled,\" says Weave. \"And I'll phone the payment company to check each one,\" says Nodo."
+  },
+  {
+   "t": "text",
+   "body": "*Custom webhooks: instant, and free of polling*\n\nThe *Webhooks · Custom webhook* trigger gives your scenario a URL. When something sends data to it, the scenario runs straight away, with no polling credits wasted (2.1). Send one sample request first so Make learns the data's shape; if the shape changes later, use \"Redetermine data structure\".\n\n- *Queue*: If the scenario is off or busy, Make stores incoming requests in a queue and processes them later (within limits), so you don't lose them during maintenance.\n- *Webhook response*: A module that replies to the sender with a status code and body you choose, e.g. 200 \"ok\".\n- *Headers*: In the webhook's advanced settings you can include request headers, needed for checking signatures."
+  },
+  {
+   "t": "text",
+   "body": "*The HTTP module: call any API*\n\n*HTTP · Make a request* is Make's version of Hoppscotch (0.2) inside a scenario: method, URL, headers, query string, body type (choose raw JSON for most APIs) and a *Parse response* switch. Turn parsing on and the JSON reply becomes mappable fields.\n\n*Keys go in a keychain.* Make's HTTP app has versions that handle authentication, such as an API Key Auth request that stores the key in a *keychain* (Make's credential store). Never type a secret key straight into a header field where anyone viewing the scenario can read it (0.6)."
+  },
+  {
+   "t": "text",
+   "body": "*Data stores: Make's memory*\n\nScenarios forget everything between runs. A *data store* is a small database inside Make: records with a *key* and fields you define. Modules let you add or replace, get, search, check whether a key exists, update, delete and count records.\n\n*Good uses*\n\n- \"Have I already handled this payment reference?\"\n- The last ID processed, so the next run starts after it.\n- Small lookup lists that change, like this week's holidays.\n\n*Keep using Sheets for*\n\n- Business records people read: orders, customers.\n- Anything needing formulas or sharing.\n- Large data: data store size depends on your plan."
+  },
+  {
+   "t": "text",
+   "body": "*Idempotency: handle each event exactly once*\n\nPayment companies resend a webhook if they don't get a quick 200 reply, and networks occasionally deliver twice. So the same payment can arrive more than once. An *idempotent* automation produces the same result whether an event arrives once or five times. The tool: check the data store for the payment reference before acting."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Idempotency: handle each event exactly once. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-2-5"
+  },
+  {
+   "t": "text",
+   "body": "Six webhooks, three real payments. Toggle the check and watch receipts and counted revenue change."
+  },
+  {
+   "t": "text",
+   "body": "*Verify, don't trust*\n\nAnyone who finds your webhook URL can post a fake \"payment succeeded\" message (Glitch's trick). Two defences, both described in Paystack's developer documentation:\n\n- *Verify with the API*: Take the payment reference and call Paystack's Verify Transaction endpoint with your secret key. Trust only what Paystack itself tells you: status and amount.\n- *Check the signature*: Paystack signs each webhook with an HMAC-SHA512 hash of the body, sent in the `x-paystack-signature` header. Recompute it with your secret key and compare.\n- *Check the amount in kobo*: Paystack amounts are in kobo. The order total ₦26,500 must match 2,650,000. Anything less is not a full payment."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Make.com Webhooks: Everything You Need To Know_.\nLook for: Custom webhook, payload structure and webhook response.",
+   "media": "walk:2.5",
+   "youtube": "https://www.youtube.com/watch?v=zgI6CGAWCQY",
+   "app": "https://automancy.cc/learn#m-2-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: payments that confirm themselves, safely*\n\n*The goal.* When Paystack reports a successful payment, mark the matching order Paid and send one receipt, only if Paystack confirms it, only if the amount is right, and only once per payment. Build it in *test mode* with test keys (0.6). No real money moves."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Create the data store*\n\nIn Make, create a data store *processed_payments* with fields `order_id` (text), `amount_kobo` (number), `processed_at` (date). The record key will be the payment reference."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Add the webhook and teach it the shape*\n\nNew scenario: *Webhooks · Custom webhook*. Copy its URL into your Paystack *test* dashboard's webhook URL setting. To teach Make the data structure, send this sample from Hoppscotch (a simplified charge.success event):"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Add the webhook and teach it the shape): open it in the app.",
+   "url": "https://automancy.cc/learn#m-2-5"
+  },
+  {
+   "t": "text",
+   "body": "The `metadata.order_id` is something you add when creating the payment link or transaction, so the payment can be matched to its order."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Reply quickly, then filter the event*\n\nAdd *Webhooks · Webhook response* right after the trigger: status 200, body `ok`. A fast reply stops Paystack retrying. Then add a filter on the next link: `event` equal to `charge.success`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Stop duplicates with the data store*\n\nAdd *Data store · Check the existence of a record*, key = `1.data.reference`. On the next link, filter: continue only if the record does *not* exist. Duplicate webhooks stop here, before any work or receipts."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Ask Paystack if it's real*\n\nAdd an *HTTP* request with API key authentication. Store your test secret key in a keychain as an `Authorization` header with the value `Bearer sk_test_…`. Method GET, URL:\n\n_(Code on screen in the app.)_\n\nTurn on *Parse response*. Filter the next link: `data.status` (from this HTTP module) equal to `success`. Glitch's fake message fails here, because Paystack has no such successful transaction."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Find the order and check the amount*\n\n*Google Sheets · Search Rows* in Orders where `order_id` = `1.data.metadata.order_id`. Filter the next link with a numeric condition:\n\n_(Code on screen in the app.)_\n\nAdd a second route on a router (2.3) for the mismatch case: amount too low → email Tolu \"Partial or wrong payment for HL-0061\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 7 · Mark paid, remember, and send one receipt*\n\nOn the success route: *Update a Row* (status Paid, paid_at now), *Data store · Add/replace a record* (key = reference, plus order_id, amount, time), and *Gmail · Send* the receipt text from 2.2.\n\n*Nodo:* *Going further: the signature.* For a second layer, include request headers in the webhook settings and pass the raw body through, then compare `x-paystack-signature` with an HMAC-SHA512 of the raw body using your secret key (Make's text functions include SHA hashing with a key). Paystack's docs describe the exact rule. The verify call alone already blocks fake payments; the signature also blocks fake _attempts_ before they cost you a credit."
+  },
+  {
+   "t": "text",
+   "body": "*Step 8 · Test every case*\n\n_Test · How · Expected_\n- *Real test payment* · Pay a test link with Paystack's test card · Order Paid, one receipt, one data store record\n- *Duplicate* · Resend the same webhook (Paystack dashboard or Hoppscotch) · Stops at the existence check\n- *Fake* · POST a made-up reference from Hoppscotch · Stops at the verify filter\n- *Wrong amount* · Test payment for less than the order total · Tolu alerted; order not marked Paid\n- *Other event* · POST event \"transfer.success\" · Stops at the event filter"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Instant webhook, no polling credits.\n- The data store makes repeats harmless.\n- Only Paystack's own API decides what's paid.\n- Kobo-to-naira is checked explicitly, so partial payments are caught.\n\n*Common mistakes to avoid*\n\n- Trusting the webhook body without verifying.\n- Comparing kobo to naira.\n- Typing the secret key into a visible header field.\n- Replying slowly, so the sender retries and duplicates pile up."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My payment scenario has five problems. I'm calling them features.\n\n*A:* Customers sometimes get two or three receipts for one payment.\n*B:* Every payment is flagged \"wrong amount\", including correct ones.\n*C:* A ₦100 order was marked Paid after someone posted a homemade JSON message.\n*D:* The HTTP module's output is one long block of text; `data.status` can't be mapped.\n*E:* A new team member could see the secret key while viewing the scenario."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no deduplication, and a slow reply makes the sender retry. Check the data store first and respond with 200 early.\n*B:* comparing kobo to naira. Multiply the order total by 100 (or divide Paystack's amount).\n*C:* the webhook body was trusted. Verify with the API and/or check the signature.\n*D:* \"Parse response\" is off.\n*E:* the key was typed into a header field. Use a keychain with API key authentication."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A webhook that answers back",
+   "body": "- Create a custom webhook and a Webhook response that returns JSON: `{\"received\": true, \"order_id\": \"<the order_id you sent>\"}`.\n- POST to it from Hoppscotch and read the reply.\n\n*Done when:*\n- Hoppscotch shows your custom JSON reply with the order_id you sent."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build and pass the five payment tests",
+   "body": "- Build the solved scenario in Paystack test mode. (Outside Paystack's countries, use the sample payload and a mock verify endpoint on webhook.site that returns a success JSON.)\n- Run all five tests in the table.\n\n*Done when:*\n- Each test stops exactly where expected, and the data store holds one record per real payment."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A holiday-aware delivery run",
+   "body": "- Build a weekly scenario that calls the public holidays API from 0.2 with the HTTP module and stores Nigeria's upcoming holidays in a data store.\n- Change the 8 p.m. run from 2.3: if tomorrow is a holiday (check the data store), don't build the rider list; instead message customers that delivery moves to the next working day.\n\n*Done when:*\n- With a test holiday added for tomorrow, the 8 p.m. run sends the \"moved\" messages and no rider list."
+  },
+  {
+   "t": "quiz",
+   "q": "Why use a custom webhook trigger instead of polling for payments?",
+   "options": [
+    "It's the only option in Make",
+    "It costs more but looks better",
+    "It's instant and uses no credits checking for nothing",
+    "It doesn't need a URL"
+   ],
+   "answer": 2,
+   "why": "Webhooks run only when data arrives, immediately."
+  },
+  {
+   "t": "quiz",
+   "q": "The same payment webhook arrives three times. What makes your scenario act only once?",
+   "options": [
+    "Checking a data store for the payment reference before acting",
+    "A slower schedule",
+    "Parsing the response",
+    "Sending three receipts and apologising"
+   ],
+   "answer": 0,
+   "why": "Remember what you've handled. That's idempotency."
+  },
+  {
+   "t": "quiz",
+   "q": "An order total is ₦26,500. What should Paystack's amount be?",
+   "options": [
+    "26500",
+    "265000",
+    "26.5",
+    "2650000"
+   ],
+   "answer": 3,
+   "why": "Paystack counts in kobo: naira × 100."
+  },
+  {
+   "t": "quiz",
+   "q": "Someone posts a fake charge.success message to your webhook. What stops it?",
+   "options": [
+    "The webhook response",
+    "Verifying the reference with Paystack's API (and/or checking the signature)",
+    "The data store",
+    "Nothing can stop it"
+   ],
+   "answer": 1,
+   "why": "Only the payment company's own records decide what's paid."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should a secret API key live in Make?",
+   "options": [
+    "In the URL",
+    "Typed into a header field",
+    "In a keychain used by the HTTP module's authentication",
+    "In a data store"
+   ],
+   "answer": 2,
+   "why": "Keychains are Make's credential store; anyone viewing the scenario can't read them."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Custom webhooks run instantly and waste no credits on checking.\n2. Reply fast with a webhook response so senders don't retry.\n3. The HTTP module calls any API; turn on Parse response; keep keys in a keychain.\n4. Data stores give scenarios memory between runs.\n5. Handle each event once: check the reference before acting.\n6. For money: verify with the provider, and compare in kobo."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.5 complete!* _HTTP, Webhooks & Data Stores_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.6, _Error Handling & Reliability_."
+  }
+ ]
+}

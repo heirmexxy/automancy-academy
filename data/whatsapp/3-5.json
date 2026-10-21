@@ -1,0 +1,195 @@
+{
+ "id": "3.5",
+ "title": "The Code Node",
+ "track": 3,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 3.5 · The Code Node*\n\n_≈ 2 hours · with Emeka_\n\nSome jobs take ten nodes or one short piece of code. The Code node lets you write JavaScript (or Python) that reads every item, transforms it, and returns new items. You don't need to become a programmer. You need four patterns, one strict rule about what you return, and the habit of testing with messy data.\n\n*Your problem:* Some jobs are easier in ten lines of code than in ten nodes.\n*The plan:* Write JavaScript and Python in the Code node, starting from fixing Glitch's broken code.\n*After this lesson:* You know when to code and can write the small pieces you need."
+  },
+  {
+   "t": "text",
+   "body": "*Who are our best customers?*\n\n*Monday:* The investor from Boss 2 is back with a simple question. Tolu has no simple answer.\n\n*The mess:* 3,400 order rows, 1,200 of them repeat customers under different spellings and phone formats.\n\n*Nodo:* \"You could build this with twelve nodes. Or write twenty lines in one Code node and read them in a minute.\"\n\n*Glitch:* \"Your code is fine. You just returned the wrong shape. n8n won't take it.\""
+  },
+  {
+   "t": "text",
+   "body": "*What goes in, what must come out*\n\nThe Code node has two modes:\n\n_Run Once for All Items (default) · Run Once for Each Item_\n- *Runs* · Once, with every item · Once per item\n- *Read input* · `$input.all()` → a list of items, each `{ json: {...} }` · `$json` (or `$input.item.json`) → this item's fields\n- *Return* · A *list* of items: `return [{ json: {...} }, …]` · *One* item: `return { json: {...} }`\n- *Use for* · Totals, grouping, de-duplicating, sorting: anything that compares items · Cleaning or reshaping each item on its own\n\n*Nodo:* The one strict rule: in all-items mode, return an array of objects. Not a number, not a list of names, not nothing. If you see \"Code doesn't return items properly\", check your `return` line first."
+  },
+  {
+   "t": "text",
+   "body": "*Four patterns that do most of the work*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Four patterns that do most of the work): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-5"
+  },
+  {
+   "t": "text",
+   "body": "`reduce` can do the same as pattern 4 in one expression; use whichever you can read. `??=` means \"set it only if it isn't set yet\". Note that `filter` returns the original items, already in `{ json }` shape, so they can be returned directly."
+  },
+  {
+   "t": "text",
+   "body": "*Numbers, phones and dates: the silent bugs*\n\n- *Numbers that are text*: Sheets and forms often send `\"45000\"`. `0 + \"45000\"` gives `\"045000\"`, not 45000. Always convert: `Number(o.total) || 0`.\n- *One phone, many formats*: Strip non-digits, then normalise: `0803…` and `234803…` both become `+234803…`. Only then compare or group.\n- *ISO dates compare as text*: `\"2026-09-14\" > \"2026-08-19\"` is true, because `YYYY-MM-DD` sorts correctly. Other formats (`14/09/26`) don't: convert first.\n- *Luxon in code*: `DateTime` works in the Code node too: `DateTime.fromISO(o.date).diffNow('days').days` gives days since an order (negative for the past).\n- *Money*: Do the maths in whole naira (or kobo); round only for display."
+  },
+  {
+   "t": "text",
+   "body": "*Try it: the Code node sandbox*\n\nThis runs your JavaScript in your browser against 12 sample order rows, the way the Code node would, and checks the return shape. The checker knows the right answer for the solved problem: one row per real customer, with order count, lifetime value and last order date."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: the Code node sandbox. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-3-5"
+  },
+  {
+   "t": "text",
+   "body": "*Python, limits, and your AI pair programmer*\n\n- *Python*: The Code node also runs Python. In n8n 2.x it uses native Python; the older browser-based (Pyodide) version was removed. Native Python reads items through `_items` (all-items mode) or `_item` (each-item mode), and doesn't support most of the `$` helpers. If you know Python, use it; otherwise JavaScript has more examples.\n- *What code can't do*: The Code node can't read files or make HTTP requests. Let HTTP Request and app nodes do the talking; let code calculate. On n8n Cloud, only a couple of libraries (such as `crypto`) are available; self-hosted n8n can allow more.\n- *Asking an AI to write it*: Describe the input (paste two _fake_ sample items), the exact output you want, the mode, and the n8n return shape. Then run it against messy test data, read every line, and ask the AI to explain anything you don't understand."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Python, limits, and your AI pair programmer): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-5"
+  },
+  {
+   "t": "text",
+   "body": "*Sage:* I'll write a good first draft in seconds. I'll also occasionally forget your edge cases or return the wrong shape. The sandbox and your test data are how you find out. You're the one responsible for what runs."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _n8n Code Node Tutorial: 6 Examples with JavaScript & Python_.\nLook for: Returning items correctly, in JavaScript and Python.",
+   "media": "walk:3.5",
+   "youtube": "https://www.youtube.com/watch?v=aDwZaFC8kg8",
+   "app": "https://automancy.cc/learn#m-3-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: one row per customer, ranked by value*\n\n*The goal.* From the Orders sheet (every order ever, messy names and phone formats), produce a *Customers* sheet with one row per real customer: normalised phone, latest name, number of orders, lifetime value, first and last order dates, and a rank. Rows with no phone go to a separate check."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Read the orders and pin them*\n\n*Manual Trigger* → *Google Sheets · Get Row(s)* on Orders (all rows). Pin the output, and add the 12 sample rows from the sandbox to it if your sheet is still small."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Write the Code node*\n\nAdd a *Code* node, JavaScript, *Run Once for All Items*:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Write the Code node): open it in the app.",
+   "url": "https://automancy.cc/learn#m-3-5"
+  },
+  {
+   "t": "text",
+   "body": "Try it in the sandbox above (the *Solution* button loads this code). Twelve rows in, six customers out: Chef Tunde first with ₦164,000 over three orders."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Catch the rows with no phone*\n\nCode that silently skips data is a trap. Put an *IF* before the Code node: phone is not empty → Code; false → append to a *Fix list* sheet (the 3.3 pattern). The `continue` stays as a safety net."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Save, and answer the investor*\n\n*Google Sheets · Append or Update Row* on Customers, matching on `phone`. Then the top ten is simply the first ten rows by rank. Schedule it nightly, and the Customers sheet stays current for every later workflow, including the AI agents in Track 4.\n\n- *12 → 6* rows in, real customers out (sample)\n- *1* Code node instead of about 10 nodes\n- *₦164,000* top lifetime value: Chef Tunde"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Normalising phones before grouping turns three \"customers\" into one.\n- `Number(…) || 0` protects every sum from text and blanks.\n- ISO dates compare correctly as text, so first and last orders need no library.\n- The return is a ranked array of `{ json }` items: exactly what n8n expects.\n- An IF in front means nothing disappears without a trace.\n\n*Common mistakes to avoid*\n\n- Returning names or numbers instead of objects.\n- Putting `return` inside the loop.\n- Grouping by the raw phone or the name.\n- Adding text numbers without converting them.\n- Using all-items code in each-item mode (or the reverse)."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Load my version in the sandbox. Then explain these six results.\n\n*A:* \"Code doesn't return items properly: item 0 is \"Mrs Adebayo\", not an object.\"\n*B:* The same error, with \"nothing was returned\".\n*C:* Chef Tunde's lifetime value is `\"11900045000\"`.\n*D:* Mrs Adebayo appears three times, Mr Okafor twice.\n*E:* Only one customer comes out, though the loop clearly runs.\n*F:* In \"Run Once for Each Item\" mode, the code outputs 12 identical totals."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* `.map(c => c.name)` returns a list of strings. Return objects: `.map(c => ({ json: c }))`.\n*B:* the code has no `return` statement (or it's inside an `if` that didn't run).\n*C:* one total arrived as the text `\"45000\"`, so `+=` joined text instead of adding. Use `Number(o.total) || 0`.\n*D:* grouped by the raw phone, so `0803 123 4567` and `+2348031234567` look different. Normalise first.\n*E:* the `return` is inside the loop, so the code stops after the first customer. Move it after the loop.\n*F:* all-items code (`$input.all()` plus a total) is running once per item. Switch the mode to Run Once for All Items."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Tidy names, one item at a time",
+   "body": "- In \"Run Once for Each Item\" mode, write code that trims names, converts them to Title Case and fixes double spaces.\n- Test on: `\" mrs adebayo \"`, `\"CHEF TUNDE\"`, `\"iya basira\"`, and an empty name.\n\n*Done when:*\n- All four come out clean, the empty name doesn't crash the node, and every other field is kept."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Group orders by product",
+   "body": "- From an order list where each row has `product`, `qty` and `line_total`, write all-items code that outputs one item per product: total quantity, total revenue, number of orders and average order value.\n- Sort by revenue and add a `share_of_revenue` percentage.\n\n*Done when:*\n- The revenue totals match a SUMIF in Sheets exactly, and the shares add up to 100% (allowing for rounding)."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Hire an AI, then audit it",
+   "body": "- Using the prompt pattern in Card 5, ask an AI assistant for a Code node that flags \"at-risk\" customers: two or more orders, but none in the last 45 days. Use fake sample data only.\n- Before running it, predict three edge cases it may get wrong (text totals, odd date formats, missing phones). Build test items for each.\n- Run, record what failed, fix it (yourself or with the AI), and comment each line.\n\n*Done when:*\n- Your log shows the AI's first draft, at least one bug you found with test data, and the final working code, with every line explained in your own words."
+  },
+  {
+   "t": "quiz",
+   "q": "In \"Run Once for All Items\" mode, what must the code return?",
+   "options": [
+    "One object",
+    "A list of names",
+    "An array of objects, such as [{ json: {...} }]",
+    "Nothing; n8n reads the variables"
+   ],
+   "answer": 2,
+   "why": "One object per output item, in an array."
+  },
+  {
+   "t": "quiz",
+   "q": "`0 + \"45000\"` in JavaScript gives…",
+   "options": [
+    "45000",
+    "\"045000\"",
+    "An error",
+    "NaN"
+   ],
+   "answer": 1,
+   "why": "Adding text joins text. Convert with Number() first."
+  },
+  {
+   "t": "quiz",
+   "q": "Which job suits \"Run Once for Each Item\"?",
+   "options": [
+    "Total revenue for the month",
+    "Removing duplicate customers",
+    "Ranking customers by value",
+    "Trimming and capitalising each name"
+   ],
+   "answer": 3,
+   "why": "Each-item mode can't compare items; it's for changes that only need the item itself."
+  },
+  {
+   "t": "quiz",
+   "q": "Why normalise phone numbers before grouping?",
+   "options": [
+    "So different formats of the same number count as one customer",
+    "Because n8n requires it",
+    "To make them shorter",
+    "To hide them"
+   ],
+   "answer": 0,
+   "why": "0803…, +234803… and 234803… are the same customer once normalised."
+  },
+  {
+   "t": "quiz",
+   "q": "An AI writes a Code node for you. What comes next?",
+   "options": [
+    "Publish it straight away",
+    "Paste in real customer data to test it",
+    "Run it against messy fake test data and read every line",
+    "Ask a second AI whether it's fine"
+   ],
+   "answer": 2,
+   "why": "Test with edge cases you designed, never with real customer data, and understand what you run."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. All-items mode for comparing items; each-item mode for changing one item.\n2. Return an array of `{ json }` objects (or one object in each-item mode).\n3. Four patterns: loop, map, filter, group with an object.\n4. `Number(x) || 0` before any maths; normalise phones before grouping.\n5. ISO dates compare as text; other formats need converting.\n6. Code calculates; HTTP Request and app nodes do the talking.\n7. AI drafts, you test and understand."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 3.5 complete!* _The Code Node_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 3.6, _Errors, Sub-workflows & Logs_."
+  }
+ ]
+}

@@ -1,0 +1,176 @@
+{
+ "id": "2.3",
+ "title": "Routers & Filters",
+ "track": 2,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.3 · Routers & Filters*\n\n_≈ 90 minutes · with Emeka_\n\nYou met branching in Zapier's Paths. Make's version has its own habits: filters can sit on any connection, routes can't join back together, and sometimes you _want_ one order to take several routes at once. Today you build the 8 p.m. \"tomorrow's deliveries\" run that sorts every order.\n\n*Your problem:* Different orders need different handling, and one path doesn't fit all.\n*The plan:* Route bundles with routers and filters, including a fallback route.\n*After this lesson:* Your scenarios handle every case, not only the happy one."
+  },
+  {
+   "t": "text",
+   "body": "*Eight o'clock, every night*\n\n*Every evening:* Tolu reads through tomorrow's orders and sorts them into three jobs. It takes an hour.\n\n*The twist:* Some orders need two jobs at once: a big unpaid order needs a reminder _and_ an alert.\n\n*Glitch:* \"In Make, routes split but never rejoin. Enjoy building everything twice!\"\n\n*Weave:* \"Some of my arms share the work, some take turns. You decide which, on purpose.\""
+  },
+  {
+   "t": "text",
+   "body": "*Filters live on the links*\n\nIn Make, a filter isn't a module: it sits on the *connection between two modules*. Click the link (the dotted line) and set up a filter. Bundles that fail stop there. Filters use no credits, and the modules after them don't run for the stopped bundles.\n\n- *Operators by type*: Text (equal to, contains, matches pattern), Numeric (greater than, less than or equal), Date (before, after), Array (contains), Basic (exists, does not exist).\n- *Case-insensitive options*: Text operators come in case-insensitive versions: \"Paid\", \"paid\" and \"PAID\" all match.\n- *AND / OR*: Conditions in one group must all pass (AND); add an OR group for alternatives.\n- *Label every filter*: Give it a name like \"Only paid orders\". It shows on the canvas."
+  },
+  {
+   "t": "text",
+   "body": "*Routers: one bundle, several routes*\n\nA *Router* module splits the flow into routes. Each route begins with a link, which can carry a filter. A bundle is sent down *every route whose filter it passes*, one route after another in the router's route order. A route marked as the *fallback* receives only bundles that passed no other route. Routers are free of credits."
+  },
+  {
+   "t": "text",
+   "body": "*Exclusive or additive? Decide on purpose*\n\n*Exclusive routes*\n\n- Each bundle should take exactly one route (like 1.3's order router).\n- Write conditions that can't both be true, and add a fallback.\n- Test with a truth table.\n\n*Additive routes*\n\n- Each route is an independent rule: \"if X, also do this\".\n- Several can fire for one bundle, and that's correct.\n- Make sure no two routes do the _same_ job twice.\n\n*Sage:* Write the rule in words next to each route: \"Rider list: every order that will be delivered.\" If two routes' sentences describe the same job, you have a duplicate. If no sentence covers a case, you need the fallback."
+  },
+  {
+   "t": "text",
+   "body": "*Routes never merge back*\n\nIn Zapier, Paths also end their branches. In Make, once a route splits off, it runs to its own end. If two routes both need the same final step (say, \"log to the Activity tab\"), you have three options:\n\n- *Repeat the step*: Put the same module at the end of each route. Simple; fine for one or two modules.\n- *Do it before the router*: Anything every bundle needs should happen before the split.\n- *Call a shared scenario*: For longer shared endings, send the bundle to another scenario (via a webhook) that does the common work once (2.5)."
+  },
+  {
+   "t": "text",
+   "body": "*Route order and nested routers*\n\n- *Route order*: Routes run one after another. If route 1 updates the row and route 2 reads it, the order matters. Use the router's option to set the order.\n- *Nested routers*: A route can contain another router. Keep it to two levels; deeper nesting gets hard to read.\n- *Empty routes*: A route with a filter and no modules is a clear way to say \"do nothing for these\" and keeps the fallback from catching them."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How Routers and Filters work in Make.com_.\nLook for: Route order and AND / OR filter conditions.",
+   "media": "walk:2.3",
+   "youtube": "https://www.youtube.com/watch?v=l5yyPB-xjR4",
+   "app": "https://automancy.cc/learn#m-2-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: the 8 p.m. tomorrow run*\n\n*The goal.* Every evening at 8 p.m., find all orders for tomorrow and sort them: deliverable orders go on the rider list, unpaid ones get a payment reminder, big ones alert Tolu, and anything strange is flagged. Cancelled orders are ignored."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Schedule and search*\n\nNew scenario. First module: *Google Sheets · Search Rows* on Orders, filter `delivery_date` equal to `{{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}`. Schedule: every day at 20:00. (A search as the first module runs on the schedule and returns one bundle per matching order.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Filter out cancelled orders on the first link*\n\nClick the link after Search Rows and add a filter labelled *Not cancelled*: `status` · Text operators: Not equal to (case insensitive) · `Cancelled`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add the router and write each rule in words*\n\n_Route · Rule in words · Filter · Module_\n- *1 · Rider list* · Every order that will be delivered tomorrow · status = Paid *OR* channel = standing · Sheets · Add a Row to Deliveries\n- *2 · Reminder* · Unpaid customer orders get a nudge · status = New *AND* channel ≠ standing · Gmail · Send reminder with payment link\n- *3 · Big order* · Tolu hears about every order over ₦50,000 · total (numeric) > 50000 · Telegram or Gmail · Alert Tolu\n- *Fallback* · Anything that matched none of the above · Set as fallback route · Sheets · Add a Row to Needs checking\n\nRoutes 1–3 are *additive*: a paid big order takes routes 1 and 3; an unpaid big order takes 2 and 3. Nothing is done twice, because each route has a different job."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Try the design*\n\nChange the order's status, channel and total to see which routes it takes."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try the design. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-2-3"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Test with a truth table of real rows*\n\n_Test order · Status · Channel · Total · Expected routes_\n*T1:* Paid · whatsapp · 26,500 · 1\n*T2:* New · form · 13,500 · 2\n*T3:* New · whatsapp · 82,000 · 2 and 3\n*T4:* New · standing · 95,000 · 1 and 3\n*T5:* On hold · form · 9,000 · Fallback\n*T6:* Cancelled · whatsapp · 40,000 · None (filtered)\n\nPut these six rows in Orders with tomorrow's date and *Run once*. The small counts on each module show how many bundles reached it: Deliveries 2, Reminder 2, Alert 2, Needs checking 1."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Count the credits*\n\n- *1* credit: the search\n- *7* credits: the modules at the end of routes (2 + 2 + 2 + 1)\n- *0* credits: the filter and router\n\n8 credits a night for six orders. At 30 orders a night, roughly 40 credits: about 1,200 a month, more than the Free plan's 1,000, so at that volume Tolu needs a paid plan. One search a day is far cheaper than polling every 15 minutes."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Junk (cancelled orders) is dropped before the router, for free.\n- Each route has one job, described in words.\n- Additive routes fit reality: some orders need two actions.\n- The fallback turns surprises into a list, not silence.\n\n*Common mistakes to avoid*\n\n- Assuming a bundle takes only the first matching route.\n- Two routes doing the same job (double rider entries).\n- Text comparison on a number field for the ₦50,000 check.\n- Expecting routes to join back for a shared last step."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I rebuilt the 8 p.m. run for a friend's bakery. Five complaints. Explain each.\n\n*A:* Route 1: status = Paid. Route 4: status = Paid AND total > 50000, both adding to the rider list. · Big paid orders appear twice on the rider list.\n*B:* Filter: status Equal to \"Paid\" (case sensitive). · Orders typed \"paid\" never reach the riders.\n*C:* Big-order filter uses Text: Greater than \"50000\". · A ₦9,000 order triggers the big-order alert.\n*D:* No fallback route. · An \"On hold\" order vanishes: no rider, no reminder, no record.\n*E:* A \"Log to Activity\" step placed only after route 3. · Only big orders are logged."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* two routes share the same job. Keep one rider-list route; let the big-order route only alert.\n*B:* use the case-insensitive operator, or better, a dropdown in the sheet (0.4) so the value is always \"Paid\".\n*C:* text comparison compares characters, and \"9000\" sorts after \"50000\". Use the numeric operator.\n*D:* add a fallback route that records unexpected cases.\n*E:* routes don't merge back. Log before the router, or add the log step to every route."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A filter with an OR group",
+   "body": "- In your 2.1 scenario, add a filter on the link before the email: continue only if total > 20000 *OR* the customer is VIP.\n- Test with four rows covering every combination.\n\n*Done when:*\n- Exactly the three rows that meet at least one condition send an email."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build and pass the 8 p.m. run",
+   "body": "- Build the solved scenario with all four routes and the cancelled filter.\n- Load the six test rows and run once.\n- Screenshot the module counts (no personal data visible) and compare with the expected routes.\n\n*Done when:*\n- Counts match (2, 2, 2, 1), T6 stops at the filter, and nothing appears twice on the rider list."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A shared ending without duplication",
+   "body": "- Add a requirement: every order processed tonight must be written to an Activity tab with the routes it took.\n- Solve it without copying the log module into every route. (Hint: log before the router with the routes it _will_ take, calculated with `if()` formulas from 2.2.)\n- Explain in three sentences why your design is easier to maintain.\n\n*Done when:*\n- Every non-cancelled order has exactly one Activity row listing its routes correctly."
+  },
+  {
+   "t": "quiz",
+   "q": "Where do filters live in Make?",
+   "options": [
+    "In a separate Filter module",
+    "Only inside routers",
+    "On the links between modules",
+    "In the scenario settings"
+   ],
+   "answer": 2,
+   "why": "Click any connection line to add a filter. It costs no credits."
+  },
+  {
+   "t": "quiz",
+   "q": "A bundle passes the filters of routes 2 and 3. What happens?",
+   "options": [
+    "It goes down both, one after the other",
+    "Only route 2 runs",
+    "Only the fallback runs",
+    "The scenario errors"
+   ],
+   "answer": 0,
+   "why": "Every route whose filter passes receives the bundle."
+  },
+  {
+   "t": "quiz",
+   "q": "When does the fallback route receive a bundle?",
+   "options": [
+    "Always",
+    "When a route errors",
+    "Once a day",
+    "Only when the bundle passed no other route"
+   ],
+   "answer": 3,
+   "why": "It's the 'none of the above' route."
+  },
+  {
+   "t": "quiz",
+   "q": "A ₦9,000 order triggers a \"greater than 50000\" filter. Why?",
+   "options": [
+    "The router is broken",
+    "A text operator was used instead of a numeric one",
+    "The filter is case sensitive",
+    "The schedule is wrong"
+   ],
+   "answer": 1,
+   "why": "Text comparison goes character by character. Use numeric operators for numbers."
+  },
+  {
+   "t": "quiz",
+   "q": "Every route needs the same final logging step. What's the cleanest design?",
+   "options": [
+    "Hope the routes merge",
+    "Add a second router at the end",
+    "Log once before the router",
+    "Skip logging"
+   ],
+   "answer": 2,
+   "why": "Routes don't merge in Make; shared work belongs before the split."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Filters sit on links, cost nothing, and stop bundles early.\n2. A bundle takes every route whose filter it passes; the fallback takes the rest.\n3. Decide whether routes are exclusive or additive, and write each rule in words.\n4. Use numeric operators for numbers and case-insensitive ones for text.\n5. Routes never merge: do shared work before the router.\n6. A daily search is often cheaper than frequent polling."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.3 complete!* _Routers & Filters_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.4, _Iterators & Aggregators_."
+  }
+ ]
+}

@@ -1,0 +1,181 @@
+{
+ "id": "1.6",
+ "title": "Agents, Copilot, MCP & Knowing the Limits",
+ "track": 1,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 1.6 · Agents, Copilot, MCP & Knowing the Limits*\n\n_≈ 110 minutes · with Emeka_\n\nThe last stop on Spark Street. You'll build a Zap by describing it, give an AI agent tools to answer customers, let an AI assistant act in your apps through MCP, and then do the maths that tells you when Zapier stops being the right tool.\n\n*Your problem:* Everyone talks about AI agents, but it isn't clear when they're the right choice.\n*The plan:* Build a Zapier agent, connect it with MCP, and test where it breaks.\n*After this lesson:* You can tell when to use an agent and when a plain workflow is better."
+  },
+  {
+   "t": "text",
+   "body": "*Bolt gulps*\n\n*Copilot:* Tolu describes a Zap in a sentence, and a draft appears. Magic, mostly.\n\n*11 p.m.:* A Zapier Agent answers delivery questions from Harvest Lane's own data while Tolu sleeps.\n\n*December:* At 3,000 orders a month, the task count climbs past 12,000. Bolt gulps.\n\n*The fork:* \"Zapier got you here fast,\" says Nodo. \"Now let's see what it costs to stay.\""
+  },
+  {
+   "t": "text",
+   "body": "*Copilot: describe it, then audit it*\n\nZapier's *Copilot* builds a draft Zap (or fixes a step) from a plain-language description. It's fast, and it's a draft: it can pick the wrong trigger, the wrong sheet, or a text pill where a file is needed.\n\n- *Describe precisely*: Name apps, labels, folders and fields: \"Gmail label Invoices → Drive folder Supplier invoices, file name = sender + subject\".\n- *Audit every step*: Check each card with the four questions from 1.1: app, event, account, fields.\n- *Test before publishing*: Use real test data, then read Zap history."
+  },
+  {
+   "t": "text",
+   "body": "*Zapier Agents: a teammate with tools*\n\nA Zap follows fixed steps. A *Zapier Agent* gets *instructions* (its job and rules), *tools* (actions it may take in your apps), *knowledge* (documents or tables it can read) and *triggers* (what wakes it up), then decides for itself which tools to use for each request. This is the agent loop you'll study deeply in Track 4.\n\n*Usage is counted in activities, not tasks.* Each trigger, action, knowledge lookup, web search or browse counts as one activity. Zapier's help centre (Oct 2026) lists 400 activities a month on the free Agents plan (testing counts) and 1,500 on Agents Pro (testing doesn't count). Check current limits before you plan a client build.\n\n*Sage:* Give an agent the _fewest_ tools that do the job, and never a tool that can't be undone without a person approving it. Reading prices: fine. Sending refunds: ask a human."
+  },
+  {
+   "t": "text",
+   "body": "*Zapier MCP: your AI assistant, with hands*\n\nThe *Model Context Protocol (MCP)* is an open standard for connecting AI assistants to tools. *Zapier MCP* lets an assistant such as Claude, ChatGPT, Cursor or VS Code use actions in your connected apps. You can let tools be added automatically, or choose a fixed, tightly scoped set, which is the safer choice.\n\nPer Zapier's help centre, Zapier MCP runs on your existing plan (including Free), and each successful tool call uses two tasks; failed calls use none."
+  },
+  {
+   "t": "text",
+   "body": "*Three ways platforms count*\n\n_What's counted · One Harvest Lane order costs roughly…_\n- *Zapier* · Tasks: each successful action (built-in tools like Formatter and Paths are free) · 3–4 tasks (lookups, two sheet writes, an email)\n- *Make* (Track 2) · Credits: each module action counts, once per bundle; filters and routers are free per Make's help centre (some guides disagree: check a run's credit count), and a polling trigger costs a credit even when it finds nothing · 6–8 credits (most modules count)\n- *n8n* (Track 3) · Cloud: executions (one per workflow run, however many steps). Self-hosted: your server cost · 1 execution, or a share of a fixed server bill\n\n*The pattern:* Zapier is quickest to build and charges per useful action. Make charges less per unit but counts more of them (and counts polling checks). n8n charges per run, or almost nothing if you host it, in exchange for more setup and maintenance. Always check each platform's current pricing page before advising a client."
+  },
+  {
+   "t": "text",
+   "body": "*When to move off Zapier*\n\n*Stay on Zapier when*\n\n- Volume is modest and the task bill is comfortable.\n- Speed of building matters more than cost.\n- You need a niche app only Zapier connects to.\n- The client wants the simplest thing to maintain.\n\n*Consider Make or n8n when*\n\n- Many steps × high volume makes the task bill painful.\n- You need loops over lists, complex branching or detailed error handling.\n- Data must stay on your own server (n8n self-hosted).\n- Heavy AI work runs thousands of times a month."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Claude MCP Server Tutorial with Zapier_ (Adrian Twarog).\nLook for: Setting up a Zapier MCP server, choosing allowed actions, and Claude using them. Keep your own tool set fixed and read-only.",
+   "media": "walk:1.6",
+   "youtube": "https://www.youtube.com/watch?v=w-w37LWNcIk",
+   "app": "https://automancy.cc/learn#m-1-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: three new helpers, and a cost decision*"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Part A · Rebuild the invoice Zap with Copilot*\n\nOpen Copilot and type: _\"When an email with an attachment arrives in Gmail with the label Invoices, upload the attachment to the Google Drive folder Supplier invoices, naming the file with the sender name, subject and attachment name.\"_\n\nCompare the draft with your hand-built Zap from 1.1, card by card. Typical things to fix: the trigger event (New Email instead of New Attachment), the File field mapped to a name instead of the file, or no `-in:sent`. Fix, test, and only then publish.\n\n*Bolt:* *The lesson:* Copilot saves typing, not thinking. Because you built this Zap by hand in 1.1, you can spot what's wrong in seconds. That's why this module comes last."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Part B · A price-and-delivery agent that drafts, never sends*\n\nCreate a Zapier Agent called *HL Customer Helper*."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Part B · A price-and-delivery agent that drafts, never sends): open it in the app.",
+   "url": "https://automancy.cc/learn#m-1-6"
+  },
+  {
+   "t": "text",
+   "body": "Test it with 10 questions from your 0.5 Silver list (the \"question\" ones plus a refund request). Check that every price matches the table, the refund becomes a HANDOVER, and nothing is sent. Kemi approves drafts with the button from 1.5 Gold.\n\nActivity estimate: 1 trigger + 1–2 lookups + 1 update ≈ 3–4 activities per question. 10 questions a day ≈ 1,000 a month, so plan for a paid Agents allowance at that volume."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Part C · Let an AI assistant act through Zapier MCP*\n\nSet up a Zapier MCP server with a *fixed* set of just two tools: *Google Sheets · Lookup Spreadsheet Row* (Orders) and *Gmail · Create Draft*. Connect it to your AI assistant using the steps Zapier shows for that client. Then ask:\n\n*Tolu:*\n\nWhat's the status of order HL-0043? Draft a short update email to the customer, but don't send it.\n\nThe assistant calls the lookup tool, reads the row, and creates a Gmail draft. Two successful tool calls = four tasks. Open Gmail: the draft is waiting for you to check and send."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Part D · Do the December maths*\n\nAt about 3,000 orders a month, how much does each platform count? Change the numbers to match your own workflow; add prices from each platform's current pricing page for a rough cost."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Part D · Do the December maths. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-1-6"
+  },
+  {
+   "t": "text",
+   "body": "For Harvest Lane, 12,000 Zapier tasks a month is a real cost, and the order line is exactly the kind of multi-step, high-volume flow that Make and n8n handle cheaply. The decision: keep simple, low-volume Zaps (invoices, the MCP helper) on Zapier; rebuild the order line in Make (Track 2) and later n8n (Track 3), and compare."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Copilot drafts; your 1.1–1.5 skills audit.\n- The agent reads data it's given and drafts; people approve.\n- A fixed MCP tool set keeps the assistant's reach small.\n- Counting units per platform turns \"Zapier is expensive\" into a decision with numbers.\n\n*Common mistakes to avoid*\n\n- Publishing a Copilot draft without testing it.\n- Giving an agent \"send\" or \"delete\" tools on day one.\n- Letting MCP add any tool automatically on a business account.\n- Comparing platforms by monthly plan price instead of units needed."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I gave my agents and assistants everything they could possibly need. Why is everyone upset?\n\n*A:* Agent instructions: \"Help customers however you can.\" · It promised a 20% discount and free delivery.\n*B:* Agent tools include Gmail · Send and Paystack refunds. · A polite-sounding message got a ₦40,000 refund, sent automatically.\n*C:* MCP set to add tools automatically, on the owner's main account. · The assistant deleted old rows while \"tidying\" the Orders sheet.\n*D:* A Copilot-built Zap published straight away. · Orders went into last year's sheet.\n*E:* Budget assumed MCP calls are free. · The task allowance ran out mid-month."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* vague instructions. State the job, the allowed topics, where facts come from, and what to hand over.\n*B:* an irreversible, money-moving tool with no human approval. Remove it; draft and hand over instead (Track 4.5 goes deep on this).\n*C:* unscoped tools. Use a fixed tool set, read-and-draft only, ideally on a business account with limited sheet access.\n*D:* no audit. Check every card and test with real data before publishing.\n*E:* each successful MCP tool call uses two tasks. Include it in the budget."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Copilot audit",
+   "body": "- Describe one of your earlier Zaps (1.2 or 1.3) to Copilot in two sentences.\n- List every difference between its draft and your hand-built version.\n- Fix the draft until it passes your original tests.\n\n*Done when:*\n- You have a list of at least three differences and a working, tested Copilot version."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build and test the HL Customer Helper",
+   "body": "- Build the agent from Part B with Products and Delivery Areas tables.\n- Test with 12 questions: 8 about prices or delivery, 2 complaints, 1 refund request, 1 in Pidgin.\n- Record correct answers, correct handovers, and activities used.\n\n*Done when:*\n- Every price and fee matches the tables, all 3 non-price messages are handed over, and nothing was sent automatically."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Your own MCP helper and a platform recommendation",
+   "body": "- Connect Zapier MCP to an AI assistant with 2–3 read-or-draft tools from your own work.\n- Complete five real tasks through it, logging tools called and tasks used.\n- Use the calculator with your busiest workflow and real prices from each pricing page. Write a half-page recommendation: which platform for which workflow, and why.\n\n*Done when:*\n- No tool can send, delete or pay, and your recommendation cites units per month and current prices."
+  },
+  {
+   "t": "quiz",
+   "q": "What should you always do with a Zap drafted by Copilot?",
+   "options": [
+    "Publish it; Copilot is always right",
+    "Delete it and build by hand",
+    "Check every step and test with real data before publishing",
+    "Upgrade to Premium AI"
+   ],
+   "answer": 2,
+   "why": "A draft is a head start, not a finished product."
+  },
+  {
+   "t": "quiz",
+   "q": "How is Zapier Agents usage counted?",
+   "options": [
+    "In activities: triggers, actions, knowledge lookups, searches",
+    "In tasks, like Zaps",
+    "Per agent, per month",
+    "It's unlimited"
+   ],
+   "answer": 0,
+   "why": "Each billable thing the agent does is one activity."
+  },
+  {
+   "t": "quiz",
+   "q": "Which tool set is safest for a first Zapier MCP connection?",
+   "options": [
+    "Add tools automatically",
+    "Every Gmail and Sheets action",
+    "Send email and delete rows only",
+    "A fixed set of read and draft tools"
+   ],
+   "answer": 3,
+   "why": "Small, fixed, reversible: the assistant can look things up and prepare drafts, and you decide."
+  },
+  {
+   "t": "quiz",
+   "q": "An AI assistant makes 50 successful Zapier MCP tool calls. How many tasks is that?",
+   "options": [
+    "50",
+    "100",
+    "0",
+    "250"
+   ],
+   "answer": 1,
+   "why": "Two tasks per successful call; failed calls use none."
+  },
+  {
+   "t": "quiz",
+   "q": "A 9-step workflow runs 3,000 times a month. Which platform counts the fewest units?",
+   "options": [
+    "Zapier (tasks)",
+    "Make (credits)",
+    "n8n Cloud (executions)",
+    "They're all the same"
+   ],
+   "answer": 2,
+   "why": "n8n counts one execution per run, however many steps. Fewer units doesn't automatically mean cheaper; check prices too."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Copilot drafts Zaps; you audit and test them.\n2. Agents choose their own steps from the tools you give them; count activities.\n3. Zapier MCP gives AI assistants hands in your apps: fixed tools, two tasks per successful call.\n4. Read and draft freely; send, delete and pay only with a person's approval.\n5. Zapier counts tasks, Make counts credits, n8n counts executions (or a server bill).\n6. Choose the platform per workflow, with real numbers."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 1.6 complete!* _Agents, Copilot, MCP & Knowing the Limits_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Boss 1, _Boss 1: The Lead Machine_."
+  }
+ ]
+}

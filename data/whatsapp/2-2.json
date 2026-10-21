@@ -1,0 +1,199 @@
+{
+ "id": "2.2",
+ "title": "Mapping & Functions",
+ "track": 2,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.2 · Mapping & Functions*\n\n_≈ 100 minutes · with Miracle_\n\nIn Zapier, each cleaning job was its own Formatter step. In Make, you write the cleaning right inside the field, with functions, and they cost no credits. Learn a dozen functions and you can shape almost any data on the way through.\n\n*Your problem:* Data never arrives in the format the next app wants.\n*The plan:* Map fields and use Make's functions for text, numbers and dates.\n*After this lesson:* You can reshape any data in Make without code."
+  },
+  {
+   "t": "text",
+   "body": "*The receipt nobody could read*\n\n*The first auto-receipt:* It works, technically. It's also embarrassing.\n\n*The problem:* \"Delivery tomorrow\" on a Saturday means Sunday. Harvest Lane doesn't deliver on Sundays.\n\n*Glitch:* \"One module per fix! Ten fixes, ten credits, every single order.\"\n\n*Weave:* \"Cleaning goes inside the field. No extra bubbles. No extra credits.\""
+  },
+  {
+   "t": "text",
+   "body": "*The mapping panel and Make's data types*\n\nClick any field and the *mapping panel* opens: data from earlier modules on one tab, and tabs of functions (general, math, text, date and time, arrays). Drop items into the field and wrap them in functions. Everything you learned in 0.3 appears with Make's names:\n\n_Make calls it · You know it as (0.3)_\n- *Text* · String\n- *Number* · Number\n- *Boolean* · Boolean\n- *Date* · An ISO date-time, shown in your organisation's time zone\n- *Collection* · Object `{ }`\n- *Array* · Array `[ ]`\n\n*Set your time zone first:* Make formats dates in your organisation's (or profile's) time zone. Set it to Africa/Lagos in settings before building anything with dates."
+  },
+  {
+   "t": "text",
+   "body": "*Text functions*\n\n_Function · Example · Result_\n- `trim(text)` · `trim(\" Ade \")` · Ade\n- `lower / upper` · `lower(\"ADEBAYO\")` · adebayo\n- `startcase(text)` · `startcase(\"mrs adebayo\")` · Mrs Adebayo\n- `replace(text; find; with)` · `replace(\"0803 123\"; \" \"; emptystring)` · 0803123\n- `replace` with a pattern · `replace(1.phone; /[^0-9]/g; emptystring)` · digits only\n- `split(text; separator)` · `split(\"Tunde Bakare\"; \" \")` · [Tunde, Bakare]\n- `substring(text; start; end)` · `substring(\"08031234567\"; 1; 11)` · 8031234567\n- `length(text)` · `length(\"08031234567\")` · 11\n\nIn Make, arguments are separated by semicolons, and `emptystring` is a keyword for \"\". Substring positions count from 0."
+  },
+  {
+   "t": "text",
+   "body": "*Dates and numbers: parse in, format out*\n\n*Dates*\n\n- `parseDate(\"06/10/2026\"; \"DD/MM/YYYY\")` turns text into a real date. Always give the format.\n- `addDays(date; 1)`, `addHours`, `addMonths` shift it.\n- `formatDate(date; \"YYYY-MM-DD\")` turns it back into text.\n- Tokens: `YYYY` year · `MM` month · `DD` day · `HH:mm` time · `dddd` weekday name · `d` weekday number (0 = Sunday).\n\n*Numbers*\n\n- `parseNumber(\"12500\")` turns text into a number.\n- `formatNumber(26500; 0; \".\"; \",\")` → 26,500 for display.\n- `round`, `ceil`, `floor`, `sum`, `max`, `min`.\n- Maths in fields: `{{1.qty * 1.unit_price + 1.fee}}`.\n\n*Nodo:* Case matters in date tokens. `MM` is month; `mm` is minutes. `YYYY-mm-DD` is a classic bug that looks almost right."
+  },
+  {
+   "t": "text",
+   "body": "*Decisions inside a field*\n\n- *if(condition; yes; no)*: `if(1.total > 50000; \"PRIORITY\"; \"standard\")`\n- *ifempty(value; fallback)*: `ifempty(1.area; \"Area not given\")`, the lookup-table fallback from 1.2, in one word.\n- *switch(value; case1; result1; …; else)*: `switch(1.area; \"Bodija\"; 1500; \"Challenge\"; 2000; 2500)`, a whole lookup table in one field."
+  },
+  {
+   "t": "text",
+   "body": "*Lists: get() and map()*\n\nWhen a bundle carries an array, like an order's items (0.3), two functions reach inside it without extra modules. Remember: *Make counts array positions from 1*."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Lists: get() and map()): open it in the app.",
+   "url": "https://automancy.cc/learn#m-2-2"
+  },
+  {
+   "t": "text",
+   "body": "*Try the formulas*"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try the formulas. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-2-2"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How to Reformat, Parse, and Add Dates in Make_.\nLook for: formatDate, parseDate and addDays in the mapping panel.",
+   "media": "walk:2.2",
+   "youtube": "https://www.youtube.com/watch?v=KFqEhAo0PMc",
+   "app": "https://automancy.cc/learn#m-2-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: a receipt customers can actually read*\n\n*The goal.* Extend the 2.1 scenario. For each new order row, clean the phone and name, work out a delivery day that's never Sunday, format the total for people, write a readable receipt message, and save it all back to the row, using functions only, with no extra modules for cleaning."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Add columns to Orders*\n\nAdd `phone_clean`, `first_name`, `delivery_day` and `receipt_text` to the Orders tab. The automation will fill them in."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Add one Update a Row module*\n\nAfter the trigger, add *Google Sheets · Update a Row*. Row number: `1. Row number` from the trigger. Leave the original columns alone and fill only the new ones."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · phone_clean*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (phone_clean): open it in the app.",
+   "url": "https://automancy.cc/learn#m-2-2"
+  },
+  {
+   "t": "text",
+   "body": "Strip everything but digits; if it starts with 0, swap the 0 for +234; otherwise just add +. (It assumes numbers without a leading 0 already include 234.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · first_name and delivery_day*\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · receipt_text*\n\nMix plain text and formulas directly in the field:\n\n_(Code on screen in the app.)_\n\nResult for a Saturday order from \" mrs ADEBAYO \":\n\n*Receipt:*\n\nHi Mrs! Order HL-0061 received. Total: ₦26,500. Delivery: Monday 12 Oct, afternoon. Thank you for choosing Harvest Lane.\n\n*Sage:* *Spot the bug?* \"Hi Mrs!\" is a real result of taking the first word. Titles break first-name logic. A good fix: add a separate first-name question to the form, or remove common titles with `replace(…; /^(mr|mrs|miss|dr|chief)\\.?\\s+/i; emptystring)` before splitting. Testing with realistic names catches this."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Run once and check the credits*\n\nAdd a Saturday test order and run once. The trigger and one Update module ran: 2 credits for that order, however many functions you used. In Zapier the same cleaning took five Formatter steps (free there too, but five more things to maintain)."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Functions live where they're used, so one module does all the cleaning.\n- Numbers stay numbers in the data; ₦ and commas are for the message only.\n- The Sunday rule is written once and applies to every order.\n- Realistic test names reveal the \"Hi Mrs!\" edge case before customers do.\n\n*Common mistakes to avoid*\n\n- `mm` (minutes) instead of `MM` (month).\n- parseDate without a format string.\n- Using position 0 with get(): Make starts at 1.\n- Commas instead of semicolons between arguments."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* My five formulas \"mostly\" work. Find what each one gets wrong."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Glitch hunt): open it in the app.",
+   "url": "https://automancy.cc/learn#m-2-2"
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* `mm` is minutes. Use `YYYY-MM-DD`.\n*B:* no format given, so it's read the American way. Use `parseDate(1.date_text; \"DD/MM/YYYY\")`.\n*C:* Make arrays start at 1. Use `get(1.items; 1)`.\n*D:* the display version was stored. Save the plain number; format only in messages.\n*E:* Make separates arguments with semicolons: `if(1.total > 50000; \"PRIORITY\"; \"standard\")`."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Five formulas, proven",
+   "body": "- In a test scenario, add a Google Sheets row with deliberately messy data (name, phone, date text, price text).\n- Write five formulas: tidy name, clean phone, parse the date text, parse the price text into a number, and format the price for display.\n- Write the results back to the row and check them.\n\n*Done when:*\n- All five outputs are correct for three different messy rows."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): The readable receipt, with the title fix",
+   "body": "- Build the solved problem, and fix the \"Hi Mrs!\" bug.\n- Test with a Saturday order, a Friday order, a blank delivery window, and names with and without titles.\n\n*Done when:*\n- No receipt names a Sunday, no receipt greets a title, and blank windows say \"time to be confirmed\"."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A one-line order summary from a list",
+   "body": "- Paste the website order JSON from 1.4 into a *JSON · Parse JSON* module (use Run once with that sample).\n- In one field, build a summary like `2× TOM-CRATE, 1× PEP-TATASHE-L · ₦35,500` using map, join and formatNumber. (Hint: you'll need to combine qty and sku per item; try it, then see what 2.4's iterators make easier.)\n- Write down which parts needed a function and which would be easier with an iterator.\n\n*Done when:*\n- The summary is correct for a 1-item, a 2-item and a 3-item order, and you've written two sentences on functions vs. iterators."
+  },
+  {
+   "t": "quiz",
+   "q": "Why write cleaning as functions inside a field in Make?",
+   "options": [
+    "Functions run faster than modules",
+    "They need no extra modules, so no extra credits or bubbles",
+    "Make doesn't allow text modules",
+    "They work offline"
+   ],
+   "answer": 1,
+   "why": "A module per fix costs a credit per bundle. Functions inside a field cost nothing extra."
+  },
+  {
+   "t": "quiz",
+   "q": "Which format string gives \"2026-10-06\"?",
+   "options": [
+    "YYYY-mm-DD",
+    "DD-MM-YYYY",
+    "YYYY-MM-DD",
+    "yyyy-mm-dd"
+   ],
+   "answer": 2,
+   "why": "MM is month and mm is minutes. Case matters."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you get the first item of an array in Make?",
+   "options": [
+    "get(array; 1)",
+    "get(array; 0)",
+    "array[0]",
+    "first(array)"
+   ],
+   "answer": 0,
+   "why": "Make counts array positions from 1."
+  },
+  {
+   "t": "quiz",
+   "q": "The area field is sometimes blank. What returns \"Area not given\" in that case, and the area otherwise?",
+   "options": [
+    "trim(1.area)",
+    "upper(1.area)",
+    "replace(1.area; \"\"; \"Area not given\")",
+    "ifempty(1.area; \"Area not given\")"
+   ],
+   "answer": 3,
+   "why": "ifempty returns the fallback only when the value is empty."
+  },
+  {
+   "t": "quiz",
+   "q": "You need to read \"06/10/2026\" as 6 October. Which formula?",
+   "options": [
+    "parseDate(1.date)",
+    "parseDate(1.date; \"DD/MM/YYYY\")",
+    "formatDate(1.date; \"DD/MM/YYYY\")",
+    "addDays(1.date; 0)"
+   ],
+   "answer": 1,
+   "why": "parseDate reads text; always give the format it's written in."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. In Make, cleaning goes inside fields as functions, with no extra credits.\n2. Semicolons between arguments; `emptystring` for \"\".\n3. Parse text into dates and numbers (with a format); format them only for people.\n4. `MM` is month, `mm` is minutes, `d` is weekday (0 = Sunday).\n5. `if`, `ifempty` and `switch` make decisions inside a field.\n6. `get()` and `map()` reach into lists; positions start at 1."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.2 complete!* _Mapping & Functions_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.3, _Routers & Filters_."
+  }
+ ]
+}

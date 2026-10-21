@@ -1,0 +1,190 @@
+{
+ "id": "5.5",
+ "title": "The Social Inbox Agent",
+ "track": 5,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.5 · The Social Inbox Agent*\n\n_≈ 2 hours · with Miracle_\n\nEvery \"how much?\" under a post is a customer with money in hand. Most go unanswered for hours, and by then the customer has bought elsewhere. In this lesson you build an agent that reads comments, mentions and messages across platforms, answers simple questions straight away, turns buyers into leads with their permission, hides spam, and hands complaints to a person, all inside each platform's messaging rules.\n\n*Your problem:* Comments and messages go unanswered, and buyers drift away.\n*The plan:* Build an agent that answers questions, spots buyers, captures leads with consent and hands complaints to a person.\n*After this lesson:* Every message gets a fast, correct reply, and leads land in your CRM."
+  },
+  {
+   "t": "text",
+   "body": "*Forty \"how much?\"*\n\n*Tolu:* \"The reel went viral. Forty people asked the price. By the time I answered that night, most had bought from someone else.\"\n\n*Glitch:* \"I told an angry customer 'DM sent!' in public. The DM was blocked because the window had closed. She is now angrier. In public.\"\n\n*Echo:* \"Four lanes. Simple questions get answered in a minute, buyers become leads, spam disappears, and anything hard goes to a person.\"\n\n*A week later:* Price questions are answered in under two minutes, day and night. Tolu only sees the conversations that need her."
+  },
+  {
+   "t": "text",
+   "body": "*One queue, many doors, different rules*\n\n- *Comment*: Public, under your post. Anyone can see your reply.\n- *Mention*: Public, on someone else's post or on X. You may not be able to reply where it was posted.\n- *DM*: A private conversation the customer started. Messaging windows apply.\n- *Private reply*: On Facebook and Instagram, a business can send _one_ private message to someone who commented, within 7 days of the comment.\n_Platform · What the agent can do · Rules to respect_\n- *Facebook Page and Messenger* · Read and reply to comments, hide spam, private replies, reply in Messenger · Reply freely within 24 hours of the customer's last message. After that, only a person may reply, for up to 7 days, using Meta's human agent tag.\n- *Instagram* · Read, reply to and hide comments; private replies; reply to DMs (Business or Creator account) · The same 24-hour window for DMs. Check Meta's current Instagram rules for replies after 24 hours."
+  },
+  {
+   "t": "text",
+   "body": "*X:* Read mentions, reply, DMs (X API, pay per use) · Every read and post is charged. Poll on a schedule with a budget.\n- *LinkedIn Page* · Read and reply to page comments with the Community Management API · Needs LinkedIn's approval. Until then, the agent drafts and a person posts.\n- *TikTok* · Mostly assisted: the agent drafts, a person replies in the app · Comment and messaging APIs are limited and need approval.\n- *WhatsApp* · Reply within the 24-hour customer service window (5.1) · Outside it, only approved templates."
+  },
+  {
+   "t": "text",
+   "body": "*From intent to action*\n\n_Intent · Best action · Who sends_\n- Simple question (price, hours, delivery area) · Short public reply, plus a private reply with details and the order link · Agent, automatically\n- Buying signal (\"I want 2 baskets\", \"weekly supply?\") · Private reply or DM; save as a lead · Agent; big accounts go to Tolu\n- *Complaint or refund* · A short public acknowledgement, then a person in private · Tolu, with the agent's summary\n- *Praise* · A warm thank-you · Agent\n- *Spam or scam links* · Hide; never reply · Agent\n\n*Echo:* Prices and opening hours can be public. Addresses, phone numbers, order numbers and refunds never are. When in doubt, move it to private, or to a person."
+  },
+  {
+   "t": "text",
+   "body": "*Inbox lab: triage eight messages*\n\nIt's 2 p.m. on Wednesday. Choose an action for each message and decide whether it's a lead, then check your choices against the rules."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Inbox lab: triage eight messages. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-5"
+  },
+  {
+   "t": "text",
+   "body": "*Leads, with consent*\n\nA lead is a person who showed buying interest, plus what you're allowed to do next. Save only what you need:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Leads, with consent): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-5"
+  },
+  {
+   "t": "text",
+   "body": "- *Ask, don't assume*: \"Can we message you next week with the supply price list?\" A yes is consent to follow up; record it.\n- *No silent harvesting*: Don't scrape commenters' profiles for phone numbers or emails. Ask for contact details in the conversation.\n- *One person, one lead*: The same customer may comment, DM and WhatsApp. Match them (5.7) instead of creating three leads."
+  },
+  {
+   "t": "text",
+   "body": "*Hand-over and honesty*\n\n- *Say it's automated*: Where the law or platform requires it, and as good practice everywhere: \"I'm Harvest Lane's assistant. Tolu sees everything and will step in if needed.\"\n- *Hand over when*: Complaints, refunds, anger, anything legal or safety-related, big accounts, two failed answers, or the customer asks for a person.\n- *A useful summary*: Who, which platform, what they want, what's been said, and a suggested reply, so Tolu answers in one go (B4).\n- *Response targets*: Questions: under 5 minutes. Complaints: a person within an hour during working hours. An alarm fires if a message waits longer."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Instagram Automation: Single Webhook for DMs & Comments with AI + n8n_.\nLook for: One Meta webhook feeding comments and DMs into one AI queue.",
+   "media": "walk:5.5",
+   "youtube": "https://www.youtube.com/watch?v=h9501nGKmg8",
+   "app": "https://automancy.cc/learn#m-5-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Harvest Lane's social inbox*\n\n*The goal.* Comments and messages from Facebook and Instagram arrive in real time; X mentions every 15 minutes; LinkedIn and TikTok through a quick \"forward to inbox\" form. The agent answers simple questions, sends private replies to buyers, saves leads with consent, hides spam and hands everything else to Tolu, with an alarm if anything waits too long."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Receive*\n\n- *Meta webhooks:* one n8n Webhook for Page feed comments, Messenger, and Instagram comments and messages. Answer Meta's verification request once, then check every event's signature (as with Paystack in 2.5).\n- *X:* a Schedule Trigger every 15 minutes searches mentions, with a monthly read budget.\n- *LinkedIn and TikTok:* an n8n Form (\"forward a comment\") Tolu's team can fill from their phones until API access is approved.\n\nEvery event becomes one row in `inbox`: `platform, kind, item_id, thread_id, author_handle, text, received_at, last_customer_msg_at, status`. Skip duplicates by `item_id`."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Classify, then work out what's allowed*\n\nThe 5.3 labeller adds `intent` and `urgent`. Then a Code node decides which actions the rules allow, before the agent writes a word:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Classify, then work out what's allowed): open it in the app.",
+   "url": "https://automancy.cc/learn#m-5-5"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Answer*\n\nThe Sage Desk agent (B4) with tools `get_price`, `check_delivery_zone`, `save_lead` and `handover_to_tolu`, and a system message that says: short replies, public replies never contain personal details, only use actions listed in `allowed`. Its output is structured: `{ action, public_text, private_text, lead }`.\n\nA Code node rejects any action not in `allowed`. If `auto` is true, send; otherwise Tolu approves on Telegram first."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Send, through each platform*\n\n- *Public reply:* Graph API reply to the comment (Facebook or Instagram); X node reply.\n- *Private reply:* Meta's private reply to the comment, once; mark `private_sent`.\n- *DM:* send in the thread while the window is open.\n- *Hide:* hide the comment through the API.\n- *Hand over:* Telegram summary to Tolu, with a draft reply and the link."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Leads and response times*\n\n`save_lead` writes to the leads table with source link and consent flag, and alerts Tolu for big accounts. A watchdog every 10 minutes finds rows still `waiting` beyond their target (5 minutes for questions, 60 for complaints) and alerts. Monday's report (5.3) now includes leads by platform and median response time.\n\n- *< 2 min* to answer a price question\n- *0* replies outside the rules\n- *100%* of leads saved with their source\n\n*Sage's reminder:* the agent never decides what's allowed. Code computes the allowed actions from timestamps and platform rules; the agent only chooses among them."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- One queue for every platform, with no duplicates.\n- Allowed actions are computed in code from the rules.\n- Simple, safe messages are answered automatically; the rest are approved.\n- Leads are saved with their source and consent.\n- Response-time alarms stop messages being forgotten.\n\n*Common mistakes to avoid*\n\n- Promising a DM you can't send.\n- Personal details in public replies.\n- Arguing with angry customers by bot.\n- Replying to spam.\n- Three leads for one person."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I'm a great listener. I reply to everything, everywhere, instantly.\n\n*A:* The bot replied \"DM sent! \" under a complaint. The DM failed: the window had closed.\n*B:* A public reply said: \"Hi Mrs Adeyemi, your order HL-0412 to 14 Bodija Road is on its way.\"\n*C:* The bot and an angry customer exchanged eleven messages. Screenshots are circulating.\n*D:* The same restaurant appears as three leads: one from Instagram, one from Messenger, one from WhatsApp.\n*E:* The bot thanked a spam account for its \"great offer\" and the link got more clicks."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the public reply promised an action that wasn't allowed. Compute allowed actions first; only say \"sent\" after the send succeeds; complaints go to a person.\n*B:* personal details in public. Public replies never include names with addresses, order numbers or phones. Move to private.\n*C:* no hand-over rule for anger. Hand over on complaint intent or after one negative exchange, with a summary.\n*D:* no identity matching. Match by phone, email or handle and merge into one person (5.7).\n*E:* spam classified as praise. Add spam examples and link checks; hide spam, never reply."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Reply rules for ten real messages",
+   "body": "- Collect ten real comments or messages from a business page (remove names).\n- For each, write the intent, the allowed actions under the rules, the best action and the reply.\n\n*Done when:*\n- Every reply is allowed on its platform, and no public reply contains personal details."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): A working inbox for Instagram and Facebook",
+   "body": "- Build receive → classify → allowed actions → answer → send, with Telegram approval and hand-over.\n- Test with planted comments and DMs, including an expired window and a spam link.\n\n*Done when:*\n- Price questions are answered in under 5 minutes, the expired-window DM goes to a person, and spam is hidden."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Two weeks on a real page",
+   "body": "- Run the inbox agent for a real business for two weeks.\n- Report median response time, leads captured by platform, and hand-overs.\n\n*Done when:*\n- Response time fell compared with the two weeks before, with no complaints about the bot."
+  },
+  {
+   "t": "quiz",
+   "q": "Someone commented on your Instagram post 9 days ago asking for prices. What can you do?",
+   "options": [
+    "Send them a private reply",
+    "Send them five DMs",
+    "Reply publicly and invite them to message you",
+    "Find their number and WhatsApp them"
+   ],
+   "answer": 2,
+   "why": "Private replies are only allowed within 7 days of the comment, and only once."
+  },
+  {
+   "t": "quiz",
+   "q": "Who decides which actions are allowed for a message?",
+   "options": [
+    "The AI agent",
+    "Code, from timestamps and platform rules",
+    "The customer",
+    "Nobody"
+   ],
+   "answer": 1,
+   "why": "Rules are enforced in code; the agent chooses only among allowed actions."
+  },
+  {
+   "t": "quiz",
+   "q": "Which can safely go in a public reply?",
+   "options": [
+    "The customer's address",
+    "Their order number and phone",
+    "Their refund amount",
+    "The price of a basket and the opening hours"
+   ],
+   "answer": 3,
+   "why": "Public: general information. Private: anything about a specific person or order."
+  },
+  {
+   "t": "quiz",
+   "q": "An angry customer complains on X. What should the agent do?",
+   "options": [
+    "Hand over to Tolu with a summary and a suggested reply",
+    "Argue until they calm down",
+    "Delete the post",
+    "Ignore it"
+   ],
+   "answer": 0,
+   "why": "Complaints need a person. The agent's job is a fast, useful summary."
+  },
+  {
+   "t": "quiz",
+   "q": "What makes a saved lead useful and lawful?",
+   "options": [
+    "As much personal data as you can collect",
+    "A phone number scraped from their profile",
+    "What they want, where they came from, and whether they agreed to a follow-up",
+    "Their date of birth"
+   ],
+   "answer": 2,
+   "why": "Minimal data, clear source, recorded consent."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Comments, mentions and DMs each have their own rules; bring them into one queue.\n2. Compute the allowed actions in code before the agent writes anything.\n3. Answer simple questions instantly; private details stay private.\n4. Save leads with source and consent, one person at a time.\n5. Complaints go to a person, fast, with a good summary."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.5 complete!* _The Social Inbox Agent_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.6, _Email Campaigns That Land_."
+  }
+ ]
+}

@@ -1,0 +1,177 @@
+{
+ "id": "4.2",
+ "title": "Tools & Function Calling",
+ "track": 4,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.2 · Tools & Function Calling*\n\n_≈ 2 hours · with Emeka_\n\nAn agent without tools can only talk. Tools are its hands: look up a price, check a date, call an API, run a workflow. The surprising part is that the model never runs a tool itself. It _asks_ for one, in a precise format, and your system decides whether and how to run it. Learn that exchange, and how to describe tools so the model picks the right one, and agents stop guessing.\n\n*Your problem:* Your agent calls the wrong tool, or invents answers instead of using one.\n*The plan:* Design tools with clear names, descriptions and inputs, and test them.\n*After this lesson:* Your agents pick the right tool, reliably."
+  },
+  {
+   "t": "text",
+   "body": "*\"₦8,000, I think?\"*\n\n*Monday:* The FAQ agent from 4.1 gets a price question. It answers confidently, and wrongly. Tomatoes are ₦12,500 a crate.\n\n*Tolu:* \"The price list is right there in the sheet. Why is it making numbers up?\"\n\n*Sage:* \"I did have a tool. Its label says 'tool1: gets data'. How would I know that means prices?\"\n\n*Glitch:* \"Labels are for people. The AI will figure it out.\" (It won't.)"
+  },
+  {
+   "t": "text",
+   "body": "*How tool calling works*\n\nEach tool is described to the model with a *name*, a *description* and an *input schema* (the arguments and their types). The model chooses a tool almost entirely from those words, which is why writing them well is the core skill of this module."
+  },
+  {
+   "t": "text",
+   "body": "*Tools in n8n*\n\n- *App tools*: Many app nodes (Google Sheets, Gmail, Telegram…) can be attached as tools. Click the button beside a field, or write `$fromAI('key', 'description', 'type')`, and the model fills that field.\n- *HTTP Request tool*: Call any API (3.4), with the model filling chosen parameters.\n- *Code tool*: A small piece of code the agent can run. (`$fromAI()` doesn't work inside it; it receives a single input.)\n- *Calculator*: Exact arithmetic. Models are surprisingly bad at sums; never let them do money in their heads.\n- *Call n8n Workflow tool*: Runs one of your workflows (with a \"When Executed by Another Workflow\" trigger) and returns its last node's output. Your tested logic, as a tool.\n\n*Nodo:* The best tools are your own workflows. The Boss 3 pricing sub-workflow already handles aliases, stock and delivery rules. Give the agent that, and it can't invent a price even if it tries."
+  },
+  {
+   "t": "text",
+   "body": "*Write tools the model can't misunderstand*\n\nTreat the description like a note to a new colleague: what it does, *when to use it*, what comes back, and what it's *not* for. Then describe every input with a format or example. Try the checker: load Glitch's tool, then Sage's, then write your own."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Write tools the model can't misunderstand. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-2"
+  },
+  {
+   "t": "text",
+   "body": "*Good tool results*\n\n- *Small and structured*: Return the five fields the agent needs, not the whole sheet. Every byte goes back into the model's context, on every later loop.\n- *Explicit when nothing's found*: `{\"found\": false, \"suggestions\": [\"Tatashe pepper\", \"Rodo\"]}` beats an empty result, which models tend to fill with guesses.\n- *Errors as messages*: If the tool fails, return `{\"error\": \"Price list unavailable, try again later\"}` so the agent can tell the customer, rather than crashing the run.\n- *Read-only by default*: Lookup tools are safe to call many times. Tools that _change_ things (create an order, send money) need approval steps: 4.5."
+  },
+  {
+   "t": "text",
+   "body": "*How many tools?*\n\nEach tool's definition is sent with every model call, and similar tools confuse the choice. Start with the fewest tools that do the job, with clearly different purposes. If you're past roughly 10, group them behind sub-agents or sub-workflows (4.7), or split the agent by job.\n\n_Confusing pair · Clearer design_\n- `get_price` and `get_product`, which both return prices · One tool, `get_price`, that returns price and stock\n- `search_orders` and `find_order` · `get_order_status` (by order ID) and `list_customer_orders` (by phone)\n- `calculate` plus six separate maths steps · `quote_order`: one workflow tool that does the whole sum in code"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _What is Tool Calling? Connecting LLMs to Your Data_ (IBM Technology).\nLook for: How the model picks a tool from its name and description, and how results return.",
+   "media": "walk:4.2",
+   "youtube": "https://www.youtube.com/watch?v=h8gMhXYAv1k",
+   "app": "https://automancy.cc/learn#m-4-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: exact quotes, every time*\n\n*The goal.* The agent answers \"How much for 3 crates of tomatoes and 2 bags of tatashe?\" with the exact total, using the live price list and real arithmetic. It has two tools: `get_price` (a workflow tool) and a calculator."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Build the price lookup as a sub-workflow*\n\nNew workflow *SUB · Get price*: trigger *When Executed by Another Workflow* with one input field, `product` (string). Then Google Sheets reads Price_List, and a *Code* node matches by aliases (reuse the Boss 3 matching) and returns one small item:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Build the price lookup as a sub-workflow): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-2"
+  },
+  {
+   "t": "text",
+   "body": "Test it on its own with \"tomato\", \"big tatashe\", \"pepper\" (ambiguous: not found, with suggestions) and \"yam\"."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Attach it as a tool*\n\nIn the 4.1 agent, add a *Call n8n Workflow* tool. Choose SUB · Get price. Name it `get_price` and paste Sage's description from Card 3. For the `product` input, click (or write `{{ $fromAI('product', 'the product as the customer wrote it, one product per call, e.g. tatashe', 'string') }}`)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add the calculator and update the instructions*\n\nAttach the *Calculator* tool. Add to the system message:\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Test, and read the trace*\n\nAsk: _\"How much for 3 crates of tomatoes and 2 bags of tatashe delivered to Bodija?\"_ In the execution log you should see two `get_price` calls, one calculator call (37,500 + 18,000), and an answer of *₦55,500, with free delivery*. Then try \"2 baskets of pepper\": the agent should ask whether you mean rodo or tatashe.\n\n- *2* tools, each with one clear job\n- *₦0* difference between the quote and the price list\n- *1* question back when the product is ambiguous\n\n*Sage's upgrade:* even better is one tool, `quote_order`, that calls the Boss 3 pricing sub-workflow with the whole list of items and returns lines, delivery and total. Then the arithmetic and delivery rules live in tested code, not in my instructions. Fewer, smarter tools usually beat more, simpler ones."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The description says exactly when to call the tool: \"before giving any number\".\n- The tool returns small, explicit results, including \"not found\" with suggestions.\n- Arithmetic is done by a calculator (or code), never by the model.\n- The lookup is a tested sub-workflow, reusable by the bot, the agent and your tests.\n\n*Common mistakes to avoid*\n\n- Vague names and descriptions (\"tool1: gets data\").\n- Returning the whole price sheet on every call.\n- Empty results that invite guessing.\n- Letting the model calculate money totals itself.\n- Lots of overlapping tools \"just in case\"."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Five tool troubles. Each has a one-line cause.\n\n*A:* The agent quotes prices without ever calling the price tool.\n*B:* The agent calls `get_price` with `\"3 crates of tomatoes and 2 bags of tatashe\"` as one product, and gets \"not found\".\n*C:* The quote is ₦54,500. The prices it fetched were right.\n*D:* Each answer is slow and expensive. The tool returns all 120 rows of the price sheet.\n*E:* When the sheet was briefly unavailable, the whole run crashed and the customer got nothing."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the tool's name and description don't say when to use it. Rename it (`get_price`) and say \"use this whenever a customer asks about a price or total, before giving any number\".\n*B:* the input description doesn't say \"one product per call\" or give an example. Add both (or build a `quote_order` tool that accepts a list).\n*C:* the model did the sum in its head. Require the calculator for all arithmetic, or move the total into a code-based tool.\n*D:* the tool returns too much. Filter to the one product and return five fields.\n*E:* tool errors weren't handled. Give the tool node retries and an error output that returns `{\"error\": \"…\"}`, so the agent can apologise and continue."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A \"check delivery date\" tool",
+   "body": "- Build a sub-workflow tool `check_delivery_date`: input a date (YYYY-MM-DD) and an area; return whether Harvest Lane delivers there that day (Monday–Saturday, listed areas, not public holidays you list).\n- Describe it with the Card 3 checklist (all checks passing) and attach it to the agent.\n\n*Done when:*\n- \"Can you bring it to Akobo on Sunday?\" and \"…to Lekki tomorrow?\" both get correct answers, and the trace shows the tool call each time."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Turn a workflow into a tool",
+   "body": "- Pick one Track 3 workflow (customer lookup from 3.5, supplier prices from 3.4, or Boss 3 pricing) and give it a \"When Executed by Another Workflow\" trigger with defined inputs.\n- Attach it to an agent as a Call n8n Workflow tool, with a description that passes all checks.\n- Ask five questions that need it and two that don't.\n\n*Done when:*\n- The tool is called on all five relevant questions and on neither of the other two."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Four tools for your own business",
+   "body": "- Design an agent for your own business (or a client's) with exactly four tools, at least two of them your own workflows. Write each description and input schema first, on paper.\n- Build it, then run 12 questions: three aimed at each tool.\n- Record whether the right tool was chosen each time, and fix descriptions until it is.\n\n*Done when:*\n- Right tool chosen at least 11 of 12 times, with before-and-after descriptions in your log showing what you changed."
+  },
+  {
+   "t": "quiz",
+   "q": "Who actually runs a tool?",
+   "options": [
+    "The model",
+    "The customer",
+    "Your system (n8n), after the model asks",
+    "The AI provider's server"
+   ],
+   "answer": 2,
+   "why": "The model outputs a request (name + arguments). n8n decides and runs it."
+  },
+  {
+   "t": "quiz",
+   "q": "What does the model mostly use to choose a tool?",
+   "options": [
+    "The tool's name, description and input schema",
+    "The order the tools were added",
+    "The node's colour",
+    "The tool's speed"
+   ],
+   "answer": 0,
+   "why": "Those words are all the model sees. Write them for a new colleague."
+  },
+  {
+   "t": "quiz",
+   "q": "What does `$fromAI('product', 'e.g. tatashe', 'string')` do?",
+   "options": [
+    "Calls an AI model directly",
+    "Translates the product name",
+    "Reads the price list",
+    "Lets the agent fill that tool input, guided by the description"
+   ],
+   "answer": 3,
+   "why": "It marks a tool field for the model to fill, with a key, description and type."
+  },
+  {
+   "t": "quiz",
+   "q": "A lookup finds nothing. What should the tool return?",
+   "options": [
+    "Nothing at all",
+    "An explicit \"found: false\", ideally with suggestions",
+    "A random product",
+    "An error that stops the run"
+   ],
+   "answer": 1,
+   "why": "Empty results invite guesses; explicit ones invite good questions."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should a money total be calculated?",
+   "options": [
+    "In the model's reasoning",
+    "By the customer",
+    "In a calculator or code-based tool",
+    "In the system message"
+   ],
+   "answer": 2,
+   "why": "Models are unreliable at arithmetic. Tools are exact."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. The model asks; your system runs. Unconnected tools can't be used.\n2. Name tools verb_noun; describe what, when, what comes back, and what not.\n3. Describe every input with a format or example; use `$fromAI()` to let the model fill it.\n4. Return small, explicit results, including \"not found\" and errors.\n5. Money maths happens in tools, never in the model's head.\n6. Your tested workflows make the best tools.\n7. Fewer, clearly different tools beat many similar ones."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.2 complete!* _Tools & Function Calling_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.3, _Memory_."
+  }
+ ]
+}

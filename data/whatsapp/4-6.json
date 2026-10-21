@@ -1,0 +1,181 @@
+{
+ "id": "4.6",
+ "title": "MCP: Plugging Agents Into Anything",
+ "track": 4,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.6 · MCP: Plugging Agents Into Anything*\n\n_≈ 2 hours · with Emeka_\n\nSo far, your tools live inside your own n8n agents. The *Model Context Protocol (MCP)* is an open standard that lets _any_ AI application use them: Claude, ChatGPT, coding assistants and more. The MCP site compares it to a USB-C port for AI. Build a tool once, plug it in everywhere. This module turns Harvest Lane's order lookup into something Tolu can ask about from her own AI assistant.\n\n*Your problem:* Every new tool means new custom integration work.\n*The plan:* Connect agents to tools and data through MCP, as a client and as a server.\n*After this lesson:* You can plug agents into almost anything, the standard way."
+  },
+  {
+   "t": "text",
+   "body": "*\"Where is order HL-0042?\"*\n\n*Evening:* Tolu uses an AI assistant all day for writing and planning. But it can't see Harvest Lane's orders.\n\n*Today:* One customer question means five tabs: the sheet, n8n, Telegram, Paystack, email.\n\n*Sage:* \"Give your order lookup a standard plug, and any AI app that speaks MCP can use it, with your permission.\"\n\n*Glitch:* \"Plugs work both ways. Install my free server. It only needs access to… everything.\""
+  },
+  {
+   "t": "text",
+   "body": "*How MCP fits together*\n\n- *Tools*: Actions the model can call (look up an order, create a draft). The same idea as 4.2.\n- *Resources*: Data the app can read in (a file, a policy, a record).\n- *Prompts*: Ready-made templates the server offers (\"Summarise today's orders\").\n- *Transports*: Local servers usually run on your computer and talk over _stdio_; remote servers talk over HTTP (n8n's MCP Server Trigger supports SSE and streamable HTTP)."
+  },
+  {
+   "t": "text",
+   "body": "*n8n on both sides of the plug*\n\n_Node · Role · Use it to…_\n- *MCP Server Trigger* · n8n becomes an MCP *server* · Offer your workflows to Claude Desktop, Claude Code, IDEs and other clients. It connects only to tool nodes (such as Call n8n Workflow tools); each tool is listed for the client and run on request.\n- *MCP Client Tool* · n8n's AI Agent becomes a *client* · Give your n8n agents tools from someone else's MCP server.\n\n- *Test vs. production URL*: Like webhooks: the test URL works while you're listening in the editor; the production URL works once the workflow is published.\n- *Authentication*: None, Bearer or header. Always use Bearer (or header) with a long random token for anything real.\n- *Behind a proxy*: n8n's docs note that MCP's long-lived connections need proxy buffering turned off for the MCP path on nginx-style proxies, and, with several webhook replicas, all `/mcp*` traffic routed to one replica."
+  },
+  {
+   "t": "text",
+   "body": "*Build your Claude Desktop config*\n\nn8n's docs show how to connect Claude Desktop through `mcp-remote`, a small bridge that runs with Node.js and forwards to your remote server with your token. Fill in your details:"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Build your Claude Desktop config. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-6"
+  },
+  {
+   "t": "text",
+   "body": "Based on the example in n8n's MCP Server Trigger docs. The token is masked in the copy so it never ends up in screenshots or chat; type it into the real file yourself.\n\n*Sage:* Claude's apps can also add a remote MCP server as a _custom connector_ by URL. That route connects from Anthropic's cloud, so the server must be reachable on the public internet, and Claude's help centre describes OAuth for sign-in. For a token-protected n8n server on your own machine or VPS, the Desktop config above is the simplest start."
+  },
+  {
+   "t": "text",
+   "body": "*Designing MCP tools*\n\nEverything from 4.2 applies, with one difference: *you no longer control the agent*. Claude, a coding assistant or a colleague's bot might call your tools, so the tools themselves must be safe:\n\n- *Read-only first*: Start with lookups (order status, today's summary). Add write tools only with approvals built into the workflow.\n- *Checks inside the workflow*: The workflow, not the client, validates inputs, limits results and refuses what it shouldn't do.\n- *Small, clear outputs*: Clients may show results to the person directly. Return tidy, human-readable fields.\n- *One audience per server*: Tolu's internal server (orders, revenue) and a public server (opening hours, prices) should be separate, with separate tokens."
+  },
+  {
+   "t": "text",
+   "body": "*Trusting other people's servers*\n\nAn MCP server you install is software that your AI can call, often with your files, accounts or tokens. Before adding one:\n\n- *Who made it?*: Prefer official servers from the service itself, or well-known open-source projects you can read.\n- *What can it touch?*: Give it the narrowest access possible (one folder, a read-only token).\n- *Read the tool descriptions*: Descriptions are instructions the model reads. A malicious server can hide instructions in them (\"tool poisoning\").\n- *Approve actions*: Keep your client's per-tool approval prompts on for anything that writes, sends or deletes."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _The Model Context Protocol: Connecting AI to Everything_ (Adam Jones (Anthropic)).\nLook for: MCP clients and servers; tools, resources and prompts.",
+   "media": "walk:4.6",
+   "youtube": "https://www.youtube.com/watch?v=T4-BdZQUCSE",
+   "app": "https://automancy.cc/learn#m-4-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: ask Claude about any order*\n\n*The goal.* From Claude Desktop, Tolu asks \"Where is order HL-0042?\" or \"How did today go?\" and gets real answers from Harvest Lane's data, through two read-only n8n workflows exposed over MCP with a token."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Two read-only sub-workflows*\n\n- *SUB · Order status*: input `order_id` (validated against the pattern `HL-0000`); returns customer first name, items, total, status, delivery date and rider. No phone numbers or addresses: Tolu can open the sheet for those.\n- *SUB · Today summary*: no input; returns orders, revenue, pending and low-stock counts for today."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · The MCP server workflow*\n\nNew workflow *HL · MCP (internal)*: add *MCP Server Trigger*, path `orders`, authentication *Bearer* with a credential holding a long random token. Attach two *Call n8n Workflow* tools:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The MCP server workflow): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-6"
+  },
+  {
+   "t": "text",
+   "body": "Publish the workflow and copy the *production* URL."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Connect Claude Desktop*\n\nInstall Node.js on Tolu's computer. Generate the config in Card 3 with the production URL, open Claude Desktop → Settings → Developer → Edit Config, paste it, put the real token in place of the dots, save, and restart Claude Desktop. The `harvest-lane` server and its two tools should appear."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Ask, and watch both sides*\n\nAsk Claude: _\"Where is order HL-0042?\"_, then _\"How did today go, and which items are running low?\"_. Claude asks permission to use each tool; approve it. In n8n's Executions, each tool call appears as a run of the MCP workflow. Then try _\"Show me all customers' phone numbers\"_: no tool can do that, so the answer is no.\n\n- *2* read-only tools, built once in n8n\n- *1* place Tolu asks, instead of five tabs\n- *0* phone numbers or addresses exposed\n\n*Nodo's note:* the same server works for Claude Code, IDEs and other MCP clients. And your _n8n_ agents can use other people's servers through the MCP Client Tool. Plugs work in both directions."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Read-only tools mean any client can use them without risk to the data.\n- The workflows validate inputs and leave out sensitive fields.\n- A Bearer token over HTTPS keeps strangers out.\n- Clear tool descriptions let any client choose correctly.\n- The production URL keeps working without the editor open.\n\n*Common mistakes to avoid*\n\n- An MCP server with authentication set to None.\n- Pasting the test URL into the client.\n- Write tools exposed without approvals.\n- Returning whole customer records.\n- Installing unknown community servers with broad access."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* The plug is in. Something's still wrong. Five cases.\n\n*A:* Claude Desktop shows the server, but no tools. Or it worked yesterday afternoon and not today.\n*B:* The server appears, but every call fails with 401.\n*C:* The assistant sees the tools but never picks `get_order_status`; it says it can't look up orders.\n*D:* Behind the company's nginx proxy, connections hang and time out.\n*E:* A \"free Google Sheets MCP server\" from a forum started emailing Tolu's sheets to an unknown address."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the config uses the test URL, which only works while listening in the editor. Use the production URL of the published workflow.\n*B:* the token in the config doesn't match the trigger's Bearer credential (or the header line is malformed). Copy it again exactly, and restart Claude Desktop.\n*C:* the tool's name or description is vague (\"tool1\"). Describe what it returns, when to use it, and the input format.\n*D:* proxy buffering. Per n8n's docs, turn off buffering (and gzip) for the `/mcp` path.\n*E:* an untrusted server with broad access. Remove it, revoke its tokens, change exposed credentials, and only install servers you can trust and scope narrowly."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Use an existing MCP server",
+   "body": "- Connect one well-known MCP server to your AI assistant: for example, the reference filesystem server, limited to a single test folder.\n- Ask three questions that need it, and approve each tool call.\n\n*Done when:*\n- The assistant reads and summarises files in that folder only, and you can explain which tools the server offers and what access you gave it."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Two workflows as MCP tools",
+   "body": "- Build the solved problem: two read-only tools behind an MCP Server Trigger with Bearer auth.\n- Connect from Claude Desktop (or another MCP client) and ask five questions.\n- Also connect an n8n AI Agent to the same server with the MCP Client Tool.\n\n*Done when:*\n- Both clients get correct answers, the executions show each call, and a request without the token is refused."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): An MCP toolkit plan for a client",
+   "body": "- For a real or imagined client, list 6–10 tools their team would want in an AI assistant. Mark each read-only or write, its data sensitivity, and who may use it.\n- Group them into servers by audience, with authentication and approvals for each.\n- Build the two most valuable read-only tools.\n\n*Done when:*\n- The plan fits on one page, every write tool has an approval step, and the two built tools work from an MCP client."
+  },
+  {
+   "t": "quiz",
+   "q": "What is MCP?",
+   "options": [
+    "An AI model",
+    "An open standard for connecting AI apps to tools and data",
+    "A Claude plan",
+    "An n8n node only"
+   ],
+   "answer": 1,
+   "why": "Build a tool once; any MCP-capable app can use it."
+  },
+  {
+   "t": "quiz",
+   "q": "What can the n8n MCP Server Trigger connect to?",
+   "options": [
+    "Any node, like a normal trigger",
+    "Only Google Sheets",
+    "Chat models",
+    "Tool nodes, which clients can list and call"
+   ],
+   "answer": 3,
+   "why": "It exposes tools; each tool runs on request."
+  },
+  {
+   "t": "quiz",
+   "q": "Claude Desktop sees your server but nothing works the next day. Most likely?",
+   "options": [
+    "It's using the test URL",
+    "Claude is down",
+    "The tools are too fast",
+    "Node.js is too new"
+   ],
+   "answer": 0,
+   "why": "Test URLs work only while listening. Publish and use the production URL."
+  },
+  {
+   "t": "quiz",
+   "q": "Which tool is safest to expose first?",
+   "options": [
+    "Issue refund",
+    "Send message to all customers",
+    "Read-only order status, without phone numbers",
+    "Edit the price list"
+   ],
+   "answer": 2,
+   "why": "Read-only, minimal data. Writes need approvals inside the workflow."
+  },
+  {
+   "t": "quiz",
+   "q": "Why read a third-party server's tool descriptions?",
+   "options": [
+    "For spelling",
+    "The model reads them as instructions; malicious ones can hide commands",
+    "They affect the price",
+    "They aren't used"
+   ],
+   "answer": 1,
+   "why": "Tool poisoning: trust and scope servers carefully."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. MCP is a standard plug between AI apps (hosts and clients) and tools and data (servers).\n2. Servers offer tools, resources and prompts; local via stdio, remote via HTTP.\n3. n8n's MCP Server Trigger exposes tool nodes; the MCP Client Tool consumes other servers.\n4. Production URL, HTTPS and a Bearer token, always.\n5. You don't control the client, so put safety inside the workflow: read-only first, minimal data.\n6. Trust third-party servers like software you install: check who made them, and scope them narrowly."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.6 complete!* _MCP: Plugging Agents Into Anything_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.7, _Multi-Agent Systems_."
+  }
+ ]
+}

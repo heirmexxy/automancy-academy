@@ -1,0 +1,172 @@
+{
+ "id": "5.1",
+ "title": "Channels: WhatsApp, Telegram & Voice",
+ "track": 5,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 5.1 · Channels: WhatsApp, Telegram & Voice*\n\n_≈ 2–3 hours · with Miracle_\n\nWelcome to the Signal Tower. Before any growth agent can help, you need to reach customers where they already are. In Nigeria, customers are on WhatsApp. WhatsApp's official business platform has rules that Telegram doesn't: a 24-hour reply window, approved templates and per-message pricing. Learn them once, and you can serve almost any local client.\n\n*Your problem:* Your customers live on WhatsApp, not in your app.\n*The plan:* Connect automations to WhatsApp, Telegram and voice, within each channel's rules.\n*After this lesson:* You can reach customers where they already are."
+  },
+  {
+   "t": "text",
+   "body": "*\"Abeg, I no dey use Telegram\"*\n\n*The feedback:* Restaurants love the Telegram bot. But Iya Basira and most market customers only use WhatsApp, and won't install anything else.\n\n*First try:* The order-ready message fails for every customer who last wrote yesterday morning.\n\n*Another customer:* Some customers will never type. They want to call.\n\n*Glitch:* \"WhatsApp! Let's message all 400 customers a promo every day. What could go wrong?\""
+  },
+  {
+   "t": "text",
+   "body": "*WhatsApp Business Platform: the moving parts*\n- *Cloud API*: Meta's hosted API for sending and receiving WhatsApp messages from your own systems. You start in a Meta developer app with a free *test number* that can message a few verified recipient numbers.\n- *Webhook*: Incoming messages are posted to one HTTPS address per app (your n8n WhatsApp Trigger). n8n's docs warn that switching between test and production URLs overwrites it.\n- *Phone number ID and business account ID*: The IDs your send node uses: which number to send from, and which account it belongs to.\n- *Access token*: The dashboard gives a temporary token for testing. For production, create a permanent one (a system user token in Meta's business settings) and store it in an n8n credential."
+  },
+  {
+   "t": "text",
+   "body": "- *Templates*: Pre-approved message formats with placeholders, in three categories: *marketing*, *utility* (order and account updates) and *authentication* (one-time codes).\n- *Going live*: A real business number, business verification and a display name review. Plan days, not hours, and start early for client projects."
+  },
+  {
+   "t": "text",
+   "body": "*The 24-hour window, templates and price*\n\nPer Meta's pricing page: when a customer messages you, a *24-hour customer service window* opens. Inside it you can send normal (free-form) messages. Since 1 October 2026, each business phone number gets 1,000 free service (free-form) messages a month, after which they're charged; utility templates sent inside the window are charged again too. Once 24 hours have passed since the customer's last message, only approved *templates* can be sent, charged per delivered message by category (pricing has been per message since July 2025). Business-initiated messages also need the customer's *opt-in*."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The 24-hour window, templates and price. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-5-1"
+  },
+  {
+   "t": "text",
+   "body": "*One brain, many channels*\n\nThe `user_id` carries the channel prefix, so memory and identity (4.3) never mix a WhatsApp number with a Telegram chat. Channel-specific rules (the 24-hour window, templates, button formats) live in the adapters, not the brain."
+  },
+  {
+   "t": "text",
+   "body": "*Voice agents at a glance*\n\nA voice agent is the same brain with ears and a mouth: *speech-to-text* turns the caller's words into text, the *model* decides (with tools), and *text-to-speech* answers aloud. Platforms such as Vapi and ElevenLabs package this, and telephony providers like Twilio connect phone numbers. Their tools can call your n8n webhooks.\n\n- *Speed matters*: Callers notice pauses of a second or two. Keep tools fast and answers short.\n- *Interruptions and accents*: Test with real voices: Nigerian English, Pidgin, noisy markets.\n- *Cost per minute*: Usually much higher than text. Start with narrow jobs: opening hours, order status, \"call me back\".\n- *Consent and honesty*: Say it's an AI assistant, ask before recording, and always offer a person.\n- *Numbers*: Local phone number availability varies by country and provider; check before promising a client a Nigerian number."
+  },
+  {
+   "t": "text",
+   "body": "*Choosing a channel per client*\n\n_Channel · Strengths · Watch out for_\n- *WhatsApp* · Where most Nigerian customers already are; rich messages and buttons · 24-hour window, templates, verification, per-message pricing, quality rating\n- *Telegram* · Free, fast to build, great buttons; good for staff tools and tech-savvy customers · Fewer everyday customers use it\n- *Web chat* · You own it; no platform rules · Customers must visit your site\n- *SMS* · Works on any phone · Cost per message, short text, delivery rules\n- *Email* · Formal, good for B2B, invoices and reports · Slow; easily ignored\n- *Voice* · Accessible for people who can't or won't type · Highest cost per interaction; harder to test"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _WhatsApp Business API Setup 2026 + Permanent Access Token + n8n_.\nLook for: Meta app setup, a permanent token and n8n's WhatsApp node on the official Cloud API.",
+   "media": "walk:5.1",
+   "youtube": "https://www.youtube.com/watch?v=2C99NvvOg_k",
+   "app": "https://automancy.cc/learn#m-5-1"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Sage Desk on WhatsApp*\n\n*The goal.* Customers message the WhatsApp test number; n8n receives each message, passes it to the shared Sage Desk brain, and replies. Order-ready notifications use an approved utility template, so they work even outside the 24-hour window."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Create the Meta app and test number*\n\nAt Meta for Developers, create an app with the WhatsApp product. In its API setup page you get a *test phone number*, its *phone number ID*, the *WhatsApp Business Account ID* and a *temporary access token*. Add your own phone as a verified recipient. Send the sample \"hello_world\" template from the dashboard to confirm it reaches you."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Credentials and the trigger*\n\nIn n8n, create the WhatsApp credentials following n8n's WhatsApp credential page: the sending credential uses an access token and the business account ID; the trigger's credential uses your Meta app's ID and secret. Add a *WhatsApp Trigger* listening for *messages* in a new workflow, *HL · WhatsApp adapter*, on your HTTPS server (3.8). Publish it so Meta registers the production webhook."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Normalise, think, reply*\n\n1. *IF* the update contains a text message (ignore delivery and read receipts, which arrive on the same webhook). Non-text (voice note, image) → a polite \"please type your message\" reply, and forward to Tolu.\n2. *Edit Fields*: `channel = whatsapp`, `user_id = wa-{{ sender phone }}`, `text = {{ message body }}` (copy the exact paths from your trigger's output).\n3. *Execute Sub-workflow*: *SUB · Sage Desk brain* (Boss 4's agent, moved into a sub-workflow with these three inputs).\n4. *WhatsApp Business Cloud · Send*: from your phone number ID, to the sender, text = the brain's reply.\n\nPoint the Telegram workflow at the same brain, with `user_id = tg-…`. Now both channels share tools, memory rules and guardrails."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · A utility template for order updates*\n\nIn WhatsApp Manager, create a *utility* template, e.g. `order_ready`: _\"Hello {{1}}, your Harvest Lane order {{2}} is on its way and should arrive {{3}}. Reply here if you have any questions.\"_ Submit it for approval. In your order workflow, when an order is dispatched, check the customer's last message time: inside 24 hours → a free-form message; outside → *Send Template* `order_ready` with the three values. Only send to customers who opted in.\n\n- *1* brain shared by WhatsApp and Telegram\n- *2* channel adapters, each a handful of nodes\n- *0* failed updates outside the 24-hour window\n\n*Sage's reminder:* run Boss 4's evaluation set through the WhatsApp adapter too (with Check If Evaluating). Channels can break things the brain never sees: long replies cut off, formatting characters, emojis in prices."
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- A shared brain means one place to fix, test and improve.\n- Channel prefixes keep identity and memory separate.\n- The adapter applies WhatsApp's rules: window, templates, opt-in.\n- Receipts and non-text messages are filtered before the agent wastes a call.\n\n*Common mistakes to avoid*\n\n- Sending free-form messages outside the 24-hour window.\n- Using the temporary token in production.\n- Testing on the live webhook during business hours.\n- Marketing blasts to people who never opted in.\n- Copying the whole agent into each channel's workflow."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* New channel, new traps. Five.\n\n*A:* Order-ready messages fail for customers who last wrote more than a day ago.\n*B:* Everything worked on Monday. On Tuesday morning, every send fails with an authentication error.\n*C:* While Tolu tested a change, real customers' WhatsApp messages stopped arriving.\n*D:* The agent replies twice to every message, and sometimes answers \"delivered\" receipts.\n*E:* After daily promos to all 400 customers, the number's quality rating dropped and messaging was limited."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* free-form messages outside the 24-hour window. Use an approved utility template (and only for customers who opted in).\n*B:* the temporary dashboard token expired. Create a permanent system user token and update the credential.\n*C:* one webhook per app: listening for a test event replaced the production URL. Test with a separate Meta app and number, or unpublish during a quiet hour and re-publish after.\n*D:* status updates (sent, delivered, read) arrive on the same webhook. Filter to incoming text messages before calling the brain.\n*E:* unwanted marketing gets blocked and reported. Send only to opted-in customers, rarely, and with something worth reading."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Two channels, one brain",
+   "body": "- Move your Boss 4 agent into a sub-workflow with inputs `channel`, `user_id`, `text`.\n- Connect your Telegram bot to it through a small adapter.\n\n*Done when:*\n- Telegram answers exactly as before, and the brain's executions show the `tg-` user IDs."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): WhatsApp, with a template",
+   "body": "- Build the solved problem on the test number: receive, reply through the shared brain.\n- Create a utility template and get it approved. Send it to your verified number from n8n.\n- Prove the window logic: one update sent inside 24 hours as free-form, one outside as the template.\n\n*Done when:*\n- Both arrive, the executions show which path each took, and your log records the template's name and category."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A voice prototype",
+   "body": "- On a voice-agent platform's free trial, build a voice assistant that answers opening hours and delivery areas, with one tool calling your n8n webhook (e.g. order status).\n- Test it with five people, including at least one older caller and one call from a noisy place.\n- Record: success rate, average call length, cost per call, and the three biggest problems.\n\n*Done when:*\n- The prototype works on at least 4 of 5 calls, discloses that it's an AI, offers a person, and your notes include a go or no-go recommendation for Harvest Lane."
+  },
+  {
+   "t": "quiz",
+   "q": "A customer last wrote 30 hours ago. You want to tell them their order is on the way. What do you send?",
+   "options": [
+    "A normal text message",
+    "Nothing; it's not allowed",
+    "An approved utility template (they opted in)",
+    "A marketing template"
+   ],
+   "answer": 2,
+   "why": "Outside the 24-hour window, only templates; an order update is a utility message."
+  },
+  {
+   "t": "quiz",
+   "q": "Per Meta's pricing page, which is free?",
+   "options": [
+    "Non-template replies inside an open customer service window, up to the monthly free tier",
+    "All marketing templates",
+    "Any message, any time",
+    "Templates outside the window"
+   ],
+   "answer": 0,
+   "why": "Since 1 October 2026, each business number gets 1,000 free service (free-form) replies a month inside the window; after that they're charged. Utility templates in the window are now charged too."
+  },
+  {
+   "t": "quiz",
+   "q": "Why put the agent in a shared sub-workflow?",
+   "options": [
+    "WhatsApp requires it",
+    "It's faster",
+    "To use more executions",
+    "So every channel shares one brain to fix, test and improve"
+   ],
+   "answer": 3,
+   "why": "Adapters handle channel rules; the brain stays single."
+  },
+  {
+   "t": "quiz",
+   "q": "Testing the WhatsApp Trigger stops production messages. Why?",
+   "options": [
+    "Meta blocks testing",
+    "One webhook URL per app: the test URL replaced the production one",
+    "n8n crashed",
+    "The template expired"
+   ],
+   "answer": 1,
+   "why": "Use a separate test app or test at quiet times, then re-publish."
+  },
+  {
+   "t": "quiz",
+   "q": "Best first job for a voice agent?",
+   "options": [
+    "Negotiating bulk prices",
+    "Approving refunds",
+    "Answering opening hours and order status, with a person on offer",
+    "Cold-calling every customer"
+   ],
+   "answer": 2,
+   "why": "Narrow, frequent, low-risk questions. Voice costs more and is harder to test."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Go where customers are; in Nigeria, that's usually WhatsApp.\n2. 24-hour window: free-form inside; approved templates outside.\n3. Templates: marketing, utility, authentication; pricing is per message and changes (free-form replies are free only up to 1,000 a month per number since October 2026), so check Meta's page.\n4. Opt-in first; market rarely.\n5. One brain, small channel adapters, prefixed user IDs.\n6. One webhook per WhatsApp app: test with a separate app.\n7. Voice: narrow jobs, honest disclosure, a person on offer."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 5.1 complete!* _Channels: WhatsApp, Telegram & Voice_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 5.2, _Prospecting Agents_."
+  }
+ ]
+}

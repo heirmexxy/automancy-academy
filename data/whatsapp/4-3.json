@@ -1,0 +1,186 @@
+{
+ "id": "4.3",
+ "title": "Memory",
+ "track": 4,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 4.3 · Memory*\n\n_≈ 2 hours · with Miracle_\n\nA model on its own remembers nothing: every message is its first. \"Memory\" is something your system adds, by deciding what to send back to the model each time. Done well, the agent follows a conversation and knows a returning customer. Done badly, it forgets mid-sentence, or worse, tells one customer about another's order.\n\n*Your problem:* Customers have to repeat themselves, and agents forget what was said.\n*The plan:* Add short-term and long-term memory, safely, per customer.\n*After this lesson:* Your agents hold a conversation and remember what matters."
+  },
+  {
+   "t": "text",
+   "body": "*\"Same as last time\"*\n\n*Tuesday:* Mama Ronke has ordered every Tuesday for a year. The agent treats her like a stranger.\n\n*Worse:* Within one chat, the agent forgets an address given two messages earlier.\n\n*Worst:* Two customers called Funmi start receiving each other's details.\n\n*Glitch:* \"I keyed memory by first name. Names are unique, aren't they?\""
+  },
+  {
+   "t": "text",
+   "body": "*Two kinds of memory*\n\n_Short-term: chat memory · Long-term: knowledge about the customer_\n- *Holds* · The last few messages of this conversation · Profile, past orders, preferences\n- *Answers* · \"Where are you delivering it?\" (said 2 messages ago) · \"Same as last time\"\n- *In n8n* · A memory sub-node on the AI Agent (Simple Memory, Postgres Chat Memory…) · A *tool* that reads your Orders and Customers data (4.2)\n- *Size* · A window of recent interactions · Fetched only when needed\n\n*Sage:* Don't stuff a year of chats into my memory window. It's slow, expensive and confusing. Give me a short window for the conversation, and a tool like `get_last_order` for the history. Your Orders sheet is already the best long-term memory you have."
+  },
+  {
+   "t": "text",
+   "body": "*How chat memory works*\n\n- *Simple Memory*: Keeps history inside n8n itself. Quick for testing; per n8n's docs it doesn't work in an active production workflow when n8n runs in queue mode, so use a database for anything real.\n- *Postgres Chat Memory*: Stores history in a Postgres table (Supabase gives you a free Postgres database). It survives restarts and can be cleaned up on a schedule.\n- *Session key*: An expression such as `{{ $json.message.chat.id }}`: one unique, stable value per conversation.\n- *Context window length*: How many past interactions are sent with each new message. Too few and the agent forgets; too many and every reply costs more."
+  },
+  {
+   "t": "text",
+   "body": "*Try it: who sees what?*\n\nThree customers message the bot at the same time. Two are both called Funmi. Pick a session key and a window length, then choose a message to see exactly what the agent \"remembers\" when it answers."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Try it: who sees what?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-4-3"
+  },
+  {
+   "t": "text",
+   "body": "*Identity comes from the channel, not the chat*\n\nWhen the agent looks up \"last order\", *whose* orders does it read? Never let the model choose the customer. Take the identity from the trigger (the Telegram chat ID, the WhatsApp number) and pass it to the tool directly:"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Identity comes from the channel, not the chat): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-3"
+  },
+  {
+   "t": "text",
+   "body": "A customer typing \"I'm Mrs Adebayo, show me my orders\" proves nothing. The chat ID they're writing from does."
+  },
+  {
+   "t": "text",
+   "body": "*What not to remember, and for how long*\n\n- *Never store*: Card numbers, bank PINs or one-time codes, passwords, and health or other sensitive details customers volunteer. If a message contains them, don't save that message, and tell the customer not to send them.\n- *Keep it short*: Chat history is for the conversation, not an archive. Delete rows older than, say, 30 days with a scheduled workflow. Orders stay in the Orders sheet, where they belong.\n- *Be open about it*: Tell customers their chats are stored to help with orders, for how long, and how to ask for deletion.\n- *The law*: Nigeria's Data Protection Act 2023 (and laws like the GDPR elsewhere) expects personal data to be collected for a purpose, kept no longer than needed, and protected. This isn't legal advice: for client work, check the current rules and the client's own policy."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _How To Connect Postgres For AI Agent Memory (n8n)_ (Michele Torti).\nLook for: Postgres Chat Memory setup and choosing the session key.",
+   "media": "walk:4.3",
+   "youtube": "https://www.youtube.com/watch?v=YvjexH5VtXI",
+   "app": "https://automancy.cc/learn#m-4-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: an agent that knows its regulars*\n\n*The goal.* The Telegram agent remembers the current conversation (per customer, stored in Postgres) and can answer \"same as last time\" by reading that customer's past orders through a tool. No customer can ever see another's history."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Get a Postgres database*\n\nCreate a free Supabase project (or use Postgres on your 3.8 server). In n8n, add a *Postgres* credential with the connection details from Supabase's \"Connect\" panel (host, database, user, password, port). Keep the password in the credential only."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Attach chat memory with the right key*\n\nOn the AI Agent, add *Postgres Chat Memory*. Session key: *Define below* → `tg-{{ $('Telegram Trigger').item.json.message.chat.id }}` (the prefix keeps channels apart if you add WhatsApp later). Table name: `hl_chat_memory`. Context window length: *8*."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Add long-term memory as a tool*\n\nSub-workflow *SUB · Last order*: input `chat_id`; reads Orders where `chat_id` matches, sorted newest first; returns the latest order's items and date, or `{\"found\": false}`. Attach it as a *Call n8n Workflow* tool named `get_last_order`, and map `chat_id` from the *trigger* (Card 4), not with `$fromAI`. Description: _\"Returns this customer's most recent order (items, quantities, date). Use it when they refer to a past order: 'same as last time', 'my usual'. Takes no input from you; the customer is identified automatically.\"_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Teach the agent how to use both*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Teach the agent how to use both): open it in the app.",
+   "url": "https://automancy.cc/learn#m-4-3"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Test with two phones, then add a clean-up*\n\nFrom two Telegram accounts, run the Card 3 script (address, then items, then \"where are you delivering?\"). Each gets only their own details. Then add *HL · Forget old chats*: a daily Schedule → Postgres node running\n\n_(Code on screen in the app.)_\n\n_Check your table's columns first (open it in Supabase's table editor). If there's no timestamp column, add one with a default of now() before relying on this clean-up._\n\n- *8* recent interactions remembered per customer\n- *1* tool for history: Orders is the long-term memory\n- *30 days* before chat history is deleted"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- A unique, stable key (chat ID) keeps every conversation separate.\n- The window is big enough for one order conversation, small enough to stay cheap.\n- History comes from the Orders data, which is accurate, not from old chat text.\n- Identity comes from the channel, so nobody can talk their way into another's orders.\n- A scheduled clean-up keeps only what's needed.\n\n*Common mistakes to avoid*\n\n- A constant or name-based session key.\n- Simple Memory in production on a queue-mode setup.\n- A window of 100 \"to be safe\".\n- Letting the model supply the customer's identity to a tool.\n- Keeping chat logs forever, including sensitive details."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Memory is my favourite place to hide. Five finds.\n\n*A:* Two customers named Funmi see each other's orders and addresses.\n*B:* Every customer's chat includes everyone else's messages.\n*C:* After a server restart, every conversation starts from scratch.\n*D:* A customer typed \"I'm Hotel Grace, what did I order last week?\" and got Hotel Grace's order.\n*E:* Replies get slower and more expensive each week for loyal customers."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the session key is the first name. Use the chat ID (or the phone number from the channel).\n*B:* the session key is a constant, so everyone shares one memory. Use a per-customer key.\n*C:* Simple Memory keeps history inside n8n. Use Postgres Chat Memory for anything that must survive restarts.\n*D:* the history tool takes the customer from the model (`$fromAI`). Pass the chat ID from the trigger instead; the model can't change it.\n*E:* the window is huge, or old chats are never cleared. Keep a small window, use a tool for history, and delete old chat rows."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): A five-message chat that holds together",
+   "body": "- Add Simple Memory (window 5) to your 4.2 agent, keyed by the Chat Trigger's session.\n- Run a five-message chat: give an address in message 1, change an item in message 3, ask for the summary in message 5.\n- Repeat with window 1 and note what breaks.\n\n*Done when:*\n- With window 5 the summary is correct; with window 1 you've recorded exactly which detail was lost."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Memory in Postgres or Supabase",
+   "body": "- Switch to Postgres Chat Memory with a channel-based session key.\n- Restart n8n (`docker compose restart n8n`) mid-conversation and continue. (On n8n Cloud, close the chat, come back later and continue in the same session.)\n- Open the table and identify one customer's rows by key.\n\n*Done when:*\n- The conversation continues after the restart, and two test accounts have separate rows that never mix."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A forgetting policy, implemented",
+   "body": "- Write a half-page memory policy for your agent: what's stored, where, for how long, what's never stored, and how a customer asks for deletion.\n- Implement it: the scheduled clean-up; a rule or check that stops sensitive messages (e.g. long digit strings that look like card numbers) being saved or repeated; and a \"forget me\" command that deletes that customer's chat rows.\n\n*Done when:*\n- Each rule in your policy has a matching test that passes, including \"forget me\" from one account leaving the other account's history untouched."
+  },
+  {
+   "t": "quiz",
+   "q": "\"Same as last time\": which memory answers it best?",
+   "options": [
+    "A chat window of 500 messages",
+    "A tool that reads this customer's past orders",
+    "The system message",
+    "The model's training"
+   ],
+   "answer": 1,
+   "why": "Long-term facts come from your data through a tool, not from old chat text."
+  },
+  {
+   "t": "quiz",
+   "q": "Which session key is safest for a Telegram bot?",
+   "options": [
+    "\"harvest-lane\"",
+    "The customer's first name",
+    "Today's date",
+    "The chat ID from the trigger"
+   ],
+   "answer": 3,
+   "why": "Unique and stable per conversation, and supplied by Telegram, not typed by the customer."
+  },
+  {
+   "t": "quiz",
+   "q": "Why avoid a very large context window?",
+   "options": [
+    "Every reply re-sends it, so cost and delay grow, and old details can confuse",
+    "n8n forbids it",
+    "It deletes older messages",
+    "It changes the session key"
+   ],
+   "answer": 0,
+   "why": "Memory is sent with every call. Keep it as small as the conversation needs."
+  },
+  {
+   "t": "quiz",
+   "q": "Your history tool should get the customer's identity from…",
+   "options": [
+    "$fromAI, so the model can fill it",
+    "Whatever name the customer types",
+    "The channel's trigger data (chat ID or phone)",
+    "A random number"
+   ],
+   "answer": 2,
+   "why": "Identity must come from the channel; otherwise anyone can claim to be anyone."
+  },
+  {
+   "t": "quiz",
+   "q": "A customer sends their card number in chat. Best response?",
+   "options": [
+    "Save it for faster checkout next time",
+    "Don't store or repeat it, and tell them not to send card details",
+    "Read it back to confirm",
+    "Email it to Tolu"
+   ],
+   "answer": 1,
+   "why": "Never keep payment secrets in chat memory. Payments go through the payment provider."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Models remember nothing; your system chooses what to send back.\n2. Short-term: a small chat window. Long-term: tools that read your data.\n3. The session key decides whose history loads. Make it unique and channel-supplied.\n4. Use a database (Postgres, Supabase) for memory that must survive restarts.\n5. Identity comes from the trigger, never from the model.\n6. Never store secrets; delete old chats on a schedule; tell customers."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 4.3 complete!* _Memory_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 4.4, _RAG: Answering From Your Documents_."
+  }
+ ]
+}

@@ -1,0 +1,180 @@
+{
+ "id": "2.4",
+ "title": "Iterators & Aggregators",
+ "track": 2,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.4 · Iterators & Aggregators*\n\n_≈ 100 minutes · with Miracle_\n\nReal orders contain lists: three products, two crates of this, a bag of that. Today you learn Make's two most powerful moves: splitting one bundle into many (an iterator) and squeezing many bundles back into one (an aggregator). With them, you'll update stock item by item and send one tidy summary instead of forty alerts.\n\n*Your problem:* An order has many items, and your scenario only sees the first one.\n*The plan:* Split lists with iterators and rebuild them with aggregators.\n*After this lesson:* You can process lists, line items and batches correctly."
+  },
+  {
+   "t": "text",
+   "body": "*Saturday's stock-out, again*\n\n*Saturday, 9 a.m.:* The sheet says 12 crates. The shelf says zero. Nobody updated stock when orders came in.\n\n*The shape of the problem:* One order, one bundle, but three products inside it. Each needs its own stock update.\n\n*Glitch:* \"And every order still sends its own alert. Forty emails by 6 p.m.!\"\n\n*Weave:* \"An accordion. Pull it open to work on each item. Squeeze it shut to report once.\""
+  },
+  {
+   "t": "text",
+   "body": "*Open and close the accordion*"
+  },
+  {
+   "t": "text",
+   "body": "*The Iterator*\n\nThe *Iterator* (under Flow control) takes an *array* and outputs one bundle per item. Each output bundle has the item's fields (sku, qty, unit_price), ready to map. Some app modules have iterating built in: a Gmail email with three attachments, for example, often already produces one bundle per attachment.\n\n*It needs a real array.* If an order's items arrive as text (\"tomato, onion\"), split it first (`split()` from 2.2), or parse JSON text with *JSON · Parse JSON*. A single object isn't a list; the iterator can't split it."
+  },
+  {
+   "t": "text",
+   "body": "*Aggregators and the source module*\n\n_Aggregator · Output · Harvest Lane use_\n- *Text aggregator* · One block of text, one line per bundle · \"2× Tomatoes · ₦25,000\" lines for an email\n- *Numeric aggregator* · One number: SUM, AVG, COUNT, MAX or MIN · Today's total sales; number of orders\n- *Array aggregator* · One array built from the bundles' fields · A clean items list to send to another API\n- *Table aggregator* · Text laid out as a table · A simple table in an email\n\nEvery aggregator has a *Source module*: the module whose bundles it collects. Set it to the iterator (to combine one order's items) or to the search/trigger (to combine all orders in the run). A wrong source module is the most common aggregator bug.\n\n*Weave:* Aggregators also have *Group by*. Group today's items by sku and a numeric aggregator gives one bundle per product: \"TOM-CRATE: 14 crates, ONI-BAG: 9 bags\". That's Tolu's restocking list, for free."
+  },
+  {
+   "t": "text",
+   "body": "*The duplicate-item trap*\n\nImagine one order lists tomatoes twice (two lines, 2 crates and 1 crate). The iterator makes two bundles. For each, you look up the stock (12) and write 12 − qty. The first writes 10; the second also reads… 12 (or the old value, depending on timing) and writes 11. You've lost a crate.\n\n- *Group first*: Aggregate by sku, summing qty, before updating stock: one update per product.\n- *Keep a movements log*: Instead of overwriting stock, add a row per item to a Stock_Movements tab and let a SUMIFS formula calculate current stock (0.4).\n- *Test the edge case*: Always include an order with a repeated product in your tests."
+  },
+  {
+   "t": "text",
+   "body": "*What it costs*\n\nModules between the iterator and aggregator run once per item, so they use credits per item. A 3-item order that updates stock uses about 3 credits for the updates, plus the search, iterator and aggregator modules. That's why grouping by sku and a movements log can save both errors _and_ credits. Check exact counts in scenario history; Make's help centre lists which modules are free."
+  },
+  {
+   "t": "text",
+   "body": "*The bundle machine*"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: The bundle machine. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-2-4"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Iterator and Aggregator Basics in Make.com_.\nLook for: Splitting an array into bundles, then aggregating back.",
+   "media": "walk:2.4",
+   "youtube": "https://www.youtube.com/watch?v=8ORTnAM66WI",
+   "app": "https://automancy.cc/learn#m-2-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: stock that updates itself, and one 6 p.m. summary*"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Part A · Set up a movements log (the safe way to track stock)*\n\nAdd a *Stock_Movements* tab: `date`, `order_id`, `sku`, `qty_change` (negative for sales, positive for deliveries from suppliers). In Products, make `stock_qty` a formula: `=opening_stock + SUMIFS(Stock_Movements!D:D, Stock_Movements!C:C, A2)`. Now stock can never be overwritten by a race; every change is a new row."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Part A · Split each paid order into items*\n\nTrigger: *Google Sheets · Watch New Rows* on Order_Items is simplest if your items are already rows (0.4). If orders arrive as JSON from the website (1.4), use *Webhooks · Custom webhook* → *Iterator* on `items`. Either way you now have one bundle per item."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Part A · One movement row per item*\n\nAdd *Google Sheets · Add a Row* to Stock_Movements: date `{{formatDate(now; \"YYYY-MM-DD\")}}`, order_id, sku, qty_change `{{-1 * 2.qty}}`. A 3-item order adds three rows, and stock updates through the formula."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Part A · Aggregate into one confirmation*\n\nAdd *Tools · Text aggregator*. Source module: the *Iterator*. Text per bundle: `{{2.qty}}× {{2.name}} · ₦{{formatNumber(2.qty * 2.unit_price; 0; \".\"; \",\")}}`. Row separator: new line. Then one *Gmail · Send* with the aggregated text: one email per order, listing every item."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Part B · The 6 p.m. summary*\n\nNew scenario, scheduled daily at 18:00. *Google Sheets · Search Rows* in Orders where created_at is today. Then two aggregators, both with the search as source module:\n\n_Aggregator · Settings · Result_\n- *Numeric aggregator* · Function: SUM · Value: total · Today's sales, e.g. 412500\n- *Text aggregator* · Text: `{{1.order_id}} · {{1.customer_name}} · ₦{{formatNumber(1.total; 0; \".\"; \",\")}}` · One line per order\n\nSend one email: \"Today: 17 orders · ₦412,500\" followed by the list. (Count the orders with a second numeric aggregator using COUNT, or with `length()` on an array aggregator.) This fixes Glitch's forty alerts from 2.1."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Test with the duplicate-item order*\n\nSend an order containing tomatoes twice (2 crates and 1 crate). Check Stock_Movements: two rows, −2 and −1. Check Products: stock dropped by exactly 3. The movements log handled the edge case that would break an overwrite design.\n\n- *3* movement rows for a 3-item order\n- *1* confirmation email per order\n- *1* summary email a day, instead of 40 alerts"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The iterator lets each item be handled on its own.\n- Aggregators turn many results into one readable message.\n- A movements log can't lose updates, and keeps full history.\n- A daily summary replaces a stream of interruptions.\n\n*Common mistakes to avoid*\n\n- Aggregator source module set to the wrong module.\n- Overwriting stock from inside an iterator.\n- Summing a currency-formatted field.\n- Iterating over text that isn't an array."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Five complaints from my version. Iterators are easy, right?\n\n*A:* Mrs Adebayo's confirmation lists Mr Okafor's onions too.\n*B:* The iterator outputs one bundle containing \"tomato, onion, pepper\".\n*C:* Each customer gets three confirmation emails, one per item.\n*D:* The daily sales total is 0.\n*E:* After a \"tomato twice\" order, stock only dropped by 1 instead of 3."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the text aggregator's source module is the trigger/search, so it collects items from every order in the run. Set it to the iterator.\n*B:* the items were text, not an array. Split the text (or parse the JSON) before the iterator.\n*C:* no aggregator; the email module sits inside the iterated section.\n*D:* the numeric aggregator sums a text field like \"₦12,500\". Sum the plain number.\n*E:* stock was overwritten per item and the second write used a stale value. Use a movements log, or group by sku first."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Iterate and aggregate a list",
+   "body": "- In a test scenario, use *JSON · Parse JSON* with the items array from the playground, then an Iterator and a Text aggregator.\n- Send yourself one email listing every item with its line total.\n\n*Done when:*\n- The iterator shows 3 bundles, the aggregator 1, and you receive exactly one email."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Stock movements and the daily summary",
+   "body": "- Build Part A (movements log, iterator, confirmation) and Part B (6 p.m. summary).\n- Test with five orders, including one with a repeated product and one with a single item.\n\n*Done when:*\n- Stock in Products matches a hand count, every order gets one confirmation, and one summary arrives with the right count and total."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Tolu's Thursday restock list",
+   "body": "- Every Thursday at 7 a.m., search the last 14 days of Order_Items, then use a numeric aggregator grouped by sku to total qty per product.\n- Compare each product's two-week demand with current stock, and list anything that would run out by Saturday.\n- Email Tolu one table (table or text aggregator) with product, stock, expected Saturday demand and suggested order quantity.\n\n*Done when:*\n- The list matches a manual check of the sheet, and tomatoes (the usual stock-out) appear when stock is low."
+  },
+  {
+   "t": "quiz",
+   "q": "An order bundle has an items array with 4 products. What does an Iterator output?",
+   "options": [
+    "1 bundle",
+    "4 bundles, one per item",
+    "4 arrays",
+    "An error"
+   ],
+   "answer": 1,
+   "why": "An iterator turns an array into one bundle per item."
+  },
+  {
+   "t": "quiz",
+   "q": "A confirmation email mixes items from different customers. What's wrong?",
+   "options": [
+    "The iterator is missing",
+    "The email module is broken",
+    "The schedule is wrong",
+    "The aggregator's source module collects the whole run, not one order's iterator"
+   ],
+   "answer": 3,
+   "why": "The source module decides which bundles are combined."
+  },
+  {
+   "t": "quiz",
+   "q": "Which aggregator gives today's total sales as one number?",
+   "options": [
+    "Numeric aggregator with SUM",
+    "Text aggregator",
+    "Iterator",
+    "Router"
+   ],
+   "answer": 0,
+   "why": "Numeric aggregators do SUM, AVG, COUNT, MAX and MIN."
+  },
+  {
+   "t": "quiz",
+   "q": "Why is a Stock_Movements log safer than overwriting stock_qty for each item?",
+   "options": [
+    "It uses fewer columns",
+    "Make requires it",
+    "Each change is a new row, so no update can overwrite another",
+    "It hides stock from staff"
+   ],
+   "answer": 2,
+   "why": "Appending never loses information; a formula computes current stock."
+  },
+  {
+   "t": "quiz",
+   "q": "What does \"Group by sku\" on a numeric aggregator give you?",
+   "options": [
+    "One total for everything",
+    "One result bundle per product",
+    "A sorted list of customers",
+    "Nothing; it's only for text"
+   ],
+   "answer": 1,
+   "why": "Grouping produces one aggregated bundle per distinct value."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Iterator: one array in, one bundle per item out.\n2. Aggregators squeeze bundles back into one: text, numeric, array, table.\n3. The source module decides what gets combined. Check it first when results look mixed up.\n4. Group by turns a list into per-product (or per-anything) totals.\n5. Append movements instead of overwriting totals.\n6. Everything inside the accordion runs, and costs, once per item."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.4 complete!* _Iterators & Aggregators_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.5, _HTTP, Webhooks & Data Stores_."
+  }
+ ]
+}

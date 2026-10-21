@@ -1,0 +1,189 @@
+{
+ "id": "2.6",
+ "title": "Error Handling & Reliability",
+ "track": 2,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 2.6 · Error Handling & Reliability*\n\n_≈ 100 minutes · with Miracle_\n\nEverything fails sometimes: a courier's server goes down, a weather service times out, one order has no address. Amateurs' automations stop silently. Professionals' automations retry, skip, substitute or shout, on purpose. This module is where Glitch stops being a villain and becomes your sparring partner.\n\n*Your problem:* Scenarios fail at night and you find out from angry customers.\n*The plan:* Add error handlers, retries and alerts, then break your own scenario on purpose.\n*After this lesson:* Your scenarios recover from failures or tell you straight away."
+  },
+  {
+   "t": "text",
+   "body": "*The Friday the courier went down*\n\n*Friday, 8:02 p.m.:* The courier's booking system is down for maintenance. The 8 p.m. run tries to book 31 deliveries.\n\n*Saturday, 6 a.m.:* The scenario errored, stopped, and after repeated errors was switched off. No bookings. No message to anyone.\n\n*Saturday, 7 a.m.:* Four riders, 31 customers, zero bookings. Tolu spends the morning on the phone.\n\n*A truce:* \"From today,\" says Weave, \"Glitch breaks things on purpose, in testing. We plan for every failure before customers ever see one.\""
+  },
+  {
+   "t": "text",
+   "body": "*What happens without a plan*\n\nWhen a module errors and has no error handler, Make stops that run with an error. Bundles still waiting are not processed. If a scheduled scenario keeps failing, Make can switch it off automatically (the number of consecutive errors allowed is in the scenario's settings). Make labels errors by type, such as connection, runtime, data and rate-limit errors, which helps you choose a response.\n\n*The big idea:* decide in advance, module by module, what should happen when it fails. An error handler is a small route attached to a module (right-click → Add error handler), ending in a *directive* that tells Make what to do next."
+  },
+  {
+   "t": "text",
+   "body": "*The five directives*\n\n_Directive · What happens · Run status · Use when_\n- *Ignore* · Skips the failed bundle; other bundles carry on · Success · One bad item shouldn't stop the rest (and you've logged it)\n- *Resume* · Substitutes output you define and continues as if it worked · Success · A sensible default exists (rain chance \"unknown\")\n- *Break* · Stores the run as an incomplete execution to finish later, manually or with automatic retries · Warning · The step must eventually happen (courier booking)\n- *Commit* · Stops the run, keeps what's done, skips remaining bundles · Success · Stop cleanly, nothing left worth doing\n- *Rollback* · Stops and tries to undo changes made by modules that support it · Error · All-or-nothing changes (works only with modules that support transactions, such as data stores)\n\nStatuses as described by Make. Google Sheets and email can't be \"undone\", so Rollback won't reverse them."
+  },
+  {
+   "t": "text",
+   "body": "*Break and automatic retries*\n\nTo use Break, turn on *storing of incomplete executions* in the scenario settings. Then, in the Break handler, enable automatic completion and set the number of attempts and the interval. The failed run waits, and Make retries it from the failed module.\n\n*Nodo:* Retry only things that can succeed later: timeouts, 5xx, rate limits (0.2). A 400 or 401 will fail every time; retrying just wastes credits. Fix those and alert."
+  },
+  {
+   "t": "text",
+   "body": "*Error routes that talk*\n\nAn error handler route can contain modules before its directive. Add a message step so a person knows exactly what failed. Inside the error route, Make provides details about the error (such as its message and type) that you can map."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Error routes that talk): open it in the app.",
+   "url": "https://automancy.cc/learn#m-2-6"
+  },
+  {
+   "t": "text",
+   "body": "Map the error fields from the mapping panel inside your error route; exact field names appear there."
+  },
+  {
+   "t": "text",
+   "body": "*Prevent, then handle*\n\n- *Prevent bad data*: Validation in sheets (0.4) and filters (2.3) stop many errors before they happen: no address, no API call.\n- *Handle what you can't prevent*: Outages, timeouts and rate limits will happen. Give every external call a handler.\n- *Be told*: Turn on Make's email notifications for errors and warnings in your profile, and log failures to an Errors tab you review weekly."
+  },
+  {
+   "t": "text",
+   "body": "*Which handler would you choose?*\n\n_Decide for each one: Ignore or Resume or Break or Rollback?_\n\n*A.* The weather lookup for the rider message times out. The message can say \"rain chance unknown\".\n*B.* Booking the courier fails with 503. The booking must happen tonight.\n*C.* Inside a loop of 30 orders, one order's SMS fails because the phone number is invalid. The other 29 should still go.\n*D.* Two data store updates must both happen or neither: moving credit between two customers' balances.\n*E.* Posting to an optional \"activity feed\" fails. Nobody needs to retry it, but you want a note in the Errors tab."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Reveal the answers",
+   "answer": "*A:* Resume\n*B:* Break\n*C:* Ignore\n*D:* Rollback\n*E:* Ignore"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this lesson's build step by step.\n\nFeatured video: _Make.com Error Handling Tutorial (2025)_.\nLook for: Ignore, Resume, Commit, Rollback, Break and incomplete executions.",
+   "media": "walk:2.6",
+   "youtube": "https://www.youtube.com/watch?v=djOPQ1uYRms",
+   "app": "https://automancy.cc/learn#m-2-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: an 8 p.m. run that survives Friday*\n\n*The goal.* Harden the 2.3 run. It books each delivery with the courier's API, adds the rain chance to rider messages, and texts each customer. Make every failure either recover by itself or reach Tolu with the details. You'll fake the courier with webhook.site, which lets you choose the status code it returns."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Decide the plan on paper first*\n\n_Module · If it fails… · Handler_\n- *HTTP · Weather (Open-Meteo)* · Nice to have · Resume: rain_chance = \"unknown\"\n- *HTTP · Book courier (per order)* · Must happen tonight · Alert Tolu → Break, 3 retries every 15 min\n- *Message customer (per order)* · One bad number shouldn't stop others · Log to Errors tab → Ignore\n- *Google Sheets · Add to Deliveries* · Rare; usually a quota or connection blip · Break, 2 retries"
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Switch on incomplete executions*\n\nScenario settings → allow storing of incomplete executions. Without this, Break can't save failed runs for retry."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Weather: Resume with a default*\n\nRight-click the weather HTTP module → Add error handler → *Resume*. In its output, set the rain chance field to `unknown`. Later modules map it as normal; the rider message reads \"Rain chance: unknown\" instead of the run failing."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Courier: alert, then Break with retries*\n\nPoint the courier HTTP POST at a webhook.site URL set to respond with status *503*. Add an error handler with a *Gmail* step (the message from Card 4), then *Break* with automatic completion: 3 attempts, 15 minutes apart."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Customer messages: log, then Ignore*\n\nOn the messaging module, add an error route: *Google Sheets · Add a Row* to an Errors tab (time, scenario, module, order_id, error message), then *Ignore*. One bad number is recorded, and everyone else still gets their message."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Break it on purpose, then fix it*\n\nRun once with three test orders and the courier returning 503. You should see: Tolu's alert emails, a *Warning* status, and stored incomplete executions. Now switch webhook.site to return *201*. Within the next retry, the incomplete executions complete by themselves and the bookings appear.\n\n- *0* orders lost while the courier was down\n- *1* alert per failed booking, with the reason\n- *Auto* recovery when the courier came back"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Each module's failure is decided on purpose, by how much it matters.\n- Break with retries absorbs short outages without anyone acting.\n- Error routes turn failures into readable messages and logs.\n- Testing with a controllable fake proves recovery works.\n\n*Common mistakes to avoid*\n\n- Ignore on something that matters (payments, bookings).\n- Break without incomplete executions switched on.\n- Retrying errors that can never succeed (400, 401).\n- Resume with a dangerous default, like a price of 0."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I added error handling everywhere! Somehow things got worse. Explain these five.\n\n*A:* Ignore on \"Mark order Paid\" · Some paid orders stayed \"New\"; customers got payment reminders.\n*B:* Resume on the price lookup, substitute price 0 · Three orders went out at ₦0.\n*C:* Break with retries, on a 401 Unauthorized · Hundreds of retries, credits burned, still failing.\n*D:* Break added, incomplete executions setting left off · Failed runs couldn't be retried.\n*E:* No handlers and no notifications · The scenario was switched off after repeated errors; nobody noticed for two days."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* Ignore hides failures of important steps. Use Break with retries and an alert.\n*B:* a dangerous substitute. Resume only with harmless defaults; for prices, Break and alert.\n*C:* 401 means a bad key; retrying can't fix it. Alert and fix the credential.\n*D:* Break needs incomplete executions enabled in scenario settings.\n*E:* add handlers to external calls and turn on Make's error notifications."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): See each directive with your own eyes",
+   "body": "- Build a tiny scenario: a search returning 3 rows → HTTP request to a webhook.site URL that returns 500.\n- Run it four times with Ignore, Resume, Break and Commit in turn.\n- Record the run status and what happened to the remaining bundles each time.\n\n*Done when:*\n- Your table of four runs matches the directive table in Card 2."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Harden the 8 p.m. run",
+   "body": "- Apply the solved plan to your 2.3 scenario, with the fake courier on webhook.site.\n- Test: courier down then up; weather down; one invalid phone number.\n\n*Done when:*\n- No order is lost in any test, every failure produces an alert or an Errors row, and the courier bookings complete automatically after recovery."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): A weekly reliability report",
+   "body": "- Make every scenario you've built log errors to one shared Errors tab (scenario, module, type, message, time).\n- Build a Monday 8 a.m. scenario that aggregates last week's errors by scenario and type (2.4) and emails Tolu a short report with the top problem.\n- Add a line to each report: \"Suggested fix\" for the most common error.\n\n*Done when:*\n- A week of real or simulated errors produces a correct, readable report."
+  },
+  {
+   "t": "quiz",
+   "q": "The courier booking must eventually succeed, even if their server is down for 20 minutes. Which directive?",
+   "options": [
+    "Ignore",
+    "Commit",
+    "Break with automatic retries",
+    "Resume with a blank booking"
+   ],
+   "answer": 2,
+   "why": "Break stores the run and retries it later."
+  },
+  {
+   "t": "quiz",
+   "q": "What must be switched on for Break to store failed runs?",
+   "options": [
+    "Storing of incomplete executions, in scenario settings",
+    "A data store",
+    "A webhook",
+    "Rollback"
+   ],
+   "answer": 0,
+   "why": "Incomplete executions are where Break keeps runs to finish later."
+  },
+  {
+   "t": "quiz",
+   "q": "Which error should you NOT retry automatically?",
+   "options": [
+    "503 Service unavailable",
+    "A timeout",
+    "429 Too many requests",
+    "401 Unauthorized"
+   ],
+   "answer": 3,
+   "why": "A bad key fails every time. Alert and fix it."
+  },
+  {
+   "t": "quiz",
+   "q": "The weather service fails. The rider message can still go with \"rain chance unknown\". Which directive?",
+   "options": [
+    "Rollback",
+    "Resume, with a substitute value",
+    "Break",
+    "No handler"
+   ],
+   "answer": 1,
+   "why": "Resume continues with a safe default."
+  },
+  {
+   "t": "quiz",
+   "q": "Why put a Gmail step inside an error route before the directive?",
+   "options": [
+    "To retry faster",
+    "To undo the error",
+    "So a person learns exactly what failed and for which order",
+    "Make requires it"
+   ],
+   "answer": 2,
+   "why": "Silent failures are the dangerous ones."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Decide what happens when each external call fails, before it fails.\n2. Ignore skips; Resume substitutes; Break retries later; Commit stops cleanly; Rollback undoes what it can.\n3. Break needs incomplete executions switched on; set a retry limit.\n4. Retry temporary errors (timeouts, 5xx, 429), not permanent ones (400, 401).\n5. Error routes should tell a person what broke, and log it.\n6. Test failures on purpose with a controllable fake."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 2.6 complete!* _Error Handling & Reliability_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 2.7, _AI Modules & Make AI Agents_."
+  }
+ ]
+}

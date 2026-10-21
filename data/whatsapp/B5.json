@@ -1,0 +1,139 @@
+{
+ "id": "B5",
+ "title": "Boss 5: Growth Desk",
+ "track": 5,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 5: Growth Desk*\n\n_≈ 4 sessions · 8–10 hours · with Emeka_\n\nEverything from the Signal Tower, working as one growth system. Growth Desk finds the right restaurants and sends outreach Tolu approves, listens to what people say, keeps the pages alive, answers every comment and message on every channel, nurtures customers by email, keeps every deal moving in the CRM, and proves, in naira, which channel brings customers in. All inside each platform's rules, and with Tolu in control.\n\n*Your problem:* Harvest Lane needs growth, and the investor wants proof it's working.\n*The plan:* Combine prospecting, listening, publishing, inbox, campaigns, one inbox and the CRM into a growth system with a report.\n*After this boss:* A complete growth system for your portfolio and the Signal Boost badge."
+  },
+  {
+   "t": "text",
+   "body": "*\"Show me where customers come from\"*\n\n*The investor:* The second van is funded. The third depends on one answer: where do new customers come from, and what does each one cost?\n\n*Echo:* \"You built five growth machines in this track. Today they become one desk, with one customer record and one report.\"\n\n*Tolu's rule:* \"Twenty minutes a day on my phone. Everything that spends money, promises something or talks to an angry customer comes to me.\"\n\n*Glitch:* \"Growth? Easy: more posts, more emails, more DMs, to more people, more often. I'll play every rule-breaking marketer you've ever met.\""
+  },
+  {
+   "t": "text",
+   "body": "*What Growth Desk must do*\n- *Find* · Restaurants and hotels in the delivery zone from allowed sources; researched, scored, verified facts only; up to 20 approved outreach emails a day from an outreach subdomain; suppression list checked before every send (5.2).\n- *Listen* · Comments and reviews from at least two sources and web mentions; labels for sentiment, topic, urgency and intent; hard-rule alerts for safety; Monday report (5.3).\n- *Publish* · A content calendar from real products and photos; versions for at least three platforms; approval on Telegram; prices re-checked at publish time; a pause switch (5.4).\n- *Answer* · Comments and DMs on Facebook and Instagram via webhooks, plus at least one more channel; allowed actions computed in code; leads saved with source and consent; complaints handed over (5.5)."
+  },
+  {
+   "t": "text",
+   "body": "- *Unify* · One customer record with verified identities across email, WhatsApp and social; decisions shared by all channels; one reply on the latest channel; named owners and response targets (5.7).\n- *Nurture* · An authenticated domain; a consented Brevo or Mailchimp list; welcome, weekly newsletter and 60-day win-back; unsubscribes honoured on every channel (5.6).\n- *Track* · Every business lead upserted into HubSpot or Zoho with company, contact, deal, source and consent; a calibrated score; follow-up tasks on stage changes; a morning call list and going-cold alerts; people move stages (5.8, 5.9).\n- *Measure* · Every lead and customer traced from first touch to first order; a weekly growth report: leads and customers by source, response times, conversion, cost per lead and per new customer, complaints and unsubscribes.\n- *Rules* · A dated channel-rules sheet (what each platform allows, costs and requires), a consent policy, and monthly API budgets with alerts."
+  },
+  {
+   "t": "text",
+   "body": "*Six engines, a CRM sync and a report, around one customer record*\n\n_The diagram, in words:_ Growth Desk architecture. Six workflows around one Supabase database: GD-01 Find (prospecting), GD-02 Listen (sentiment), GD-03 Publish (content calendar), GD-04 Answer (social inbox), GD-05 Unify (one inbox), GD-06 Nurture (email campaigns). All read and write customers, identities, conversations, leads, posts, mentions, decisions and events. Tolu approves on Telegram. GD-07 Growth report turns events into a weekly funnel and cost report.\n\nYour design may differ; the rubric scores behaviour and evidence."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows this build step by step.\n\nFeatured video: _I Built a Marketing Team with 1 AI Agent and No Code (n8n)_.\nLook for: An orchestrator agent handing tasks to content and marketing tools; add approvals and rules.",
+   "media": "walk:B5",
+   "youtube": "https://www.youtube.com/watch?v=ldETapkr8Hg",
+   "app": "https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Nine deliverables, four phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Growth plan and rules*\n\nThe ideal customer, brand voice, consent policy, response targets, and a *channel-rules sheet* with the date you checked each platform's rules, limits and prices. Monthly budgets for paid APIs (Places, X) with alerts at 80%."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · One data model*\n\nCustomers, identities (normalised, verified flag), conversations, leads (source, consent), posts, mentions, decisions, suppression and events. Every engine writes events with `lead_id` or `order_id`."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Find (5.2)*\n\nPlaces search → website research → fact verified in code → fit score → draft → Tolu approves → at most 20 sends a day from the outreach subdomain → replies sorted, STOP to suppression."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Listen and publish (5.3, 5.4)*\n\nListening from at least two sources with hard-rule alerts; a weekly calendar drafted from real products and photos, platform versions for at least three platforms, approval, price re-check, scheduled publishing and a pause switch."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D5 · Answer and unify (5.5, 5.7)*\n\nMeta webhooks plus at least one more channel into one queue; allowed actions computed in code; identity matching (merge on proof, verify on claims); one answer on the latest channel; leads with consent; named owners and timers."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Nurture (5.6)*\n\nAuthenticated domain (SPF, DKIM, DMARC pass), consent at checkout, welcome series, AI-drafted newsletter approved by Tolu, 60-day win-back, and unsubscribes honoured on every channel the same day."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6b · Track in the CRM (5.8, 5.9)*\n\nA HubSpot or Zoho free CRM with Harvest Lane's five-stage pipeline and exit rules; GD·08, one upsert sub-workflow every engine calls (email and domain keys, associations, CRM IDs stored in Supabase); a score calibrated on past leads; follow-up tasks on stage changes; a 7:30 call-first and going-cold list; and the CRM Ops Agent's Monday health check, with proposals Tolu approves on Telegram. No workflow or agent changes a deal stage."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D7 · Measure*\n\nGD·07 runs on Mondays: new leads and customers by source, open pipeline value by stage and the weighted forecast from the CRM, conversion from lead to first order, median response time per channel, cost per lead and per new customer (API, email plan, AI tokens and Tolu's time), complaints and unsubscribes, and one recommendation."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D8 · Evidence and demo*\n\nThe 18 tests below, passed and logged; a compliance checklist; and a 4-minute demo: one prospect approved, one comment turned into a lead, one customer answered once across two channels, one newsletter, one lead arriving in the CRM by itself, and the growth report."
+  },
+  {
+   "t": "link",
+   "body": "The 18 tests. Use test accounts, test contacts and your own inboxes only. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "text",
+   "body": "*Is Growth Desk ready?*\n\n*Lawful and fair*\n- Only allowed sources; no scraping, no bought lists _(must)_\n- Consent recorded; suppression list checked before every marketing send _(must)_\n- Allowed actions per platform enforced in code (windows, private replies) _(must)_\n\n*In control*\n- Outreach, posts, newsletters and anything with money are approved by Tolu _(must)_\n- Pause switches for posting, outreach and campaigns\n- API budgets with alerts\n\n*Consistent*\n- No merges on names; details shared only after verification _(must)_\n- One answer per customer, on the latest channel\n\n*Proven*\n- All 18 tests pass and are logged\n- Every business lead reaches the CRM with an owner and next step; no duplicates\n- Domain passes SPF, DKIM and DMARC\n- Growth report shows source → customer and cost per customer\n- Error workflow and watchdog cover every engine"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: the readiness check (tick it off for your score). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of phases 2, 3 and 4*\n\n*Glitch:* Marketing is when everything goes wrong in public. Let's practise.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 2*\nA customer's video of soft tomatoes from Harvest Lane gets 50,000 views overnight. Hundreds of comments arrive, and next week's cheerful posts are scheduled to go out at 9 a.m. What does Growth Desk do in the first hour, and what does it need from Tolu?",
+   "answer": "*Bad viral video:* the listening alert fires (spike in negative mentions on one topic). Pause all scheduled posts and outreach at once (the pause switches). The inbox agent stops answering that topic and groups the comments into one hand-over (the \"storm\" rule from B4). Tolu approves one honest public statement, which the agent posts and uses as the reply; individual complaints get a person within the day. Resume posting only when Tolu says so."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 3*\nMeta asks for more information before approving your app's Instagram messaging permission. Launch is in a week. Design the fallback so customers on Instagram still get fast answers, and plan the resubmission.",
+   "answer": "*Meta review delay:* run Instagram in assisted mode: the agent reads what it can through the approved Facebook Login permissions or a manual export, drafts replies, and Tolu or Bisi sends them from the app, with the same response timers. Facebook and WhatsApp stay automated. Resubmit with a screencast of each use case and a clear privacy policy."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 4*\nThe investor asks: \"What does one new restaurant customer cost you through outreach, and through Instagram?\" Answer with numbers from your system, including the costs that aren't on any invoice.",
+   "answer": "*Cost per customer:* from events, count new customers by first-touch source for the month. Add every cost for that channel: API usage (Places, X), email plan, AI tokens, and Tolu's approval time at her hourly value. Example: outreach ₦92,000 of costs ÷ 6 new restaurants = about ₦15,300 each; Instagram ₦54,000 ÷ 14 households = about ₦3,900 each. Then compare with the first month's gross profit per customer."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n\n_Area · Full marks when… · Points_\n- *Find* · Allowed sources, verified facts, approval, caps, suppression; replies sorted · 15\n- *Listen* · Two or more sources, measured labels, hard-rule alerts, a useful Monday report · 10\n- *Publish* · Three or more platforms, versions that pass each platform's rules, approval, price re-check · 10\n- *Answer and unify* · Rules in code, safe identity matching, one answer per customer, leads with consent, hand-over on time · 20\n- *Nurture* · Authenticated domain, consented list, three sequences, unsubscribes honoured everywhere · 15\n- *Track and measure* · CRM fills itself without duplicates or loops; source → customer traced; cost per lead and per customer; recommendation backed by data · 15\n- *Rules and control* · Dated rules sheet, budgets, pause switches, no must-have missing · 10\n- *Curveballs* · All three handled · 5\n- *Total* · Win at 80 or more, with every must-have in the go-live check passing · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 5: Growth Desk",
+   "body": "Build nine deliverables, four phases:\n- Phase 1 · D1 · Growth plan and rules\n- Phase 1 · D2 · One data model\n- Phase 2 · D3 · Find (5.2)\n- Phase 2 · D4 · Listen and publish (5.3, 5.4)\n- Phase 3 · D5 · Answer and unify (5.5, 5.7)\n- Phase 3 · D6 · Nurture (5.6)\n- Phase 3 · D6b · Track in the CRM (5.8, 5.9)\n- Phase 4 · D7 · Measure\n- Phase 4 · D8 · Evidence and demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "link",
+   "body": "*Echo:* Different designs can win. Use these to find gaps, not to copy.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "video",
+   "caption": "*Short clip:* Boss 5 demo · Growth Desk, with Emeka.\n\nFind, answer, nurture, track, measure. All inside each platform's rules. That's Growth Desk.",
+   "media": "clip:B5:0",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-5"
+  },
+  {
+   "t": "text",
+   "body": "*The Signal Tower complete*\n\n1. You can reach customers on every channel, within each platform's rules.\n2. You build agents that find, listen, publish, answer and nurture, with a person in control.\n3. You keep one customer record and one answer across every channel, and a CRM that fills itself.\n4. You can prove which channel brings customers, and what each one costs.\n5. Next: Track 6, Launchpad. Scope and price work for clients, build your portfolio, and finish with the Grand Capstone."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 5 complete!* _Growth Desk_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 6.1, _Discovery & Scoping_."
+  }
+ ]
+}
