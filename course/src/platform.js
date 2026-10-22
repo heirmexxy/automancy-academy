@@ -115,13 +115,14 @@ function badgeSVG(b){
 }
 
 /* ---------- views + router ---------- */
-const VIEWS = APP_MODE ? ["course","dashboard"] : ["home","course","dashboard","community","challenges","hire","pricing","business","certificate","earn","careers"];
+const VIEWS = APP_MODE ? ["course","dashboard"] : ["home","course","dashboard","community","challenges","hire","pricing","business","certificate","earn","careers","courses","teach"];
 /* App mode: views that live elsewhere in the app open their Next.js route (window.AUTOMANCY.links). */
 const EXT = (() => {
   if(!APP_MODE) return {};
   const L = AM.links || {}, acct = L.account || "/account";
   return {community:L.community, challenges:L.community, hire:L.hire, "hire-post":L.hire, "hire-talent":L.hire, pricing:L.pricing, business:L.pricing,
     earn:L.earn, "earn-links":L.earn, "earn-calc":L.earn, careers:L.careers, "careers-paths":L.careers, "careers-crm":L.careers,
+    courses:L.courses || "/courses", teach:L.teach || "/teach", "teach-studio":(L.teach || "/teach") + "/studio", "teach-standards":(L.teach || "/teach") + "/standards", "teach-admin":"/admin/courses",
     certificate:acct + "#certificate", account:acct, leaderboard:L.leaderboard};
 })();
 if(APP_MODE){
@@ -130,7 +131,7 @@ if(APP_MODE){
     const h = a.getAttribute("href").slice(1); if(EXT[h]){ e.preventDefault(); location.assign(EXT[h]); }
   }, true);
 }
-const VTITLE = {home:"", course:"Course", dashboard:"My dashboard", community:"Community", challenges:"Weekly challenges", hire:"Hire talent", pricing:"Pricing", business:"For business", certificate:"Certificate", earn:"Refer & earn", careers:"Careers"};
+const VTITLE = {home:"", course:"Course", dashboard:"My dashboard", community:"Community", challenges:"Weekly challenges", hire:"Hire talent", pricing:"Pricing", business:"For business", certificate:"Certificate", earn:"Refer & earn", careers:"Careers", courses:"More courses", teach:"Teach on Automancy"};
 let curView = APP_MODE ? "course" : "home";
 function showView(h){
   if(APP_MODE){ if(EXT[h]){ location.replace(EXT[h]); return; } if(!h || h === "home") h = "course"; }
@@ -147,7 +148,7 @@ function showView(h){
   if(anchor) setTimeout(() => anchor.scrollIntoView(), 0); else window.scrollTo(0, 0);
 }
 function renderView(v){
-  ({home:renderHome, course:renderCourse, dashboard:renderDash, community:renderCommunity, challenges:renderChallenges, hire:renderHire, pricing:renderPricing, business:renderBusiness, certificate:renderCert, earn:renderEarn}[v] || (()=>{}))();
+  ({home:renderHome, course:renderCourse, dashboard:renderDash, community:renderCommunity, challenges:renderChallenges, hire:renderHire, pricing:renderPricing, business:renderBusiness, certificate:renderCert, earn:renderEarn, courses:() => { if(typeof renderCourses === "function") renderCourses(); }, teach:() => { if(typeof renderTeach === "function") renderTeach(); }}[v] || (()=>{}))();
 }
 function closeMenu(){ const n = $("#mainnav"); n.classList.remove("open"); $("#menuBtn").setAttribute("aria-expanded","false"); }
 on("#menuBtn", "click", () => { const n = $("#mainnav"); const o = n.classList.toggle("open"); $("#menuBtn").setAttribute("aria-expanded", String(o)); });

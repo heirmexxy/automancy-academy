@@ -18,6 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/hire">Hire talent</Link>
         <Link href="/admin/courses">Creator courses</Link>
         <Link href="/admin/audio">Lesson audio</Link>
+        <Link href="/admin/whatsapp">WhatsApp</Link>
         <Link href="/admin/feedback">Feedback</Link>
         <Link href="/admin/settings">Settings</Link>
       </aside>

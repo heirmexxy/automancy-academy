@@ -8,6 +8,7 @@ import { updateProfile, requestDeletion } from "@/lib/actions/account";
 import Purchases from "@/components/account/Purchases";
 import Referral from "@/components/account/Referral";
 import Certificate from "@/components/account/Certificate";
+import WhatsApp from "@/components/account/WhatsApp";
 
 export const metadata: Metadata = { title: "Your account" };
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         <span className="eyebrow">Account</span>
         <h1 style={{ fontSize: "clamp(2rem,5vw,2.8rem)" }}>Hello{p.full_name ? `, ${p.full_name.split(" ")[0]}` : ""}</h1>
         <nav className="acc-nav" aria-label="Account sections">
-          <a href="#profile">Profile</a><a href="#purchases">Purchases</a><a href="#referral">Referrals</a><a href="#certificate">Certificate</a><a href="#data">Your data</a>
+          <a href="#profile">Profile</a><a href="#purchases">Purchases</a><a href="#referral">Referrals</a><a href="#certificate">Certificate</a><a href="#whatsapp">WhatsApp</a><a href="#data">Your data</a>
         </nav>
       </header>
 
@@ -56,6 +57,8 @@ export default async function Account({ searchParams }: { searchParams: Promise<
       <section id="purchases" aria-label="Purchases"><Purchases refund={sp.refund} /></section>
       <section id="referral" aria-label="Referrals"><Referral /></section>
       <section id="certificate" aria-label="Certificate"><Certificate notice={sp.cert === "issued" ? "Your certificate has been issued." : undefined} error={sp.cert_error} /></section>
+
+      <section id="whatsapp" aria-label="Learn on WhatsApp"><WhatsApp notice={sp.wa} /></section>
 
       <section id="data" aria-labelledby="data-h">
         <div className="card">

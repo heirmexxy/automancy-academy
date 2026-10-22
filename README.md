@@ -26,6 +26,7 @@ Everything below is a placeholder or a decision to confirm. Each writer's detail
 | `ADMIN_EMAILS` | Accounts that become admins at first sign-in | Your email(s) | No admin access |
 | `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_PRIVACY_EMAIL` | Domain and contact inboxes | `https://automancy.cc`; create the support@ and privacy@ mailboxes on automancy.cc | Defaults to `automancy.cc` addresses |
 | `LINKEDIN_ORG_ID` (optional) | Links certificates to the LinkedIn company page | Your LinkedIn page admin URL | Plain-text organisation name |
+| `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_BUSINESS_NUMBER`, `WHATSAPP_GRAPH_VERSION`, `WHATSAPP_TEMPLATE_REMINDER`, `CRON_SECRET` | Learning on WhatsApp (Meta Cloud API) and daily reminders | Meta developer app + WhatsApp Business Account; see "Going live with WhatsApp" below | Account page says "coming soon"; webhook returns 503; no reminders |
 
 ### Business and legal
 - **Seller details** (`lib/config.ts` → `COMPANY`): legal name (set to Twellr Technologies Limited: confirm), registered address, CAC RC number.
@@ -58,7 +59,7 @@ npm test                        # unit tests (money, referrals, reviewer)
 ## Deploy
 
 1. **Supabase** (new project, region near your users).
-   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0008). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
+   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0009). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
    - Authentication → URL configuration: Site URL `https://automancy.cc`; redirect URL `https://automancy.cc/auth/callback` (add `http://localhost:3000/auth/callback` for local).
    - Authentication → Email: keep "Confirm email" on; customise the templates with the Automancy name. Set up custom SMTP (e.g. Resend) for reliable delivery.
 2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.cc` in Vercel → Domains and set the DNS records Vercel shows at your domain registrar (an A record for `automancy.cc`, and a CNAME for `www` if you want it). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
@@ -79,6 +80,28 @@ The Paystack keys are deliberately **not** in this repository or its history. Do
 6. **Keep the secret key secret**: only in Vercel/`.env.local`; never in code, chat, email or screenshots. If it's ever exposed, regenerate it in Paystack and update Vercel.
 
 Checkout is fully built: every price, Pay-in-3 option, referral code box and course Buy button is live on the site. The only missing piece is the keys. Until they are added, clicking Pay shows a polite "we couldn't start your payment, no money was taken" message, the attempt is logged (`audit_log`, action `checkout_failed`) and admins get an email (at most hourly). The moment the keys are in Vercel and you redeploy, the same buttons take real payments; no code change is needed.
+
+## Going live with WhatsApp
+
+Learners can take the course in WhatsApp (Account → Learn on WhatsApp): one card per message, quizzes as buttons or lists, missions sent to the AI reviewer, Sage with `HELP <question>`, and a reminder template when they go quiet. Progress is the same as the web course. Until the variables below are set, the account section says "coming soon" and the webhook returns 503. Details and every placeholder: `docs/placeholders/whatsapp.md`.
+
+1. **Meta Business verification.** In Meta Business Suite (business.facebook.com) → Settings → Security Centre, verify the business that owns the number (Twellr Technologies Limited or the selling entity: CAC certificate, address, website on `automancy.cc`). Without it you're limited to a small number of conversations a day.
+2. **A WhatsApp Business Platform number.** Use a number that is **not** registered on the WhatsApp or WhatsApp Business app (or delete that account first): once it's on the Cloud API it can't be used in the app. It must receive an SMS or voice call for the one-time code.
+3. **Display name** "Automancy Academy": WhatsApp Manager → Phone numbers → submit the display name for approval (it must match the brand on your website).
+4. **Meta app + Cloud API.** developers.facebook.com → Create app → type *Business* → add the **WhatsApp** product → link your WhatsApp Business Account and add the number. Note the **Phone number ID** (WhatsApp → API Setup) → `WHATSAPP_PHONE_NUMBER_ID`.
+5. **Permanent token.** Business settings → Users → System users → add a system user (Admin) → assign the app and the WhatsApp Business Account (full control) → *Generate new token* with **whatsapp_business_messaging** and **whatsapp_business_management**, expiry *Never* → `WHATSAPP_TOKEN`. (The 24-hour token on the API Setup page is only for testing.)
+6. **App secret.** App settings → Basic → App secret → `WHATSAPP_APP_SECRET` (used to check every webhook's `X-Hub-Signature-256`).
+7. **Webhook.** WhatsApp → Configuration → Callback URL `https://automancy.cc/api/whatsapp/webhook`, Verify token = any long random string you also put in `WHATSAPP_VERIFY_TOKEN` (deploy with it first, then click *Verify and save*). Under Webhook fields, **subscribe to `messages`** (it carries both incoming messages and delivery statuses).
+8. **Templates.** WhatsApp Manager → Message templates → create `lesson_reminder` (category **Utility**, language English `en`), suggested text below. Wait for approval before turning reminders on. If you name it differently, set `WHATSAPP_TEMPLATE_REMINDER`.
+   > Hi! Your next Automancy Academy lesson is ready: {{1}}. Reply CONTINUE to pick up where you left off, or REMINDERS OFF to stop these reminders.
+
+   Sample for {{1}}: `Lesson 3.4: Webhooks in n8n`. Optional quick-reply buttons: `Continue` and `Stop reminders` (the bot understands both). Meta may re-classify a reminder as Marketing if the wording sells; keep it factual. No other template is needed: linking and lessons are replies to the learner's own messages.
+9. **Environment variables** (Vercel, Production): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_BUSINESS_NUMBER` (digits with country code, e.g. `2348012345678`; used for the wa.me link), `WHATSAPP_GRAPH_VERSION` (default `v21.0`; check the current version), `WHATSAPP_TEMPLATE_REMINDER` (default `lesson_reminder`), `CRON_SECRET` (a long random string; Vercel sends it to the cron route). Redeploy.
+10. **Database:** run `supabase/migrations/0009_whatsapp.sql`.
+11. **Reminders:** `vercel.json` runs `/api/whatsapp/reminders` daily at 07:30 UTC (08:30 Lagos). Vercel Hobby allows daily crons; check your plan's cron limits. Test by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://automancy.cc/api/whatsapp/reminders`.
+12. **Test:** link your own number from /account, send `MENU`, go through a lesson (text, video, quiz, task), then use Admin → WhatsApp → *Send a test message* and check delivery statuses and failures there.
+
+**Pricing (check Meta's current rates before launch):** since 1 October 2026 each business number gets 1,000 free-form (service) replies a month free, then they are charged; template messages (the reminder) are charged per message delivered at the Utility rate for Nigeria. Every message is logged in `wa_messages` with a `cost_category`, and Admin → WhatsApp shows messages in/out and reminders per day; WhatsApp Manager → Insights shows the real bill. Rules the bot follows: it only replies to learners' messages (inside the 24-hour window), sends at most two messages per incoming message, never messages after STOP, and sends at most one reminder per learner every three days (max 500 a run).
 
 ## Updating the course
 
@@ -104,9 +127,10 @@ Commit `course-build/` and `data/`; they are deployed as files.
 | AI reviewer and certificates | `/api/review`, `/account#certificate`, `/verify/[id]` | `lib/reviewer*.ts`, `lib/certificate.ts`, `course-addons/review.js`, `data/` |
 | Voice, Story Mode, Sage | `/api/tts`, `/api/tts/lesson`, `/audio`, `/api/assistant` | `lib/tts.ts`, `lib/assistant.ts`, `course-addons/voice.js`, `course-addons/assistant.js` |
 | Community | `/community`, `/community/challenges`, `/leaderboard`, `/hire/profile`, `/api/community/*` | `lib/actions/community.ts` |
-| Creator marketplace | `/teach`, `/teach/apply`, `/teach/studio`, `/courses/[slug]`, `/courses/[slug]/learn/[lessonId]` | `lib/marketplace.ts`, `lib/actions/marketplace.ts` |
+| Creator marketplace | `/teach`, `/teach/standards` (standards, requirements, specs, formatting), `/teach/apply`, `/teach/studio`, `/admin/courses` (review with the standards checklist), `/courses/[slug]`, `/courses/[slug]/learn/[lessonId]` | `lib/marketplace.ts`, `lib/actions/marketplace.ts`; the standards list is `STANDARDS` in `app/(site)/courses/_lib/core.ts` (also copied in `course/src/market.js` for the prototype) |
+| WhatsApp learning | `/api/whatsapp/webhook`, `/api/whatsapp/reminders` (cron), `/account#whatsapp`, `/admin/whatsapp` | `lib/whatsapp/*`, `lib/actions/whatsapp.ts`, `components/account/WhatsApp.tsx`, `data/whatsapp/` |
 | Admin | `/admin` (overview), learners, payments, refunds, referrals, AI reviews, certificates, community, hire, creator courses, lesson audio, feedback, settings, CSV export | `app/(site)/admin/**`, `app/api/admin/export` |
-| Database | 8 migrations with row-level security on every table | `supabase/migrations/` |
+| Database | 9 migrations with row-level security on every table | `supabase/migrations/` |
 
 Conventions for anyone changing the code: `docs/CONVENTIONS.md`.
 
@@ -119,4 +143,4 @@ Conventions for anyone changing the code: `docs/CONVENTIONS.md`.
 ## Known limits (v1)
 - Payouts (referrers and creators) are paid by hand and marked paid in admin.
 - XP and lesson completion come from the course in the browser (capped and validated on the server); missions, bosses and certificates are decided on the server.
-- Learning on WhatsApp is designed but not built yet.
+- WhatsApp: only text, buttons, lists and video are used; voice notes aren't understood, and images/documents sent as mission evidence are stored as Meta media ids (not downloaded) for a person to spot-check.

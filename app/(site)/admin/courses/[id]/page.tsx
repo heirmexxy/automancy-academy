@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtDate, ngn, usd } from "@/lib/format";
 import { flatLessons, getCourse, getCreator, getCurriculum } from "@/lib/marketplace";
 import { adminApproveCourse, adminHideReview, adminRejectCourse, adminRequestChanges, adminSetFree, adminSetListing } from "@/lib/actions/marketplace";
-import { KIND_LABEL, STATUS_LABEL, normaliseQuiz, statusTone, submitProblems, type LessonKind } from "../../../courses/_lib/core";
+import { KIND_LABEL, STANDARDS, STATUS_LABEL, normaliseQuiz, statusTone, submitProblems, type LessonKind } from "../../../courses/_lib/core";
 import { Markdown, VideoEmbed } from "../../../courses/_components/Markdown";
 import "../../../courses/marketplace.css";
 
@@ -45,8 +45,14 @@ export default async function ReviewCourse({ params, searchParams }: Props) {
 
       <div className="card bold stack">
         <h2 style={{ fontSize: "1.2rem" }}>Decision</h2>
-        <p className="note">Read every lesson below. Check: original work, no copyrighted material, no get-rich-quick claims, platform-rules compliant automation, no requests for passwords/keys, and that it teaches what it promises.</p>
+        <p className="note">Read every lesson and watch the videos below, then tick each <Link href="/teach/standards" target="_blank">standard</Link>. All must be ticked to approve; if one fails, request changes and say which.</p>
         <form action={adminApproveCourse} className="stack"><H />
+          <fieldset className="stack" style={{ border: "1.5px solid var(--line)", borderRadius: 12, padding: 12, gap: 8 }}>
+            <legend className="note">Reviewer checklist</legend>
+            {STANDARDS.map(st => (
+              <label key={st.key} className="check"><input type="checkbox" name={`std_${st.key}`} required /> <span><b>{st.title}.</b> {st.check}</span></label>
+            ))}
+          </fieldset>
           <label className="fld">Note to creator (optional)<input name="note" maxLength={4000} /></label>
           {problems.length > 0 && <label className="check"><input type="checkbox" name="override" /> <span>Approve anyway (automatic checks failed)</span></label>}
           <button className="btn" type="submit" style={{ justifySelf: "start" }}>{c.status === "live" ? "Approve changes" : "Approve and publish"}</button>

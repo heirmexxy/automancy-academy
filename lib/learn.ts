@@ -74,7 +74,7 @@ export type LearnInput = {
 
 export const LEARN_LINKS = {
   pricing: "/pricing", community: "/community", leaderboard: "/leaderboard", hire: "/hire", earn: "/earn",
-  careers: "/careers", account: "/account", logout: "/auth/signout"
+  careers: "/careers", courses: "/courses", teach: "/teach", account: "/account", logout: "/auth/signout"
 };
 
 /** The full /learn page for one learner. */

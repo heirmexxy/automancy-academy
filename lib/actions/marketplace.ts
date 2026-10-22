@@ -12,7 +12,7 @@ import {
   releaseDueEarnings, startCoursePurchase, courseLink, studioLink, type Course
 } from "@/lib/marketplace";
 import {
-  CATEGORIES, LESSON_KINDS, LEVELS, MARKET, QUIZ_PASS, httpsUrl, isEditable, normaliseQuiz, parseVideo, priceProblem,
+  CATEGORIES, LESSON_KINDS, LEVELS, MARKET, QUIZ_PASS, STANDARDS, httpsUrl, isEditable, normaliseQuiz, parseVideo, priceProblem,
   scoreQuiz, slugify, submitProblems, validSlug, type QuizQ
 } from "@/app/(site)/courses/_lib/core";
 
@@ -304,6 +304,7 @@ export async function submitCourse(formData: FormData) {
   const lessons = flatLessons(await getCurriculum(course.id, true));
   const problems = submitProblems(course, lessons);
   if (problems.length) back({ error: problems.slice(0, 6).join(" ") });
+  if (formData.get("standards") !== "on") back({ error: "Confirm that the course meets the standards and specifications before submitting." });
   const now = new Date().toISOString();
   if (course.status === "live") {
     await db().from("courses").update({ changes_pending: true, submitted_at: now }).eq("id", course.id);
@@ -448,6 +449,8 @@ export async function adminApproveCourse(formData: FormData) {
   const { admin, c, note } = await adminCourse(formData);
   const problems = submitProblems(c, flatLessons(await getCurriculum(c.id, true)));
   if (problems.length && formData.get("override") !== "on") redirect(`/admin/courses/${c.id}` + q({ error: "Not ready: " + problems.slice(0, 4).join(" ") + " (tick 'approve anyway' to override)." }));
+  const missed = STANDARDS.filter(st => formData.get(`std_${st.key}`) !== "on").map(st => st.title);
+  if (missed.length) redirect(`/admin/courses/${c.id}` + q({ error: "Tick every standard before approving. Not ticked: " + missed.join(", ") + ". If one fails, request changes instead." }));
   const now = new Date().toISOString();
   await db().from("courses").update({
     status: "live", changes_pending: false, review_note: note || null, approved_at: now, approved_by: admin.id, published_at: c.published_at || now

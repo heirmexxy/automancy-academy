@@ -61,11 +61,13 @@ export default async function EditCourse({ params, searchParams }: Props) {
       {/* Submit panel */}
       <div className="card bold" id="submit">
         <h2 style={{ fontSize: "1.3rem" }}>{c.status === "live" ? "Review" : "Submit for review"}</h2>
+        <p className="note">We review every course against the <Link href="/teach/standards">standards and specifications</Link>.</p>
         {problems.length ? (
           <><p>Before you can submit:</p><ul className="mk-problems">{problems.map(p => <li key={p}>{p}</li>)}</ul></>
         ) : <p className="muted">Everything we check automatically looks good.</p>}
         {canSubmit && (
-          <form action={submitCourse}><Hidden id={c.id} />
+          <form action={submitCourse} className="stack"><Hidden id={c.id} />
+            <label className="check"><input type="checkbox" name="standards" required /> <span>I&apos;ve previewed the whole course and it meets the <Link href="/teach/standards" target="_blank">standards and specifications</Link>, and it&apos;s my own original work.</span></label>
             <button className="btn" type="submit" disabled={problems.length > 0}>{c.status === "live" ? "Send my changes for review" : "Submit for review"}</button>
           </form>
         )}
@@ -96,7 +98,7 @@ export default async function EditCourse({ params, searchParams }: Props) {
             </label>
             <label className="fld">Language<input name="language" maxLength={40} defaultValue={c.language} /></label>
           </div>
-          <label className="fld">Cover image URL (https, 16:9 works best)<input name="cover_url" type="url" maxLength={500} defaultValue={c.cover_url || ""} placeholder="https://" /></label>
+          <label className="fld">Cover image URL (https, 16:9, at least 1280 × 720 px, under 1 MB)<input name="cover_url" type="url" maxLength={500} defaultValue={c.cover_url || ""} placeholder="https://" /></label>
           <div className="grid2">
             <label className="fld">Price in naira (₦{MARKET.minPriceNgn.toLocaleString("en-NG")}–₦{MARKET.maxPriceNgn.toLocaleString("en-NG")})
               <input name="price_ngn" type="number" inputMode="numeric" min={0} max={MARKET.maxPriceNgn} step={100} defaultValue={c.price_ngn || ""} />

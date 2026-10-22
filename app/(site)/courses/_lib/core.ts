@@ -17,6 +17,21 @@ export const MARKET = {
   maxBody: 50000
 } as const;
 
+/**
+ * The standards every creator course is reviewed against. Shown on /teach/standards and as the
+ * reviewer's checklist on /admin/courses/[id], so creators and reviewers work from the same list.
+ */
+export const STANDARDS = [
+  { key: "outcome", title: "Clear outcome", check: "The title, subtitle and description say who the course is for and what learners will be able to do or build at the end, and the lessons deliver exactly that." },
+  { key: "practical", title: "Hands-on", check: "Learners do things, not just watch: every section ends with a task, quiz or build, and there is a final project or practical exercise." },
+  { key: "accurate", title: "Accurate and current", check: "Steps, screenshots, prices and limits match the tools as they are today; nothing is misleading, and figures that change are hedged (\"check the current price\")." },
+  { key: "original", title: "Original work", check: "All lessons, videos, templates and images are the creator's own or properly licensed. No copied courses, books, videos or paid templates." },
+  { key: "safe", title: "Safe and lawful", check: "Automation follows each platform's rules and the law (including data protection and consent). No spam, scraping against terms, fake engagement or ways around limits. Learners are never asked for passwords, API keys, OTPs or bank details." },
+  { key: "honest", title: "Honest promises", check: "No guaranteed income, get-rich-quick claims or fake urgency. Results claims are real and specific." },
+  { key: "clear", title: "Clear and well produced", check: "Writing is plain and well organised; videos have clear audio, readable screens and no long dead air; lessons are in a sensible order with descriptive titles." },
+  { key: "complete", title: "Complete", check: "Every lesson has its content, links work, free previews are set, and the course is finished (no \"coming soon\" lessons)." }
+] as const;
+
 export const CATEGORIES = [
   "Automation", "AI agents", "No-code tools", "Marketing and growth", "Sales and CRM", "Data and spreadsheets",
   "Freelancing and client work", "Productivity", "Business operations", "Other"

@@ -66,7 +66,7 @@ export default async function Studio({ searchParams }: Props) {
             ))}</tbody>
           </table></div>
         ) : <p className="empty">No courses yet. Give your first one a title above to start.</p>}
-        <p className="note">Need a hand? Read the <Link href="/teach">quality bar and content rules</Link> and the <Link href="/teach/terms">creator terms</Link>.</p>
+        <p className="note">Need a hand? Read the <Link href="/teach/standards">standards and course specifications</Link> and the <Link href="/teach/terms">creator terms</Link>.</p>
       </>}
 
       {tab === "earnings" && <Earnings userId={user.id} titles={titles} share={creator.revenue_share} />}

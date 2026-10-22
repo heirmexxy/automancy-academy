@@ -16,7 +16,7 @@ for f in sorted(glob.glob("src/templates/*.json")):
         tpls[m["id"]]["items"] += m.get("items", [])
     else:
         tpls[m["id"]] = m
-js = pathlib.Path("src/lesson.js").read_text() + pathlib.Path("src/sb7.js").read_text() + pathlib.Path("src/videos.js").read_text() + "\nconst TPLS = " + json.dumps(tpls, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + ";\n" + "\nconst SHEETS = " + json.dumps(sheets, ensure_ascii=False).replace("</", "<\\/") + ";\n" + pathlib.Path("src/platform.js").read_text() + pathlib.Path("src/clips.js").read_text() + pathlib.Path("src/walk.js").read_text()
+js = pathlib.Path("src/lesson.js").read_text() + pathlib.Path("src/sb7.js").read_text() + pathlib.Path("src/videos.js").read_text() + "\nconst TPLS = " + json.dumps(tpls, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/") + ";\n" + "\nconst SHEETS = " + json.dumps(sheets, ensure_ascii=False).replace("</", "<\\/") + ";\n" + pathlib.Path("src/platform.js").read_text() + pathlib.Path("src/market.js").read_text() + pathlib.Path("src/clips.js").read_text() + pathlib.Path("src/walk.js").read_text()
 def rep(old, new, count=1):
     global s
     assert old in s, old[:60]

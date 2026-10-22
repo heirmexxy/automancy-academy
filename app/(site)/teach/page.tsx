@@ -25,7 +25,7 @@ export default async function Teach() {
         <p className="eyebrow">Teach on Automancy</p>
         <h1>Teach what you've actually built.</h1>
         <p className="lede">Thousands of Nigerian and African learners want practical skills from people who use them every day. Turn your know-how into a course, and we handle hosting, payments, refunds and support.</p>
-        <div className="row"><Link className="btn" href={cta.href}>{cta.label}</Link><Link className="btn alt" href="/teach/terms">Read the creator terms</Link></div>
+        <div className="row"><Link className="btn" href={cta.href}>{cta.label}</Link><Link className="btn alt" href="/teach/standards">Standards and course specs</Link><Link className="btn alt" href="/teach/terms">Creator terms</Link></div>
       </section>
 
       <section className="stack">
@@ -41,7 +41,7 @@ export default async function Teach() {
         <h2>How it works</h2>
         <ol className="mk-steps" style={{ padding: 0 }}>
           <li className="card"><h3>Apply</h3><p>Tell us who you are and what you want to teach. We approve creators by hand.</p></li>
-          <li className="card"><h3>Create</h3><p>Build your course in the studio: sections, lessons, videos, quizzes and tasks. Set your price.</p></li>
+          <li className="card"><h3>Create</h3><p>Build your course in the studio to our <Link href="/teach/standards">standards and specifications</Link>: sections, lessons, videos, quizzes and tasks. Set your price.</p></li>
           <li className="card"><h3>Submit</h3><p>When it's ready, submit it. We review every lesson in about {MARKET.reviewDays} working days.</p></li>
           <li className="card"><h3>Go live</h3><p>Approved courses appear in the catalogue. We'll tell you about every sale.</p></li>
         </ol>
@@ -61,7 +61,7 @@ export default async function Teach() {
       </section>
 
       <section className="stack">
-        <h2>Our quality bar and content rules</h2>
+        <div className="row" style={{ justifyContent: "space-between" }}><h2>Our quality bar and content rules</h2><Link className="btn alt sm" href="/teach/standards">Read the full standards and specifications</Link></div>
         <div className="grid2">
           <div className="card">
             <h3>Every course must</h3>
