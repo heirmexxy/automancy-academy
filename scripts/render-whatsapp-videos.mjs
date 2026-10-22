@@ -21,7 +21,9 @@
    (or FFMPEG / FFPROBE env). MEDIA_BASE_URL defaults to a placeholder.
    ====================================================================== */
 import { createRequire } from "node:module";
-import { execFileSync, execSync } from "node:child_process";
+import { execFile, execFileSync, execSync } from "node:child_process";
+import { promisify } from "node:util";
+const run = promisify(execFile); /* async, so one worker's ffmpeg never blocks another worker's timing */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -42,6 +44,7 @@ const WALKS = !flag("--clips-only"), CLIPS = !flag("--walks-only");
 const CONC = Math.max(1, parseInt(opt("--concurrency", "2"), 10) || 2);
 const OUT = path.resolve(ROOT, opt("--out", "out/whatsapp-media"));
 const TITLE = !flag("--no-title"), KEEP_WEBM = flag("--keep-webm");
+const STILLS = flag("--stills"); /* QA: no video; a PNG of every step goes to <out>/stills/ */
 const MANIFEST = path.join(ROOT, "data/whatsapp-media.json");
 const COURSE_HTML = path.join(ROOT, "course/flowforge.html");
 
@@ -87,12 +90,12 @@ body>*:not(#wa-stage){display:none!important}
 #wa-stage .wk-t b{font-size:1.15rem}
 #wa-stage .wk-t small{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #wa-stage .wk-stage{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
-#wa-stage .wk-canvas{flex:none;height:470px;min-height:0}
-#wa-stage .wk-svg{height:470px}
-#wa-stage .wkc{height:450px}
+#wa-stage .wk-canvas{flex:1 1 470px;min-height:250px;height:auto;position:relative;display:block}
+#wa-stage .wk-svg{position:absolute;inset:0;width:100%;height:100%}
+#wa-stage .wkc{height:100%;box-sizing:border-box}
 #wa-stage .wkc-title{font-size:1.15rem}
 #wa-stage .wkc-b{font-size:.98rem}
-#wa-stage .wk-panel{flex:1;min-height:0;overflow:hidden;align-content:start;gap:10px}
+#wa-stage .wk-panel{flex:none;align-content:start;gap:10px;padding-bottom:2px}
 #wa-stage .wk-n{font-size:.85rem}
 #wa-stage .wk-say{font-size:1.32rem;line-height:1.4;font-weight:500}
 #wa-stage .wk-show li{font-size:.92rem;padding:6px 10px}
@@ -111,13 +114,13 @@ body>*:not(#wa-stage){display:none!important}
 const fileFor = key => key.replace(/:/g, "-").replace(/\./g, "-") + ".mp4";       // walk:3.4 → walk-3-4.mp4, clip:1.1:0 → clip-1-1-0.mp4
 const hashFor = id => id.startsWith("B") ? "boss-" + id.slice(1) : "m-" + id.replace(".", "-");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-function probe(file){
-  const j = JSON.parse(execFileSync(FFPROBE, ["-v", "error", "-show_entries", "format=duration,size:stream=codec_name,codec_type", "-of", "json", file], { encoding: "utf8" }));
+async function probe(file){
+  const j = JSON.parse((await run(FFPROBE, ["-v", "error", "-show_entries", "format=duration,size:stream=codec_name,codec_type", "-of", "json", file], { encoding: "utf8" })).stdout);
   return { seconds: Math.round(parseFloat(j.format.duration) * 10) / 10, bytes: parseInt(j.format.size, 10), codecs: j.streams.map(s => s.codec_type + ":" + s.codec_name) };
 }
-function encode(webm, mp4, trim, dur){
+async function encode(webm, mp4, trim, dur){
   for(const crf of [23, 26, 29, 32, 35]){
-    execFileSync(FFMPEG, ["-y", "-v", "error", "-ss", trim.toFixed(2), "-t", dur.toFixed(2), "-i", webm, "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
+    await run(FFMPEG, ["-y", "-v", "error", "-ss", trim.toFixed(2), "-t", dur.toFixed(2), "-i", webm, "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
       "-map", "0:v:0", "-map", "1:a:0", "-shortest",
       "-c:v", "libx264", "-preset", "medium", "-crf", String(crf), "-tune", "animation", "-pix_fmt", "yuv420p", "-r", "25",
       "-profile:v", "main", "-level", "3.1", "-vf", `scale=${VIDEO.width}:${VIDEO.height}:flags=lanczos`,
@@ -151,7 +154,7 @@ async function discover(browser){
 
 /* ---- render one item ---- */
 async function render(browser, job, tmpDir){
-  const ctx = await browser.newContext({ viewport: VIEW, deviceScaleFactor: DSF, recordVideo: { dir: tmpDir, size: VIDEO } });
+  const ctx = await browser.newContext({ viewport: VIEW, deviceScaleFactor: DSF, ...(STILLS ? {} : { recordVideo: { dir: tmpDir, size: VIDEO } }) });
   await ctx.addInitScript(initScript, WORDS_PER_SEC);
   const page = await ctx.newPage(); const t0 = Date.now();
   const errs = []; page.on("pageerror", e => errs.push(e.message));
@@ -168,7 +171,7 @@ async function render(browser, job, tmpDir){
       const v = W.el.querySelector('[data-wk="voice"]'); if(v) v.checked = true;
       const sel = W.el.querySelector(".wk-pick select");
       if(sel){ sel.value = String(k); sel.dispatchEvent(new Event("change", { bubbles: true })); }
-      else if(typeof wkLoad === "function") wkLoad(k);
+      else { const r = W.el.querySelector('[data-wk="restart"]'); if(r) r.click(); } /* single item: re-fit the camera to the new size */
       const it = W.items[W.cur], kind = W.g.kind;
       const sub = kind === "clip" ? "Animated clip · " + W.g.clip.title : (W.el.querySelector(".wk-kind") || {}).textContent || "Animated walkthrough";
       if(title){ const t = document.createElement("div"); t.id = "wa-title";
@@ -181,6 +184,13 @@ async function render(browser, job, tmpDir){
       return { title: lessonTitle, kind, steps: W.steps.length, item: it.name, est: Math.round(est * 10) / 10 };
     }, { k: job.k, id: job.id, title: TITLE });
     await page.evaluate(() => document.fonts && document.fonts.ready); await page.waitForTimeout(400);
+    if(STILLS){
+      const dir = path.join(OUT, "stills"); fs.mkdirSync(dir, { recursive: true }); const base = fileFor(job.key).replace(/\.mp4$/, "");
+      if(TITLE){ await page.screenshot({ path: path.join(dir, `${base}-title.png`) }); await page.evaluate(() => document.getElementById("wa-title").remove()); }
+      for(let i = 0; i < meta.steps; i++){ await page.evaluate(i => document.querySelector(`#wa-stage [data-wk="${i ? "next" : "restart"}"]`).click(), i); await page.waitForTimeout(1200);
+        await page.screenshot({ path: path.join(dir, `${base}-s${String(i + 1).padStart(2, "0")}.png`) }); }
+      await ctx.close(); return { ...job, ...meta, stills: meta.steps, errs };
+    }
     const tStart = Date.now(); let tPlay = 0;
     if(TITLE){ await page.waitForTimeout(1300); await page.evaluate(() => document.getElementById("wa-title").classList.add("out")); await page.waitForTimeout(350);
       await page.evaluate(() => document.getElementById("wa-title").remove()); }
@@ -194,9 +204,11 @@ async function render(browser, job, tmpDir){
     const webm = await video.path();
     const mp4 = path.join(OUT, fileFor(job.key));
     const trim = Math.max(0, (tStart - t0) / 1000 - 0.1);
-    const crf = encode(webm, mp4, trim, (tEnd - tStart) / 1000 + 0.1);
+    const crf = await encode(webm, mp4, trim, (tEnd - tStart) / 1000 + 0.1);
     if(!KEEP_WEBM) fs.rmSync(webm, { force: true });
-    const p = probe(mp4);
+    const p = await probe(mp4);
+    const expect = Math.round(((tEnd - tStart) / 1000 + 0.1) * 10) / 10;
+    if(Math.abs(p.seconds - expect) > Math.max(1.5, expect * 0.04)) errs.push(`duration ${p.seconds}s, expected ≈${expect}s (timing drift)`);
     return { ...job, ...meta, ...p, crf, file: path.basename(mp4), complete: done.i === done.n, played, errs };
   } catch(e){ await ctx.close().catch(() => {}); throw e; }
 }
@@ -217,6 +229,7 @@ async function render(browser, job, tmpDir){
     while(next < jobs.length){ const job = jobs[next++];
       try {
         const r = await render(browser, job, tmpDir);
+        if(STILLS){ console.log(`✓ ${job.key} ${r.stills} still(s)${r.errs.length ? "  errors: " + r.errs.join(" | ") : ""}`); continue; }
         manifest[job.key] = { url: `${MEDIA_BASE_URL}/${r.file}`, bytes: r.bytes, seconds: r.seconds };
         save();
         console.log(`✓ ${job.key.padEnd(14)} ${r.file.padEnd(18)} ${(r.bytes / 1048576).toFixed(2)} MB  ${r.seconds}s (played ${r.played}s, narration ≈${r.est}s, ${r.steps} steps, crf ${r.crf})${r.complete ? "" : "  [did not reach last step]"}${r.errs.length ? "  errors: " + r.errs.slice(0, 2).join(" | ") : ""}`);
