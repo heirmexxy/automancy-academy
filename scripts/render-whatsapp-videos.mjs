@@ -16,7 +16,7 @@
 
    Usage:
      node scripts/render-whatsapp-videos.mjs [--only 3.4,1.1] [--walks-only | --clips-only]
-         [--concurrency 2] [--out out/whatsapp-media] [--build] [--no-title] [--keep-webm]
+         [--concurrency 2] [--out out/whatsapp-media] [--build] [--no-title] [--keep-webm] [--skip-existing] [--stills]
    Needs Playwright (global install is fine) with Chromium, and ffmpeg on PATH
    (or FFMPEG / FFPROBE env). MEDIA_BASE_URL defaults to a placeholder.
    ====================================================================== */
@@ -44,6 +44,7 @@ const WALKS = !flag("--clips-only"), CLIPS = !flag("--walks-only");
 const CONC = Math.max(1, parseInt(opt("--concurrency", "2"), 10) || 2);
 const OUT = path.resolve(ROOT, opt("--out", "out/whatsapp-media"));
 const TITLE = !flag("--no-title"), KEEP_WEBM = flag("--keep-webm");
+const SKIP = flag("--skip-existing"); /* resume: skip items whose MP4 exists and is in the manifest */
 const STILLS = flag("--stills"); /* QA: no video; a PNG of every step goes to <out>/stills/ */
 const MANIFEST = path.join(ROOT, "data/whatsapp-media.json");
 const COURSE_HTML = path.join(ROOT, "course/flowforge.html");
@@ -219,7 +220,10 @@ async function render(browser, job, tmpDir){
   fs.mkdirSync(OUT, { recursive: true });
   const tmpDir = path.join(OUT, ".webm"); fs.mkdirSync(tmpDir, { recursive: true });
   const browser = await chromium.launch();
-  const jobs = await discover(browser);
+  let jobs = await discover(browser);
+  if(SKIP && !STILLS){ const m0 = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, "utf8")) : {};
+    const before = jobs.length; jobs = jobs.filter(j => !(m0[j.key] && fs.existsSync(path.join(OUT, fileFor(j.key)))));
+    if(before !== jobs.length) console.log(`Skipping ${before - jobs.length} already rendered.`); }
   console.log(`Rendering ${jobs.length} video(s) → ${path.relative(ROOT, OUT)} (concurrency ${CONC})`);
   const manifest = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, "utf8")) : {};
   const T0 = Date.now(); let next = 0, fails = 0;
