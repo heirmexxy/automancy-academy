@@ -59,7 +59,7 @@ npm test                        # unit tests (money, referrals, reviewer)
 ## Deploy
 
 1. **Supabase** (new project, region near your users).
-   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0009). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
+   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0010). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
    - Authentication → URL configuration: Site URL `https://automancy.cc`; redirect URL `https://automancy.cc/auth/callback` (add `http://localhost:3000/auth/callback` for local).
    - Authentication → Email: keep "Confirm email" on; customise the templates with the Automancy name. Set up custom SMTP (e.g. Resend) for reliable delivery.
 2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.cc` in Vercel → Domains and set the DNS records Vercel shows at your domain registrar (an A record for `automancy.cc`, and a CNAME for `www` if you want it). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
@@ -97,7 +97,8 @@ Learners can take the course in WhatsApp (Account → Learn on WhatsApp): one ca
 
    Sample for {{1}}: `Lesson 3.4: Webhooks in n8n`. Optional quick-reply buttons: `Continue` and `Stop reminders` (the bot understands both). Meta may re-classify a reminder as Marketing if the wording sells; keep it factual. No other template is needed: linking and lessons are replies to the learner's own messages.
 9. **Environment variables** (Vercel, Production): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_BUSINESS_NUMBER` (digits with country code, e.g. `2348012345678`; used for the wa.me link), `WHATSAPP_GRAPH_VERSION` (default `v21.0`; check the current version), `WHATSAPP_TEMPLATE_REMINDER` (default `lesson_reminder`), `CRON_SECRET` (a long random string; Vercel sends it to the cron route). Redeploy.
-10. **Database:** run `supabase/migrations/0009_whatsapp.sql`.
+10. **Database:** run `supabase/migrations/0009_whatsapp.sql` and `0010_wa_media.sql` (a public `wa-media` bucket for lesson videos: MP4 only, 16 MB cap, not listable).
+    **Lesson videos:** the 71 WhatsApp videos (55 walkthroughs, 16 clips; 720×1280, all under 8 MB) are rendered by `node scripts/render-whatsapp-videos.mjs` into `out/whatsapp-media/` (not committed; `--skip-existing` resumes, `--only <id>` re-renders one lesson). With `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set, run `node scripts/upload-whatsapp-media.mjs` (`--dry-run` first) to upload them and write the real URLs into `data/whatsapp-media.json`, then commit that file and redeploy. Until then the bot sends the YouTube or app link instead of the video.
 11. **Reminders:** `vercel.json` runs `/api/whatsapp/reminders` daily at 07:30 UTC (08:30 Lagos). Vercel Hobby allows daily crons; check your plan's cron limits. Test by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://automancy.cc/api/whatsapp/reminders`.
 12. **Test:** link your own number from /account, send `MENU`, go through a lesson (text, video, quiz, task), then use Admin → WhatsApp → *Send a test message* and check delivery statuses and failures there.
 
