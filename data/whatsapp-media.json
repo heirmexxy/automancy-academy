@@ -179,6 +179,21 @@
     "bytes": 3612094,
     "seconds": 116
   },
+  "walk:3.6": {
+    "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-3-6.mp4",
+    "bytes": 3801385,
+    "seconds": 114.3
+  },
+  "walk:3.7": {
+    "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-3-7.mp4",
+    "bytes": 4987831,
+    "seconds": 155.5
+  },
+  "walk:3.8": {
+    "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-3-8.mp4",
+    "bytes": 4302390,
+    "seconds": 129.4
+  },
   "walk:B0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-B0.mp4",
     "bytes": 5177020,
