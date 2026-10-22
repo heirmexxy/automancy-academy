@@ -7,7 +7,7 @@ import { cleanScript, decodeEntities, fileIdOf, type MediaManifest, type Script 
 /**
  * Lesson scripts (data/whatsapp/<fileId>.json) and the media manifest (data/whatsapp-media.json), written by other
  * writers. Both may be missing: a missing script sends the learner to the app, a missing media key falls back to
- * the YouTube/app link. Read from disk (next.config includes ./data/** for /api routes); cached for 60 s in production.
+ * the YouTube/app link (as does a URL still on the YOUR-PROJECT placeholder). Read from disk (next.config includes ./data/** for /api routes); cached for 60 s in production.
  */
 const DATA = path.join(process.cwd(), "data");
 const CACHE_MS = process.env.NODE_ENV === "production" ? 60_000 : 0;
@@ -38,7 +38,7 @@ export function loadMedia(): MediaManifest {
     const raw = JSON.parse(fs.readFileSync(path.join(DATA, "whatsapp-media.json"), "utf8")) as Record<string, unknown>;
     for (const [k, v] of Object.entries(raw || {})) {
       const url = v && typeof v === "object" ? String((v as { url?: unknown }).url || "") : "";
-      if (/^https:\/\//.test(url)) m[k] = { url, bytes: Number((v as { bytes?: unknown }).bytes) || undefined, seconds: Number((v as { seconds?: unknown }).seconds) || undefined };
+      if (/^https:\/\//.test(url) && !/YOUR-PROJECT|PLACEHOLDER/i.test(url)) m[k] = { url, bytes: Number((v as { bytes?: unknown }).bytes) || undefined, seconds: Number((v as { seconds?: unknown }).seconds) || undefined };
     }
   } catch { m = {}; }
   media = { at: Date.now(), m };
