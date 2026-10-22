@@ -217,3 +217,18 @@ test("link codes and wa.me links", () => {
   assert.equal(waMeLink("+234 801 234 5678", "012345"), "https://wa.me/2348012345678?text=LINK%20012345");
   assert.equal(decodeEntities("APIs &amp; Webhooks"), "APIs & Webhooks");
 });
+
+test("Google Drive links: file id, download URL, MP4 sniffing", () => {
+  const { driveFileId, driveDownloadUrl, driveViewUrl, looksLikeMp4 } = W;
+  const id = "1AbCdEfGhIjKlMnOpQrStUvWxYz012345";
+  assert.equal(driveFileId(`https://drive.google.com/file/d/${id}/view?usp=sharing`), id);
+  assert.equal(driveFileId(`https://drive.google.com/open?id=${id}`), id);
+  assert.equal(driveFileId(`https://drive.google.com/uc?export=download&id=${id}`), id);
+  assert.equal(driveFileId(`https://drive.usercontent.google.com/download?id=${id}&export=download`), id);
+  assert.equal(driveFileId("https://example.com/file/d/abcdefghijkl/view"), "");
+  assert.equal(driveFileId("not a url"), "");
+  assert.match(driveDownloadUrl(id), /^https:\/\/drive\.usercontent\.google\.com\/download\?id=.+&confirm=t$/);
+  assert.equal(driveViewUrl(id), `https://drive.google.com/file/d/${id}/view`);
+  assert.ok(looksLikeMp4(new Uint8Array([0, 0, 0, 32, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d])));
+  assert.ok(!looksLikeMp4(new TextEncoder().encode("<!DOCTYPE html>")));
+});

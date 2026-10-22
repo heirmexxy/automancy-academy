@@ -6,8 +6,8 @@ import { COURSE } from "@/lib/course";
 import { fmtDate } from "@/lib/format";
 import { canSend, hasWhatsApp, reminderTemplate } from "@/lib/whatsapp/api";
 import { lagosDate, maskPhone } from "@/lib/whatsapp/core";
-import { loadScript } from "@/lib/whatsapp/lessons";
-import { sendTestMessage } from "./actions";
+import { loadMedia, loadScript } from "@/lib/whatsapp/lessons";
+import { prepareVideosNow, sendTestMessage } from "./actions";
 
 export const metadata: Metadata = { title: "WhatsApp · Admin" };
 export const dynamic = "force-dynamic";
@@ -78,6 +78,7 @@ export default async function WhatsAppAdmin({ searchParams }: { searchParams: Pr
       {dbError && <p className="alert warn">Couldn&apos;t read WhatsApp data: {dbError.message}. Has migration 0009_whatsapp.sql been run?</p>}
       {sp.sent && <p className="alert ok" role="status">Test message sent.</p>}
       {sp.error && <p className="alert bad" role="alert">{sp.error}</p>}
+      {sp.videos && <p className="alert ok" role="status">{sp.videos}</p>}
 
       <div className="grid4">
         <div className="kpi"><b>{linked.count ?? 0}</b><span>linked numbers</span></div>
@@ -154,6 +155,8 @@ export default async function WhatsAppAdmin({ searchParams }: { searchParams: Pr
         )}
       </div>
 
+      <VideosCard />
+
       <div className="card">
         <h2 style={{ fontSize: "1.3rem" }}>Send a test message</h2>
         <p className="note">Sends a text to <b>your own</b> linked number. WhatsApp only allows free-form messages within 24 hours of your last message to the business number, so message it first (e.g. MENU).</p>
@@ -162,6 +165,24 @@ export default async function WhatsAppAdmin({ searchParams }: { searchParams: Pr
           <div className="row"><button className="btn" type="submit" disabled={!canSend()}>Send test</button></div>
         </form>
       </div>
+    </div>
+  );
+}
+
+/** Lesson videos: where they come from (Google Drive or any HTTPS link in data/whatsapp-media.json) and how many are ready in WhatsApp. */
+async function VideosCard() {
+  const media = loadMedia();
+  const keys = Object.keys(media);
+  const drive = keys.filter(k => /drive\.google\.com|drive\.usercontent\.google\.com|docs\.google\.com/.test(media[k].url)).length;
+  const { data } = await createAdminClient().from("wa_media_ids").select("media_key, url, expires_at");
+  const now = Date.now();
+  const ready = (data || []).filter(r => media[String(r.media_key)]?.url === r.url && new Date(String(r.expires_at)).getTime() > now).length;
+  return (
+    <div className="card stack">
+      <h2 style={{ fontSize: "1.3rem" }}>Lesson videos</h2>
+      <p>{keys.length} videos have a link ({drive} on Google Drive). <b>{ready}</b> are uploaded to WhatsApp and ready to send.</p>
+      <p className="note">Videos are fetched once from their link (Google Drive shared as &ldquo;Anyone with the link&rdquo;, or any HTTPS MP4), uploaded to WhatsApp and reused for about 28 days. The daily reminder job keeps them fresh; use this button after adding or changing links. Lessons without a ready video send the link instead.</p>
+      <form action={prepareVideosNow}><button className="btn alt" type="submit" disabled={!canSend() || keys.length === 0}>Prepare videos now</button></form>
     </div>
   );
 }

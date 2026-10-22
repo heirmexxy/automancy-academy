@@ -5,11 +5,12 @@ import { COURSE, itemById, percentDone, type CourseItem } from "@/lib/course";
 import { LIMITS, redactSecrets } from "@/lib/reviewer-core";
 import { markRead, sendOut } from "@/lib/whatsapp/api";
 import {
-  MENU_BTN, NEXT_BTN, WA, appAnchor, awaitingFor, btn, clip, cleanInbound, footerFor, itemLabel, parseCommand,
+  MENU_BTN, NEXT_BTN, WA, appAnchor, awaitingFor, btn, clip, cleanInbound, driveFileId, driveViewUrl, footerFor, itemLabel, parseCommand,
   parseQuizAnswer, quizFeedback, renderCard, toWhatsAppText, withButtons,
   type Card, type Command, type Out, type Row
 } from "@/lib/whatsapp/core";
 import { firstUndone, loadMedia, loadScript, nextItem, titleOf } from "@/lib/whatsapp/lessons";
+import { mediaIdFor } from "@/lib/whatsapp/media";
 import { askSageFor, canOpen, loadLearner, loadProgress, markItemDone, submitWork, type Learner } from "@/lib/whatsapp/learner";
 
 /**
@@ -110,13 +111,16 @@ class Conv {
 
   /** Sends up to the per-inbound limit, logging each message (and its failure) in wa_messages. */
   async send(outs: Out[]) {
-    for (const m of outs) {
+    for (let m of outs) {
       if (this.sent >= MAX_PER_INBOUND) { console.warn("[whatsapp] dropped an extra message", m.type); break; }
       this.sent++;
       let mediaId: string | undefined;
       if (m.type === "video" && m.mediaKey) {
-        const { data } = await this.db.from("wa_media_ids").select("media_id, url, expires_at").eq("media_key", m.mediaKey).maybeSingle();
-        if (data && data.url === m.link && new Date(String(data.expires_at)).getTime() > Date.now()) mediaId = String(data.media_id);
+        // Upload once to WhatsApp and reuse the media id (works for Google Drive and any other host).
+        mediaId = (await mediaIdFor(m.mediaKey, m.link)).id || undefined;
+        const drive = driveFileId(m.link);
+        // A Drive link can't be sent as a video link: if the upload failed, send Drive's player link instead.
+        if (!mediaId && drive) m = { type: "text", body: clip(`${m.caption ? m.caption + "\n\n" : ""}Watch the video: ${driveViewUrl(drive)}`, WA.textMax), previewUrl: true };
       }
       const res = await sendOut(this.phone, m, mediaId);
       const body = m.type === "video" ? `[video] ${m.caption || ""}` : m.body;

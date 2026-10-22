@@ -43,6 +43,28 @@ async function graph(path: string, body: Record<string, unknown>): Promise<SendR
   }
 }
 
+/**
+ * Uploads a file to WhatsApp's media store (POST /<phone-number-id>/media) and returns its media id. Meta keeps
+ * uploaded media for about 30 days; messages that use the id don't make WhatsApp fetch the file again.
+ */
+export async function uploadMedia(bytes: ArrayBuffer, filename: string, mime = "video/mp4"): Promise<SendResult> {
+  if (!canSend()) return { ok: false, error: "WhatsApp is not configured" };
+  const fd = new FormData();
+  fd.append("messaging_product", "whatsapp");
+  fd.append("type", mime);
+  fd.append("file", new Blob([bytes], { type: mime }), filename);
+  try {
+    const res = await fetch(`https://graph.facebook.com/${graphVersion()}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/media`, {
+      method: "POST", headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` }, body: fd, cache: "no-store", signal: AbortSignal.timeout(60_000)
+    });
+    const data = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string; code?: number } };
+    if (!res.ok || !data.id) return { ok: false, error: clip(`${res.status} ${data.error?.code ?? ""} ${data.error?.message || res.statusText}`.replace(/\s+/g, " ").trim(), 500), code: data.error?.code };
+    return { ok: true, id: data.id };
+  } catch (e) {
+    return { ok: false, error: clip(e instanceof Error ? e.message : "network error", 300) };
+  }
+}
+
 const base = (to: string) => ({ messaging_product: "whatsapp", recipient_type: "individual", to: to.replace(/\D/g, "") });
 
 export function sendText(to: string, body: string, previewUrl = /https?:\/\//.test(body)) {

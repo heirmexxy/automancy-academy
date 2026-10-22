@@ -377,3 +377,22 @@ export const waMeLink = (businessNumber: string, code: string) => `https://wa.me
 
 /** Lagos calendar day (UTC+1, no DST), as the course's streak days are stored. */
 export const lagosDate = (d = new Date()) => new Date(d.getTime() + 3_600_000).toISOString().slice(0, 10);
+
+/* ── Video sources: Google Drive or any direct HTTPS MP4 ─────────────────── */
+/** The file id in a Google Drive share link (…/file/d/<id>/view, open?id=<id>, uc?id=<id>, usercontent download), or "". */
+export function driveFileId(raw: string | null | undefined): string {
+  let u: URL; try { u = new URL(String(raw || "").trim()); } catch { return ""; }
+  const host = u.hostname.toLowerCase();
+  if (host !== "drive.google.com" && host !== "docs.google.com" && host !== "drive.usercontent.google.com") return "";
+  const m = /\/file\/d\/([A-Za-z0-9_-]{10,})/.exec(u.pathname);
+  const id = m ? m[1] : (u.searchParams.get("id") || "");
+  return /^[A-Za-z0-9_-]{10,}$/.test(id) ? id : "";
+}
+/** Direct download of a Drive file shared as "Anyone with the link" (confirm=t skips the large-file warning page). */
+export const driveDownloadUrl = (id: string) => `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download&confirm=t`;
+/** Drive's own player page, for a learner to open in the browser. */
+export const driveViewUrl = (id: string) => `https://drive.google.com/file/d/${encodeURIComponent(id)}/view`;
+/** True when bytes look like an MP4 (ISO base media: "ftyp" box at offset 4). */
+export function looksLikeMp4(head: Uint8Array): boolean {
+  return head.length >= 8 && head[4] === 0x66 && head[5] === 0x74 && head[6] === 0x79 && head[7] === 0x70;
+}

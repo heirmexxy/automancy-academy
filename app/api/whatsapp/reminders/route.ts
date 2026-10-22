@@ -1,3 +1,5 @@
+import { prepareVideos } from "@/lib/whatsapp/media";
+import { loadMedia } from "@/lib/whatsapp/lessons";
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -97,5 +99,8 @@ export async function GET(req: Request) {
       else await db.from("wa_sessions").upsert({ phone: d.link.phone_e164, user_id: d.link.user_id, ...patch, updated_at: at }, { onConflict: "phone" });
     }));
   }
-  return NextResponse.json({ ok: true, candidates: rows.length, due: due.length, sent, failed });
+  // Keep lesson videos ready: upload new or soon-to-expire ones to WhatsApp's media store (a few per run).
+  let videos: Awaited<ReturnType<typeof prepareVideos>> | { error: string } | null = null;
+  try { videos = await prepareVideos(loadMedia(), 15); } catch (e) { videos = { error: e instanceof Error ? e.message : "failed" }; }
+  return NextResponse.json({ ok: true, candidates: rows.length, due: due.length, sent, failed, videos });
 }

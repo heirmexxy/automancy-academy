@@ -5187,14 +5187,23 @@ function wkSVG(G){
   // n8n and Make spacing differ; scale to keep boxes from overlapping
   const sx = G.kind === "make" ? 0.8 : G.kind === "n8n" ? 1.05 : 1, sy = G.kind === "make" ? 0.75 : 1;
   G.nodes.forEach(n => { n.px = (n.x - minX) * sx + 20; n.py = (n.y - minY) * sy + 46; });
-  const W = (maxX - minX) * sx + WK_W + 40, H = (maxY - minY) * sy + WK_H + 96;
+  // n8n packs AI sub-nodes (models, memory, tools) closer than our boxes are wide: push overlapping boxes apart
+  for(let pass = 0; pass < 8; pass++){
+    let moved = false; const ns = [...G.nodes].sort((a, b) => a.px - b.px || a.py - b.py);
+    for(let i = 0; i < ns.length; i++) for(let j = i + 1; j < ns.length; j++){
+      const a = ns[i], b = ns[j];
+      if(Math.abs(a.py - b.py) < WK_H + 10 && b.px - a.px < WK_W + 16){ b.px = a.px + WK_W + 16; moved = true; }
+    }
+    if(!moved) break;
+  }
+  const W = Math.max(...G.nodes.map(n => n.px)) + WK_W + 20, H = Math.max(...G.nodes.map(n => n.py)) + WK_H + 50;
   const path = e => { const a = e.a, b = e.b;
     if(e.ai){ const x1 = a.px + WK_W / 2, y1 = a.py, x2 = b.px + WK_W / 2, y2 = b.py + WK_H; return `M${x1} ${y1} C${x1} ${(y1 + y2) / 2} ${x2} ${(y1 + y2) / 2} ${x2} ${y2}`; }
     if(G.kind === "zap" || G.kind === "cards"){ const x = a.px + WK_W / 2; return `M${x} ${a.py + WK_H} L${x} ${b.py}`; }
     const x1 = a.px + WK_W, y1 = a.py + WK_H / 2, x2 = b.px, y2 = b.py + WK_H / 2, mx = (x1 + x2) / 2; return `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`; };
   G.edges.forEach((e, i) => e.id = "wke" + i);
   const box = (n, i) => `<g class="wk-node c-${n.cat}" data-k="${esc(n.key)}" transform="translate(${n.px} ${n.py})"><rect width="${WK_W}" height="${WK_H}" rx="${G.kind === "make" ? 27 : 10}"/>
-      <text x="12" y="22" class="wk-l">${esc(wkShort(n.label, 24))}</text><text x="12" y="40" class="wk-s">${esc(wkShort(n.sub, 28))}</text><circle class="wk-ok" cx="${WK_W - 12}" cy="12" r="6"/></g>`;
+      <title>${esc(n.label + " · " + n.sub)}</title><text x="12" y="22" class="wk-l">${esc(wkShort(n.label, 30))}</text><text x="12" y="40" class="wk-s">${esc(wkShort(n.sub, 34))}</text><circle class="wk-ok" cx="${WK_W - 12}" cy="12" r="6"/></g>`;
   return `<svg class="wk-svg" viewBox="0 0 ${Math.max(W, 260)} ${Math.max(H, 140)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Workflow being built step by step">
     <defs><marker id="wkArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker></defs>
     <g class="wk-edges">${G.edges.map(e => `<path id="${e.id}" class="wk-edge${e.ai ? " ai" : ""}" d="${path(e)}" marker-end="url(#wkArrow)"/>${e.label ? `<text class="wk-elabel" data-e="${e.id}"><textPath href="#${e.id}" startOffset="50%" text-anchor="middle">${esc(e.label)}</textPath></text>` : ""}`).join("")}</g>
@@ -5246,21 +5255,55 @@ function wkLoad(k){
     wkGo(0, false); return;
   }
   cv.innerHTML = wkSVG(G);
+  wkFitLabels(cv);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if(cv.isConnected) wkFitLabels(cv); });
   el.querySelector(".wk-kind").textContent = {n8n:"n8n", make:"Make", zap:"Zapier", cards:"lesson steps"}[G.kind] + (it.walk && it.walk.title ? " · " + it.walk.title : "");
   el.querySelector(".wk-note").textContent = G.kind === "cards" ? "A step-by-step summary of the build in this lesson." : `A simplified picture of the canvas, not the real ${({n8n:"n8n", make:"Make", zap:"Zapier"})[G.kind]} screen. The real one looks different, but the steps, names and settings match the template.`;
   WK.camInit = false; wkGo(0, false);
 }
-function wkCam(G, keys, focus, instant){
+/* Best start for a frame of `size` near `lo` so that no interval [a,b] crosses an edge; `must` stays fully inside. */
+function wkSnap(lo, size, ivs, must, pad){
+  const cands = [lo]; ivs.forEach(([a, b]) => { cands.push(a - pad, b + pad - size); });
+  let at = lo, cut = Infinity, sc = Infinity;
+  for(const c of cands){
+    if(must && (must[0] < c - 0.5 || must[1] > c + size + 0.5)) continue;
+    let n = 0; for(const [a, b] of ivs){ if((a < c && b > c) || (a < c + size && b > c + size)) n++; }
+    const s = n * 1e6 + Math.abs(c - lo); if(s < sc){ sc = s; at = c; cut = n; }
+  }
+  return {at, cut: cut === Infinity ? 0 : cut};
+}
+function wkCam(G, keys, focus, instant, visAll){
   const svg = WK.el && WK.el.querySelector("svg"); if(!svg) return;
   const ns = keys.length ? G.nodes.filter(n => keys.includes(n.key)) : G.nodes;
   if(!ns.length) return;
   const x0 = Math.min(...ns.map(n => n.px)) - 30, y0 = Math.min(...ns.map(n => n.py)) - 44, x1 = Math.max(...ns.map(n => n.px + WK_W)) + 30, y1 = Math.max(...ns.map(n => n.py + WK_H)) + 30;
   const r = svg.getBoundingClientRect(); const A = r.width && r.height ? r.width / r.height : 1.8;
-  const MAXW = A < 1.4 ? 560 : 1000, MINW = A < 1.4 ? 300 : 520;
+  const MAXW = A < 1 ? 430 : A < 1.4 ? 560 : 1000, MINW = A < 1.4 ? 300 : 520;
   let w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   if(w / h < A) w = h * A; else h = w / A;
-  if(w > MAXW && focus){ w = MAXW; h = w / A; cx = Math.min(Math.max(focus.px + WK_W / 2, x0 + w / 2), x1 - w / 2); cy = Math.min(Math.max(focus.py + WK_H / 2, y0 + h / 2), y1 - h / 2); }
+  if(w > MAXW && focus){
+    // too wide to show everything: frame the current node with the shown nodes it connects to, so neither is cut off
+    const near = new Set([focus.key]); G.edges.forEach(e => { if(e.a === focus && keys.includes(e.b.key) && !(A < 1 && !e.ai)) near.add(e.b.key); if(e.b === focus && keys.includes(e.a.key) && (A >= 1 || e.ai || near.size < 2)) near.add(e.a.key); });
+    const nb = G.nodes.filter(n => near.has(n.key));
+    const bx0 = Math.min(...nb.map(n => n.px)) - 24, bx1 = Math.max(...nb.map(n => n.px + WK_W)) + 24, by0 = Math.min(...nb.map(n => n.py)) - 40, by1 = Math.max(...nb.map(n => n.py + WK_H)) + 24;
+    let bw = bx1 - bx0, bh = by1 - by0; if(bw / bh < A) bw = bh * A; else bh = bw / A;
+    if(bw <= MAXW * 1.35){ w = Math.max(bw, Math.min(MAXW, x1 - x0)); h = w / A; cx = (bx0 + bx1) / 2; cy = (by0 + by1) / 2; }
+    else { w = MAXW; h = w / A; cx = focus.px + WK_W / 2; cy = focus.py + WK_H / 2; }
+    cx = Math.min(Math.max(cx, x0 + w / 2), Math.max(x1 - w / 2, x0 + w / 2)); cy = Math.min(Math.max(cy, y0 + h / 2), Math.max(y1 - h / 2, y0 + h / 2));
+  }
   if(w < MINW){ w = MINW; h = w / A; }
+  // never slice a box at an edge: every visible box is either fully in frame or fully out (widen a little if that helps)
+  const vis = visAll || !keys.length ? G.nodes : ns;
+  if(vis.length > 1){
+    const must = focus ? [[focus.px - 12, focus.px + WK_W + 12], [focus.py - 36, focus.py + WK_H + 12]] : null;
+    const xs = vis.map(n => [n.px, n.px + WK_W]), ys = vis.map(n => [n.py, n.py + WK_H]);
+    let best = null;
+    for(const k of [1, 1.12, 1.25]){
+      const ww = w * k, hh = ww / A, sx = wkSnap(cx - ww / 2, ww, xs, must && must[0], 14), sy = wkSnap(cy - hh / 2, hh, ys, must && must[1], 12);
+      const cut = sx.cut + sy.cut; if(!best || cut < best.cut){ best = {cut, ww, hh, x:sx.at, y:sy.at}; } if(cut === 0) break;
+    }
+    w = best.ww; h = best.hh; cx = best.x + w / 2; cy = best.y + h / 2;
+  }
   const to = [cx - w / 2, cy - h / 2, w, h];
   const from = (svg.getAttribute("viewBox") || "0 0 100 100").split(/\s+/).map(Number);
   const myTok = (WK.cam = (WK.cam || 0) + 1);
@@ -5269,6 +5312,21 @@ function wkCam(G, keys, focus, instant){
   const step = now => { if(myTok !== WK.cam) return; const f = Math.min(1, (now - t0) / D), e = f < .5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
     svg.setAttribute("viewBox", from.map((v, i) => v + (to[i] - v) * e).join(" ")); if(f < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
+}
+/* On narrow (portrait) screens a big workflow is too small to read whole, so the test run's camera follows the data. */
+function wkFollow(){
+  const svg = WK.el && WK.el.querySelector("svg"), G = WK.g; if(!svg || !G || !G.nodes.length) return false;
+  const r = svg.getBoundingClientRect(), A = r.width && r.height ? r.width / r.height : 1.8;
+  const span = Math.max(...G.nodes.map(n => n.px + WK_W)) - Math.min(...G.nodes.map(n => n.px));
+  return A < 1.4 ? span > 620 : span > 1150;
+}
+/* Shorten node titles that don't fit their box (measured, so it works for any font). The full name is in the box's tooltip. */
+function wkFitLabels(root){
+  $$(".wk-node", root).forEach(g => [[".wk-l", WK_W - 34], [".wk-s", WK_W - 22]].forEach(([sel, max]) => {
+    const t = g.querySelector(sel); if(!t || !t.getComputedTextLength) return;
+    let s = t.textContent, n = 0;
+    try{ while(t.getComputedTextLength() > max && s.length > 4 && n++ < 40){ s = s.slice(0, -1).replace(/\s+$/, ""); t.textContent = s + "…"; } }catch(e){}
+  }));
 }
 function wkNodeEl(key){ return key == null ? null : WK.el.querySelector(`.wk-node[data-k="${CSS.escape(String(key))}"]`); }
 function wkResolve(at){ const G = WK.g; if(at == null) return null; return G.byKey[at] || G.byKey[String(at).toLowerCase()] || null; }
@@ -5321,12 +5379,14 @@ function wkRun(){
   const edges = []; order.forEach(n => G.edges.filter(e => !e.ai && e.a === n).forEach(e => edges.push(e)));
   let k = 0; const myTok = (WK.runTok = (WK.runTok || 0) + 1);
   const mark = n => { const g = wkNodeEl(n.key); if(g) g.classList.add("ran"); };
+  const follow = wkFollow(), dur = follow ? 760 : 520;
   if(order[0]) mark(order[0]);
   const stepE = () => {
     if(myTok !== WK.runTok || !WK.el.isConnected) return;
-    if(k >= edges.length){ dot.setAttribute("opacity", "0"); G.nodes.forEach(mark); return; }
+    if(k >= edges.length){ dot.setAttribute("opacity", "0"); G.nodes.forEach(mark); if(follow) wkCam(G, [], null, false); return; }
     const e = edges[k++], p = svg.getElementById(e.id); if(!p){ stepE(); return; }
-    const L = p.getTotalLength(); const t0 = performance.now(), dur = 520;
+    if(follow) wkCam(G, [e.a.key, e.b.key], e.b, false, true);
+    const L = p.getTotalLength(); const t0 = performance.now();
     dot.setAttribute("opacity", "1");
     const anim = now => { if(myTok !== WK.runTok) return; const f = Math.min(1, (now - t0) / dur); const pt = p.getPointAtLength(L * f); dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y);
       if(f < 1) requestAnimationFrame(anim); else { mark(e.b); setTimeout(stepE, 120); } };
@@ -5340,7 +5400,7 @@ function wkVoiceOn(){ const c = WK.el && WK.el.querySelector('[data-wk="voice"]'
 function wkSay(text){
   const myTok = ++WK.tok; clearTimeout(WK.timer);
   const rate = parseFloat(($("#lsnRate") || {}).value || "1") || 1;
-  const after = () => { if(myTok !== WK.tok || !WK.playing) return; WK.timer = setTimeout(() => { if(myTok !== WK.tok || !WK.playing) return; if(WK.i < WK.steps.length - 1) wkGo(WK.i + 1, true); else wkPause(true); }, WK.steps[WK.i].at === "__run" ? Math.max(2200, WK.g.edges.length * 680 + 800) : 650); };
+  const after = () => { if(myTok !== WK.tok || !WK.playing) return; WK.timer = setTimeout(() => { if(myTok !== WK.tok || !WK.playing) return; if(WK.i < WK.steps.length - 1) wkGo(WK.i + 1, true); else wkPause(true); }, WK.steps[WK.i].at === "__run" ? Math.max(2200, WK.g.edges.length * (wkFollow() ? 900 : 680) + (wkFollow() ? 2200 : 800)) : 650); };
   WK.el.querySelector(".wk-av").classList.add("talk");
   const silent = () => { WK.timer = setTimeout(after, Math.max(2600, String(text || "").split(/\s+/).length * 360) / rate); };
   if(!wkVoiceOn() || !text){ silent(); return; }

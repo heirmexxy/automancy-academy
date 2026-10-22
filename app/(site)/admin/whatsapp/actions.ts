@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canSend, sendText } from "@/lib/whatsapp/api";
 import { clip, within24h } from "@/lib/whatsapp/core";
+import { loadMedia } from "@/lib/whatsapp/lessons";
+import { prepareVideos } from "@/lib/whatsapp/media";
 
 const back: (q: string) => never = q => redirect(`/admin/whatsapp?${q}`);
 
@@ -27,4 +29,14 @@ export async function sendTestMessage(form: FormData) {
   await db.from("audit_log").insert({ actor: admin.id, action: "whatsapp.test_send", target: admin.id, detail: { ok: res.ok } });
   if (!res.ok) back(`error=${encodeURIComponent("Meta refused it: " + res.error)}`);
   back("sent=1");
+}
+
+/** Admin → WhatsApp: upload lesson videos (from Google Drive or any HTTPS link) to WhatsApp's media store now. */
+export async function prepareVideosNow() {
+  const admin = await requireAdmin();
+  if (!canSend()) back(`error=${encodeURIComponent("WhatsApp isn't configured (WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID).")}`);
+  const r = await prepareVideos(loadMedia(), 20);
+  await createAdminClient().from("audit_log").insert({ actor: admin.id, action: "whatsapp.prepare_videos", target: null, detail: r });
+  const fail = r.failed.length ? ` ${r.failed.length} failed: ${r.failed.slice(0, 3).map(f => `${f.key} (${f.error})`).join("; ")}` : "";
+  back(`videos=${encodeURIComponent(`Prepared ${r.prepared} of ${r.due} due (${r.total} videos in total).${r.due > r.prepared + r.failed.length ? " Press again for the rest." : ""}${fail}`)}`);
 }
