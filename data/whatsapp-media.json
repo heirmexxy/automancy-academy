@@ -86,13 +86,13 @@
   },
   "walk:0.2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-0-2.mp4",
-    "bytes": 4351023,
-    "seconds": 123.9
+    "bytes": 3700053,
+    "seconds": 122.2
   },
   "walk:0.3": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-0-3.mp4",
-    "bytes": 4164145,
-    "seconds": 122.2
+    "bytes": 4043286,
+    "seconds": 122.4
   },
   "walk:0.4": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-0-4.mp4",
