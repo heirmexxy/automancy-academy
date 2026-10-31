@@ -36,23 +36,44 @@ env:
   - variable: SUPABASE_SERVICE_ROLE_KEY
     secret: SUPABASE_SERVICE_ROLE_KEY
 
-  # ── Payments (Paystack) ──
-  - variable: PAYSTACK_SECRET_KEY
-    secret: PAYSTACK_SECRET_KEY
-  - variable: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-    secret: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-    availability: [BUILD, RUNTIME]
+  # ── Add the rest when you have the key ──
+  # Every "secret:" listed here must already exist in Secret Manager, or the build fails. So each block stays
+  # commented out until you've run `firebase apphosting:secrets:set <NAME>` for it; then remove the "# " and push.
+  # The site works without any of them (see the README table "Without it").
 
-  # ── Optional services: remove an entry if you don't use the service (the site works without it) ──
-  - variable: ANTHROPIC_API_KEY
-    secret: ANTHROPIC_API_KEY
-  - variable: AZURE_SPEECH_KEY
-    secret: AZURE_SPEECH_KEY
-  - variable: AZURE_SPEECH_REGION
-    value: westeurope       # the region of your Azure Speech resource
-  - variable: RESEND_API_KEY
-    secret: RESEND_API_KEY
-  - variable: CRON_SECRET
-    secret: CRON_SECRET
-  # WhatsApp (add when you set it up): WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET,
-  # WHATSAPP_VERIFY_TOKEN as secrets; WHATSAPP_BUSINESS_NUMBER as a plain value.
+  # Payments (Paystack): test keys first, then live keys at launch
+  # - variable: PAYSTACK_SECRET_KEY
+  #   secret: PAYSTACK_SECRET_KEY
+  # - variable: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+  #   secret: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+  #   availability: [BUILD, RUNTIME]
+
+  # Email (Resend)
+  # - variable: RESEND_API_KEY
+  #   secret: RESEND_API_KEY
+
+  # AI reviewer and Sage (Anthropic)
+  # - variable: ANTHROPIC_API_KEY
+  #   secret: ANTHROPIC_API_KEY
+
+  # Nigerian voices (Azure Speech)
+  # - variable: AZURE_SPEECH_KEY
+  #   secret: AZURE_SPEECH_KEY
+  # - variable: AZURE_SPEECH_REGION
+  #   value: westeurope       # the region of your Azure Speech resource
+
+  # Daily WhatsApp job
+  # - variable: CRON_SECRET
+  #   secret: CRON_SECRET
+
+  # WhatsApp
+  # - variable: WHATSAPP_TOKEN
+  #   secret: WHATSAPP_TOKEN
+  # - variable: WHATSAPP_PHONE_NUMBER_ID
+  #   secret: WHATSAPP_PHONE_NUMBER_ID
+  # - variable: WHATSAPP_APP_SECRET
+  #   secret: WHATSAPP_APP_SECRET
+  # - variable: WHATSAPP_VERIFY_TOKEN
+  #   secret: WHATSAPP_VERIFY_TOKEN
+  # - variable: WHATSAPP_BUSINESS_NUMBER
+  #   value: "2348012345678"   # PLACEHOLDER: the business number, digits with country code
