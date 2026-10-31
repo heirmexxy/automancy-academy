@@ -31,8 +31,8 @@
   },
   "clip:3.1:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-3-1-0.mp4",
-    "bytes": 2559293,
-    "seconds": 83.6
+    "bytes": 2282917,
+    "seconds": 82.6
   },
   "clip:3.1:1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-3-1-1.mp4",
@@ -61,8 +61,8 @@
   },
   "clip:B2:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-B2-0.mp4",
-    "bytes": 2132927,
-    "seconds": 68.9
+    "bytes": 1830891,
+    "seconds": 68.6
   },
   "clip:B3:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-B3-0.mp4",
@@ -151,33 +151,33 @@
   },
   "walk:2.3": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-3.mp4",
-    "bytes": 4724182,
-    "seconds": 139.8
+    "bytes": 4560748,
+    "seconds": 140
   },
   "walk:2.4": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-4.mp4",
-    "bytes": 4065143,
-    "seconds": 122
+    "bytes": 3698966,
+    "seconds": 121.3
   },
   "walk:2.5": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-5.mp4",
-    "bytes": 4646463,
-    "seconds": 131.2
+    "bytes": 4315258,
+    "seconds": 130.4
   },
   "walk:2.6": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-6.mp4",
-    "bytes": 5624831,
-    "seconds": 149.8
+    "bytes": 4898581,
+    "seconds": 149.1
   },
   "walk:2.7": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-7.mp4",
-    "bytes": 6239919,
-    "seconds": 169.2
+    "bytes": 5635598,
+    "seconds": 168.7
   },
   "walk:3.1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-3-1.mp4",
-    "bytes": 3894528,
-    "seconds": 109.5
+    "bytes": 3419454,
+    "seconds": 109
   },
   "walk:3.2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-3-2.mp4",
@@ -336,8 +336,8 @@
   },
   "walk:B2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-B2.mp4",
-    "bytes": 5646558,
-    "seconds": 209.5
+    "bytes": 7092530,
+    "seconds": 208.3
   },
   "walk:B3": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-B3.mp4",
