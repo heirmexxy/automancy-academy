@@ -1,16 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasSupabase } from "@/lib/config";
 import { product } from "@/lib/pricing";
 import { ngn } from "@/lib/format";
 import { safeSearch } from "@/lib/money";
-import { ratingSummary } from "@/lib/marketplace";
+import { liveCourses } from "@/lib/catalogue";
 import { CATEGORIES } from "./_lib/core";
-import { CourseCard, type CardCourse } from "./_components/CourseCard";
+import { CourseCard } from "./_components/CourseCard";
 import "./marketplace.css";
 
-export const metadata: Metadata = { title: "Courses", description: "Practical automation, AI and business courses from Automancy and independent creators, reviewed before they go live." };
+export const metadata: Metadata = { title: "Explore more courses", description: "Practical automation, AI and business courses from Automancy and independent creators, reviewed before they go live." };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
@@ -19,33 +17,14 @@ export default async function Catalogue({ searchParams }: Props) {
   const sp = await searchParams;
   const term = safeSearch(sp.q);
   const cat = (CATEGORIES as readonly string[]).includes(sp.category || "") ? sp.category! : "";
-  let courses: CardCourse[] = [];
-  let ratings: Record<string, { avg: number; count: number }> = {};
-  if (hasSupabase()) {
-    const db = createAdminClient();
-    let query = db.from("courses").select("id, slug, title, subtitle, cover_url, category, level, price_ngn, is_free, creator_id, published_at").eq("status", "live");
-    if (cat) query = query.eq("category", cat);
-    if (term) query = query.or(`title.ilike.%${term}%,subtitle.ilike.%${term}%,description.ilike.%${term}%`);
-    const { data } = await query.order("published_at", { ascending: false }).limit(60);
-    const rows = data || [];
-    const ids = [...new Set(rows.map(r => r.creator_id as string))];
-    const { data: creators } = ids.length ? await db.from("creators").select("user_id, display_name").in("user_id", ids) : { data: [] };
-    const names = new Map((creators || []).map(c => [c.user_id as string, c.display_name as string]));
-    courses = rows.map(r => ({
-      slug: r.slug as string, title: r.title as string, subtitle: r.subtitle as string | null, cover_url: r.cover_url as string | null,
-      category: r.category as string | null, level: r.level as string, price_ngn: r.price_ngn as number, is_free: !!r.is_free,
-      creator: names.get(r.creator_id as string) || null
-    }));
-    const r = await ratingSummary(rows.map(x => x.id as string));
-    ratings = Object.fromEntries(rows.map(x => [x.slug as string, r[x.id as string]]).filter(([, v]) => v)) as Record<string, { avg: number; count: number }>;
-  }
+  const { courses, ratings } = await liveCourses({ term, category: cat });
   const flagship = product("self");
   const filtered = !!(term || cat);
 
   return (
     <section className="wrap stack" style={{ gap: 22 }}>
       <header className="mk-hero">
-        <p className="eyebrow">Courses</p>
+        <p className="eyebrow">Explore more courses</p>
         <h1>Learn a skill. Use it this week.</h1>
         <p className="lede">Short, practical courses from Automancy and independent creators. Every course is reviewed by our team before it goes live.</p>
       </header>

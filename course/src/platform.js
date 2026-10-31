@@ -131,7 +131,7 @@ if(APP_MODE){
     const h = a.getAttribute("href").slice(1); if(EXT[h]){ e.preventDefault(); location.assign(EXT[h]); }
   }, true);
 }
-const VTITLE = {home:"", course:"Course", dashboard:"My dashboard", community:"Community", challenges:"Weekly challenges", hire:"Hire talent", pricing:"Pricing", business:"For business", certificate:"Certificate", earn:"Refer & earn", careers:"Careers", courses:"More courses", teach:"Teach on Automancy"};
+const VTITLE = {home:"", course:"Course", dashboard:"My dashboard", community:"Community", challenges:"Weekly challenges", hire:"Hire talent", pricing:"Pricing", business:"For business", certificate:"Certificate", earn:"Refer & earn", careers:"Careers", courses:"Explore more courses", teach:"Teach on Automancy"};
 let curView = APP_MODE ? "course" : "home";
 function showView(h){
   if(APP_MODE){ if(EXT[h]){ location.replace(EXT[h]); return; } if(!h || h === "home") h = "course"; }

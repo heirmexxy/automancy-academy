@@ -15,7 +15,7 @@ export async function SiteHeader() {
         <nav className="nav" aria-label="Main">
           <Link href="/#course">The course</Link>
           <Link href="/pricing">Pricing</Link>
-          <Link href="/courses">More courses</Link>
+          <Link href="/courses">Explore courses</Link>
           <Link href="/teach">Teach</Link>
           <Link href="/hire">Hire talent</Link>
           <Link href="/careers">Careers</Link>

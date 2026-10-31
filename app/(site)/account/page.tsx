@@ -1,3 +1,6 @@
+import { myCourses } from "@/lib/catalogue";
+import { CourseCard } from "../courses/_components/CourseCard";
+import { ExploreCourses } from "../courses/_components/ExploreCourses";
 import Link from "next/link";
 import type { Metadata } from "next";
 import "./account.css";
@@ -28,7 +31,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         <span className="eyebrow">Account</span>
         <h1 style={{ fontSize: "clamp(2rem,5vw,2.8rem)" }}>Hello{p.full_name ? `, ${p.full_name.split(" ")[0]}` : ""}</h1>
         <nav className="acc-nav" aria-label="Account sections">
-          <a href="#profile">Profile</a><a href="#purchases">Purchases</a><a href="#referral">Referrals</a><a href="#certificate">Certificate</a><a href="#whatsapp">WhatsApp</a><a href="#data">Your data</a>
+          <a href="#profile">Profile</a><a href="#courses">My courses</a><a href="#explore">Explore more courses</a><a href="#purchases">Purchases</a><a href="#referral">Referrals</a><a href="#certificate">Certificate</a><a href="#whatsapp">WhatsApp</a><a href="#data">Your data</a>
         </nav>
       </header>
 
@@ -54,6 +57,8 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         </div>
       </section>
 
+      <section id="courses" aria-labelledby="mycourses-h"><MyCourses userId={user.id} /></section>
+      <section id="explore"><ExploreCourses excludeIds={(await myCourses(user.id).catch(() => [])).map(c => c.id)} /></section>
       <section id="purchases" aria-label="Purchases"><Purchases refund={sp.refund} /></section>
       <section id="referral" aria-label="Referrals"><Referral /></section>
       <section id="certificate" aria-label="Certificate"><Certificate notice={sp.cert === "issued" ? "Your certificate has been issued." : undefined} error={sp.cert_error} /></section>
@@ -83,6 +88,21 @@ export default async function Account({ searchParams }: { searchParams: Promise<
       <section aria-label="Sign out">
         <form action="/auth/signout" method="post"><button className="btn alt" type="submit">Sign out</button></form>
       </section>
+    </div>
+  );
+}
+
+/** The flagship course plus any creator courses this learner is enrolled in. */
+async function MyCourses({ userId }: { userId: string }) {
+  const mine = await myCourses(userId).catch(() => []);
+  return (
+    <div className="stack">
+      <h2 id="mycourses-h">My courses</h2>
+      <div className="card row" style={{ justifyContent: "space-between" }}>
+        <div><b>Automancy Academy: AI automation</b><p className="note">The flagship course: Zapier, Make, n8n, agents, growth and CRM.</p></div>
+        <Link className="btn sm" href="/learn">Continue</Link>
+      </div>
+      {mine.length > 0 && <div className="mk-grid">{mine.map(c => <CourseCard key={c.slug} c={c} />)}</div>}
     </div>
   );
 }
