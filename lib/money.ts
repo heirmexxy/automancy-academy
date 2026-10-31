@@ -39,19 +39,37 @@ export function referralApplies(p: Pick<Product, "id">, isRenewal: boolean): boo
   return COMMISSION_PRODUCTS.includes(p.id);
 }
 
+/** Price after a code's percentage off (minor units), never below 1% of the price. */
+export const applyPercent = (minor: number, percent: number) => minor - Math.round(minor * Math.min(DISCOUNT_CODE_MAX_PERCENT, Math.max(0, Math.floor(percent))) / 100);
+
 /** Discount codes (Admin → Settings): 1–90% off; never 100%, because Paystack can't take a ₦0 payment. */
 export const DISCOUNT_CODE_MAX_PERCENT = 90;
 export type DiscountCodeRow = {
   code: string; percent: number; active: boolean; products: string[] | null; starts_at: string | null; ends_at: string | null;
   max_uses: number | null; once_per_user: boolean;
+  /** Applies to Automancy's own products (default true). */ platform?: boolean;
+  /** Applies to every creator course whose creator allows discounts. */ all_courses?: boolean;
+  /** Applies to this one creator course. */ course_id?: string | null;
+  /** Set when a creator made the code for their own course. */ owner_id?: string | null;
 };
+/** What is being bought: one of Automancy's products, or a creator course (and whether its creator allows promotions). */
+export type DiscountTarget = { productId: string } | { course: { id: string; allowDiscounts: boolean } };
+/** Whether a code covers this purchase at all (ignoring dates and limits). */
+export function discountCovers(c: DiscountCodeRow, t: DiscountTarget): boolean {
+  if ("course" in t) {
+    if (c.course_id) return c.course_id === t.course.id && (!!c.owner_id || t.course.allowDiscounts);
+    return !!c.all_courses && t.course.allowDiscounts;
+  }
+  if (c.course_id || c.owner_id || c.platform === false) return false;
+  return !(c.products && c.products.length && !c.products.includes(t.productId));
+}
 /** Why a code can't be used for this purchase, or null when it can. Usage counts come from successful payments. */
-export function discountCodeProblem(c: DiscountCodeRow | null | undefined, o: { productId: string; now?: Date; uses: number; usedByBuyer: number }): string | null {
+export function discountCodeProblem(c: DiscountCodeRow | null | undefined, o: ({ productId: string } | { course: { id: string; allowDiscounts: boolean } }) & { now?: Date; uses: number; usedByBuyer: number }): string | null {
   if (!c || !c.active) return "That discount code isn't valid.";
   const now = (o.now || new Date()).getTime();
   if (c.starts_at && new Date(c.starts_at).getTime() > now) return "That discount code isn't active yet.";
   if (c.ends_at && new Date(c.ends_at).getTime() <= now) return "That discount code has expired.";
-  if (c.products && c.products.length && !c.products.includes(o.productId)) return "That discount code doesn't apply to this product.";
+  if (!discountCovers(c, "course" in o ? { course: o.course } : { productId: o.productId })) return "course" in o ? "That discount code doesn't apply to this course." : "That discount code doesn't apply to this product.";
   if (c.max_uses != null && o.uses >= c.max_uses) return "That discount code has been fully used.";
   if (c.once_per_user && o.usedByBuyer > 0) return "You've already used that discount code.";
   if (!(c.percent >= 1 && c.percent <= DISCOUNT_CODE_MAX_PERCENT)) return "That discount code isn't valid.";

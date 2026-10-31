@@ -1,33 +1,33 @@
 {
   "clip:1.1:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-1-1-0.mp4",
-    "bytes": 2405246,
-    "seconds": 66.9
+    "bytes": 1958334,
+    "seconds": 67.1
   },
   "clip:1.1:1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-1-1-1.mp4",
-    "bytes": 2363012,
-    "seconds": 70.8
+    "bytes": 2044824,
+    "seconds": 69.5
   },
   "clip:1.1:2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-1-1-2.mp4",
-    "bytes": 2179791,
-    "seconds": 66.8
+    "bytes": 1834075,
+    "seconds": 66.7
   },
   "clip:2.1:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-2-1-0.mp4",
-    "bytes": 1771384,
-    "seconds": 59.1
+    "bytes": 1695444,
+    "seconds": 58.4
   },
   "clip:2.1:1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-2-1-1.mp4",
-    "bytes": 1835949,
-    "seconds": 56.9
+    "bytes": 1481705,
+    "seconds": 56.2
   },
   "clip:2.1:2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-2-1-2.mp4",
-    "bytes": 2238821,
-    "seconds": 62
+    "bytes": 1829030,
+    "seconds": 60.5
   },
   "clip:3.1:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-3-1-0.mp4",
@@ -56,8 +56,8 @@
   },
   "clip:B1:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-B1-0.mp4",
-    "bytes": 2131428,
-    "seconds": 70.4
+    "bytes": 1729430,
+    "seconds": 70
   },
   "clip:B2:0": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/clip-B2-0.mp4",
@@ -116,38 +116,38 @@
   },
   "walk:1.2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-1-2.mp4",
-    "bytes": 3620813,
-    "seconds": 86
+    "bytes": 2924964,
+    "seconds": 85.4
   },
   "walk:1.3": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-1-3.mp4",
-    "bytes": 5347766,
-    "seconds": 150.7
+    "bytes": 4392174,
+    "seconds": 151
   },
   "walk:1.4": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-1-4.mp4",
-    "bytes": 4922970,
+    "bytes": 3914688,
     "seconds": 129.5
   },
   "walk:1.5": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-1-5.mp4",
-    "bytes": 4414571,
-    "seconds": 123.8
+    "bytes": 3983458,
+    "seconds": 123.2
   },
   "walk:1.6": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-1-6.mp4",
-    "bytes": 4294854,
-    "seconds": 114.8
+    "bytes": 3982413,
+    "seconds": 114
   },
   "walk:2.1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-1.mp4",
-    "bytes": 3735099,
-    "seconds": 101.2
+    "bytes": 3246929,
+    "seconds": 100.6
   },
   "walk:2.2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-2.mp4",
-    "bytes": 3884129,
-    "seconds": 116.6
+    "bytes": 3418695,
+    "seconds": 115.8
   },
   "walk:2.3": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-2-3.mp4",
@@ -331,8 +331,8 @@
   },
   "walk:B1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-B1.mp4",
-    "bytes": 5948717,
-    "seconds": 184.9
+    "bytes": 5875807,
+    "seconds": 184.4
   },
   "walk:B2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-B2.mp4",

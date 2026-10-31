@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth";
-import { CERT_NAME, CERT_ORG, certLinkedInUrl, certUrl, eligibility, getCertificate } from "@/lib/certificate";
+import { CERT_NAME, CERT_ORG, FLAGSHIP_PROVIDER, certLinkedInUrl, certUrl, completedCourses, eligibility, ensureFlagship, getCertificate } from "@/lib/certificate";
 import { claimCertificate } from "@/lib/actions/reviews";
 import { itemById } from "@/lib/course";
 import { fmtDate } from "@/lib/format";
@@ -18,6 +18,11 @@ export default async function Certificate({ notice, error }: { notice?: string; 
   const user = await getUser();
   if (!user) return null;
   const [cert, el] = await Promise.all([getCertificate(user.id), eligibility(user.id)]);
+  if (el.ok) await ensureFlagship(user.id, el).catch(() => false); // finished the flagship after an earlier certificate: add it
+  const courses = await completedCourses(user.id).catch(() => []);
+  const list = courses.length > 0 && (
+    <ul className="cert-list">{courses.map(x => <li key={x.course_key || x.title}><b>{x.title}</b> <span className="muted">· {x.provider === FLAGSHIP_PROVIDER ? "Automancy Academy" : `by ${x.provider}`} · {fmtDate(x.completed_at)}</span></li>)}</ul>
+  );
 
   return (
     <section id="certificate" className="card stack" aria-labelledby="cert-h">
@@ -36,7 +41,8 @@ export default async function Certificate({ notice, error }: { notice?: string; 
             <div>
               <p className="muted">This certifies that</p>
               <div className="cert-name">{cert.name_on_certificate}</div>
-              <p className="cert-what">has completed 49 lessons, six practical boss projects and a reviewed capstone, building automations, AI agents and growth systems with Zapier, Make and n8n.</p>
+              <p className="cert-what">has completed {courses.length === 1 ? "the following course" : "the following courses"} on {CERT_ORG}:</p>
+              {list}
             </div>
             <div className="cert-meta"><span>ID {cert.id}</span><span>Issued {fmtDate(cert.issued_at)}</span><span>Verify at {certUrl(cert.id).replace(/^https?:\/\//, "")}</span></div>
           </article>
@@ -46,11 +52,12 @@ export default async function Certificate({ notice, error }: { notice?: string; 
             <a className="btn alt" href={`https://wa.me/?text=${encodeURIComponent(`I earned the ${CERT_NAME} from ${CERT_ORG}. Verify it here: ${certUrl(cert.id)}`)}`} target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
             <Link className="btn alt" href={`/verify/${cert.id}`}>Open printable page</Link>
           </div>
-          <p className="note">The name comes from your profile. If it&apos;s wrong, update your full name and ask support to re-issue the certificate.</p>
+          <p className="note">One certificate for everything you learn here: each course you complete, from Automancy or any creator, is added to it automatically, and the same link always shows the latest list. The name comes from your profile. If it&apos;s wrong, update your full name and ask support to re-issue the certificate.</p>
         </>
       ) : (
         <>
-          <p className="muted">Meet every criterion below and claim your certificate. It&apos;s issued in your profile name and anyone can verify it online.</p>
+          <p className="muted">Your certificate lists every course you complete on Automancy, from us or from any creator. Earn it by completing a creator course (every lesson done and every quiz passed), or by meeting every criterion of the flagship course below. It&apos;s issued in your profile name and anyone can verify it online.</p>
+          {courses.length > 0 && <><p><b>Completed so far:</b></p>{list}</>}
           <ul className="cert-checks">
             {el.checks.map(c => {
               const met = c.have >= c.need;
@@ -73,7 +80,7 @@ export default async function Certificate({ notice, error }: { notice?: string; 
             })}
           </ul>
           <form action={claimCertificate}>
-            <button className="btn" type="submit" disabled={!el.ok}>{el.ok ? "Claim my certificate" : "Claim (unlocks when every criterion is met)"}</button>
+            <button className="btn" type="submit" disabled={!el.ok && courses.length === 0}>{el.ok || courses.length ? "Claim my certificate" : "Claim (unlocks when you complete a course)"}</button>
           </form>
           <p className="note">Boss projects and the capstone count once the AI reviewer (or a person) accepts them at 80 or more with every must-have met.</p>
         </>

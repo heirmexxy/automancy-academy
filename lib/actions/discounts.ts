@@ -29,9 +29,18 @@ export async function saveDiscountCode(formData: FormData) {
   const maxRaw = s(formData, "max_uses", 7);
   const maxUses = maxRaw ? Math.floor(Number(maxRaw)) : null;
   if (maxUses !== null && !(maxUses >= 1)) back({ code_error: "Usage limit must be 1 or more, or left empty for no limit." });
+  const platform = formData.get("platform") !== null;
+  const all_courses = formData.get("all_courses") !== null;
+  const course_id = s(formData, "course_id", 64) || null;
+  if (!platform && !all_courses && !course_id) back({ code_error: "Choose what the code applies to: Automancy's products, creator courses, or one course." });
+  const db0 = createAdminClient();
+  if (course_id) {
+    const { data: crs } = await db0.from("courses").select("allow_discounts").eq("id", course_id).maybeSingle();
+    if (!crs?.allow_discounts) back({ code_error: "That course's creator hasn't agreed to platform discounts. Ask them to switch on \"Automancy promotions\" in their studio." });
+  }
   const row = {
     code, percent, active: formData.get("active") !== null || formData.get("is_new") === "1",
-    products: products.length && products.length < PAID.length ? products : null,
+    products: products.length && products.length < PAID.length ? products : null, platform, all_courses, course_id,
     starts_at: startsAt, ends_at: endsAt, max_uses: maxUses, once_per_user: formData.get("once_per_user") !== null,
     note: s(formData, "note", 300) || null
   };
@@ -43,7 +52,7 @@ export async function saveDiscountCode(formData: FormData) {
     const { error } = await db.from("discount_codes").insert({ ...row, created_by: admin.id });
     if (error) back({ code_error: "Couldn't save the code: " + error.message });
   } else {
-    const { error } = await db.from("discount_codes").update(row).eq("code", code);
+    const { error } = await db.from("discount_codes").update(row).eq("code", code).is("owner_id", null); // creators' own codes are theirs to edit
     if (error) back({ code_error: "Couldn't save the code: " + error.message });
   }
   await audit(admin.id, isNew ? "discount.create" : "discount.update", code, row);

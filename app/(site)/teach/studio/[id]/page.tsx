@@ -6,8 +6,9 @@ import { fmtDate } from "@/lib/format";
 import { flatLessons, getCourse, getCreator, getCurriculum } from "@/lib/marketplace";
 import {
   addLesson, addSection, deleteCourse, deleteLesson, deleteSection, moveLesson, moveSection, renameSection,
-  saveCourseDetails, submitCourse, withdrawCourse
+  saveCourseDetails, submitCourse, withdrawCourse, setCourseDiscounts, createCourseCode, toggleCourseCode
 } from "@/lib/actions/marketplace";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CATEGORIES, KIND_LABEL, LESSON_KINDS, LEVELS, MARKET, STATUS_LABEL, isEditable, lessonProblem, statusTone, submitProblems, type LessonKind } from "../../../courses/_lib/core";
 import "../../../courses/marketplace.css";
 
@@ -28,6 +29,9 @@ export default async function EditCourse({ params, searchParams }: Props) {
   const curriculum = await getCurriculum(c.id, true);
   const lessons = flatLessons(curriculum);
   const problems = submitProblems(c, lessons);
+  const { data: codeRows } = await createAdminClient().from("discount_codes").select("code, percent, active, ends_at, max_uses").eq("course_id", c.id).eq("owner_id", user.id).order("created_at", { ascending: false });
+  const { data: redRows } = await createAdminClient().from("discount_redemptions").select("code").in("code", (codeRows || []).map(r => r.code as string).concat("-"));
+  const usedBy = new Map<string, number>(); (redRows || []).forEach(r => usedBy.set(String(r.code), (usedBy.get(String(r.code)) || 0) + 1));
   const editable = isEditable(c.status);
   const published = !!c.published_at || c.status === "live";
   const canSubmit = ["draft", "changes_requested", "unlisted"].includes(c.status) || (c.status === "live" && !c.changes_pending);
@@ -111,6 +115,47 @@ export default async function EditCourse({ params, searchParams }: Props) {
           <button className="btn" type="submit" style={{ justifySelf: "start" }}>Save details</button>
         </fieldset>
       </form>
+
+      {/* Discounts */}
+      <div className="card stack" id="discounts">
+        <h2 style={{ fontSize: "1.3rem" }}>Discounts</h2>
+        {sp.saved === "discounts" && <p className="alert ok" role="status">Saved.</p>}
+        {sp.saved === "code" && <p className="alert ok" role="status">Discount code saved.</p>}
+        {sp.code_error && <p className="alert bad" role="alert">{sp.code_error}</p>}
+        <form action={setCourseDiscounts} className="stack">
+          <Hidden id={c.id} /><input type="hidden" name="allow" value={c.allow_discounts ? "0" : "1"} />
+          <p><b>Automancy promotions: {c.allow_discounts ? "on" : "off"}.</b> {c.allow_discounts
+            ? "Platform-wide discount codes (for example a launch week or a partner's class) can be used on this course."
+            : "Turn this on to let Automancy's platform-wide discount codes apply to this course, so it's included in our promotions."} You earn your {Math.round(MARKET.revenueShare * 100)}% share of what the learner actually pays.</p>
+          <button className="btn alt sm" type="submit" style={{ justifySelf: "start" }}>{c.allow_discounts ? "Stop including this course in promotions" : "Include this course in Automancy promotions"}</button>
+        </form>
+        <hr />
+        <h3>Your own discount codes</h3>
+        <p className="note">Make a code for this course only (for your audience, a webinar or a launch). Codes are unique across Automancy; each learner can use one once.</p>
+        {(codeRows || []).length > 0 && (
+          <div className="scroll"><table className="dt">
+            <thead><tr><th>Code</th><th>Off</th><th>Used</th><th>Ends</th><th></th></tr></thead>
+            <tbody>{(codeRows || []).map(r => (
+              <tr key={r.code as string}>
+                <td><code>{r.code as string}</code>{!r.active && <span className="pill"> off</span>}</td>
+                <td>{r.percent as number}%</td>
+                <td>{usedBy.get(r.code as string) || 0}{r.max_uses ? ` / ${r.max_uses}` : ""}</td>
+                <td>{r.ends_at ? fmtDate(r.ends_at as string) : "No end"}</td>
+                <td><form action={toggleCourseCode}><Hidden id={c.id} /><input type="hidden" name="code" value={r.code as string} /><input type="hidden" name="active" value={r.active ? "0" : "1"} /><button className="btn alt sm" type="submit">{r.active ? "Switch off" : "Switch on"}</button></form></td>
+              </tr>
+            ))}</tbody>
+          </table></div>
+        )}
+        <form action={createCourseCode} className="grid3" style={{ alignItems: "end" }}>
+          <Hidden id={c.id} />
+          <label className="fld">Code<input name="code" required minLength={3} maxLength={32} placeholder="MYCLASS20" style={{ textTransform: "uppercase" }} /></label>
+          <label className="fld">Discount (%)<input name="percent" type="number" required min={1} max={90} defaultValue={20} /></label>
+          <label className="fld">Usage limit (optional)<input name="max_uses" type="number" min={1} placeholder="No limit" /></label>
+          <label className="fld">Ends (optional)<input name="ends" type="date" /></label>
+          <button className="btn" type="submit" style={{ justifySelf: "start" }}>Create code</button>
+        </form>
+        <p className="note">Share it as a link: <code>/courses/{c.slug}?code=YOURCODE</code></p>
+      </div>
 
       {/* Curriculum */}
       <div className="card stack" id="curriculum">

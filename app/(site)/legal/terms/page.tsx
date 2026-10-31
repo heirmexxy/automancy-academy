@@ -24,7 +24,7 @@ export default function Terms() {
       <li>We don't promise jobs or income. Nigerian law applies.</li>
     </ul>}>
       <h2 id="who">1. Who we are</h2>
-      <p>{SITE_NAME} (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is an online course in AI automation provided at <a href={SITE_URL}>{SITE_URL}</a> by {COMPANY.legalName}, a company registered in Nigeria (RC {COMPANY.rcNumber}), {COMPANY.address}. You can reach us at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p>
+      <p>{SITE_NAME} (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is an online course in AI automation provided at <a href={SITE_URL}>{SITE_URL}</a> by {COMPANY.legalName}, registered in Nigeria (RC {COMPANY.rcNumber}), {COMPANY.address}. You can reach us at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p>
       <p>These terms are the agreement between you and us when you create an account, take a lesson, buy anything or join the referral programme. Our <Link href="/legal/privacy">privacy policy</Link>, <Link href="/legal/refunds">refund policy</Link> and <Link href="/legal/certificate">certificate policy</Link> form part of these terms. By creating an account you accept them. If you don't agree, please don't use the service.</p>
 
       <h2 id="account">2. Your account</h2>
@@ -106,7 +106,7 @@ export default function Terms() {
         <li><b>Their content is theirs.</b> Each creator owns their course and is responsible for what it teaches and for any claims they make about it. When you buy a creator&rsquo;s course, section 4 applies to it in the same way: you get a personal licence to use it for your own learning.</li>
         <li><b>We review courses before they go live.</b> We check each course against our content standards before it appears in the catalogue, and we can remove a course that breaks them. Our review is not an endorsement, and we don&rsquo;t check every statement in it.</li>
         <li><b>Our responsibility is limited.</b> To the extent the law allows, we are not liable for the content, accuracy or results of courses made by other creators. We still handle payments and refunds for them under our <Link href="/legal/refunds">refund policy</Link>, and you can report a problem with any course to <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</li>
-        <li>A creator&rsquo;s course doesn&rsquo;t count towards the Automancy Certificate in AI Automation unless we say so on the course page.</li>
+        <li>When you complete a creator&rsquo;s course (every lesson done and every quiz passed), it is listed on your Automancy Academy Certificate as that creator&rsquo;s course. It doesn&rsquo;t count towards the flagship AI Automation course.</li>
         <li>If you want to teach, see <Link href="/teach">Teach on {SITE_NAME}</Link>. Creators also agree to the <Link href="/teach/terms">creator terms</Link>.</li>
       </ul>
 

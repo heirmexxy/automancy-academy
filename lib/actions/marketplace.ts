@@ -5,8 +5,9 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/config";
+import { syncCourseCompletion } from "@/lib/certificate";
 import { esc } from "@/lib/format";
-import { moneyText } from "@/lib/money";
+import { DISCOUNT_CODE_MAX_PERCENT, endOfLagosDay, moneyText, normaliseCode } from "@/lib/money";
 import {
   audit, emailAdmins, emailUser, getCourse, getCreator, getCurriculum, flatLessons, getRole, grantFreeEnrollment, isEnrolled,
   releaseDueEarnings, startCoursePurchase, courseLink, studioLink, type Course
@@ -333,10 +334,11 @@ export async function buyCourse(formData: FormData) {
   const user = await requireUser(`/courses/${slug}`);
   const currency = s(formData, "currency", 3) === "USD" ? "USD" : "NGN";
   const ref = (await cookies()).get("am_ref")?.value || null;
-  const r = await startCoursePurchase(user.id, user.email || "", courseId, ref, currency);
+  const code = s(formData, "code", 40);
+  const r = await startCoursePurchase(user.id, user.email || "", courseId, ref, currency, code);
   if (r.ok) redirect(r.url);
   if (r.enrolled) redirect(`/courses/${slug}`);
-  redirect(`/courses/${slug}` + q({ error: r.error }) + "#buy");
+  redirect(`/courses/${slug}` + q({ error: r.error, ...(code ? { code } : {}) }) + "#buy");
 }
 
 export async function enrolFree(formData: FormData) {
@@ -368,6 +370,7 @@ export async function markLessonDone(formData: FormData) {
   if (!a) redirect("/courses");
   if (a.enrolled) {
     await db().from("course_progress").upsert({ user_id: a.user.id, lesson_id: lessonId, course_id: a.course.id, done, updated_at: new Date().toISOString() }, { onConflict: "user_id,lesson_id" });
+    if (done) await syncCourseCompletion(a.user.id, a.course.id);
   }
   const next = s(formData, "next", 64);
   revalidatePath(`/courses/${a.course.slug}/learn/${lessonId}`);
@@ -389,6 +392,7 @@ export async function submitQuiz(lessonId: string, answers: number[]): Promise<Q
       user_id: a.user.id, lesson_id: lessonId, course_id: a.course.id,
       quiz_score: Math.max(r.percent, (prev?.quiz_score as number | null) ?? 0), done: !!prev?.done || passed, updated_at: new Date().toISOString()
     }, { onConflict: "user_id,lesson_id" });
+    if (passed) await syncCourseCompletion(a.user.id, a.course.id);
   }
   return { ok: true, ...r, passed, answers: quiz.map(x => x.answer) };
 }
@@ -538,4 +542,49 @@ export async function adminMarkEarningsPaid(formData: FormData) {
   if (total > 0) await emailUser(creatorId, "Your creator payout is on its way", `<p>We've sent <b>${esc(moneyText(total))}</b> to your bank account (reference ${esc(ref)}).</p><p><a href="${esc(SITE_URL)}/teach/studio?tab=earnings">See your earnings</a></p>`);
   revalidatePath("/admin/courses");
   redirect("/admin/courses" + q({ tab: "earnings", done: "paid" }));
+}
+
+// ── Creator: discounts ────────────────────────────────────────────────────────
+
+/** The creator agrees (or stops agreeing) to Automancy's platform-wide discount codes applying to this course. */
+export async function setCourseDiscounts(formData: FormData) {
+  const { userId, course } = await ownCourse(s(formData, "course_id", 64), false);
+  const allow = s(formData, "allow", 1) === "1";
+  await db().from("courses").update({ allow_discounts: allow }).eq("id", course.id);
+  await audit(userId, allow ? "course_discounts_on" : "course_discounts_off", course.id, {});
+  revalidatePath(`/teach/studio/${course.id}`);
+  redirect(`/teach/studio/${course.id}` + q({ saved: "discounts" }) + "#discounts");
+}
+
+/** A creator's own code for one of their courses (1–90% off; unique across the platform). */
+export async function createCourseCode(formData: FormData) {
+  const { userId, course } = await ownCourse(s(formData, "course_id", 64), false);
+  const back = (o: Record<string, string>): never => redirect(`/teach/studio/${course.id}` + q(o) + "#discounts");
+  const code = normaliseCode(s(formData, "code", 40));
+  if (!code || !/^[A-Z0-9]/.test(code)) back({ code_error: "Codes are 3–32 letters, numbers, - or _ (e.g. LAUNCH20)." });
+  const percent = Math.floor(Number(s(formData, "percent", 4)));
+  if (!(percent >= 1 && percent <= DISCOUNT_CODE_MAX_PERCENT)) back({ code_error: `The discount must be from 1 to ${DISCOUNT_CODE_MAX_PERCENT}%.` });
+  const maxRaw = s(formData, "max_uses", 7); const max_uses = maxRaw ? Math.floor(Number(maxRaw)) : null;
+  if (max_uses !== null && !(max_uses >= 1)) back({ code_error: "Usage limit must be 1 or more, or empty." });
+  const { data: taken } = await db().from("discount_codes").select("code").eq("code", code).maybeSingle();
+  if (taken) back({ code_error: `${code} is already taken on Automancy. Try another.` });
+  const { error } = await db().from("discount_codes").insert({
+    code, percent, active: true, products: null, platform: false, all_courses: false, course_id: course.id, owner_id: userId,
+    ends_at: endOfLagosDay(s(formData, "ends", 10)), max_uses, once_per_user: true, note: `Creator code for ${course.title}`.slice(0, 300), created_by: userId
+  });
+  if (error) back({ code_error: "Couldn't save the code. Try again." });
+  await audit(userId, "course_code_create", course.id, { code, percent });
+  revalidatePath(`/teach/studio/${course.id}`);
+  back({ saved: "code" });
+}
+
+/** Switch one of the creator's own codes on or off. */
+export async function toggleCourseCode(formData: FormData) {
+  const { userId, course } = await ownCourse(s(formData, "course_id", 64), false);
+  const code = normaliseCode(s(formData, "code", 40));
+  const active = s(formData, "active", 1) === "1";
+  await db().from("discount_codes").update({ active }).eq("code", code).eq("course_id", course.id).eq("owner_id", userId);
+  await audit(userId, "course_code_toggle", course.id, { code, active });
+  revalidatePath(`/teach/studio/${course.id}`);
+  redirect(`/teach/studio/${course.id}` + q({ saved: "code" }) + "#discounts");
 }

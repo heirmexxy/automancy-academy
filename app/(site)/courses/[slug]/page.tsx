@@ -85,6 +85,9 @@ export default async function CoursePage({ params, searchParams }: Props) {
               <select name="currency" defaultValue="NGN"><option value="NGN">Naira ({ngn(c.price_ngn)})</option><option value="USD">US dollars ({usd(Number(c.price_usd))})</option></select>
             </label>
           ) : null}
+          <label className="fld">Discount code (optional)
+            <input name="code" maxLength={32} autoComplete="off" defaultValue={(sp.code || "").toUpperCase().slice(0, 32)} />
+          </label>
           <button className="btn" type="submit">Buy now</button>
           <p className="note">Secure payment by Paystack. {MARKET.refundWindowDays}-day refund policy: <Link href="/legal/terms">terms</Link>.</p>
         </form>

@@ -133,6 +133,7 @@ export async function fulfilPayment(reference: string, hooks: FulfilHooks = {}):
     // Marketplace course: H grants course_enrollments and records the creator's earning (and should check the price).
     if (!hooks.onCourse) { console.error("[paystack] course payment without a handler", updated.reference); await audit("fulfil_error", updated.id, { step: "course", error: "no handler" }); }
     else { try { await hooks.onCourse(updated); } catch (e) { console.error("[paystack] course handler failed", e); await audit("fulfil_error", updated.id, { step: "course", error: String(e) }); } }
+    try { await recordDiscountRedemption(updated); } catch (e) { console.error("[paystack] discount record failed", e); }
     try { await sendReceipt(updated); } catch (e) { console.error("[paystack] receipt failed", e); }
     return { ok: true, status: "success", message: "Payment confirmed.", payment: updated };
   }

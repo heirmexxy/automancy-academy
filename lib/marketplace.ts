@@ -4,7 +4,8 @@ import { sendEmail } from "@/lib/email";
 import { PAYMENT_UNAVAILABLE, reportCheckoutFailure } from "@/lib/payment-alert";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL, adminEmails, hasPaystack, hasSupabase } from "@/lib/config";
 import { esc } from "@/lib/format";
-import { makeReference, moneyText, normaliseCode, type Currency } from "@/lib/money";
+import { applyPercent, makeReference, moneyText, normaliseCode, type Currency } from "@/lib/money";
+import { checkDiscountCode } from "@/lib/discounts";
 import { initializeTransaction, type PaymentRow } from "@/lib/paystack";
 import { MARKET, availableAt, creatorEarning, toNgnKobo, type CourseStatus, type Level, type LessonKind } from "@/app/(site)/courses/_lib/core";
 
@@ -28,6 +29,7 @@ export type Course = {
   category: string | null; level: Level; language: string; cover_url: string | null; price_ngn: number; price_usd: number | null;
   is_free: boolean; status: CourseStatus; changes_pending: boolean; review_note: string | null; submitted_at: string | null;
   approved_at: string | null; approved_by: string | null; published_at: string | null; created_at: string; updated_at: string;
+  /** The creator lets Automancy's platform-wide discount codes apply to this course. */ allow_discounts?: boolean;
 };
 export type Section = { id: string; course_id: string; position: number; title: string };
 export type Lesson = {
@@ -134,7 +136,7 @@ export type PurchaseResult = { ok: true; url: string } | { ok: false; error: str
  * Never charges without PAYSTACK_SECRET_KEY: returns a friendly error and alerts the admin instead.
  * refCode is stored on the payment for attribution only; marketplace courses pay no referral commission (yet).
  */
-export async function startCoursePurchase(userId: string, email: string, courseId: string, refCode?: string | null, currency: Currency = "NGN"): Promise<PurchaseResult> {
+export async function startCoursePurchase(userId: string, email: string, courseId: string, refCode?: string | null, currency: Currency = "NGN", discountCode?: string | null): Promise<PurchaseResult> {
   const c = await getCourse(courseId);
   if (!c || c.status !== "live") return { ok: false, error: "This course isn't on sale." };
   if (c.is_free) return { ok: false, error: "This course is free: use Enrol." };
@@ -148,14 +150,21 @@ export async function startCoursePurchase(userId: string, email: string, courseI
 
   const usd = currency === "USD";
   if (usd && !(c.price_usd && c.price_usd > 0)) return { ok: false, error: "This course is priced in naira only." };
-  const amount = usd ? Math.round(Number(c.price_usd) * 100) : c.price_ngn * 100;
-  if (amount <= 0) return { ok: false, error: "This course has no price yet." };
+  const list = usd ? Math.round(Number(c.price_usd) * 100) : c.price_ngn * 100;
+  if (list <= 0) return { ok: false, error: "This course has no price yet." };
+  // Discount code: the creator's own code for this course, or a platform-wide code if the creator allows promotions.
+  let code: string | null = null, amount = list;
+  if (discountCode && String(discountCode).trim()) {
+    const ck = await checkDiscountCode(discountCode, { course: { id: c.id, allowDiscounts: !!c.allow_discounts } }, userId);
+    if (!ck.ok) return { ok: false, error: ck.error };
+    code = ck.code; amount = applyPercent(list, ck.percent);
+  }
 
   const reference = makeReference("COURSE");
   const d = db();
   const { error } = await d.from("payments").insert({
     user_id: userId, product: `course:${c.id}`, reference, amount_kobo: amount, currency: usd ? "USD" : "NGN", status: "initialized",
-    referral_code: normaliseCode(refCode) || null, discount_kobo: 0
+    referral_code: normaliseCode(refCode) || null, discount_kobo: list - amount, discount_code: code
   });
   if (error) { console.error("[marketplace] payment insert failed", error.message); return { ok: false, error: "We couldn't start the payment. Please try again." }; }
   await d.from("course_checkouts").insert({ reference, user_id: userId, course_id: c.id, amount_kobo: amount, currency: usd ? "USD" : "NGN" });

@@ -10,7 +10,7 @@ import { clip, courseAccessFrom, decodeEntities, itemLabel, reminderDue } from "
 import { firstUndone } from "@/lib/whatsapp/lessons";
 
 /**
- * Daily WhatsApp reminders (Vercel Cron, see vercel.json; Vercel sends `Authorization: Bearer ${CRON_SECRET}`).
+ * Daily WhatsApp reminders (Cloud Scheduler daily, see README "Deploy"; it sends `Authorization: Bearer ${CRON_SECRET}`).
  * Sends the approved utility template WHATSAPP_TEMPLATE_REMINDER (default "lesson_reminder", language en, one body
  * variable: the next lesson) to linked, opted-in learners with reminders on who've been inactive ≥ 2 days, at most
  * one per 3 days, never after STOP or while paused, and only for a lesson they can open. Max 500 per run.

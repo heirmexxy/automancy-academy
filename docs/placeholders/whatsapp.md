@@ -12,7 +12,7 @@ Setup steps are in README.md → "Going live with WhatsApp". Without the variabl
 | `WHATSAPP_GRAPH_VERSION` (default `v21.0`) | env, `lib/whatsapp/api.ts` | Graph API version in the URL | developers.facebook.com/docs/graph-api/changelog: use a current, supported version |
 | `WHATSAPP_TEMPLATE_REMINDER` (default `lesson_reminder`) | env, `app/api/whatsapp/reminders/route.ts` | Approved Utility template, language `en`, one body variable (the next lesson) | WhatsApp Manager → Message templates |
 | `CRON_SECRET` | env, `app/api/whatsapp/reminders/route.ts` | Bearer token Vercel Cron sends to the reminders route | Make one up; add it in Vercel → Environment Variables |
-| Cron time `30 7 * * *` | `vercel.json` | Daily reminders at 07:30 UTC = 08:30 Lagos | Your choice (check your Vercel plan's cron limits) |
+| Cron time `30 7 * * *` | Cloud Scheduler job (README → Deploy) | Daily reminders at 07:30 UTC = 08:30 Lagos | Your choice (check your Vercel plan's cron limits) |
 | Display name "Automancy Academy" | Meta (WhatsApp Manager) | Shown to learners | Submit for approval; must match the website brand |
 | Meta pricing | README, admin page note | Since 1 Oct 2026: 1,000 free-form replies a month per number free, then charged; templates charged per delivery | developers.facebook.com/docs/whatsapp/pricing: **check the current Nigeria rates** |
 

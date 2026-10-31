@@ -229,3 +229,23 @@ test("discount codes: validity rules", () => {
   assert.equal(endOfLagosDay("2026-11-30"), "2026-11-30T22:59:59.000Z");
   assert.equal(endOfLagosDay("bad"), null);
 });
+
+test("discount codes on creator courses need the creator's agreement", () => {
+  const { discountCovers, discountCodeProblem, applyPercent } = M;
+  const base = { code: "X", percent: 20, active: true, products: null, starts_at: null, ends_at: null, max_uses: null, once_per_user: true };
+  const optIn = { course: { id: "c1", allowDiscounts: true } }, optOut = { course: { id: "c1", allowDiscounts: false } };
+  // platform-only code: Automancy products yes, courses no
+  assert.ok(discountCovers(base, { productId: "self" }));
+  assert.ok(!discountCovers(base, optIn));
+  // platform-wide across courses: only opted-in courses
+  const wide = { ...base, all_courses: true };
+  assert.ok(discountCovers(wide, optIn)); assert.ok(!discountCovers(wide, optOut));
+  // one-course admin code: needs opt-in; creator's own code: always, and never on Automancy products
+  const one = { ...base, platform: false, course_id: "c1" };
+  assert.ok(discountCovers(one, optIn)); assert.ok(!discountCovers(one, optOut)); assert.ok(!discountCovers(one, { course: { id: "c2", allowDiscounts: true } }));
+  const own = { ...one, owner_id: "u1" };
+  assert.ok(discountCovers(own, optOut)); assert.ok(!discountCovers(own, { productId: "self" }));
+  assert.match(discountCodeProblem(wide, { ...optOut, uses: 0, usedByBuyer: 0 }), /this course/);
+  assert.equal(applyPercent(1500000, 20), 1200000);
+  assert.equal(applyPercent(1000, 100), 100);
+});

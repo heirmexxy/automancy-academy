@@ -58,7 +58,7 @@ export function Plan() {
       <Steps items={[
         { title: "Learn", color: "var(--teal)", body: "Start with Base Camp, free. One 60–120 minute lesson a day, at the standard pace or your own. Stories, diagrams, animated walkthroughs and labs that run in your browser." },
         { title: "Build", color: "var(--spark)", body: `Solve a real problem in every lesson, beat ${BOSSES.length} boss projects and a capstone. Log each build in your learning journal. That's your portfolio.` },
-        { title: "Get paid or hired", color: "var(--volt)", body: "Earn your Certificate in AI Automation, get a verified profile on the hiring page, and use the client playbook to win your first paid work." }
+        { title: "Get paid or hired", color: "var(--volt)", body: "Earn your Automancy Academy Certificate, get a verified profile on the hiring page, and use the client playbook to win your first paid work." }
       ]} />
       <div className="row" style={{ marginTop: 18 }}><Link className="btn" href="/signup">Start free</Link><a href="#course">or browse the full course</a></div>
     </section>
@@ -71,7 +71,7 @@ const HOW = [
   { t: "Learn on WhatsApp", c: "var(--volt)", i: "✆", d: "Prefer your phone? Link your number and take each lesson one message at a time on WhatsApp: short lessons, videos, quizzes and AI feedback on your tasks, with your progress shared with the website." },
   { t: "Templates for n8n, Make and Zapier", c: "var(--volt)", i: "⇩", d: "Import a working starting point for each build instead of beginning from a blank canvas, then change it to fit your own business." },
   { t: "AI review of every mission", c: "var(--spark)", i: "✓", d: "Submit a mission or a boss project and get feedback in minutes: what works, what to fix, and how it scores against the criteria. A person checks flagged work." },
-  { t: "Certificate you can verify", c: "var(--teal)", i: "★", d: "Pass every boss project and the capstone to earn the Certificate in AI Automation, with a public page anyone can use to check it's real." },
+  { t: "Certificate you can verify", c: "var(--teal)", i: "★", d: "Pass every boss project and the capstone to earn your Automancy Academy Certificate, with a public page anyone can use to check it's real." },
   { t: "Story-led lessons", c: "var(--sun)", i: "✎", d: "Every lesson opens with a problem at Harvest Lane. You learn by fixing it, then solve a harder version for a business you know." },
   { t: "Glitch hunts", c: "var(--glitch)", i: "!", d: "Find and fix a deliberately broken workflow in every lesson. That's how you learn to debug." },
   { t: "Community and journal", c: "var(--rose)", i: "☺", d: "A learning journal that becomes your portfolio, a help board where peers unblock you, and a weekly leaderboard." }
@@ -98,7 +98,7 @@ const AUD = [
   { k: "I'm looking for work", c: "var(--spark)",
     p: "You've applied for months, and every role asks for experience with AI tools you've never been taught to use.",
     g: `Build working systems in about ${WEEKS} weeks, with a guide and a community. Each one goes in your portfolio.`,
-    s: "A verified portfolio, a Certificate in AI Automation, and a profile on our hiring page that employers can browse.",
+    s: "A verified portfolio, an Automancy Academy Certificate, and a profile on our hiring page that employers can browse.",
     cta: ["Start free", "/signup"] },
   { k: "I have a job", c: "var(--grape)",
     p: "Your week disappears into copy-paste, reports and follow-ups, and you can see AI changing your job.",

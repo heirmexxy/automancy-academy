@@ -3,10 +3,10 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://automancy.
 export const SITE_NAME = "Automancy Academy";
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@automancy.cc"; // PLACEHOLDER
 export const COMPANY = {
-  // PLACEHOLDER: the legal entity that sells the course, its address and registration number (shown in the legal pages and receipts)
-  legalName: "Twellr Technologies Limited",
-  address: "PLACEHOLDER: registered business address, Nigeria",
-  rcNumber: "PLACEHOLDER: CAC RC number"
+  // The legal entity that sells the course (shown in the legal pages and receipts). Confirmed Oct 2026.
+  legalName: "Twellr Technology Solutions",
+  address: "Sawmill Area, Iseyin-Saki Expressway, Iseyin, Oyo State, Nigeria",
+  rcNumber: "18061688"
 };
 export const FEATURES = {
   /** Live calls and the cohort plan stay hidden until a cohort is scheduled (Admin → Settings can override at runtime). */

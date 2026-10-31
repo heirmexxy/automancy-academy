@@ -5,12 +5,12 @@ import { CERT_STATEMENT } from "@/lib/certificate";
 import { LegalPage } from "../LegalPage";
 import { LESSONS, BOSSES } from "@/components/landing/data";
 
-export const metadata: Metadata = { title: "Certificate policy", description: "What the Certificate in AI Automation certifies, how it's earned and verified, and what it is not." };
+export const metadata: Metadata = { title: "Certificate policy", description: "What the Automancy Academy Certificate certifies, how it's earned and verified, and what it is not." };
 
 export default function CertificatePolicy() {
   return (
     <LegalPage title="Certificate policy" current="/legal/certificate" summary={<ul>
-      <li>The Certificate in AI Automation is earned by finishing the course and passing every boss project and the capstone.</li>
+      <li>One certificate per learner, listing every course you complete on Automancy. The flagship AI Automation course is added when you finish it and pass every boss project and the capstone; a creator course is added when you complete every lesson and pass every quiz.</li>
       <li>Work is reviewed by AI against published rubrics, and a person checks anything the AI flags plus a sample of the rest.</li>
       <li>Every certificate has an ID and a public page anyone can use to check it.</li>
       <li>It is not an accredited qualification or a professional licence, and it isn&rsquo;t endorsed by Zapier, Make, n8n or any other tool maker.</li>

@@ -7,7 +7,7 @@ export function Hero() {
       <div>
         <p className="for">For job seekers, professionals and business owners in Nigeria and across Africa</p>
         <h1>Build the AI automations businesses <em>pay for</em>.</h1>
-        <p className="lede">Learn Zapier, Make, n8n and AI agents by rescuing one small business, step by step. Finish with working projects you can show, a Certificate in AI Automation, and a path to clients or a job. No coding background needed.</p>
+        <p className="lede">Learn Zapier, Make, n8n and AI agents by rescuing one small business, step by step. Finish with working projects you can show, an Automancy Academy Certificate, and a path to clients or a job. No coding background needed.</p>
         <div className="row">
           <Link className="btn" href="/signup">Start free</Link>
           <a className="btn alt" href="#course">See the course</a>

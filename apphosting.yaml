@@ -1,0 +1,58 @@
+# Firebase App Hosting (https://firebase.google.com/docs/app-hosting) — runs this Next.js app.
+# Plain settings are written here; every key is a Cloud Secret Manager secret, set once with:
+#   firebase apphosting:secrets:set <NAME>      (then grant access when asked)
+# Never put a key's value in this file: it's committed to Git.
+runConfig:
+  minInstances: 0          # scale to zero when idle (lowest cost); set 1 to avoid cold starts
+  maxInstances: 4
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+  timeoutSeconds: 300      # the AI review and the daily WhatsApp job can take a couple of minutes
+
+env:
+  # ── Plain settings ──
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://automancy.cc
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPPORT_EMAIL
+    value: support@automancy.cc
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_PRIVACY_EMAIL
+    value: privacy@automancy.cc
+    availability: [BUILD, RUNTIME]
+  - variable: EMAIL_FROM
+    value: "Automancy Academy <hello@automancy.cc>"
+  - variable: ADMIN_EMAILS
+    value: PLACEHOLDER-your-email@example.com
+
+  # ── Database and login (Supabase) ──
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    secret: NEXT_PUBLIC_SUPABASE_URL
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    secret: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    availability: [BUILD, RUNTIME]
+  - variable: SUPABASE_SERVICE_ROLE_KEY
+    secret: SUPABASE_SERVICE_ROLE_KEY
+
+  # ── Payments (Paystack) ──
+  - variable: PAYSTACK_SECRET_KEY
+    secret: PAYSTACK_SECRET_KEY
+  - variable: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+    secret: NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
+    availability: [BUILD, RUNTIME]
+
+  # ── Optional services: remove an entry if you don't use the service (the site works without it) ──
+  - variable: ANTHROPIC_API_KEY
+    secret: ANTHROPIC_API_KEY
+  - variable: AZURE_SPEECH_KEY
+    secret: AZURE_SPEECH_KEY
+  - variable: AZURE_SPEECH_REGION
+    value: westeurope       # the region of your Azure Speech resource
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY
+  - variable: CRON_SECRET
+    secret: CRON_SECRET
+  # WhatsApp (add when you set it up): WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET,
+  # WHATSAPP_VERIFY_TOKEN as secrets; WHATSAPP_BUSINESS_NUMBER as a plain value.

@@ -8,14 +8,22 @@ import { sendEmail } from "@/lib/email";
 import { esc } from "@/lib/format";
 import { BOSS_IDS, CAPSTONE_ID, computeEligibility, linkedInAddUrl, makeCertId, normaliseCertId, type Eligibility } from "@/lib/reviewer-core";
 
-export const CERT_NAME = "Certificate in AI Automation";
+/** One certificate per learner, listing every course they completed on Automancy (flagship and creator courses). */
+export const CERT_NAME = "Automancy Academy Certificate";
+export const FLAGSHIP_KEY = "automancy";
+export const FLAGSHIP_TITLE = "AI Automation: Zapier, Make, n8n and AI agents";
+export const FLAGSHIP_PROVIDER = SITE_NAME;
+/** What completing a creator course on the certificate means. */
+export const CREATOR_COURSE_STATEMENT =
+  "Courses from independent creators are reviewed by Automancy against published standards before they go live. A creator course " +
+  "is listed on the certificate when the holder has completed every lesson and passed every quiz in it at 60% or better.";
 export const CERT_ORG = SITE_NAME;
 /** PLACEHOLDER: the LinkedIn company page ID for Automancy Academy (numeric). Empty = LinkedIn uses the organisation name. */
 export const LINKEDIN_ORG_ID = process.env.LINKEDIN_ORG_ID || "";
 
 /** One-paragraph wording of what the certificate certifies (also used on the legal page). */
 export const CERT_STATEMENT =
-  "The Automancy Academy Certificate in AI Automation certifies that the holder completed all 49 lessons of the course " +
+  "For the flagship AI Automation course, the Automancy Academy Certificate certifies that the holder completed all 49 lessons of the course " +
   "and passed every lesson's checkpoint quiz at 4 out of 5 or better, built six practical boss projects that each scored " +
   "80 or more out of 100 with every must-have safety and go-live check met, and completed a grand capstone that took a " +
   "small business's operations from orders and payments to monitoring and a written handover, also scoring 80 or more. " +
@@ -25,6 +33,7 @@ export const CERT_STATEMENT =
   "of keys and customer data. The certificate records completed, reviewed coursework; it is not a licence or a guarantee of employment.";
 
 export type Certificate = { id: string; user_id: string; name_on_certificate: string; issued_at: string; revoked: boolean; revoked_reason: string | null };
+export type CertCourse = { course_key?: string; title: string; provider: string; completed_at: string };
 
 export const certUrl = (id: string) => `${SITE_URL}/verify/${encodeURIComponent(id)}`;
 export const certLinkedInUrl = (c: Pick<Certificate, "id" | "issued_at">) =>
@@ -57,6 +66,60 @@ export async function eligibility(userId: string): Promise<Eligibility> {
 export async function getCertificate(userId: string): Promise<Certificate | null> {
   const { data } = await createAdminClient().from("certificates").select("*").eq("user_id", userId).eq("revoked", false).maybeSingle();
   return (data as Certificate) || null;
+}
+
+/** Courses this learner has completed (what their certificate lists), oldest first. */
+export async function completedCourses(userId: string): Promise<CertCourse[]> {
+  const { data } = await createAdminClient().from("certificate_courses").select("course_key, title, provider, completed_at").eq("user_id", userId).order("completed_at");
+  return (data || []) as CertCourse[];
+}
+/** Public: the courses listed on a valid certificate. */
+export async function verifyCertificateCourses(id: string): Promise<CertCourse[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("verify_certificate_courses", { cert_id: normaliseCertId(id) || "" });
+  return (Array.isArray(data) ? data : []) as CertCourse[];
+}
+async function addCourse(userId: string, row: { course_key: string; title: string; provider: string }) {
+  const { data } = await createAdminClient().from("certificate_courses")
+    .upsert({ user_id: userId, ...row, title: row.title.slice(0, 160), provider: row.provider.slice(0, 120) }, { onConflict: "user_id,course_key", ignoreDuplicates: true }).select("course_key");
+  return (data || []).length > 0; // true when newly added
+}
+/** Adds the flagship course to the learner's list once they meet its criteria. */
+export async function ensureFlagship(userId: string, el?: Eligibility) {
+  const e = el || await eligibility(userId);
+  if (e.ok) await addCourse(userId, { course_key: FLAGSHIP_KEY, title: FLAGSHIP_TITLE, provider: FLAGSHIP_PROVIDER });
+  return e.ok;
+}
+/** Course quiz pass mark (matches QUIZ_PASS in the marketplace). */
+const CREATOR_QUIZ_PASS = 60;
+/**
+ * After a creator-course lesson or quiz is saved: if every lesson is done and every quiz passed, the course goes on the
+ * learner's certificate (issuing the certificate if they don't have one yet and their name is set). Never throws.
+ */
+export async function syncCourseCompletion(userId: string, courseId: string) {
+  try {
+    const db = createAdminClient();
+    const [{ data: lessons }, { data: prog }, { data: course }] = await Promise.all([
+      db.from("course_lessons").select("id, kind").eq("course_id", courseId),
+      db.from("course_progress").select("lesson_id, done, quiz_score").eq("user_id", userId).eq("course_id", courseId),
+      db.from("courses").select("id, title, creator_id").eq("id", courseId).maybeSingle()
+    ]);
+    if (!course || !(lessons || []).length) return;
+    const by = new Map((prog || []).map(p => [String(p.lesson_id), p]));
+    const complete = (lessons || []).every(l => { const p = by.get(String(l.id)); return !!p && (l.kind === "quiz" ? Number(p.quiz_score ?? 0) >= CREATOR_QUIZ_PASS : !!p.done); });
+    if (!complete) return;
+    const { data: cr } = await db.from("creators").select("display_name").eq("user_id", course.creator_id as string).maybeSingle();
+    const added = await addCourse(userId, { course_key: String(course.id), title: String(course.title), provider: String(cr?.display_name || "an Automancy creator") });
+    if (!added) return;
+    const cert = await getCertificate(userId);
+    if (cert) {
+      const { data: prof } = await db.from("profiles").select("email").eq("id", userId).maybeSingle();
+      if (prof?.email) await sendEmail(String(prof.email), `${course.title} is on your certificate`,
+        `<p>Well done: you completed <b>${esc(String(course.title))}</b>. It's now listed on your ${esc(CERT_NAME)}.</p><p><a href="${certUrl(cert.id)}">See your certificate</a></p>`).catch(() => undefined);
+    } else {
+      await issueCertificate(userId, { skipEligibility: true }).catch(() => undefined); // needs a profile name; otherwise they claim it from Account
+    }
+  } catch (e) { console.error("[certificate] course completion sync failed", e); }
 }
 
 /** Public lookup: name, issue date and status only (through the verify_certificate RPC). */
@@ -95,9 +158,9 @@ export async function issueCertificate(userId: string, opts: { actor?: string; s
   const existing = await getCertificate(userId);
   if (existing) return existing;
   if (!opts.skipEligibility) {
-    const el = await eligibility(userId);
-    if (!el.ok) throw new CertificateError("You haven't met every criterion yet. Your checklist shows what's left.");
-  }
+    const flagship = await ensureFlagship(userId);
+    if (!flagship && (await completedCourses(userId)).length === 0) throw new CertificateError("Complete a course first: the flagship course's checklist, or every lesson and quiz of a creator course.");
+  } else await ensureFlagship(userId).catch(() => false);
   const db = createAdminClient();
   const { data: profile } = await db.from("profiles").select("full_name, email").eq("id", userId).single();
   const name = String(profile?.full_name || "").trim().replace(/\s+/g, " ").slice(0, 120);
@@ -106,7 +169,7 @@ export async function issueCertificate(userId: string, opts: { actor?: string; s
   await db.from("audit_log").insert({ actor: opts.actor || userId, action: "certificate.issue", target: cert.id, detail: { user_id: userId, name } });
   if (profile?.email) {
     await sendEmail(profile.email, `Your ${CERT_NAME}`,
-      `<p>Congratulations, ${esc(name)}.</p><p>You've earned the ${esc(CERT_NAME)} from ${esc(SITE_NAME)}. Certificate ID: <b>${esc(cert.id)}</b>.</p>` +
+      `<p>Congratulations, ${esc(name)}.</p><p>You've earned the ${esc(CERT_NAME)}. It lists every course you complete with us and updates as you finish more. Certificate ID: <b>${esc(cert.id)}</b>.</p>` +
       `<p>Anyone can verify it at <a href="${certUrl(cert.id)}">${certUrl(cert.id)}</a>. You can add it to LinkedIn from your account page.</p>`
     ).catch(() => undefined);
   }

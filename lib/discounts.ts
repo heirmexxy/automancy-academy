@@ -1,21 +1,22 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { discountCodeProblem, normaliseCode, type DiscountCodeRow } from "@/lib/money";
+import { discountCodeProblem, normaliseCode, type DiscountCodeRow, type DiscountTarget } from "@/lib/money";
 
 export type CodeCheck = { ok: true; code: string; percent: number } | { ok: false; error: string };
 
 /** Looks up a discount code for this buyer and product (service role; codes are never readable by learners). */
-export async function checkDiscountCode(raw: unknown, productId: string, userId: string): Promise<CodeCheck> {
+export async function checkDiscountCode(raw: unknown, target: string | DiscountTarget, userId: string): Promise<CodeCheck> {
+  const t: DiscountTarget = typeof target === "string" ? { productId: target } : target;
   const code = normaliseCode(raw);
   if (!code) return { ok: false, error: "That discount code isn't valid." };
   const db = createAdminClient();
-  const { data } = await db.from("discount_codes").select("code, percent, active, products, starts_at, ends_at, max_uses, once_per_user").eq("code", code).maybeSingle();
+  const { data } = await db.from("discount_codes").select("code, percent, active, products, starts_at, ends_at, max_uses, once_per_user, platform, all_courses, course_id, owner_id").eq("code", code).maybeSingle();
   const row = data as DiscountCodeRow | null;
   const [{ count: uses }, { count: mine }] = await Promise.all([
     db.from("discount_redemptions").select("id", { count: "exact", head: true }).eq("code", code),
     db.from("discount_redemptions").select("id", { count: "exact", head: true }).eq("code", code).eq("user_id", userId)
   ]);
-  const problem = discountCodeProblem(row, { productId, uses: uses ?? 0, usedByBuyer: mine ?? 0 });
+  const problem = discountCodeProblem(row, { ...t, uses: uses ?? 0, usedByBuyer: mine ?? 0 });
   return problem || !row ? { ok: false, error: problem || "That discount code isn't valid." } : { ok: true, code, percent: row.percent };
 }
 
