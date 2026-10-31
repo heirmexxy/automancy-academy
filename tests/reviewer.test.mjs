@@ -21,7 +21,7 @@ const lesson = missions["1.3"].tiers.b;
 const boss = missions["B4"].tiers.boss;
 
 test("marking data: every lesson has three tiers with Done-when; bosses and capstone have 100-point rubrics", () => {
-  assert.equal(Object.keys(missions).length, 55);
+  assert.equal(Object.keys(missions).length, 55 + 8); // main course + Track 7 (CRM specialisation)
   for (const [id, it] of Object.entries(missions)) {
     if (it.kind === "boss") {
       assert.equal(it.tiers.boss.total, 100, id);
@@ -188,7 +188,7 @@ test("certificates: IDs, LinkedIn link and eligibility", () => {
   assert.equal(url.searchParams.get("certId"), "AA-2026-7K3QX9");
   assert.equal(new URL(linkedInAddUrl({ certName: "c", orgName: "o", orgId: "123", issuedAt: "2026-01-01", certId: "i", certUrl: "u" })).searchParams.get("organizationId"), "123");
 
-  const lessonIds = Object.values(missions).filter(i => i.kind !== "boss").map(i => i.id);
+  const lessonIds = Object.values(missions).filter(i => i.kind !== "boss" && !i.id.startsWith("7.")).map(i => i.id); // flagship only
   assert.equal(lessonIds.length, 49);
   const done = Object.fromEntries(lessonIds.map(i => [i, true]));
   const quizzes = Object.fromEntries(lessonIds.map(i => [i, 4]));

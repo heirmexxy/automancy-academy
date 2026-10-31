@@ -121,6 +121,8 @@ Learners can take the course in WhatsApp (Account → Learn on WhatsApp): one ca
 
 The course itself (lessons, labs, templates, walkthroughs) lives in `course/` and is a single-page app built by `course/build.py`.
 
+**Track 7 (CRM Implementation specialisation)** lives in the same course (`course/src/modules/7-*.html`, `7-9-boss.html`, sheets `7-*.json`, `B7.json`) but is a separate paid product (`crmspec` in `lib/pricing.ts`, ₦25,000). `scripts/sync-course.mjs` puts its items under `spec.crmspec` in `course-build/index.json`, so they never count towards the main course's progress, pace plan or flagship certificate. `/learn` serves them only to learners with the `crmspec` enrolment; finishing all seven lessons with Boss 7 accepted adds the specialisation to the learner's Automancy Academy Certificate. It has no WhatsApp scripts or walkthrough videos yet.
+
 ```bash
 # after changing anything in course/src:
 npm run course:sync                     # rebuilds course-build/ (what /learn serves)

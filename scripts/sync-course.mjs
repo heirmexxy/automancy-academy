@@ -35,7 +35,9 @@ const SRC = path.join(COURSE_SRC, "src");
 const OUT = path.join(APP_ROOT, "course-build");
 
 /** Track names used in index.json (lib/course.ts, emails, admin). */
-const TRACK_NAMES = ["Base Camp", "Spark Street (Zapier)", "Weave Workshop (Make)", "Nodo's Forge (n8n)", "Sage's Tower (AI agents)", "The Signal Tower (Growth)", "Launchpad"];
+const TRACK_NAMES = ["Base Camp", "Spark Street (Zapier)", "Weave Workshop (Make)", "Nodo's Forge (n8n)", "Sage's Tower (AI agents)", "The Signal Tower (Growth)", "Launchpad", "CRM Implementation specialisation"];
+/** Paid add-on tracks: kept out of the main course's items, progress and certificate rules (index.json → spec). */
+const SPEC_TRACKS = { 7: { id: "crmspec", name: "CRM Implementation specialisation" } };
 const FREE_TRACK = 0;
 
 const read = f => fs.readFileSync(path.join(SRC, f), "utf8");
@@ -110,7 +112,13 @@ const items = Object.keys(lessons).map(id => {
 });
 const order = it => it.track * 1000 + (it.kind === "boss" ? 999 : Number(it.id.split(".")[1]));
 items.sort((a, b) => order(a) - order(b));
-const index = { items, lessons: items.filter(i => i.kind !== "boss").length, bosses: items.filter(i => i.kind === "boss").length, total: items.length };
+const core = items.filter(i => !SPEC_TRACKS[i.track]);
+const spec = {};
+for (const [track, s] of Object.entries(SPEC_TRACKS)) {
+  const its = items.filter(i => i.track === Number(track)).map(i => ({ ...i, spec: s.id }));
+  if (its.length) spec[s.id] = { id: s.id, name: s.name, track: Number(track), items: its, total: its.length };
+}
+const index = { items: core, lessons: core.filter(i => i.kind !== "boss").length, bosses: core.filter(i => i.kind === "boss").length, total: core.length, spec };
 
 // ── write ───────────────────────────────────────────────────────────────────
 fs.rmSync(path.join(OUT, "lessons"), { recursive: true, force: true });
@@ -122,4 +130,4 @@ fs.writeFileSync(path.join(OUT, "data", "tpls.json"), JSON.stringify(tpls));
 fs.writeFileSync(path.join(OUT, "data", "sheets.json"), JSON.stringify(sheets));
 fs.writeFileSync(path.join(OUT, "data", "clips.json"), JSON.stringify(clips));
 fs.writeFileSync(path.join(OUT, "index.json"), JSON.stringify(index, null, 1) + "\n");
-console.log(`course-build: shell ${(s.length / 1024).toFixed(0)} KB · ${items.length} lessons (${index.lessons} lessons/capstone, ${index.bosses} bosses) · ${Object.keys(tpls).length} template sets · ${Object.keys(sheets).length} sheets`);
+console.log(`course-build: shell ${(s.length / 1024).toFixed(0)} KB · ${core.length} core items (${index.lessons} lessons/capstone, ${index.bosses} bosses) + ${Object.values(spec).map(x => `${x.total} ${x.id}`).join(", ") || "no specialisations"} · ${Object.keys(tpls).length} template sets · ${Object.keys(sheets).length} sheets`);

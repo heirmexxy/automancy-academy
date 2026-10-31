@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { COURSE } from "@/lib/course";
+import { COURSE, SPECS } from "@/lib/course";
 import { SITE_NAME, SITE_URL } from "@/lib/config";
 import { sendEmail } from "@/lib/email";
 import { esc } from "@/lib/format";
@@ -90,6 +90,28 @@ export async function ensureFlagship(userId: string, el?: Eligibility) {
   if (e.ok) await addCourse(userId, { course_key: FLAGSHIP_KEY, title: FLAGSHIP_TITLE, provider: FLAGSHIP_PROVIDER });
   return e.ok;
 }
+/** What completing a specialisation (e.g. Track 7) on the certificate means. */
+export const SPEC_STATEMENT =
+  "A specialisation (such as CRM Implementation) is listed when the holder has completed every lesson in it and its boss project " +
+  "has been accepted at 80 or more out of 100 with every must-have met, marked against a published rubric.";
+/** Adds any specialisation the learner has finished (every lesson done, every boss accepted) to their list. */
+export async function ensureSpecs(userId: string) {
+  const specs = Object.values(SPECS);
+  if (!specs.length) return 0;
+  const db = createAdminClient();
+  const [{ data: prog }, { data: subs }] = await Promise.all([
+    db.from("progress").select("done").eq("user_id", userId).maybeSingle(),
+    db.from("submissions").select("item_id").eq("user_id", userId).eq("status", "accepted").eq("tier", "boss")
+  ]);
+  const done = (prog?.done || {}) as Record<string, unknown>;
+  const accepted = new Set((subs || []).map(s => String(s.item_id)));
+  let added = 0;
+  for (const s of specs) {
+    const ok = s.items.every(i => i.kind === "boss" ? accepted.has(i.id) : done[i.id] === true);
+    if (ok && await addCourse(userId, { course_key: s.id, title: s.name, provider: FLAGSHIP_PROVIDER })) added++;
+  }
+  return added;
+}
 /** Course quiz pass mark (matches QUIZ_PASS in the marketplace). */
 const CREATOR_QUIZ_PASS = 60;
 /**
@@ -159,8 +181,9 @@ export async function issueCertificate(userId: string, opts: { actor?: string; s
   if (existing) return existing;
   if (!opts.skipEligibility) {
     const flagship = await ensureFlagship(userId);
+    await ensureSpecs(userId).catch(() => 0);
     if (!flagship && (await completedCourses(userId)).length === 0) throw new CertificateError("Complete a course first: the flagship course's checklist, or every lesson and quiz of a creator course.");
-  } else await ensureFlagship(userId).catch(() => false);
+  } else { await ensureFlagship(userId).catch(() => false); await ensureSpecs(userId).catch(() => 0); }
   const db = createAdminClient();
   const { data: profile } = await db.from("profiles").select("full_name, email").eq("id", userId).single();
   const name = String(profile?.full_name || "").trim().replace(/\s+/g, " ").slice(0, 120);

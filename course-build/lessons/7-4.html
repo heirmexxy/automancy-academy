@@ -1,0 +1,321 @@
+<template data-mod="7.4" id="tpl-7-4">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 7 · CRM Implementation specialisation · Lesson 7.4</span>
+    <h1>Sales and Service Automation on Paid Plans</h1>
+    <div class="kicker"><span class="pill">≈ 2.5 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Bolt</span><span class="pill">Tools: HubSpot Sales Hub (trial) or Zoho CRM (trial), n8n</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#bolt"/></svg>
+</header>
+<p class="lede">In 5.9 you automated a free CRM from the outside, with n8n doing the work. Paid plans add strong automation <i>inside</i> the CRM: workflows, lead routing, sequences, stage rules and service-level timers. Used well, they mean every enquiry has an owner in minutes and no deal waits silently. Used badly, they send agents fifty tasks a day and customers three identical emails. This lesson is about choosing what to automate, building it in the right place, and keeping a register so the next person knows what's running.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Route new leads to the right person fairly and fast.</span></div>
+  <div><b>02</b><span>Build stage-based follow-ups and service-level timers that don't spam.</span></div>
+  <div><b>03</b><span>Choose between in-CRM workflows and n8n/Make for each automation.</span></div>
+  <div><b>04</b><span>Test automations safely and keep an automation register.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>The Banana Island buyer, called twice and then never</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Two agents calling the same buyer at once.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="40" width="40" height="70" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="250" y="40" width="40" height="70" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <text x="230" y="135" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">"I already spoke to your colleague."</text>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Monday</b>A ₦850m enquiry arrives. Two agents grab it from the shared inbox and both call within five minutes.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A calendar showing nine days with no contact.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="30" width="130" height="110" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--line)"><rect x="180" y="50" width="20" height="16"/><rect x="204" y="50" width="20" height="16"/><rect x="228" y="50" width="20" height="16"/><rect x="252" y="50" width="20" height="16"/><rect x="276" y="50" width="20" height="16"/><rect x="180" y="72" width="20" height="16"/><rect x="204" y="72" width="20" height="16"/><rect x="228" y="72" width="20" height="16"/><rect x="252" y="72" width="20" height="16" fill="var(--glitch)"/></g>
+        <text x="235" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--glitch)">no follow-up · 9 days</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Nine days later</b>Each assumed the other had it. After the viewing, nobody followed up. The buyer bought elsewhere.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch surrounded by a flood of task notifications.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <g fill="var(--glitch)"><rect x="170" y="25" width="120" height="16" rx="4"/><rect x="170" y="47" width="120" height="16" rx="4"/><rect x="170" y="69" width="120" height="16" rx="4"/><rect x="170" y="91" width="120" height="16" rx="4"/><rect x="170" y="113" width="120" height="16" rx="4"/><rect x="170" y="135" width="120" height="16" rx="4"/></g>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Easy fix: a task for every agent every time anything changes. And an email to the buyer every day until they reply."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A clean flow: enquiry to one owner in 5 minutes, with one follow-up task.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" text-anchor="middle">
+          <rect x="160" y="40" width="44" height="26" rx="6" fill="var(--sky)"/><text x="182" y="57" fill="#fff">enquiry</text>
+          <rect x="214" y="40" width="44" height="26" rx="6" fill="var(--volt)"/><text x="236" y="57" fill="#fff">1 owner</text>
+          <rect x="268" y="40" width="44" height="26" rx="6" fill="var(--rose)"/><text x="290" y="57" fill="#fff">1 task</text>
+        </g>
+        <text x="236" y="100" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">5 minutes · every time</text>
+        <use href="#bolt" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Bolt</b>"One owner, set by a rule, in minutes. One follow-up when the customer has done something. Nothing else."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 55 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>What paid plans add, and where each automation should live</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Need</th><th>HubSpot (paid)</th><th>Zoho CRM (paid)</th><th>Or n8n / Make</th></tr></thead>
+      <tbody>
+        <tr><td>If X happens to a record, do Y</td><td>Workflows (Professional and up)</td><td>Workflow rules (limits by edition)</td><td>When it spans other systems</td></tr>
+        <tr><td>Assign new leads to people</td><td>Rotate records in workflows; lead rotation</td><td>Assignment rules (round-robin)</td><td>For custom routing logic</td></tr>
+        <tr><td>Enforce a step-by-step process</td><td>Stage-required properties, approvals (higher tiers)</td><td>Blueprint (Professional and up)</td><td>Rarely</td></tr>
+        <tr><td>Personal follow-up emails</td><td>Sequences (Starter and up, limits by tier)</td><td>Cadences (higher editions)</td><td>Not recommended</td></tr>
+        <tr><td>Service response timers</td><td>Help desk SLAs (Service Hub)</td><td>Escalation rules (Zoho Desk)</td><td>For simple alerts</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Rule of thumb</b>Automation that only touches CRM records lives in the CRM (people can see and switch it off there, and it survives your contract ending). Automation that crosses systems (WhatsApp, Paystack, portals, AI) lives in n8n or Make, calling the CRM's API.</div>
+      <div><b>Check the tier</b>Feature names and limits move between tiers often. Confirm every automation in your design against the client's actual subscription before you promise it.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Lead routing: one owner, fast and fair</h3>
+    <div class="vocab">
+      <div><b>Route on facts</b>Office (from the property's area), deal type (sale or rental), budget band (luxury to senior agents), language. Never on "whoever sees it first".</div>
+      <div><b>Fair rotation</b>Round-robin within the eligible group, skipping people marked unavailable (leave, off today). Re-route if the owner hasn't touched the lead within the agreed time.</div>
+      <div><b>Existing customers first</b>If the person already has an owner (an open deal or a recent sale), they go back to that owner, not into the rotation.</div>
+      <div><b>Tell the customer something</b>An automatic acknowledgement within minutes (email, or a WhatsApp template in 7.5) with the agent's name. Then a real person.</div>
+    </div>
+<pre class="codebox">Routing rule · Kora · new enquiry
+1. Contact already has an owner with an open deal?   → same owner
+2. Deal type = Rental                                → Lettings team rotation
+3. Budget ≥ ₦500,000,000                             → Senior agents rotation
+4. Property area in Ibadan                            → Ibadan sales rotation
+5. Otherwise                                          → Lekki sales rotation
+Then: task "First call" due in 15 min (office hours) · if untouched
+after 60 min → re-rotate + alert office manager</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Follow-ups lab: automate it, or not?</h3>
+    <p>Good automations fire on something the customer did, once, with a clear owner. Decide each one.</p>
+    <script type="application/json" id="pk-7-4">{"opts":[["auto","Automate it"],["human","Leave it to a person"],["never","Don't do it at all"]],
+     "items":[
+      {"t":"Deal moves to Viewed: create one task for the owner, 'Call for feedback', due tomorrow.","best":"auto","why":"A customer action (they viewed), one task, one owner, one due date. Classic stage-based follow-up."},
+      {"t":"Send the buyer a daily email until they reply.","best":"never","why":"That's spam. Use a short, personal sequence (2–3 touches over a week) that stops the moment they reply or book."},
+      {"t":"Deal sits at Offer made for 7 days with no activity: alert the owner and their manager.","best":"auto","why":"A stuck-deal timer catches the silence that lost the Banana Island buyer. Notify once, not every hour."},
+      {"t":"Negotiating the price with the landlord.","best":"human","why":"Judgement and relationships. The CRM records the offer; people negotiate."},
+      {"t":"When a deal is Lost, ask the agent to choose a lost reason.","best":"auto","why":"Make Lost reason required at that stage. Clean reasons feed the dashboard in 7.6."},
+      {"t":"Every time any field changes, notify the whole team.","best":"never","why":"Noise trains people to ignore notifications, including the important ones."},
+      {"t":"Tenant ticket not answered within 4 office hours: escalate to the Lettings manager.","best":"auto","why":"A service-level timer with one escalation path. That's what SLAs are for."}],
+     "ok":"✓ Automate customer-triggered, single, owned steps. Leave judgement to people. Never automate noise.",
+     "bad":"Ask: did the customer do something? Is there one owner? Will it fire once? If not, don't automate it."}</script>
+    <div class="ident" data-pick="pk-7-4">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Loops, re-enrolment and testing safely</h3>
+    <div class="vocab">
+      <div><b>Loops</b>Workflow A updates a field that triggers workflow B, which updates a field that triggers A. Guard with clear triggers (a stage <i>changes to</i> X, not "is X"), and never let two automations write the same field.</div>
+      <div><b>Re-enrolment</b>Decide whether a record can enter a workflow twice (a deal that goes back to Viewed after a second viewing: yes; a welcome email: no). Most CRMs make this a setting; set it on purpose.</div>
+      <div><b>Test records and test mode</b>Build in a sandbox or with test records owned by you, named <code>TEST · …</code>, with your own email and phone. Many CRMs can run a workflow on one chosen record; use it before switching on for everyone.</div>
+      <div><b>Switching on for existing records</b>Turning on a workflow can enrol every matching record at once (200 open deals → 200 tasks). Choose "only new records from now" unless you mean it.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The automation register</h3>
+    <p>Every automation, in or outside the CRM, gets one row. The register is part of the handover, and the first place to look when "something weird keeps happening".</p>
+<pre class="codebox">Automation register · Kora
+id   | name                   | where      | trigger                  | does                          | owner     | on since
+A01  | Route new enquiry      | HubSpot WF | deal created (Sales/Let) | rotate owner, task 15 min     | Office mgr| 2026-11-03
+A02  | Re-route if untouched  | HubSpot WF | 60 min, no activity      | re-rotate, alert manager      | Office mgr| 2026-11-03
+A03  | Viewing feedback task  | HubSpot WF | stage → Viewed           | 1 task tomorrow               | Agents    | 2026-11-03
+A04  | Stuck offer alert      | HubSpot WF | Offer made 7 d, no act.  | notify owner + manager once   | Office mgr| 2026-11-10
+A05  | Portal → CRM           | n8n        | portal email arrives     | parse, upsert, create deal    | You       | 2026-11-03
+A06  | WhatsApp acknowledgement| n8n       | deal created (with phone)| approved template, agent name | You       | 2026-11-10</pre>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://knowledge.hubspot.com/workflows/create-workflows" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot: create workflows</b><small>Triggers, re-enrolment and testing on one record.</small></span></a>
+    <a class="wcard" href="https://knowledge.hubspot.com/workflows/rotate-records-to-owners-in-workflows" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot: rotate records to owners</b><small>Round-robin assignment inside a workflow.</small></span></a>
+    <a class="wcard" href="https://help.zoho.com/portal/en/kb/crm/automate-business-processes/blueprint" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zoho CRM Blueprint</b><small>Enforcing a step-by-step process in Zoho.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Kora's first six automations</h2></div>
+  <div class="prose"><p><b>The goal.</b> Every enquiry has one owner within 5 minutes in office hours and a first call within 15; no deal waits more than 7 days unseen; tenants' requests escalate on time; agents get at most a handful of automated tasks a day. (HubSpot names; Zoho equivalents in brackets.)</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Availability and teams</h4>
+      <p>Each agent has an "Available for new leads" checkbox (or the CRM's own availability setting). Teams from 7.2: Lekki sales, Ibadan sales, Lettings, Senior agents.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>A01 Route new enquiry</h4>
+      <p>Deal-based workflow, trigger: deal created in Sales or Lettings. Branch on the routing rule in Card 2 (existing owner → Lettings → budget → office). Rotate among available members of the chosen team. Create task "First call" due in 15 minutes during office hours (next opening time otherwise). (Zoho: assignment rule with round-robin, plus a workflow rule creating the task.)</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>A02 and A04: timers that rescue silence</h4>
+      <p>A02: if no call or email is logged 60 minutes after assignment (office hours), rotate again and notify the office manager. A04: deal in Offer made for 7 days with no activity: one notification to owner and manager. Both: no re-enrolment until the deal changes stage.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>A03 Stage follow-ups and required fields</h4>
+      <p>Stage changes to Viewed: one task "Call for feedback" tomorrow. Required fields per stage from the design: Budget at Viewing booked, Offer amount at Offer made, Lost reason at Lost. (Zoho: Blueprint transitions with mandatory fields.)</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Test, then switch on for new records only</h4>
+      <p>Ten <code>TEST · …</code> deals covering each branch (rental, ₦900m, Ibadan, existing customer, agent unavailable). Check owners, tasks and timers, then delete the test records. Switch each workflow on for new records only. Add every automation to the register.</p>
+      <div class="stats">
+        <div class="stat"><b>6</b><span>automations in the register</span></div>
+        <div class="stat"><b>5 min</b><span>enquiry to owner (target)</span></div>
+        <div class="stat"><b>≤ 6</b><span>automated tasks per agent per day</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Routing on facts, rotation for fairness.</li><li>Timers catch silence, once.</li><li>Stage triggers fire on customer actions.</li><li>Tested on every branch before switch-on.</li><li>A register makes it maintainable.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>A task for every field change.</li><li>Daily automated emails to buyers.</li><li>Two workflows writing the same field.</li><li>Switching on for all existing records by accident.</li><li>Automations nobody wrote down.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> More automation means more productivity. Obviously.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Switching on "Viewing feedback task" created 210 tasks in one second.</td></tr>
+        <tr><td>B</td><td>A deal flips between Offer made and Viewed every few minutes.</td></tr>
+        <tr><td>C</td><td>An agent on leave keeps receiving new luxury leads.</td></tr>
+        <tr><td>D</td><td>A returning buyer gets a brand-new agent, who calls without knowing their history.</td></tr>
+        <tr><td>E</td><td>Something sends a WhatsApp at 2 a.m., and nobody knows what.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> enrolled all existing records. Switch on for new records only, or test on one record first.</li>
+        <li><b>B:</b> two automations writing the same field: a loop. One owner per field; trigger on "changes to".</li>
+        <li><b>C:</b> rotation ignores availability. Rotate only among available agents, and keep the flag up to date.</li>
+        <li><b>D:</b> existing customers should return to their owner. Check for an open owner before rotating.</li>
+        <li><b>E:</b> no register, no quiet hours. List every automation with its owner, and only send outside office hours if the customer asked.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Design routing and follow-ups</h4>
+    <ul><li>For a business you know, write its routing rule and three stage-based follow-ups, each with its trigger, action, owner and re-enrolment choice.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every automation fires on something the customer did or on a timer, once, with a named owner.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build and test them in a trial</h4>
+    <ul><li>Build routing and two follow-ups in a HubSpot or Zoho trial (or with n8n against a free CRM). Test every branch with TEST records.</li><li>Write the automation register.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>A test log shows each branch working, nothing fired twice, and every automation is in the register.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run routing for a real team</h4>
+    <ul><li>Switch on routing and follow-ups for a real sales team and measure enquiry-to-owner and first-reply times for two weeks.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You submit before-and-after times and the team's feedback on task volume.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Where should an automation that only updates CRM records live?</p><div class="opts">
+      <button type="button" data-opt="a">Always in n8n</button><button type="button" data-opt="b">In the CRM's own workflows, if the plan includes them</button><button type="button" data-opt="c">In a spreadsheet</button><button type="button" data-opt="d">Nowhere</button></div>
+      <p class="fb" hidden data-why="People can see and switch it off there, and it survives your contract ending."></p></div>
+    <div class="q" data-ans="d"><p>2. A returning buyer with an open deal sends a new enquiry. Who should own it?</p><div class="opts">
+      <button type="button" data-opt="a">The next agent in the rotation</button><button type="button" data-opt="b">The manager</button><button type="button" data-opt="c">Whoever answers first</button><button type="button" data-opt="d">Their existing owner</button></div>
+      <p class="fb" hidden data-why="Existing relationships come before rotation."></p></div>
+    <div class="q" data-ans="a"><p>3. How do you avoid automation loops?</p><div class="opts">
+      <button type="button" data-opt="a">Trigger on a value changing to X, and never let two automations write the same field</button><button type="button" data-opt="b">Run workflows less often</button><button type="button" data-opt="c">Use more workflows</button><button type="button" data-opt="d">Turn off re-enrolment everywhere</button></div>
+      <p class="fb" hidden data-why="One owner per field and clear triggers prevent ping-pong."></p></div>
+    <div class="q" data-ans="c"><p>4. What's the risk when you switch on a new workflow?</p><div class="opts">
+      <button type="button" data-opt="a">None</button><button type="button" data-opt="b">It deletes old records</button><button type="button" data-opt="c">It may enrol every existing matching record at once</button><button type="button" data-opt="d">It logs everyone out</button></div>
+      <p class="fb" hidden data-why="Choose 'new records only' unless you mean to act on existing ones."></p></div>
+    <div class="q" data-ans="b"><p>5. Which follow-up is spam?</p><div class="opts">
+      <button type="button" data-opt="a">One feedback call task after a viewing</button><button type="button" data-opt="b">A daily email to a buyer until they reply</button><button type="button" data-opt="c">An alert when an offer has been silent for 7 days</button><button type="button" data-opt="d">An SLA escalation on a tenant ticket</button></div>
+      <p class="fb" hidden data-why="Short sequences stop on reply; daily blasts don't."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-7-4">AUTOMANCY LOG · Lesson 7.4 · Sales and Service Automation
+Date:
+CRM and plan tier:
+Routing rule (in order):
+Automations built (where each lives):
+Test records and branches tested:
+Anything that fired twice or looped, and the fix:
+Enquiry-to-owner and first-reply times (before / after):
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-7-4">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>CRM-only automation lives in the CRM; cross-system automation lives in n8n or Make.</li>
+      <li>Route on facts, rotate fairly among available people, return customers to their owner.</li>
+      <li>Automate customer-triggered, single, owned steps and silence timers; never noise.</li>
+      <li>Prevent loops, choose re-enrolment on purpose, test every branch, switch on for new records.</li>
+      <li>Every automation goes in the register with an owner.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/" target="_blank" rel="noopener">HubSpot Academy: workflows and sales automation</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zoho.com/portal/en/kb/crm/automate-business-processes" target="_blank" rel="noopener">Zoho CRM: automating business processes</a></li>
+    <li><span class="kind">Course</span><a href="https://trailhead.salesforce.com/content/learn/modules/business_process_automation" target="_blank" rel="noopener">Trailhead: Business Process Automation</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run "routing roulette": read out 12 enquiries one at a time (rental, ₦900m, Ibadan, returning buyer, agent on leave…). Teams hold up the owner their rule picks and the task it creates. Score one point for each correct, single, owned result and lose two for any duplicate or spam.</p>
+  </div>
+</section>
+
+</article>
+</template>

@@ -89,7 +89,7 @@ function xpParts(){
 const weekXp = () => { const since = Date.now() - 7 * 864e5; return Math.max(0, S.events.filter(e => e.t >= since).reduce((s, e) => s + e.xp, 0)); };
 function levelOf(xp){ let i = 0; LV.forEach(([t], j) => { if(xp >= t) i = j; }); const nx = LV[i+1]; return {name:LV[i][1], idx:i, at:LV[i][0], next:nx ? nx[1] : null, nextAt:nx ? nx[0] : null}; }
 const doneCount = () => Object.keys(done).filter(k => done[k]).length;
-const nextItem = () => ORDER.find(o => !done[o.id]);
+const nextItem = () => CORE.find(o => !done[o.id]) || ORDER.find(o => o.spec && !done[o.id] && canOpen(o.id));
 
 /* ---------- badges ---------- */
 const BADGES = [
@@ -240,12 +240,12 @@ function renderPace(){
   const start = S.pace.start ? new Date(S.pace.start + "T12:00:00") : (S.days.length ? new Date([...S.days].sort()[0] + "T12:00:00") : new Date());
   $("#paceStart").value = dk(start);
   const per = paceDays(); let cum = 0; const weeks = [];
-  ORDER.forEach(o => { const w = Math.floor(cum / per); (weeks[w] = weeks[w] || []).push(o.id); cum += SESS(o.id); });
+  CORE.forEach(o => { const w = Math.floor(cum / per); (weeks[w] = weeks[w] || []).push(o.id); cum += SESS(o.id); });
   const total = cum, nWeeks = Math.ceil(total / per), end = addDays(start, nWeeks * 7 - 1);
   $("#paceEnd").textContent = end.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
   const elapsedDays = Math.max(0, Math.floor((new Date() - start) / 864e5));
   const expectSess = Math.min(total, Math.floor(elapsedDays / 7 * per));
-  let doneSess = 0; ORDER.forEach(o => { if(done[o.id]) doneSess += SESS(o.id); });
+  let doneSess = 0; CORE.forEach(o => { if(done[o.id]) doneSess += SESS(o.id); });
   const diff = doneSess - expectSess;
   $("#paceStatus").innerHTML = `${total} sessions of ${custom ? S.pace.min : 90} minutes, ${per} a week. ` + (doneSess === 0 && expectSess === 0 ? `<span class="pill2 info">Starts ${fmtD(start)}</span>` : diff >= 2 ? `<span class="pill2 ok">Ahead by ${diff} sessions</span>` : diff >= -1 ? `<span class="pill2 ok">On track</span>` : `<span class="pill2 warn">Behind by ${-diff} sessions</span> Catch up at the weekend, or set a gentler pace.`);
   const curW = Math.floor(elapsedDays / 7);
@@ -313,7 +313,7 @@ document.addEventListener("click", e => {
   const s = e.target.closest("[data-share]");
   if(s){
     const xp = xpParts().total, lv = levelOf(xp).name, st = streakInfo().cur;
-    const text = s.dataset.share === "cert" ? (certStatus().ok ? "I earned the Certificate in AI Automation from Automancy Academy." : `I'm working towards the Certificate in AI Automation at Automancy Academy: ${doneCount()} of ${ORDER.length} lessons and projects done.`) : `I'm a ${lv} at Automancy Academy: ${xp.toLocaleString()} XP and a ${st}-day streak, learning to build AI automations.`;
+    const text = s.dataset.share === "cert" ? (certStatus().ok ? "I earned the Automancy Academy Certificate." : `I'm working towards the Automancy Academy Certificate: ${doneCount()} of ${CORE.length} lessons and projects done.`) : `I'm a ${lv} at Automancy Academy: ${xp.toLocaleString()} XP and a ${st}-day streak, learning to build AI automations.`;
     modal(`<h3>Share your progress</h3>${shareBlock(text)}<p class="note">Sharing opens the app in a new tab with your message ready to post.</p>`);
   }
 });
@@ -455,7 +455,7 @@ const ADDONS = [
   {id:"story", n:"Story Mode", ngn:5000, usd:12, per:"one-time", tag:"Character voices, animated guides and offline audio for every lesson.", f:[], cta:"Add"},
   {id:"pack", n:"Template pack", ngn:7500, usd:19, per:"each", tag:"Ready-to-import workflows for one job: orders, payments, support or reports. n8n, Make and Zapier versions.", f:[], cta:"Browse packs"},
   {id:"bundle", n:"Template bundle", ngn:30000, usd:69, per:"all packs", tag:"Every pack, including new ones from weekly challenge winners.", f:[], cta:"Add"},
-  {id:"crmspec", n:"CRM Implementation specialisation", ngn:25000, usd:49, per:"one-time", sub:"Coming later", tag:"HubSpot and Zoho in depth, migrations, integrations, a CRM Implementation Agent, and a reviewed client project. For graduates of Track 5.", f:[], cta:"Join the waitlist"}
+  {id:"crmspec", n:"CRM Implementation specialisation", ngn:25000, usd:45, per:"one-time", sub:"Track 7", tag:"Implement CRMs for clients: discovery, design, migration, paid-plan automation, integrations, launch and a CRM Implementation Agent, with a boss project. For graduates of Track 5.", f:[], cta:"Get Track 7"}
 ];
 const EMPLOYER = [
   {id:"post", n:"Per role", ngn:20000, usd:49, per:"per post", sub:"Your first post is free", tag:"Post one role to graduates and the jobs room for 30 days.", f:["Applicants with portfolios","Shortlist in your inbox"], cta:"Post a role"},
@@ -482,7 +482,6 @@ document.addEventListener("click", e => {
   if(p.id === "free"){ location.hash = "#m-0-1"; return; }
   if(["team","onsite","place"].includes(p.id)){ location.hash = p.id === "place" ? "#hire-post" : "#business"; if(p.id !== "place") setTimeout(() => $("#bizForm").scrollIntoView(), 50); return; }
   if(p.id === "post"){ location.hash = "#hire-post"; return; }
-  if(p.id === "crmspec"){ modal(`<h3>Waitlist · ${esc(p.n)}</h3><p>The specialisation opens after the main course launches. Leave your email and we'll tell you first.</p><p class="note">The waitlist opens on the Automancy Academy website.</p><p><a href="#careers-crm" data-close>See the outline →</a></p>`); return; }
   const usdMode = S.cur === "USD";
   modal(`<h3>Checkout · ${esc(p.n)}</h3><p class="price" style="font-family:var(--display);font-weight:800;font-size:1.8rem">${priceTxt(p)}</p>
     <form id="payForm" style="display:grid;gap:12px"><label class="fld">Email for your receipt and login<input id="payEmail" type="email" required placeholder="you@example.com"></label>
@@ -509,7 +508,7 @@ function renderBusiness(){
 
 /* ---------- CERTIFICATE ---------- */
 function certStatus(){
-  const core = ORDER;
+  const core = CORE;
   const mods = core.filter(o => !o.id.startsWith("B")), bosses = core.filter(o => o.id.startsWith("B"));
   const c = [
     {l:"Lessons complete", have:mods.filter(o => done[o.id]).length, need:mods.length},

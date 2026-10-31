@@ -1,0 +1,333 @@
+<template data-mod="7.5" id="tpl-7-5">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 7 · CRM Implementation specialisation · Lesson 7.5</span>
+    <h1>Integrations: Forms, Portals, WhatsApp, Email and Payments</h1>
+    <div class="kicker"><span class="pill">≈ 2.5 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Nodo and Echo</span><span class="pill">Tools: n8n, HubSpot or Zoho API (trial), WhatsApp Cloud API (test number), Paystack (test mode)</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">A CRM only stays true if information flows into it without anyone typing. For Kora that means: website forms and property-portal enquiries arrive as deals; WhatsApp conversations and emails attach to the right contact; an acknowledgement goes out in minutes; and when a buyer pays the holding deposit on Paystack, the deal moves and the accounts team knows. This lesson is the integration layer: what to connect natively, what to build in n8n, and how to keep it secure, idempotent and within every platform's limits.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Choose native integrations or middleware for each connection.</span></div>
+  <div><b>02</b><span>Build an idempotent "upsert enquiry" integration from forms and portals.</span></div>
+  <div><b>03</b><span>Connect WhatsApp and email to the CRM within each platform's rules.</span></div>
+  <div><b>04</b><span>Sync payments safely, and monitor every integration.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"The CRM is right only when Bisi updates it"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An administrator copying enquiries from emails into the CRM by hand.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="35" width="60" height="80" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="240" y="35" width="60" height="80" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M228 75 H238" stroke="var(--ink)" stroke-width="2"/>
+        <text x="232" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">copy · paste · 3 hours/day</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Week 2 after launch</b>Portal enquiries arrive by email. Bisi, the administrator, retypes them into the CRM. When she's off, the CRM goes stale.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="WhatsApp conversations living only on agents' phones.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--volt)"><rect x="170" y="30" width="34" height="60" rx="6"/><rect x="215" y="30" width="34" height="60" rx="6"/><rect x="260" y="30" width="34" height="60" rx="6"/></g>
+        <text x="232" y="120" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">"The offer was in my WhatsApp."</text>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Offers and promises live in twelve phones. When an agent leaves, so does the history."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pasting an API key into a website form's code.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="165" y="45" width="135" height="70" rx="6" fill="var(--card)"/>
+        <text x="175" y="72" font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--ink)">&lt;script&gt;</text>
+        <text x="175" y="88" font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--glitch)">token="pat-na1-…"</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I connected the website straight to the CRM. The private token is in the page's code, so it's quick!"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Arrows from forms, portals, WhatsApp, email and Paystack into one CRM through n8n.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8" text-anchor="middle">
+          <rect x="160" y="20" width="50" height="18" rx="5" fill="var(--sky)"/><text x="185" y="32" fill="#fff">forms</text>
+          <rect x="160" y="44" width="50" height="18" rx="5" fill="var(--grape)"/><text x="185" y="56" fill="#fff">portals</text>
+          <rect x="160" y="68" width="50" height="18" rx="5" fill="var(--volt)"/><text x="185" y="80" fill="#fff">WhatsApp</text>
+          <rect x="160" y="92" width="50" height="18" rx="5" fill="var(--rose)"/><text x="185" y="104" fill="#fff">email</text>
+          <rect x="160" y="116" width="50" height="18" rx="5" fill="var(--sun)"/><text x="185" y="128" fill="#13233A">Paystack</text>
+          <rect x="230" y="60" width="70" height="40" rx="8" fill="var(--ink)"/><text x="265" y="84" fill="var(--paper)">CRM</text>
+        </g>
+        <g stroke="var(--ink)" stroke-width="1.2"><path d="M211 29 L229 70"/><path d="M211 53 L229 75"/><path d="M211 77 H229"/><path d="M211 101 L229 85"/><path d="M211 125 L229 90"/></g>
+        <use href="#nodo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"Everything flows in by itself, through one place we can watch. Secrets stay on the server."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 55 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>Native, marketplace app or middleware?</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Connection</th><th>Best first choice</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Website forms</td><td>The CRM's own forms (embedded), or the form tool's native integration</td><td>Handles consent fields, tracking and duplicates out of the box</td></tr>
+        <tr><td>Gmail / Outlook</td><td>Native inbox connection and logging</td><td>Emails attach to contacts automatically</td></tr>
+        <tr><td>Property portals (email alerts)</td><td>n8n: parse the alert email, upsert</td><td>No native integration; the format is the portal's</td></tr>
+        <tr><td>WhatsApp Business</td><td>A marketplace inbox app, or n8n with the Cloud API</td><td>Depends on budget and plan; both must follow WhatsApp's rules</td></tr>
+        <tr><td>Paystack</td><td>n8n: verified webhook → CRM</td><td>Money events need signature checks and idempotency</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Prefer native when it does the job</b>Fewer moving parts, supported by the vendor, survives you. Use middleware when native doesn't exist, can't apply your rules, or would cost an expensive tier just for one feature.</div>
+      <div><b>Secrets live on the server</b>Private app tokens, API keys and webhook secrets go in n8n credentials or environment variables, never in a web page, a spreadsheet or a WhatsApp message (Glitch's mistake).</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The upsert-enquiry pattern</h3>
+    <p>Every source (form, portal, Instagram, WhatsApp) calls one sub-workflow, so the rules live in one place. You built a version of this in 5.9; here it handles a paid CRM with custom objects and routing.</p>
+<pre class="codebox">Sub-workflow · KORA · Upsert enquiry (input: source, name, email,
+phone, message, property_ref, consent, received_at, source_event_id)
+1. Seen this source_event_id before? → stop (idempotent)
+2. Normalise email and phone (same rules as 7.3)
+3. Search contact by email, then phone → update or create
+   (never overwrite a good value with a blank)
+4. Find property by kora_ref (from the portal or form)
+5. Open deal for this contact + property? → add a note : create deal
+   in the right pipeline (Sales/Lettings) → routing (7.4) assigns owner
+6. Log the message as a note/activity on the deal
+7. Save source_event_id + CRM ids in the integration log</pre>
+    <div class="vocab">
+      <div><b>Idempotent</b>Running it twice with the same input changes nothing the second time. Portals resend; webhooks retry; people double-click. Without step 1, every retry creates a duplicate deal.</div>
+      <div><b>Rate limits and retries</b>CRM APIs limit requests per second and per day; respect the vendor's published limits, batch where possible, and retry with a wait on "429 Too Many Requests" or 5xx errors.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>WhatsApp and email: history in the CRM, rules respected</h3>
+    <div class="vocab">
+      <div><b>Business number, not personal phones</b>To bring WhatsApp into the CRM, conversations must run through the business's WhatsApp Business Platform number (Cloud API or a provider), not agents' personal WhatsApp. Agree this change with the team early: it's the biggest adoption hurdle.</div>
+      <div><b>The 24-hour window and templates</b>Free-form replies are allowed within 24 hours of the customer's last message. Outside it, only pre-approved templates (e.g. the enquiry acknowledgement, viewing reminders). Templates are charged per message; check Meta's current rates for Nigeria.</div>
+      <div><b>Opt-in</b>Only message people who gave you their number for this purpose and agreed to WhatsApp contact; record it on the contact (the consent field from 7.2).</div>
+      <div><b>Email</b>Connect each agent's inbox natively so sent and received emails log to the contact. Exclude private and personal mail by logging only to known contacts.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Integration lab: safe or unsafe?</h3>
+    <script type="application/json" id="pk-7-5">{"opts":[["safe","Safe as described"],["unsafe","Unsafe: fix it"]],
+     "items":[
+      {"t":"The website form posts to an n8n webhook that checks a shared secret header, then calls the upsert sub-workflow.","best":"safe","why":"The secret stays on the server and the webhook rejects calls without it."},
+      {"t":"The CRM private app token is in the website's JavaScript so the form can call the CRM directly.","best":"unsafe","why":"Anyone can read page code. Rotate the token now; call the CRM from the server or use the CRM's own embedded form."},
+      {"t":"A Paystack webhook marks the deal 'Legal and payment' after verifying the signature and re-checking the transaction with Paystack's API.","best":"safe","why":"Signature check plus server-side verification means a fake request can't move a deal."},
+      {"t":"Every 5 minutes, n8n re-imports the whole portal inbox and creates deals for each email.","best":"unsafe","why":"Not idempotent: every run duplicates deals. Track processed message IDs and upsert."},
+      {"t":"A WhatsApp template 'Your viewing is tomorrow at 11:00 with Bisi' is sent to buyers who booked and agreed to WhatsApp reminders.","best":"safe","why":"Approved template, opted-in contact, useful and expected."},
+      {"t":"The integration retries forever on errors, every second.","best":"unsafe","why":"That hammers the API and can get the account rate-limited or blocked. Retry a few times with growing waits, then alert a person."}],
+     "ok":"✓ Secrets on the server, verified webhooks, idempotent upserts, opted-in messaging, polite retries.",
+     "bad":"Check each one for secrets in the browser, unverified money events, duplicates and spam."}</script>
+    <div class="ident" data-pick="pk-7-5">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Payments and monitoring</h3>
+    <div class="vocab">
+      <div><b>Money moves deals, carefully</b>A holding deposit or rent payment on Paystack can move a deal and notify accounts. Verify the webhook signature, confirm the transaction with Paystack's API, match it to the deal by a reference you created (not by name or amount), and store the Paystack reference on the deal. Never let a payment event close a deal as Won on its own if the business needs a signed contract first.</div>
+      <div><b>An integration log</b>One table: time, source, event ID, result (created/updated/skipped/error), CRM IDs, error message. It answers "did the enquiry from Mrs X arrive?" in seconds.</div>
+      <div><b>Monitoring</b>An error workflow alerts you on failures; a daily check compares counts (portal emails received vs. deals created); a weekly look at the API usage page. Tokens expire and portals change their email format: you want to know the same day, not when an agent complains.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://developers.hubspot.com/docs/api/private-apps" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot private apps</b><small>Tokens and scopes for server-side integrations.</small></span></a>
+    <a class="wcard" href="https://developers.facebook.com/docs/whatsapp/cloud-api" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>WhatsApp Cloud API</b><small>Messages, templates and the 24-hour window.</small></span></a>
+    <a class="wcard" href="https://paystack.com/docs/payments/webhooks/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Paystack webhooks</b><small>Signature verification and retries.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Kora's integration layer</h2></div>
+  <div class="prose"><p><b>The goal.</b> Website and portal enquiries become owned deals within 5 minutes without anyone typing; WhatsApp and email history sits on the contact; a deposit paid on Paystack moves the deal and tells accounts; every event is logged and failures alert the same day.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>KORA · Upsert enquiry (sub-workflow)</h4>
+      <p>Built once, as in Card 2, with a <code>kora_integration_log</code> table (Supabase or Google Sheets). Inputs validated; CRM calls via a private app token (scopes: contacts, deals, custom objects; nothing else) stored in n8n credentials.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Sources</h4>
+<pre class="codebox">Website form  → n8n Webhook (secret header) → Upsert enquiry
+Portal alerts → Gmail Trigger (label "portal") → Code: parse
+                (name, phone, email, listing ref, message)
+                → Upsert enquiry (source_event_id = Gmail message id)
+Instagram     → from Growth Desk 5.5 (already built) → Upsert enquiry
+WhatsApp      → Cloud API webhook (signature checked) → find contact by
+                phone → log message on contact/deal; new number → Upsert</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Acknowledge within minutes</h4>
+      <p>When routing (7.4) sets the owner, n8n sends the approved WhatsApp template <i>enquiry_received</i> ("Hi {{1}}, thanks for your enquiry about {{2}}. {{3}} from Kora will call you shortly.") if the contact gave a phone and WhatsApp consent; otherwise an email from the agent's address.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Paystack deposit → deal</h4>
+<pre class="codebox">Agent creates a Paystack payment link from the deal (n8n button):
+  reference = KORA-{deal_id}-{timestamp}; stored on the deal
+Paystack webhook → verify HMAC signature → GET /transaction/verify
+→ status success and amount = expected? → move deal to
+  "Legal and payment", set kora_deposit_ref, notify accounts
+  (never set Won: Won needs the signed agreement)</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Monitor</h4>
+      <p>Error workflow → Telegram alert to you and the office manager. 7:00 daily check: portal emails received yesterday vs. deals created from portals; mismatch → alert. Monthly: token expiry dates and API usage in the register.</p>
+      <div class="stats">
+        <div class="stat"><b>0</b><span>enquiries typed by hand</span></div>
+        <div class="stat"><b>4 min</b><span>median enquiry → acknowledgement</span></div>
+        <div class="stat"><b>1</b><span>place to look when something's missing</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>One upsert, many sources: rules in one place.</li><li>Idempotent on event IDs, so retries are harmless.</li><li>Secrets only on the server, with narrow scopes.</li><li>Money events verified twice and matched by reference.</li><li>A log and a daily count catch silent failures.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Tokens in browser code or shared sheets.</li><li>Matching payments by name or amount.</li><li>Letting a payment mark a deal Won.</li><li>Messaging people outside WhatsApp's rules.</li><li>No alert when a portal changes its email format.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Everything's connected to everything. Isn't that the point?</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>A portal resent last week's alerts; 60 duplicate deals appeared.</td></tr>
+        <tr><td>B</td><td>A fake webhook call moved a deal to "Legal and payment" with no money received.</td></tr>
+        <tr><td>C</td><td>Since Tuesday, no portal enquiries have arrived in the CRM. Nobody noticed until Friday.</td></tr>
+        <tr><td>D</td><td>The integration's token had full admin scopes "in case we need them later".</td></tr>
+        <tr><td>E</td><td>A buyer's good email was replaced with a blank when they sent a WhatsApp from a new number.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> not idempotent. Store each source event ID and skip ones already processed.</li>
+        <li><b>B:</b> no signature check and no server-side verification. Verify the HMAC and confirm the transaction with Paystack before moving anything.</li>
+        <li><b>C:</b> the portal changed its email format and the parser silently failed. Alert on parse errors and compare daily counts.</li>
+        <li><b>D:</b> excess privilege. Give tokens only the scopes they need; rotate on staff or contractor changes.</li>
+        <li><b>E:</b> blind overwrite. Never replace a value with a blank; only fill gaps or update with verified newer data.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Draw the integration map</h4>
+    <ul><li>For a business you know, list every source of customer information and decide native, marketplace app or middleware for each, with the reason and the security rule.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every connection has a named owner, where its secret lives, and how failures are noticed.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Build the upsert and two sources</h4>
+    <ul><li>Build the upsert-enquiry sub-workflow against a trial CRM, plus a form webhook (with a secret) and an email parser.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Sending the same event three times creates one deal, the integration log shows all three, and a parse failure raises an alert.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Payments and WhatsApp, end to end</h4>
+    <ul><li>Add a Paystack test-mode deposit that moves a deal after verification, and a WhatsApp test-number acknowledgement template.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>A forged webhook is rejected, a real test payment moves the right deal once, and the acknowledgement arrives on your phone.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="a"><p>1. What makes an integration idempotent?</p><div class="opts">
+      <button type="button" data-opt="a">Processing the same event twice changes nothing the second time</button><button type="button" data-opt="b">It runs every minute</button><button type="button" data-opt="c">It uses the newest API version</button><button type="button" data-opt="d">It has no errors</button></div>
+      <p class="fb" hidden data-why="Store event IDs; skip ones you've already handled."></p></div>
+    <div class="q" data-ans="c"><p>2. Where should the CRM's private app token live?</p><div class="opts">
+      <button type="button" data-opt="a">In the website's JavaScript</button><button type="button" data-opt="b">In a shared Google Sheet</button><button type="button" data-opt="c">In the server's credentials or environment variables</button><button type="button" data-opt="d">In a WhatsApp group for the team</button></div>
+      <p class="fb" hidden data-why="Secrets stay on the server, with only the scopes needed."></p></div>
+    <div class="q" data-ans="d"><p>3. A Paystack webhook says a deposit was paid. What do you do before moving the deal?</p><div class="opts">
+      <button type="button" data-opt="a">Nothing; trust it</button><button type="button" data-opt="b">Check the buyer's name matches</button><button type="button" data-opt="c">Mark the deal Won</button><button type="button" data-opt="d">Verify the signature, confirm with Paystack's API, and match your own reference</button></div>
+      <p class="fb" hidden data-why="Money events are verified twice and matched by a reference you created."></p></div>
+    <div class="q" data-ans="b"><p>4. A buyer last messaged on WhatsApp three days ago. Can you send a free-form follow-up?</p><div class="opts">
+      <button type="button" data-opt="a">Yes, any time</button><button type="button" data-opt="b">No; outside 24 hours only an approved template, to an opted-in contact</button><button type="button" data-opt="c">Only from a personal phone</button><button type="button" data-opt="d">Only on weekends</button></div>
+      <p class="fb" hidden data-why="WhatsApp's customer service window is 24 hours."></p></div>
+    <div class="q" data-ans="c"><p>5. How do you notice a silently broken portal parser?</p><div class="opts">
+      <button type="button" data-opt="a">Wait for an agent to complain</button><button type="button" data-opt="b">Check once a quarter</button><button type="button" data-opt="c">Alert on parse errors and compare daily counts of emails vs. deals</button><button type="button" data-opt="d">You can't</button></div>
+      <p class="fb" hidden data-why="Count-based checks catch failures that don't throw errors."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-7-5">AUTOMANCY LOG · Lesson 7.5 · Integrations
+Date:
+Sources connected (native / app / middleware):
+Upsert sub-workflow: idempotency key and matching rules:
+Where secrets live, and token scopes:
+WhatsApp: number, templates, consent:
+Payments: verification steps, what the event changes:
+Monitoring: alerts and daily checks:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-7-5">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Native where it does the job; middleware where it doesn't or where rules must apply.</li>
+      <li>One idempotent upsert sub-workflow for every source; never overwrite good data with blanks.</li>
+      <li>Secrets on the server with narrow scopes; webhooks verified.</li>
+      <li>WhatsApp through the business number, inside the 24-hour window or with templates, to opted-in contacts.</li>
+      <li>Payments verified twice and matched by reference; every integration logged and monitored.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.hubspot.com/docs/api/crm/contacts" target="_blank" rel="noopener">HubSpot CRM API: contacts (search, create, update, batch)</a></li>
+    <li><span class="kind">Text</span><a href="https://www.zoho.com/crm/developer/docs/api/v7/upsert-records.html" target="_blank" rel="noopener">Zoho CRM API: upsert records</a></li>
+    <li><span class="kind">Text</span><a href="https://docs.n8n.io/flow-logic/error-handling/" target="_blank" rel="noopener">n8n: error handling and error workflows</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Play "chaos postman": one person fires events at each team's webhook from a script: duplicates, a forged Paystack call, a portal email with a changed layout, a WhatsApp from a new number. Teams show their integration log and explain each outcome. Points for every duplicate prevented and every forgery rejected.</p>
+  </div>
+</section>
+
+</article>
+</template>

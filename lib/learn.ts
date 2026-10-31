@@ -1,7 +1,7 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import { COURSE, ITEM_IDS, FREE_IDS } from "@/lib/course";
+import { ALL_ITEM_IDS, COURSE, ITEM_IDS, FREE_IDS, SPECS } from "@/lib/course";
 
 /**
  * Server-side assembly of /learn from course-build/ (written by scripts/sync-course.mjs).
@@ -25,7 +25,7 @@ export function loadBuild(): Build {
   if (buildCache && CACHE) return buildCache;
   const shell = fs.readFileSync(path.join(BUILD, "shell.html"), "utf8");
   const lessons = new Map<string, string>();
-  for (const id of ITEM_IDS) {
+  for (const id of ALL_ITEM_IDS) {
     const f = path.join(BUILD, "lessons", fileId(id) + ".html");
     if (fs.existsSync(f)) lessons.set(id, fs.readFileSync(f, "utf8"));
   }
@@ -51,9 +51,11 @@ export function loadAddons(): string {
   return js;
 }
 
-/** Items a learner may open: Base Camp always; everything with an active course enrollment. */
-export function allowedItems(ent: { course: boolean }): string[] {
-  return ent.course ? [...ITEM_IDS] : ITEM_IDS.filter(id => FREE_IDS.has(id));
+/** Items a learner may open: Base Camp always; the main course with an active enrolment; a specialisation with its own purchase. */
+export function allowedItems(ent: { course: boolean } & Partial<Record<string, boolean>>): string[] {
+  const core = ent.course ? [...ITEM_IDS] : ITEM_IDS.filter(id => FREE_IDS.has(id));
+  const spec = Object.values(SPECS).filter(s => ent[s.id]).flatMap(s => s.items.map(i => i.id));
+  return [...core, ...spec];
 }
 
 /** JSON that is safe inside an inline <script>. */
@@ -74,7 +76,7 @@ export type LearnInput = {
 
 export const LEARN_LINKS = {
   pricing: "/pricing", community: "/community", leaderboard: "/leaderboard", hire: "/hire", earn: "/earn",
-  careers: "/careers", courses: "/courses", teach: "/teach", account: "/account", logout: "/auth/signout"
+  careers: "/careers", courses: "/courses", teach: "/teach", checkout: "/checkout", account: "/account", logout: "/auth/signout"
 };
 
 /** The full /learn page for one learner. */
@@ -89,6 +91,7 @@ export function assembleLearnPage(input: LearnInput): string {
     ent: input.ent,
     progress: { done: input.progress?.done ?? {}, state: input.progress?.state ?? {}, xp: input.progress?.xp ?? 0 },
     free: COURSE.items.filter(i => i.free).map(i => i.id),
+    spec: Object.fromEntries(Object.values(SPECS).map(s => [s.id, s.items.map(i => i.id)])),
     api: "/api",
     siteUrl: input.siteUrl,
     links: LEARN_LINKS,
@@ -141,7 +144,7 @@ export function cleanProgress(body: unknown, prev: PrevProgress = null, now = ne
   const stateJson = JSON.stringify(state);
   if (Buffer.byteLength(stateJson, "utf8") > STATE_MAX_BYTES) return { error: "state is larger than 200 KB." };
   const clean: Record<string, true> = {};
-  for (const id of ITEM_IDS) if (done[id] === true) clean[id] = true;
+  for (const id of ALL_ITEM_IDS) if (done[id] === true) clean[id] = true;
   const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.round(v) : 0);
   const xpC = Math.max(0, Math.min(XP_MAX, num(xp)));
   const weekStart = lagosWeekStart(now);

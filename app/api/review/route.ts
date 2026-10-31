@@ -33,7 +33,8 @@ export async function POST(req: Request) {
 
   if (!FREE_IDS.has(itemId)) {
     const ent = await getEntitlements(user.id);
-    if (!ent.course) return err(403, "Reviews for this lesson come with the full course. Base Camp reviews are free.");
+    const spec = item?.spec;
+    if (spec ? !(ent as unknown as Record<string, boolean>)[spec] : !ent.course) return err(403, spec ? "Reviews for this lesson come with the CRM Implementation specialisation." : "Reviews for this lesson come with the full course. Base Camp reviews are free.");
   }
 
   const admin = createAdminClient();

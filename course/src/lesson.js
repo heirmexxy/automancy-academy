@@ -3,27 +3,35 @@
 const hub = document.getElementById("hub");
 const lesson = document.getElementById("lesson");
 const ORDER = [];
-TRACKS.forEach(tr => { tr.mods.forEach((m,i) => ORDER.push({id:`${tr.code}.${i+1}`, t:m.t})); if(tr.boss) ORDER.push({id:`B${tr.code}`, t:tr.boss.t.replace(/^Boss \d · /,"")}); });
+TRACKS.forEach(tr => { tr.mods.forEach((m,i) => ORDER.push({id:`${tr.code}.${i+1}`, t:m.t, spec:tr.spec || null})); if(tr.boss) ORDER.push({id:`B${tr.code}`, t:tr.boss.t.replace(/^Boss \d · /,""), spec:tr.spec || null}); });
+/* The main course (no specialisation tracks): progress, pace plan and certificate criteria use this. */
+const CORE = ORDER.filter(o => !o.spec);
 const tok = id => id.startsWith("B") ? "boss-" + id.slice(1) : "m-" + id.replace(".","-");
 const label = id => id.startsWith("B") ? "Boss " + id.slice(1) : id;
 
 /* Access (app mode): Base Camp is free; everything else needs the course. The server only sends the
    lesson <template>s a learner may open; locked items still show in the course map with a paywall. */
-function canOpen(id){ return !APP_MODE || !!(AM.ent && AM.ent.course) || (AM.free || []).indexOf(id) >= 0; }
+/* Specialisation tracks (e.g. Track 7, "crmspec") are a separate purchase. Hoisted so the course map can call it early. */
+function specOfId(id){ const code = String(id).startsWith("B") ? String(id).slice(1) : String(id).split(".")[0]; const tr = TRACKS.find(t => t.code === code); return (tr && tr.spec) || null; }
+function canOpen(id){ const sp = specOfId(id); if(sp) return !APP_MODE || !!(AM.ent && AM.ent[sp]); return !APP_MODE || !!(AM.ent && AM.ent.course) || (AM.free || []).indexOf(id) >= 0; }
+function unlockText(id){ return specOfId(id) ? "Unlock with the CRM specialisation →" : "Unlock with the full course →"; }
 function lockedItem(id){ return APP_MODE && !canOpen(id); }
 function lessonLinkHTML(id){
   const h = "#m-" + id.replace(".", "-");
   if(document.querySelector(`template[data-mod="${id}"]`)) return `<a class="openlesson" href="${h}">Open the full lesson →</a>`;
-  if(lockedItem(id)) return `<a class="openlesson locked" href="${h}">Unlock with the full course →</a>`;
+  if(lockedItem(id)) return `<a class="openlesson locked" href="${h}">${unlockText(id)}</a>`;
   return "";
 }
 function bossLinkHTML(bid, code){
   if(document.querySelector(`template[data-mod="${bid}"]`)) return `<a class="openlesson" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">Enter the boss battle →</a>`;
-  if(lockedItem(bid)) return `<a class="openlesson locked" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">Unlock with the full course →</a>`;
+  if(lockedItem(bid)) return `<a class="openlesson locked" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">${unlockText(bid)}</a>`;
   return "";
 }
 function paywallHTML(id){
   const it = ORDER.find(o => o.id === id); const name = id.startsWith("B") ? label(id) : "Lesson " + id;
+  if(specOfId(id)) return `<div class="paywall"><span class="kicker2">CRM Implementation specialisation</span><h2>${esc(name)} · ${esc(it ? it.t : "")}</h2>
+    <p>Track 7 is a paid add-on for learners who want to implement CRMs for clients: seven lessons and a boss project. It's sold separately from the main course.</p>
+    <div class="ctarow"><a class="cta" href="${esc(((AM.links && AM.links.checkout) || "/checkout") + "/crmspec")}">Get the specialisation</a><a class="cta alt" href="#course">Back to the course map</a></div></div>`;
   return `<div class="paywall"><span class="kicker2">Part of the full course</span><h2>${esc(name)} · ${esc(it ? it.t : "")}</h2>
     <p>Base Camp (lessons 0.1 to 0.6 and Boss 0) is free. This ${id.startsWith("B") ? "boss project" : "lesson"} and the rest of the course open when you enrol.</p>
     <div class="ctarow"><a class="cta" href="${esc((AM.links && AM.links.pricing) || "/pricing")}">See plans and prices</a><a class="cta alt" href="#course">Back to the course map</a></div></div>`;
@@ -45,7 +53,7 @@ function lessonEnd(id){
   return `<div class="lesson-end"><div class="badge-earn"><svg viewBox="0 0 120 120"><use href="#${boss?"glitch":"bolt"}"/></svg><div><h3>${head}</h3><p>${txt}</p><label class="checkrow" style="margin-top:10px"><input type="checkbox" id="lesson-done-${id.replace('.','-')}" data-id="${id}" ${ch}> ${boss?label(id)+" defeated":"Lesson "+id+" complete"}</label></div></div>
   ${boss || last ? `<p class="note" style="margin-top:8px">Know someone who'd love this? <a href="#earn">Share your referral link.</a></p>` : ""}
   ${APP_MODE ? `<p class="note" style="margin-top:8px">Stuck? <button type="button" class="linkbtn" data-askhelp="${id}">Ask the community for help</button></p>` : ""}
-  ${next ? `<p class="soon">Next: ${next.id.startsWith("B")?label(next.id):"Lesson "+next.id} · ${esc(next.t)}${document.querySelector(`template[data-mod="${next.id}"]`) ? "" : lockedItem(next.id) ? " (full course)" : ""}</p>` : ""}</div>`;
+  ${next ? `<p class="soon">Next: ${next.id.startsWith("B")?label(next.id):"Lesson "+next.id} · ${esc(next.t)}${document.querySelector(`template[data-mod="${next.id}"]`) ? "" : lockedItem(next.id) ? (specOfId(next.id) ? " (CRM specialisation)" : " (full course)") : ""}</p>` : ""}</div>`;
 }
 function route(){
   const h = location.hash.slice(1);

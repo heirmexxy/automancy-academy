@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { ITEM_IDS } from "@/lib/course";
+import { ALL_ITEM_IDS as ITEM_IDS } from "@/lib/course";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

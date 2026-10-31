@@ -4,7 +4,6 @@ import "@/components/landing/landing.css";
 import "./careers.css";
 import { product } from "@/lib/pricing";
 import { SecHead, Steps } from "@/components/landing/SecHead";
-import { WaitlistForm } from "@/components/landing/PlanCard";
 import { priceText } from "@/components/landing/data";
 
 export const metadata: Metadata = { title: "Careers", description: "Six career paths from the same course, the free credentials to add, and the CRM Implementation specialisation." };
@@ -90,29 +89,26 @@ export default async function Careers({ searchParams }: { searchParams: Promise<
 
       <section id="careers-crm" aria-labelledby="crm-h" style={{ scrollMarginTop: 70 }}>
         <SecHead id="crm-h" title="CRM Implementation specialisation"
-          lede="For graduates who want Path 3. Lessons 5.8 and 5.9 teach you to set up and automate a CRM on the free plans. The specialisation goes further: paid-plan features, migrations, an agent that carries out implementations, and running a full implementation for a client." />
-        <p id="crmspec" style={{ scrollMarginTop: 70 }}><span className="pill warn">Coming later</span></p>
+          lede="For graduates who want Path 3. Lessons 5.8 and 5.9 teach you to set up and automate a CRM on the free plans. Track 7 goes further: implementing a CRM for a paying client on a paid plan, from the first workshop to a team that uses it, with an AI agent that helps and a person approving every change." />
+        <p id="crmspec" style={{ scrollMarginTop: 70 }}><span className="pill ok">Available now · Track 7</span></p>
         <div className="grid2" style={{ marginTop: 12 }}>
           <div className="card"><h3>Outline (≈ 18 hours)</h3><ol className="olist">
-            <li><b>Discovery and requirements:</b> map the sales process, audit the data, agree what success looks like.</li>
-            <li><b>HubSpot in depth:</b> paid-plan workflows, sequences, quotes, custom reports, permissions.</li>
-            <li><b>Zoho CRM in depth:</b> Blueprint, workflow rules, Zoho Flow, and a first look at Deluge scripts.</li>
-            <li><b>Migration:</b> from spreadsheets or another CRM: field mapping, de-duplication, test loads, cut-over day.</li>
-            <li><b>Integrations:</b> website forms, WhatsApp, Paystack, accounting tools, via APIs and webhooks.</li>
-            <li><b>Adoption and handover:</b> training, playbooks, dashboards, and a 30-day check-in.</li>
-            <li><b>Salesforce on-ramp:</b> a guided Trailhead path, and how to prepare for the Platform Administrator exam if you choose to.</li>
-            <li><b>Build a CRM Implementation Agent:</b> an agent team that audits a client's CRM and data, drafts the design (pipeline, fields, automations), plans the migration, and carries out each approved step through the API, with before-and-after checks and a rollback plan.</li>
-            <li><b>Specialisation project:</b> use your agent to implement or optimise a CRM for a real business, with a person approving every change, reviewed by a mentor.</li>
+            <li><b>7.1 Discovery and requirements:</b> workshops, the sales process map and its leaks, a data audit, MoSCoW priorities and success measures the client signs.</li>
+            <li><b>7.2 Solution design:</b> standard and custom objects, the data dictionary, pipelines, teams and least-privilege permissions.</li>
+            <li><b>7.3 Data migration:</b> field mapping, cleaning in staging, de-duplication on strong keys, external IDs, reconciliation and cutover.</li>
+            <li><b>7.4 Sales and service automation:</b> lead routing, follow-ups, SLA timers, loops and the automation register on paid plans (HubSpot and Zoho).</li>
+            <li><b>7.5 Integrations:</b> forms, property-portal emails, WhatsApp, email and Paystack, idempotent and monitored.</li>
+            <li><b>7.6 Launch and adoption:</b> UAT, role-based training, dashboards and forecasts, adoption tracking and handover.</li>
+            <li><b>7.7 The CRM Implementation Agent:</b> an n8n agent that checks the CRM against the signed design, validates migration files and applies only approved, verified change plans.</li>
+            <li><b>Boss 7 · Kora Goes Live:</b> a full implementation for an estate agency, with 20 tests, a go-live check and a rubric, marked by the AI reviewer.</li>
           </ol></div>
           <div className="card">
             <h3>Who it's for</h3>
             <ul className="olist"><li>Graduates who finished Track 5</li><li>Sales or operations staff who look after their company's CRM</li><li>Freelancers adding CRM setup to their services</li></ul>
             {crm && <>
               <h3 style={{ marginTop: 8 }}>Price</h3>
-              <p>{priceText(crm, "ngn")} or {priceText(crm, "usd")}, with a specialisation certificate. See <Link href="/pricing">Pricing</Link>.</p>
-              {sp.waitlisted === "crmspec"
-                ? <p className="alert ok" role="status">You're on the waitlist. We'll email you when it opens.</p>
-                : <>{sp.error && <p className="alert bad" role="alert">{sp.error}</p>}<WaitlistForm productId="crmspec" back="/careers" /></>}
+              <p>{priceText(crm, "ngn")} or {priceText(crm, "usd")}, one-time, with a year's access. When you finish, it's listed on your Automancy Academy Certificate.</p>
+              <Link className="btn" href="/checkout/crmspec">Get the specialisation</Link>
             </>}
             <p className="note" style={{ marginTop: 8 }}>HubSpot, Zoho and Salesforce are trademarks of their owners. This specialisation is independent and not endorsed by them; their own certifications are earned directly from them.</p>
           </div>

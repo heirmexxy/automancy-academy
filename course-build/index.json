@@ -498,5 +498,95 @@
  ],
  "lessons": 49,
  "bosses": 6,
- "total": 55
+ "total": 55,
+ "spec": {
+  "crmspec": {
+   "id": "crmspec",
+   "name": "CRM Implementation specialisation",
+   "track": 7,
+   "items": [
+    {
+     "id": "7.1",
+     "title": "Discovery and Requirements: Before You Touch the CRM",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.2",
+     "title": "Solution Design: Objects, Pipelines, Teams and Permissions",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.3",
+     "title": "Data Migration: Moving Years of Records Without Breaking Them",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.4",
+     "title": "Sales and Service Automation on Paid Plans",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.5",
+     "title": "Integrations: Forms, Portals, WhatsApp, Email and Payments",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.6",
+     "title": "Launch, Adoption and Reporting: Making the Team Use It",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "7.7",
+     "title": "The CRM Implementation Agent: AI That Builds, Checks and Proposes",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "lesson",
+     "free": false,
+     "sessions": 1,
+     "spec": "crmspec"
+    },
+    {
+     "id": "B7",
+     "title": "Boss 7: Kora Goes Live",
+     "track": 7,
+     "trackName": "CRM Implementation specialisation",
+     "kind": "boss",
+     "free": false,
+     "sessions": 2,
+     "spec": "crmspec"
+    }
+   ],
+   "total": 8
+  }
+ }
 }

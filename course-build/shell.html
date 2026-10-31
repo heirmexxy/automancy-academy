@@ -1489,6 +1489,7 @@ body:not(.live-calls) [data-live]{display:none!important}
     <div class="stop" style="--c:var(--grape)"><svg><use href="#sage"/></svg><div class="min"><h3><span>Track 4</span> · Sage's Tower (Agentic AI)</h3><p>Tools, memory, RAG, guardrails, MCP, multi-agent systems, code-first agents, evals.</p></div><div class="meta">9 modules<br>+ boss · ≈17 h</div></div>
     <div class="stop" style="--c:var(--rose)"><svg><use href="#echo"/></svg><div class="min"><h3><span>Track 5</span> · The Signal Tower (Growth)</h3><p>WhatsApp, Telegram and voice channels, prospecting agents, social listening, a social media manager, a social inbox, email campaigns, one inbox for every channel, and CRM setup and automation with HubSpot or Zoho.</p></div><div class="meta">9 lessons<br>+ boss · ≈18 h</div></div>
     <div class="stop" style="--c:var(--sky)"><svg><use href="#tolu"/></svg><div class="min"><h3><span>Track 6</span> · Launchpad</h3><p>Client discovery and scoping, pricing and getting paid, portfolio and templates, and the Grand Capstone.</p></div><div class="meta">4 lessons<br>≈9 h</div></div>
+    <div class="stop" style="--c:var(--rose)"><svg><use href="#echo"/></svg><div class="min"><h3><span>Track 7</span> · CRM Implementation (specialisation)</h3><p>A paid add-on for graduates: discovery, solution design, data migration, paid-plan automation, integrations, launch and an implementation agent.</p></div><div class="meta">7 lessons<br>+ boss</div></div>
   </div>
 </section>
 <!-- ============ MODULE ANATOMY ============ -->
@@ -2176,7 +2177,61 @@ const TRACKS = [
    tl:["Everything so far"],
    r:[R.hf, R.kag, R.n8nAcad]}
   ],
-  boss:null}
+  boss:null},
+ {id:"t7",code:"7",name:"CRM Implementation",sub:"Specialisation · paid add-on",guide:"echo",c:"var(--rose)",spec:"crmspec",
+  blurb:"For graduates who want to implement CRMs for clients: discovery and requirements, solution design, data migration, automation and integrations on paid plans, launch and adoption, and an AI agent that builds and checks, with a person approving every change.",
+  mods:[
+  {t:"Discovery and Requirements",h:"An estate agency with 12 agents wants \"a proper CRM\" by next month.",
+   l:["The five implementation phases","Running discovery workshops","Mapping the sales process and its leaks","Data audit, MoSCoW and success measures"],
+   s:"Turn two workshops with Kora Properties into a signed requirements document with a data audit and a dated plan recommendation.",
+   g:"Glitch interviewed only the owner and marked every requirement \"must\". Find what's wrong.",
+   m:["Map one real sales process and its leaks.","Write a requirements document with a data audit.","Run discovery for a real client and get it signed."],
+   tl:["Google Docs / Notion","Google Sheets","Excalidraw"],
+   r:[yt("CRM implementation requirements gathering"), {n:"HubSpot Academy",u:"https://academy.hubspot.com/",k:"Course"}]},
+  {t:"Solution Design",h:"Is a flat a contact, a company or a deal?",
+   l:["Standard vs. custom objects","The data dictionary","When to split pipelines","Teams, roles and least-privilege permissions"],
+   s:"Design Kora's objects, 27 properties, four pipelines and a permission matrix, and get it signed.",
+   g:"Glitch designed while building: text budgets, a pipeline per agent and everyone as super admin.",
+   m:["Model a business's objects and pipelines.","Write a full solution design.","Design and configure for a real client."],
+   tl:["HubSpot or Zoho trial","Google Sheets","Excalidraw"],
+   r:[{n:"HubSpot: understanding the CRM (developers)",u:"https://developers.hubspot.com/docs/api/crm/understanding-the-crm",k:"Text"}, {n:"Trailhead: Data Modeling",u:"https://trailhead.salesforce.com/content/learn/modules/data_modeling",k:"Course"}]},
+  {t:"Data Migration",h:"\"Where is Mr Okonkwo?\" Three records, two people.",
+   l:["Field mapping and scope","Cleaning in a staging table","De-duplicating on strong keys","External IDs, reconciliation and cutover"],
+   s:"Migrate 18,400 messy rows into 4,312 clean contacts, 130 properties and 210 deals with zero reconciliation differences.",
+   g:"Glitch imported everything twice on Friday evening. Count what went wrong.",
+   m:["Map and clean a messy sheet.","Build a repeatable migration workflow.","Migrate a real client with a rollback plan."],
+   tl:["n8n or Make","Google Sheets","HubSpot / Zoho import"],
+   r:[{n:"HubSpot: import records",u:"https://knowledge.hubspot.com/import-and-export/import-objects",k:"Text"}, {n:"Trailhead: Data Management",u:"https://trailhead.salesforce.com/content/learn/modules/lex_implementation_data_management",k:"Course"}]},
+  {t:"Sales and Service Automation",h:"The Banana Island buyer was called twice, then never.",
+   l:["What paid plans add","Lead routing and fair rotation","Stage follow-ups and SLA timers","Loops, testing and the automation register"],
+   s:"Build Kora's routing, re-route timer, follow-ups and stuck-deal alerts, tested on every branch.",
+   g:"Switching on one workflow created 210 tasks in a second.",
+   m:["Design routing and follow-ups.","Build and test them in a trial.","Run routing for a real team for two weeks."],
+   tl:["HubSpot Sales Hub trial","Zoho CRM trial","n8n"],
+   r:[{n:"HubSpot: create workflows",u:"https://knowledge.hubspot.com/workflows/create-workflows",k:"Text"}, {n:"Zoho CRM Blueprint",u:"https://help.zoho.com/portal/en/kb/crm/automate-business-processes/blueprint",k:"Text"}]},
+  {t:"Integrations",h:"\"The CRM is right only when Bisi updates it.\"",
+   l:["Native, app or middleware","The idempotent upsert-enquiry pattern","WhatsApp and email within the rules","Payments, logs and monitoring"],
+   s:"Forms, portal emails, WhatsApp and Paystack deposits flow into Kora's CRM with no typing, logged and monitored.",
+   g:"A portal resent alerts and a fake webhook moved a deal. Fix both.",
+   m:["Draw the integration map.","Build the upsert and two sources.","Add payments and WhatsApp end to end."],
+   tl:["n8n","WhatsApp Cloud API","Paystack (test)"],
+   r:[{n:"HubSpot private apps",u:"https://developers.hubspot.com/docs/api/private-apps",k:"Text"}, R.paystack]},
+  {t:"Launch, Adoption and Reporting",h:"Week three: half the agents are back on WhatsApp.",
+   l:["UAT from requirements","Role-based training and champions","Dashboards and the weighted forecast","Adoption numbers and handover"],
+   s:"Launch Kora with 22 UAT scripts, role training, three dashboards and four weekly adoption reports.",
+   g:"Glitch trained everyone with 90 slides and left with the only admin login.",
+   m:["Write UAT scripts and a training plan.","Build dashboards and an adoption report.","Launch and hand over for a real client."],
+   tl:["HubSpot or Zoho dashboards","Loom","Google Docs"],
+   r:[{n:"HubSpot dashboards",u:"https://knowledge.hubspot.com/dashboard/create-and-manage-dashboards",k:"Text"}, yt("CRM user adoption best practices")]},
+  {t:"The CRM Implementation Agent",h:"Three clients, one consultant, and an agent that does the careful typing.",
+   l:["What an agent may do, propose or never touch","Narrow tools from the signed design","Plan, dry run, approve, apply, verify","The monthly health check"],
+   s:"Build an n8n agent that diffs the CRM against the design, validates imports and applies only approved, hash-checked plans.",
+   g:"Glitch gave the AI the admin key. It created ID-number fields and merged 600 contacts overnight.",
+   m:["Design the agent's boundaries.","Build the read-only tools and agent.","Add plans with approval in a sandbox."],
+   tl:["n8n AI Agent","HubSpot / Zoho API","Telegram"],
+   r:[{n:"n8n advanced AI",u:"https://docs.n8n.io/advanced-ai/",k:"Text"}, {n:"OWASP Top 10 for LLM apps",u:"https://owasp.org/www-project-top-10-for-large-language-model-applications/",k:"Text"}]}
+  ],
+  boss:{t:"Boss 7 · Kora Goes Live",d:"A full CRM implementation for an estate agency: signed requirements and design, a reconciled migration, routing and follow-ups, integrations that fill the CRM by themselves, launch with training and dashboards, and an implementation agent that only changes the CRM through approved plans."}}
 ];
 
 const TOOLS = [
@@ -2207,9 +2262,9 @@ let totalItems = 0;
 TRACKS.forEach(tr => {
   const el = document.createElement("article");
   el.className = "track"; el.id = tr.id; el.style.setProperty("--c", tr.c);
-  let html = `<div class="track-head"><svg viewBox="0 0 120 120"><use href="#${tr.guide}"/></svg><div><span class="eyebrow">Track ${tr.code} · ${esc(tr.sub)}</span><h3>${esc(tr.name)}</h3><p>${esc(tr.blurb)}</p></div></div><div class="track-body">`;
+  let html = `<div class="track-head"><svg viewBox="0 0 120 120"><use href="#${tr.guide}"/></svg><div><span class="eyebrow">Track ${tr.code} · ${esc(tr.sub)}</span>${tr.spec ? `<span class="pill">Not part of the main course or its certificate requirements</span>` : ""}<h3>${esc(tr.name)}</h3><p>${esc(tr.blurb)}</p></div></div><div class="track-body">`;
   tr.mods.forEach((m,i) => {
-    const id = `${tr.code}.${i+1}`; totalItems++;
+    const id = `${tr.code}.${i+1}`; if(!tr.spec) totalItems++;
     const res = m.r.map(x => `<li><span class="kind">${x.k}</span><a href="${x.u}" target="_blank" rel="noopener">${esc(x.n)}</a></li>`).join("");
     html += `<details class="mod" data-id="${id}"><summary><span class="code">${id}</span><span class="mtitle">${esc(m.t)}<span class="done-mark" ${done[id]?"":"hidden"}>✓</span></span><span class="mtime">60–120 min</span></summary>
     <div class="mbody">
@@ -2249,7 +2304,7 @@ TRACKS.forEach(tr => {
     </svg><figcaption>Sage's anatomy of an agent: it loops between acting with tools and observing results, using memory, until it can answer. Taught across 4.1–4.3.</figcaption></figure>`;
   }
   if(tr.boss){
-    const bid = `B${tr.code}`; totalItems++;
+    const bid = `B${tr.code}`; if(!tr.spec) totalItems++;
     html += `<div class="boss"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div><span class="xp">BOSS BATTLE · 300 XP · 2–3 sessions</span><h4>${esc(tr.boss.t)}</h4><p>${esc(tr.boss.d)}</p>${bossLinkHTML(bid, tr.code)}<label class="checkrow" style="margin-top:8px"><input type="checkbox" id="chk-${bid}" data-id="${bid}" ${done[bid]?"checked":""}> Boss defeated</label></div></div>`;
   }
   html += `</div>`;
@@ -2262,7 +2317,7 @@ document.getElementById("toolRoot").innerHTML = TOOLS.map(t=>`<div class="tool">
 const LV = [[0,"Apprentice"],[500,"Tinkerer"],[1500,"Builder"],[3000,"Architect"],[5000,"Orchestrator"]];
 function update(){
   let xp = 0, n = 0;
-  Object.keys(done).forEach(k => { if(done[k]) n++; });
+  Object.keys(done).forEach(k => { if(done[k] && !specOfId(k)) n++; });
   xp = xpParts().total;
   let name = LV[0][1]; LV.forEach(([t,nm]) => { if(xp >= t) name = nm; });
   document.getElementById("lvName").textContent = name;
@@ -2281,27 +2336,35 @@ root.addEventListener("change", e => {
 const hub = document.getElementById("hub");
 const lesson = document.getElementById("lesson");
 const ORDER = [];
-TRACKS.forEach(tr => { tr.mods.forEach((m,i) => ORDER.push({id:`${tr.code}.${i+1}`, t:m.t})); if(tr.boss) ORDER.push({id:`B${tr.code}`, t:tr.boss.t.replace(/^Boss \d · /,"")}); });
+TRACKS.forEach(tr => { tr.mods.forEach((m,i) => ORDER.push({id:`${tr.code}.${i+1}`, t:m.t, spec:tr.spec || null})); if(tr.boss) ORDER.push({id:`B${tr.code}`, t:tr.boss.t.replace(/^Boss \d · /,""), spec:tr.spec || null}); });
+/* The main course (no specialisation tracks): progress, pace plan and certificate criteria use this. */
+const CORE = ORDER.filter(o => !o.spec);
 const tok = id => id.startsWith("B") ? "boss-" + id.slice(1) : "m-" + id.replace(".","-");
 const label = id => id.startsWith("B") ? "Boss " + id.slice(1) : id;
 
 /* Access (app mode): Base Camp is free; everything else needs the course. The server only sends the
    lesson <template>s a learner may open; locked items still show in the course map with a paywall. */
-function canOpen(id){ return !APP_MODE || !!(AM.ent && AM.ent.course) || (AM.free || []).indexOf(id) >= 0; }
+/* Specialisation tracks (e.g. Track 7, "crmspec") are a separate purchase. Hoisted so the course map can call it early. */
+function specOfId(id){ const code = String(id).startsWith("B") ? String(id).slice(1) : String(id).split(".")[0]; const tr = TRACKS.find(t => t.code === code); return (tr && tr.spec) || null; }
+function canOpen(id){ const sp = specOfId(id); if(sp) return !APP_MODE || !!(AM.ent && AM.ent[sp]); return !APP_MODE || !!(AM.ent && AM.ent.course) || (AM.free || []).indexOf(id) >= 0; }
+function unlockText(id){ return specOfId(id) ? "Unlock with the CRM specialisation →" : "Unlock with the full course →"; }
 function lockedItem(id){ return APP_MODE && !canOpen(id); }
 function lessonLinkHTML(id){
   const h = "#m-" + id.replace(".", "-");
   if(document.querySelector(`template[data-mod="${id}"]`)) return `<a class="openlesson" href="${h}">Open the full lesson →</a>`;
-  if(lockedItem(id)) return `<a class="openlesson locked" href="${h}">Unlock with the full course →</a>`;
+  if(lockedItem(id)) return `<a class="openlesson locked" href="${h}">${unlockText(id)}</a>`;
   return "";
 }
 function bossLinkHTML(bid, code){
   if(document.querySelector(`template[data-mod="${bid}"]`)) return `<a class="openlesson" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">Enter the boss battle →</a>`;
-  if(lockedItem(bid)) return `<a class="openlesson locked" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">Unlock with the full course →</a>`;
+  if(lockedItem(bid)) return `<a class="openlesson locked" style="--c:var(--sun);margin-top:10px" href="#boss-${code}">${unlockText(bid)}</a>`;
   return "";
 }
 function paywallHTML(id){
   const it = ORDER.find(o => o.id === id); const name = id.startsWith("B") ? label(id) : "Lesson " + id;
+  if(specOfId(id)) return `<div class="paywall"><span class="kicker2">CRM Implementation specialisation</span><h2>${esc(name)} · ${esc(it ? it.t : "")}</h2>
+    <p>Track 7 is a paid add-on for learners who want to implement CRMs for clients: seven lessons and a boss project. It's sold separately from the main course.</p>
+    <div class="ctarow"><a class="cta" href="${esc(((AM.links && AM.links.checkout) || "/checkout") + "/crmspec")}">Get the specialisation</a><a class="cta alt" href="#course">Back to the course map</a></div></div>`;
   return `<div class="paywall"><span class="kicker2">Part of the full course</span><h2>${esc(name)} · ${esc(it ? it.t : "")}</h2>
     <p>Base Camp (lessons 0.1 to 0.6 and Boss 0) is free. This ${id.startsWith("B") ? "boss project" : "lesson"} and the rest of the course open when you enrol.</p>
     <div class="ctarow"><a class="cta" href="${esc((AM.links && AM.links.pricing) || "/pricing")}">See plans and prices</a><a class="cta alt" href="#course">Back to the course map</a></div></div>`;
@@ -2323,7 +2386,7 @@ function lessonEnd(id){
   return `<div class="lesson-end"><div class="badge-earn"><svg viewBox="0 0 120 120"><use href="#${boss?"glitch":"bolt"}"/></svg><div><h3>${head}</h3><p>${txt}</p><label class="checkrow" style="margin-top:10px"><input type="checkbox" id="lesson-done-${id.replace('.','-')}" data-id="${id}" ${ch}> ${boss?label(id)+" defeated":"Lesson "+id+" complete"}</label></div></div>
   ${boss || last ? `<p class="note" style="margin-top:8px">Know someone who'd love this? <a href="#earn">Share your referral link.</a></p>` : ""}
   ${APP_MODE ? `<p class="note" style="margin-top:8px">Stuck? <button type="button" class="linkbtn" data-askhelp="${id}">Ask the community for help</button></p>` : ""}
-  ${next ? `<p class="soon">Next: ${next.id.startsWith("B")?label(next.id):"Lesson "+next.id} · ${esc(next.t)}${document.querySelector(`template[data-mod="${next.id}"]`) ? "" : lockedItem(next.id) ? " (full course)" : ""}</p>` : ""}</div>`;
+  ${next ? `<p class="soon">Next: ${next.id.startsWith("B")?label(next.id):"Lesson "+next.id} · ${esc(next.t)}${document.querySelector(`template[data-mod="${next.id}"]`) ? "" : lockedItem(next.id) ? (specOfId(next.id) ? " (CRM specialisation)" : " (full course)") : ""}</p>` : ""}</div>`;
 }
 function route(){
   const h = location.hash.slice(1);
@@ -4114,7 +4177,7 @@ function xpParts(){
 const weekXp = () => { const since = Date.now() - 7 * 864e5; return Math.max(0, S.events.filter(e => e.t >= since).reduce((s, e) => s + e.xp, 0)); };
 function levelOf(xp){ let i = 0; LV.forEach(([t], j) => { if(xp >= t) i = j; }); const nx = LV[i+1]; return {name:LV[i][1], idx:i, at:LV[i][0], next:nx ? nx[1] : null, nextAt:nx ? nx[0] : null}; }
 const doneCount = () => Object.keys(done).filter(k => done[k]).length;
-const nextItem = () => ORDER.find(o => !done[o.id]);
+const nextItem = () => CORE.find(o => !done[o.id]) || ORDER.find(o => o.spec && !done[o.id] && canOpen(o.id));
 
 /* ---------- badges ---------- */
 const BADGES = [
@@ -4265,12 +4328,12 @@ function renderPace(){
   const start = S.pace.start ? new Date(S.pace.start + "T12:00:00") : (S.days.length ? new Date([...S.days].sort()[0] + "T12:00:00") : new Date());
   $("#paceStart").value = dk(start);
   const per = paceDays(); let cum = 0; const weeks = [];
-  ORDER.forEach(o => { const w = Math.floor(cum / per); (weeks[w] = weeks[w] || []).push(o.id); cum += SESS(o.id); });
+  CORE.forEach(o => { const w = Math.floor(cum / per); (weeks[w] = weeks[w] || []).push(o.id); cum += SESS(o.id); });
   const total = cum, nWeeks = Math.ceil(total / per), end = addDays(start, nWeeks * 7 - 1);
   $("#paceEnd").textContent = end.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
   const elapsedDays = Math.max(0, Math.floor((new Date() - start) / 864e5));
   const expectSess = Math.min(total, Math.floor(elapsedDays / 7 * per));
-  let doneSess = 0; ORDER.forEach(o => { if(done[o.id]) doneSess += SESS(o.id); });
+  let doneSess = 0; CORE.forEach(o => { if(done[o.id]) doneSess += SESS(o.id); });
   const diff = doneSess - expectSess;
   $("#paceStatus").innerHTML = `${total} sessions of ${custom ? S.pace.min : 90} minutes, ${per} a week. ` + (doneSess === 0 && expectSess === 0 ? `<span class="pill2 info">Starts ${fmtD(start)}</span>` : diff >= 2 ? `<span class="pill2 ok">Ahead by ${diff} sessions</span>` : diff >= -1 ? `<span class="pill2 ok">On track</span>` : `<span class="pill2 warn">Behind by ${-diff} sessions</span> Catch up at the weekend, or set a gentler pace.`);
   const curW = Math.floor(elapsedDays / 7);
@@ -4338,7 +4401,7 @@ document.addEventListener("click", e => {
   const s = e.target.closest("[data-share]");
   if(s){
     const xp = xpParts().total, lv = levelOf(xp).name, st = streakInfo().cur;
-    const text = s.dataset.share === "cert" ? (certStatus().ok ? "I earned the Certificate in AI Automation from Automancy Academy." : `I'm working towards the Certificate in AI Automation at Automancy Academy: ${doneCount()} of ${ORDER.length} lessons and projects done.`) : `I'm a ${lv} at Automancy Academy: ${xp.toLocaleString()} XP and a ${st}-day streak, learning to build AI automations.`;
+    const text = s.dataset.share === "cert" ? (certStatus().ok ? "I earned the Automancy Academy Certificate." : `I'm working towards the Automancy Academy Certificate: ${doneCount()} of ${CORE.length} lessons and projects done.`) : `I'm a ${lv} at Automancy Academy: ${xp.toLocaleString()} XP and a ${st}-day streak, learning to build AI automations.`;
     modal(`<h3>Share your progress</h3>${shareBlock(text)}<p class="note">Sharing opens the app in a new tab with your message ready to post.</p>`);
   }
 });
@@ -4480,7 +4543,7 @@ const ADDONS = [
   {id:"story", n:"Story Mode", ngn:5000, usd:12, per:"one-time", tag:"Character voices, animated guides and offline audio for every lesson.", f:[], cta:"Add"},
   {id:"pack", n:"Template pack", ngn:7500, usd:19, per:"each", tag:"Ready-to-import workflows for one job: orders, payments, support or reports. n8n, Make and Zapier versions.", f:[], cta:"Browse packs"},
   {id:"bundle", n:"Template bundle", ngn:30000, usd:69, per:"all packs", tag:"Every pack, including new ones from weekly challenge winners.", f:[], cta:"Add"},
-  {id:"crmspec", n:"CRM Implementation specialisation", ngn:25000, usd:49, per:"one-time", sub:"Coming later", tag:"HubSpot and Zoho in depth, migrations, integrations, a CRM Implementation Agent, and a reviewed client project. For graduates of Track 5.", f:[], cta:"Join the waitlist"}
+  {id:"crmspec", n:"CRM Implementation specialisation", ngn:25000, usd:45, per:"one-time", sub:"Track 7", tag:"Implement CRMs for clients: discovery, design, migration, paid-plan automation, integrations, launch and a CRM Implementation Agent, with a boss project. For graduates of Track 5.", f:[], cta:"Get Track 7"}
 ];
 const EMPLOYER = [
   {id:"post", n:"Per role", ngn:20000, usd:49, per:"per post", sub:"Your first post is free", tag:"Post one role to graduates and the jobs room for 30 days.", f:["Applicants with portfolios","Shortlist in your inbox"], cta:"Post a role"},
@@ -4507,7 +4570,6 @@ document.addEventListener("click", e => {
   if(p.id === "free"){ location.hash = "#m-0-1"; return; }
   if(["team","onsite","place"].includes(p.id)){ location.hash = p.id === "place" ? "#hire-post" : "#business"; if(p.id !== "place") setTimeout(() => $("#bizForm").scrollIntoView(), 50); return; }
   if(p.id === "post"){ location.hash = "#hire-post"; return; }
-  if(p.id === "crmspec"){ modal(`<h3>Waitlist · ${esc(p.n)}</h3><p>The specialisation opens after the main course launches. Leave your email and we'll tell you first.</p><p class="note">The waitlist opens on the Automancy Academy website.</p><p><a href="#careers-crm" data-close>See the outline →</a></p>`); return; }
   const usdMode = S.cur === "USD";
   modal(`<h3>Checkout · ${esc(p.n)}</h3><p class="price" style="font-family:var(--display);font-weight:800;font-size:1.8rem">${priceTxt(p)}</p>
     <form id="payForm" style="display:grid;gap:12px"><label class="fld">Email for your receipt and login<input id="payEmail" type="email" required placeholder="you@example.com"></label>
@@ -4534,7 +4596,7 @@ function renderBusiness(){
 
 /* ---------- CERTIFICATE ---------- */
 function certStatus(){
-  const core = ORDER;
+  const core = CORE;
   const mods = core.filter(o => !o.id.startsWith("B")), bosses = core.filter(o => o.id.startsWith("B"));
   const c = [
     {l:"Lessons complete", have:mods.filter(o => done[o.id]).length, need:mods.length},

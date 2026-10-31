@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth";
-import { CERT_NAME, CERT_ORG, FLAGSHIP_PROVIDER, certLinkedInUrl, certUrl, completedCourses, eligibility, ensureFlagship, getCertificate } from "@/lib/certificate";
+import { CERT_NAME, CERT_ORG, FLAGSHIP_PROVIDER, certLinkedInUrl, certUrl, completedCourses, eligibility, ensureFlagship, ensureSpecs, getCertificate } from "@/lib/certificate";
 import { claimCertificate } from "@/lib/actions/reviews";
 import { itemById } from "@/lib/course";
 import { fmtDate } from "@/lib/format";
@@ -19,6 +19,7 @@ export default async function Certificate({ notice, error }: { notice?: string; 
   if (!user) return null;
   const [cert, el] = await Promise.all([getCertificate(user.id), eligibility(user.id)]);
   if (el.ok) await ensureFlagship(user.id, el).catch(() => false); // finished the flagship after an earlier certificate: add it
+  await ensureSpecs(user.id).catch(() => 0); // finished a specialisation (e.g. Track 7): add it
   const courses = await completedCourses(user.id).catch(() => []);
   const list = courses.length > 0 && (
     <ul className="cert-list">{courses.map(x => <li key={x.course_key || x.title}><b>{x.title}</b> <span className="muted">· {x.provider === FLAGSHIP_PROVIDER ? "Automancy Academy" : `by ${x.provider}`} · {fmtDate(x.completed_at)}</span></li>)}</ul>

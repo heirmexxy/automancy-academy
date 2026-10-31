@@ -1,0 +1,340 @@
+<template data-mod="7.1" id="tpl-7-1">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 7 · CRM Implementation specialisation · Lesson 7.1</span>
+    <h1>Discovery and Requirements: Before You Touch the CRM</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Tolu</span><span class="pill">Tools: Google Docs or Notion, Google Sheets, Excalidraw</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">In 5.8 and 5.9 you set up a free CRM for Harvest Lane and taught it to fill itself. Now a paying client wants the real thing: a CRM for a whole sales team, on a paid plan, replacing spreadsheets and WhatsApp. Most CRM projects that fail were lost in the first week, when nobody wrote down how the business really sells. This lesson is that first week: the discovery workshop, the sales process map, the data audit and a requirements document the client signs before you build anything.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Run a discovery workshop that uncovers how the team really sells.</span></div>
+  <div><b>02</b><span>Map the sales process and find where leads and money leak.</span></div>
+  <div><b>03</b><span>Audit the client's data before promising a migration.</span></div>
+  <div><b>04</b><span>Write requirements with priorities and success measures the client signs.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Kora Properties wants "a proper CRM"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="An estate agency owner holding a phone full of WhatsApp chats and a printed spreadsheet.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="165" y="30" width="140" height="80" rx="12" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="Atkinson Hyperlegible,sans-serif" font-size="9.5" fill="var(--ink)"><text x="175" y="52">"12 agents, 2 offices,</text><text x="175" y="68">400 enquiries a month.</text><text x="175" y="84">I want a proper CRM.</text><text x="175" y="100">HubSpot. By next month."</text></g>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The referral</b>Tolu introduces you to Mrs Kemi Adeyemi, who runs Kora Properties in Lekki and has just opened an Ibadan office.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Leads arriving from property portals, Instagram, the website, WhatsApp and walk-ins.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" text-anchor="middle">
+          <rect x="160" y="22" width="66" height="26" rx="8" fill="var(--sky)"/><text x="193" y="39" fill="#fff">portals</text>
+          <rect x="236" y="22" width="66" height="26" rx="8" fill="var(--grape)"/><text x="269" y="39" fill="#fff">Instagram</text>
+          <rect x="160" y="60" width="66" height="26" rx="8" fill="var(--volt)"/><text x="193" y="77" fill="#fff">WhatsApp</text>
+          <rect x="236" y="60" width="66" height="26" rx="8" fill="var(--rose)"/><text x="269" y="77" fill="#fff">website</text>
+          <rect x="198" y="98" width="66" height="26" rx="8" fill="var(--sun)"/><text x="231" y="115" fill="#13233A">walk-ins</text>
+        </g>
+        <text x="231" y="150" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">"Who called the Banana Island buyer?"</text>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Before we choose a plan, let's find out how a buyer actually becomes a sale here. I bet nobody in the office tells it the same way."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch dragging a huge box labelled 'every HubSpot feature'.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="160" y="50" width="145" height="90" rx="8" fill="var(--glitch)"/>
+        <text x="232" y="92" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">EVERY FEATURE</text>
+        <text x="232" y="108" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">Enterprise · 12 seats</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Skip the questions. Buy Enterprise for all twelve agents, switch on every feature, import the spreadsheets on Friday. What could go wrong?"</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A one-page requirements document with a signature line.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="185" y="20" width="110" height="150" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g stroke="var(--line)" stroke-width="2"><path d="M197 45 H283"/><path d="M197 60 H283"/><path d="M197 75 H270"/><path d="M197 95 H283"/><path d="M197 110 H260"/><path d="M197 125 H283"/></g>
+        <path d="M200 152 C215 140 225 160 245 146" stroke="var(--rose)" stroke-width="2.5" fill="none"/>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Two weeks later</b>A signed requirements document, a plan sized to the real need, and a team that recognises its own process on the page.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 45 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The implementation method in five phases</h3>
+    <p>Every professional CRM implementation, whoever the vendor, follows roughly the same shape. You'll use it for the rest of this track.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Phase</th><th>What happens</th><th>What the client signs off</th><th>Lesson</th></tr></thead>
+      <tbody>
+        <tr><td><b>1. Discover</b></td><td>Workshops, process map, data audit, requirements</td><td>Requirements document</td><td>7.1</td></tr>
+        <tr><td><b>2. Design</b></td><td>Objects, properties, pipelines, teams and permissions</td><td>Solution design</td><td>7.2</td></tr>
+        <tr><td><b>3. Build and migrate</b></td><td>Configure, migrate data, automate, integrate</td><td>Test results (UAT)</td><td>7.3–7.5</td></tr>
+        <tr><td><b>4. Launch</b></td><td>Training, cutover, go-live support</td><td>Go-live checklist</td><td>7.6</td></tr>
+        <tr><td><b>5. Optimise</b></td><td>Dashboards, health checks, monthly improvements</td><td>Monthly review</td><td>7.6, 7.7</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#echo"/></svg><div class="bubble"><b>Echo:</b> Notice what's missing from phase 1: logging in to the CRM. Discovery happens on paper, with people.</div></div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>The discovery workshop: who, what and how long</h3>
+    <p>Run two or three short workshops, not one long meeting. Invite the people who do the work, not only the boss who pays.</p>
+    <div class="vocab">
+      <div><b>Who</b>The owner (goals and budget), one or two top agents (how sales really happen), a new agent (where people get lost), whoever handles admin or accounts (handover after the sale) and, if possible, someone who answers enquiries.</div>
+      <div><b>Walk a real deal</b>Ask them to tell the story of the last deal they won, step by step, from first message to money in the bank. Then the last one they lost. Write every step, tool and person on sticky notes.</div>
+      <div><b>Ask about numbers</b>Enquiries per month by source, how fast they're answered, how many become viewings, offers and sales, the average commission. Rough numbers are fine; "we don't know" is a finding.</div>
+      <div><b>Ask about pain, then about success</b>"What goes wrong most weeks?" and "In six months, what would tell you this was worth it?" The second answer becomes your success measures.</div>
+    </div>
+<pre class="codebox">Discovery questions that always earn their place
+1. Walk me through the last deal you won. What happened first?
+2. Where do enquiries arrive? Who answers each kind, and how fast?
+3. How do you decide which leads to chase first?
+4. What happens after a buyer says yes? Who needs to know?
+5. Which reports do you build by hand today? How long does that take?
+6. What tools must the CRM connect to (email, WhatsApp, portals, accounts)?
+7. Who should NOT see what? (commissions, other agents' clients, landlords)
+8. What would make your team refuse to use a new system?</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Map the process and find the leaks</h3>
+    <p>Turn the sticky notes into one swimlane map: a lane per role (enquiry handler, agent, manager, admin), steps left to right, and every hand-over marked. Then mark the leaks: places where a lead or a deal can stall or vanish without anyone noticing.</p>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Kora's step</th><th>Today</th><th>Leak</th></tr></thead>
+      <tbody>
+        <tr><td>Enquiry arrives</td><td>Portal emails go to one inbox; Instagram DMs to the marketing intern's phone</td><td>Weekend enquiries wait until Monday</td></tr>
+        <tr><td>Assign an agent</td><td>The manager forwards on WhatsApp "when she can"</td><td>No owner for hours; two agents call the same buyer</td></tr>
+        <tr><td>Book a viewing</td><td>Agent's personal calendar</td><td>No-shows aren't followed up</td></tr>
+        <tr><td>Offer and negotiation</td><td>WhatsApp and calls</td><td>No record of what was offered, so handovers fail</td></tr>
+        <tr><td>Sale agreed</td><td>Agent tells admin on WhatsApp</td><td>Commission and paperwork tracked in a separate sheet</td></tr>
+      </tbody>
+    </table></div>
+    <p>Each leak becomes a requirement. "Weekend enquiries wait until Monday" becomes "Every enquiry gets an automatic acknowledgement within 5 minutes and an owner within 1 working hour."</p>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Requirements lab: must, should, could or won't?</h3>
+    <p>MoSCoW prioritising keeps the first release small enough to finish. Sort Kora's wish list. <b>Must</b> means the CRM is useless at launch without it.</p>
+    <script type="application/json" id="pk-7-1">{"opts":[["must","Must have (launch)"],["should","Should have (soon after)"],["could","Could have (later)"],["wont","Won't have (this project)"]],
+     "items":[
+      {"t":"Every portal, website and Instagram enquiry becomes a contact and a deal with an owner.","best":"must","why":"This is the main leak in the process map. Without it, the CRM doesn't solve the problem Kora is paying for."},
+      {"t":"Agents only see their own deals; managers see their office; Mrs Adeyemi sees everything.","best":"must","why":"Agents won't put clients in a system where colleagues can poach them. Permissions are a launch condition for adoption."},
+      {"t":"A Monday dashboard: enquiries by source, viewings booked, offers, sales and response time.","best":"must","why":"Mrs Adeyemi's success measure is visibility. A small, honest dashboard ships at launch; more reports come later."},
+      {"t":"Automatic reminders when a viewing has no follow-up after 2 days.","best":"should","why":"Valuable, but the team must first be logging viewings. Add it in the first month after launch."},
+      {"t":"Commission calculations and payouts inside the CRM.","best":"could","why":"Possible, but it's accounting, it's sensitive and it's complex. Keep the existing sheet for now and revisit after adoption."},
+      {"t":"A mobile app built specially for Kora's agents.","best":"wont","why":"The CRM vendor's own mobile app covers the need. A custom app is a different, much bigger project."},
+      {"t":"Import 9 years of old spreadsheets, including closed deals.","best":"could","why":"Open deals and active clients are a must; history is nice to have. Import recent history (e.g. 2 years) and archive the rest."}],
+     "ok":"✓ Good sorting. A first release with only the musts can launch in weeks, not months.",
+     "bad":"Too many musts is how CRM projects run for a year and never launch. Ask: is the CRM useless at launch without this?"}</script>
+    <div class="ident" data-pick="pk-7-1">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>The data audit, platform fit and the requirements document</h3>
+    <div class="vocab">
+      <div><b>Audit the data before you quote</b>Ask for a copy of every spreadsheet and export. Count rows, duplicates, blank emails and phones, and how many records are still active. "Nine years of data" is often 30% duplicates and 60% inactive. The audit sets the migration effort in 7.3, and your price.</div>
+      <div><b>Platform fit</b>Match requirements to plans, not plans to wishes. List each must-have and which plan tier first provides it (for example, HubSpot workflows start on the Professional tier; Zoho's Blueprint process tool needs its Professional edition or higher). Price the whole team for a year, including onboarding fees and any add-ons.</div>
+      <div><b>Total cost of ownership</b>Licences × seats × 12, plus onboarding fees, integrations, your build and support, and the team's training time. Compare it with the leak you measured: if faster responses win two more sales a year, what is that worth in commission?</div>
+      <div><b>The requirements document</b>One short document: goals and success measures, the process map, prioritised requirements (MoSCoW), data audit summary, recommended platform and plan with yearly cost, out-of-scope list, risks, and a signature line.</div>
+    </div>
+    <p class="mgoal">Vendor plans, prices and limits change often. Check each vendor's pricing page on the day you advise, quote in the currency you'll be billed in, and write that date in the document.</p>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://www.youtube.com/results?search_query=CRM+implementation+requirements+gathering" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>CRM requirements gathering, explained</b><small>Pick a recent video; compare its steps with the five phases in Card 1.</small></span></a>
+    <a class="wcard" href="https://academy.hubspot.com/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot Academy</b><small>Free courses on HubSpot onboarding and solutions partner skills.</small></span></a>
+    <a class="wcard" href="https://www.zoho.com/crm/resources/" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zoho CRM resources</b><small>Guides and webinars, useful when a client prefers Zoho.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Kora Properties' requirements</h2></div>
+  <div class="prose"><p><b>The goal.</b> A signed requirements document Kora's team recognises as their own process, small enough to launch in six weeks, with success measures you can check after three months.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Workshop 1 (90 min): walk real deals</h4>
+      <p>Mrs Adeyemi, two senior agents, one new agent and the office administrator. Walk the last won sale (a three-bedroom flat in Lekki Phase 1) and the last lost rental. Sticky notes on a wall, one colour per role. Photograph everything.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Collect the numbers and the data</h4>
+      <p>From the portals' dashboards and the enquiries inbox: about 400 enquiries a month (portals 55%, Instagram 25%, website 10%, referrals and walk-ins 10%). Median first reply: 6 hours; weekends 40 hours. Ask the administrator for every sheet: 11 spreadsheets, 18,400 rows.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Audit the data</h4>
+<pre class="codebox">Data audit · Kora Properties · (date)
+Rows across 11 sheets ........ 18,400
+Duplicates (same phone/email)   5,900  (32%)
+No phone and no email ......... 1,100
+Active in last 24 months ...... 4,300 people · 210 open deals
+Properties listed ............. 640 (130 currently available)
+Decision: migrate active people, open deals and available
+properties; archive the rest as a read-only export.</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Workshop 2 (60 min): play back the map</h4>
+      <p>Show the swimlane map with the leaks marked. Agents correct it ("we also get referrals from lawyers"). Agree the success measures: median first reply under 15 minutes in office hours; 100% of enquiries with an owner within one working hour; viewings-to-offer rate visible each week; Mrs Adeyemi stops building the Monday report by hand.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Prioritise and size</h4>
+      <p>12 musts, 6 shoulds, 4 coulds, 3 won'ts. Check each must against the plans. Kora needs automated routing and follow-up workflows, team-based permissions and a property listing record, so a free plan won't do. Compare two options (for example HubSpot Sales Hub Professional and Zoho CRM Professional) for 12 users for a year, from the vendors' pricing pages on the day.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Write it, present it, get it signed</h4>
+      <p>Eight pages at most: goals and measures, map, requirements, data audit, platform recommendation and yearly cost, out of scope (commissions, custom app, old history), risks (agent adoption, portal integrations), timeline and a signature line. Present in 30 minutes; sign in the room or within a week.</p>
+      <div class="stats">
+        <div class="stat"><b>12</b><span>must-haves for launch</span></div>
+        <div class="stat"><b>32%</b><span>duplicates found before quoting</span></div>
+        <div class="stat"><b>4</b><span>success measures agreed</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>The team describes its own process, so it trusts the result.</li><li>Leaks become requirements; requirements become tests.</li><li>The data audit sets a realistic migration and price.</li><li>Platform choice follows the musts, not the brochure.</li><li>Success measures make the project checkable.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Only interviewing the owner.</li><li>Quoting a migration before seeing the data.</li><li>Choosing the platform in the first meeting.</li><li>A wish list with everything marked "must".</li><li>No out-of-scope section.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> I wrote the requirements myself. It saved so much time.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What Glitch did</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>Interviewed only Mrs Adeyemi, in one 20-minute call.</td></tr>
+        <tr><td>B</td><td>Quoted "₦400,000 to migrate all 18,400 records" before opening the files.</td></tr>
+        <tr><td>C</td><td>Marked 31 of 34 requirements as "must".</td></tr>
+        <tr><td>D</td><td>Recommended the top Enterprise plan for all 12 agents "to be safe".</td></tr>
+        <tr><td>E</td><td>Success measure: "The team is happy with the CRM."</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> the owner describes the process she imagines. Agents describe the one that happens. Interview the people who do the work.</li>
+        <li><b>B:</b> a third of the rows were duplicates and most were inactive. Audit first, then quote the migration you'll actually do.</li>
+        <li><b>C:</b> if everything is a must, nothing is. Ask "is the CRM useless at launch without this?" and move the rest to should and could.</li>
+        <li><b>D:</b> buy the lowest tier that meets every must-have. Check each must against each tier; upgrades later are easy, refunds aren't.</li>
+        <li><b>E:</b> not measurable. Use numbers you can check: first-reply time, enquiries with an owner, report built by hand or not.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Map one sales process</h4>
+    <ul><li>Interview someone who sells (any business) about their last won and lost deal.</li><li>Draw a swimlane map and mark at least three leaks.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The person you interviewed agrees the map is how it really works, and each leak is written as a requirement.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Write a requirements document</h4>
+    <ul><li>For a real or sample business: goals and success measures, process map, MoSCoW requirements, a data audit of a real or sample spreadsheet, and out-of-scope.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>No more than half the requirements are musts, every success measure is a number, and the data audit counts duplicates and inactive rows.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Run discovery for a real client</h4>
+    <ul><li>Run two workshops with a real business, recommend a platform and plan with a dated yearly cost, and present the document.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The client signs (or formally reviews) the requirements, and you submit the document with names removed.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. Who should be in the discovery workshop?</p><div class="opts">
+      <button type="button" data-opt="a">Only the owner, who is paying</button><button type="button" data-opt="b">Only the IT person</button><button type="button" data-opt="c">The owner plus the people who sell, answer enquiries and handle admin</button><button type="button" data-opt="d">Nobody; read the CRM vendor's template</button></div>
+      <p class="fb" hidden data-why="The people who do the work know how sales really happen, and where they leak."></p></div>
+    <div class="q" data-ans="a"><p>2. Why audit the client's data before quoting the migration?</p><div class="opts">
+      <button type="button" data-opt="a">Duplicates and inactive records change the effort and what's worth migrating</button><button type="button" data-opt="b">CRMs reject spreadsheets</button><button type="button" data-opt="c">To charge per row</button><button type="button" data-opt="d">It isn't necessary</button></div>
+      <p class="fb" hidden data-why="Kora's 18,400 rows were 32% duplicates and mostly inactive."></p></div>
+    <div class="q" data-ans="d"><p>3. In MoSCoW, what does "must" mean?</p><div class="opts">
+      <button type="button" data-opt="a">The client mentioned it first</button><button type="button" data-opt="b">It's the most expensive feature</button><button type="button" data-opt="c">The vendor recommends it</button><button type="button" data-opt="d">The CRM is useless at launch without it</button></div>
+      <p class="fb" hidden data-why="A small set of musts lets the first release launch in weeks."></p></div>
+    <div class="q" data-ans="b"><p>4. How should you choose the plan tier?</p><div class="opts">
+      <button type="button" data-opt="a">The top tier, to be safe</button><button type="button" data-opt="b">The lowest tier that provides every must-have, priced for the team for a year</button><button type="button" data-opt="c">The free plan, always</button><button type="button" data-opt="d">Whatever the client's friend uses</button></div>
+      <p class="fb" hidden data-why="Check each must against each tier; upgrade later when a should becomes a must."></p></div>
+    <div class="q" data-ans="c"><p>5. Which is a good success measure?</p><div class="opts">
+      <button type="button" data-opt="a">"The team likes it"</button><button type="button" data-opt="b">"Better sales"</button><button type="button" data-opt="c">"Median first reply under 15 minutes in office hours"</button><button type="button" data-opt="d">"Use all the features"</button></div>
+      <p class="fb" hidden data-why="A number you can check after three months."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-7-1">AUTOMANCY LOG · Lesson 7.1 · Discovery and Requirements
+Date:
+Business and who I interviewed (roles):
+Three biggest leaks in the process:
+Musts / shoulds / coulds / won'ts (counts):
+Data audit: rows, duplicates, active records:
+Success measures (numbers):
+Platform and plan recommended, yearly cost, date checked:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-7-1">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Discover, design, build and migrate, launch, optimise: discovery happens on paper, with people.</li>
+      <li>Walk real won and lost deals with the people who do the work.</li>
+      <li>Every leak in the process map becomes a requirement, and every requirement a test.</li>
+      <li>Audit the data before you quote; prioritise with MoSCoW; buy the lowest tier that meets the musts.</li>
+      <li>Get numeric success measures and a signature before you build.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/certification-overview" target="_blank" rel="noopener">HubSpot Academy certifications (Sales Hub, Solutions Partner)</a></li>
+    <li><span class="kind">Course</span><a href="https://trailhead.salesforce.com/" target="_blank" rel="noopener">Salesforce Trailhead: business analysis and requirements trails</a></li>
+    <li><span class="kind">Text</span><a href="https://www.zoho.com/crm/comparison.html" target="_blank" rel="noopener">Zoho CRM editions compared</a></li>
+    <li><span class="kind">Text</span><a href="https://www.hubspot.com/pricing/sales" target="_blank" rel="noopener">HubSpot Sales Hub pricing (check on the day)</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Pair learners: one plays Mrs Adeyemi or a senior agent with a printed character sheet (including two things they won't volunteer unless asked well), the other runs a 20-minute discovery. Swap. The class then sorts a shared wish list into MoSCoW on the wall and argues every "must".</p>
+  </div>
+</section>
+
+</article>
+</template>

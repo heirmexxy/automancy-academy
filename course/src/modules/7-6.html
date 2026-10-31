@@ -1,0 +1,324 @@
+<template data-mod="7.6" id="tpl-7-6">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 7 · CRM Implementation specialisation · Lesson 7.6</span>
+    <h1>Launch, Adoption and Reporting: Making the Team Use It</h1>
+    <div class="kicker"><span class="pill">≈ 2 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Echo and Tolu</span><span class="pill">Tools: HubSpot or Zoho reports and dashboards, Loom, Google Docs</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#echo"/></svg>
+</header>
+<p class="lede">A CRM can be perfectly built and still fail, because people go back to WhatsApp and spreadsheets in week three. Adoption is part of the job you're paid for. This lesson covers user acceptance testing, role-based training, the go-live plan, the dashboards that make the CRM worth opening, the adoption numbers you track, and the handover pack that lets the client run it without you.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Run user acceptance testing against the requirements.</span></div>
+  <div><b>02</b><span>Train each role on its own daily routine, not on every feature.</span></div>
+  <div><b>03</b><span>Build dashboards and a forecast leaders trust.</span></div>
+  <div><b>04</b><span>Measure adoption and data quality, and hand over cleanly.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>Week three</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A busy launch day with agents logging in for the first time.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"><rect x="165" y="40" width="40" height="30" rx="4"/><rect x="215" y="40" width="40" height="30" rx="4"/><rect x="265" y="40" width="40" height="30" rx="4"/></g>
+        <text x="235" y="110" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">Launch day: 12 of 12 logged in</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Launch day</b>Everyone logs in. Mrs Adeyemi sends a happy voice note.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A chart of logins falling over three weeks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <path d="M170 50 L215 80 L260 120 L300 140" stroke="var(--glitch)" stroke-width="3" fill="none"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--ink)"><text x="165" y="165">wk1</text><text x="225" y="165">wk2</text><text x="285" y="165">wk3</text></g>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Week three</b>Half the agents are back on WhatsApp. "The CRM is slow." "I didn't know where to put the offer."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch reading a 90-slide training deck to sleeping agents.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="170" y="40" width="125" height="80" rx="6" fill="var(--card)"/>
+        <text x="232" y="82" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="var(--ink)">slide 47 of 90</text>
+        <text x="232" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">zzz</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"I trained them! Every menu, every setting, ninety slides, one afternoon. Not my fault they forgot."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A Monday meeting looking at one dashboard.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="25" width="130" height="90" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--rose)"><rect x="182" y="80" width="14" height="25"/><rect x="202" y="65" width="14" height="40"/><rect x="222" y="50" width="14" height="55"/><rect x="242" y="70" width="14" height="35"/><rect x="262" y="58" width="14" height="47"/></g>
+        <text x="235" y="140" text-anchor="middle" font-family="Atkinson Hyperlegible,sans-serif" font-size="10" fill="var(--ink)">Monday 9:00 · 20 minutes</text>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>The fix</b>Short role-based training, one dashboard everyone uses on Mondays, and adoption numbers you watch every week.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 50 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>User acceptance testing (UAT)</h3>
+    <p>Before launch, real users run real scenarios in the configured CRM (a sandbox or the live portal with test records) and sign off. Every must-have requirement from 7.1 becomes at least one test script.</p>
+<pre class="codebox">UAT script · R03 "Every portal enquiry becomes an owned deal"
+Tester: Bisi (admin) · Agent: Tunde · Date:
+Step 1  Send the sample portal email to the portal inbox
+Step 2  Within 5 min: contact + deal in Sales, owner Tunde,   □ pass □ fail
+        task "First call" due in 15 min
+Step 3  Tunde logs a call from the mobile app                  □ pass □ fail
+Step 4  Re-send the same email: no new deal (note added)       □ pass □ fail
+Result / issues:</pre>
+    <div class="vocab">
+      <div><b>Defects vs. change requests</b>A defect is something that doesn't meet a signed requirement: you fix it. A change request is something new ("can it also…"): log it, price or schedule it after launch. Keep the two lists separate.</div>
+      <div><b>Go/no-go</b>Launch when every must-have passes, there are no open critical defects, and the migration reconciliation (7.3) is clean.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Training by role, on their daily routine</h3>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>Role</th><th>Their routine (what you train)</th><th>Length</th></tr></thead>
+      <tbody>
+        <tr><td>Agent</td><td>Morning: my tasks and new leads → call from the app → log the call and next step → move the stage → upload offer notes</td><td>45 min + 3-min videos</td></tr>
+        <tr><td>Office manager</td><td>Team dashboard → stuck deals → reassign → Monday meeting</td><td>45 min</td></tr>
+        <tr><td>Admin</td><td>Check integration log → fix data issues → add users → close tickets</td><td>60 min</td></tr>
+        <tr><td>Owner</td><td>Read the executive dashboard and forecast; ask the right Monday questions</td><td>30 min</td></tr>
+      </tbody>
+    </table></div>
+    <div class="vocab">
+      <div><b>Practise on their own deals</b>Training uses real (migrated) records: "find your client from yesterday and log that call". Recognising their own work is what makes it stick.</div>
+      <div><b>Champions</b>One respected agent per office gets extra training and answers colleagues' questions first. Peers persuade better than consultants.</div>
+      <div><b>Short videos</b>Record 2–3-minute Loom videos for each routine; they replace the 90-slide deck and help new staff later.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>Dashboards and forecasting leaders trust</h3>
+    <div class="vocab">
+      <div><b>One dashboard per audience</b>Agents: my open deals by stage, overdue tasks. Managers: team pipeline, stuck deals, response times by agent. Owner: pipeline value and weighted forecast, won/lost this month with reasons, enquiries by source and conversion.</div>
+      <div><b>Weighted forecast</b>Each open deal's value × its stage's win chance (set in 7.2), summed. It's only honest if stages have exit rules and deals are updated, which is why adoption comes first.</div>
+      <div><b>Few charts, each with a decision</b>For each chart, write the question it answers and what someone would do about it. A chart with no decision is decoration.</div>
+    </div>
+<pre class="codebox">Owner dashboard · Kora (Monday)
+1. Enquiries by source, last 4 weeks        → where to spend marketing
+2. Median first reply (office hours) by office → who needs help
+3. Viewings → offers → completed, this month  → where deals stall
+4. Weighted pipeline by month of expected close → cash planning
+5. Lost reasons, last 90 days               → pricing and stock decisions
+6. Deals stuck > 14 days, by owner           → Monday conversations</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Adoption lab: healthy or warning sign?</h3>
+    <script type="application/json" id="pk-7-6">{"opts":[["ok","Healthy"],["warn","Warning sign: act"]],
+     "items":[
+      {"t":"11 of 12 agents logged a call or email in the CRM at least 4 days this week.","best":"ok","why":"Daily activity logged by nearly everyone is the best adoption signal."},
+      {"t":"38% of open deals have no next-step date.","best":"warn","why":"Deals without next steps are where silence starts. Make next-step date required and review in the Monday meeting."},
+      {"t":"Deals mostly jump from New enquiry straight to Completed.","best":"warn","why":"Agents are updating at the end, not along the way. The pipeline and forecast can't be trusted. Coach the routine; check the champions."},
+      {"t":"Median first reply fell from 6 hours to 22 minutes.","best":"ok","why":"A success measure from 7.1 moving the right way. Share it with the team."},
+      {"t":"Mrs Adeyemi still asks an assistant to build the Monday report in Excel.","best":"warn","why":"Leaders not using the dashboards signals the team that the CRM is optional. Fix the dashboard until it answers her questions."},
+      {"t":"Two new duplicates a week, merged by the admin from the duplicates view.","best":"ok","why":"Some duplicates are normal; a routine to catch and merge them is healthy."}],
+     "ok":"✓ Watch activity, next steps, stage movement, success measures and leaders' use.",
+     "bad":"Adoption shows in behaviour: logged activity, next steps, gradual stage moves, and leaders using the dashboards."}</script>
+    <div class="ident" data-pick="pk-7-6">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Hypercare, handover and the retainer</h3>
+    <div class="vocab">
+      <div><b>Hypercare (2–4 weeks)</b>A named support channel, answers within the hour in office hours, daily data-quality check, and a short weekly report to the owner: adoption numbers, issues fixed, change requests.</div>
+      <div><b>Handover pack</b>Solution design (7.2), data dictionary, automation register (7.4), integration map and log location (7.5), admin routines, user list and roles, where every credential is stored (not the credentials), vendor support contacts, and the training videos.</div>
+      <div><b>Admin ownership</b>Two people at the client can add users, edit dropdown values, read the integration log and switch an automation off. Nobody should depend on you to do routine admin.</div>
+      <div><b>Optimisation retainer</b>Monthly: health check, adoption review, one or two improvements from the change-request list. 7.7's agent does much of the checking; you decide and explain.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://knowledge.hubspot.com/dashboard/create-and-manage-dashboards" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot dashboards</b><small>Building dashboards for each audience.</small></span></a>
+    <a class="wcard" href="https://knowledge.hubspot.com/forecast/set-up-the-forecast-tool" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot forecast tool</b><small>Weighted pipeline and forecasting.</small></span></a>
+    <a class="wcard" href="https://www.youtube.com/results?search_query=CRM+user+adoption+best+practices" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>CRM user adoption, explained</b><small>Pick a recent talk; compare with Cards 2 and 4.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 45 MIN</span><h2>Solved problem: Kora's launch and first month</h2></div>
+  <div class="prose"><p><b>The goal.</b> Launch on time with every must-have passing UAT; by week four, at least 10 of 12 agents log activity four days a week, under 10% of open deals lack a next step, and Mrs Adeyemi runs Monday from the CRM dashboard.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>UAT week</h4>
+      <p>22 test scripts from the 12 musts, run by Bisi, both office managers and two champions. 9 defects (fixed), 7 change requests (logged for month two, such as WhatsApp templates for viewing reminders). Go/no-go: go.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Training</h4>
+      <p>Four role sessions on the Thursday before cutover, each on the people's own migrated deals. Six Loom videos (my morning list; log a call; move a stage; record an offer; find a property; mark lost with a reason). Champions: Tunde (Lekki) and Amaka (Ibadan).</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Dashboards</h4>
+      <p>Three dashboards (agent, manager, owner) with the six owner charts from Card 3, each with its question written in the description. Monday 9:00 meeting moved from Excel to the owner dashboard from the first week.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Adoption tracking</h4>
+<pre class="codebox">Weekly adoption report · week 3
+Agents logging activity ≥ 4 days ..... 9 / 12   (target 10)
+Open deals without next step ......... 14%      (target < 10%)
+Deals skipping stages ................ 6%
+Median first reply (office hours) .... 19 min   (was 6 h)
+Monday meeting run from dashboard .... yes
+Action: 1:1s with the 3 low-activity agents (champions join);
+        next-step date made required at every open stage</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>Handover</h4>
+      <p>Handover pack delivered in week four; Bisi and the Lekki office manager trained as admins; hypercare closes; a monthly optimisation retainer starts.</p>
+      <div class="stats">
+        <div class="stat"><b>22</b><span>UAT scripts passed</span></div>
+        <div class="stat"><b>11/12</b><span>agents active in week 4</span></div>
+        <div class="stat"><b>19 min</b><span>median first reply</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Requirements become tests, so "done" is objective.</li><li>Training is the daily routine, on their own data.</li><li>Leaders use the dashboard, so everyone updates it.</li><li>Adoption is measured weekly and acted on.</li><li>The client can run it without you.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Skipping UAT "to save time".</li><li>One long feature tour for everyone.</li><li>Twenty charts nobody asked for.</li><li>Calling launch day the finish line.</li><li>Keeping admin knowledge in your head.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> Launched! Invoice sent. On to the next client.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The forecast says ₦2.1 billion this month. Last month's actual was ₦310 million.</td></tr>
+        <tr><td>B</td><td>The client asks for "just one more report" every day of UAT, and launch slips three weeks.</td></tr>
+        <tr><td>C</td><td>The only person who knows how to add a user is Glitch.</td></tr>
+        <tr><td>D</td><td>Agents keep a private WhatsApp group "for the real updates".</td></tr>
+        <tr><td>E</td><td>The owner's dashboard has 24 charts. She looks at none.</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> stale deals and hopeful stages inflate the forecast. Enforce exit rules and next steps, close dead deals, and review stuck deals weekly.</li>
+        <li><b>B:</b> change requests mixed with defects. Fix defects; log, price and schedule new requests after launch.</li>
+        <li><b>C:</b> no admin handover. Train two client admins and leave a written admin routine.</li>
+        <li><b>D:</b> the CRM isn't where work happens. Find out why (slow? missing field? manager not using it?), fix it, and have leaders ask "is it in the CRM?" in every meeting.</li>
+        <li><b>E:</b> charts without decisions. Cut to six, each with the question it answers and who acts on it.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Write UAT scripts and a training plan</h4>
+    <ul><li>Turn five requirements into UAT scripts and write a role-based training plan for a business you know.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Each script has steps, expected results and pass/fail boxes, and each role's training is its daily routine.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>Dashboards and an adoption report</h4>
+    <ul><li>In a trial CRM with sample data, build agent, manager and owner dashboards and a weekly adoption report with targets.</li><li>Record one 3-minute training video.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every chart has a written question and decision, and the adoption report has at least four measured numbers.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Launch and hand over for a real client</h4>
+    <ul><li>Run UAT, training and launch for a real team, track adoption for four weeks, and deliver a handover pack.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>You submit the UAT sign-off, four weekly adoption reports and the handover pack (names removed), and two client staff can do routine admin.</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="b"><p>1. Where do UAT scripts come from?</p><div class="opts">
+      <button type="button" data-opt="a">The vendor's feature list</button><button type="button" data-opt="b">The signed requirements, each must-have at least once</button><button type="button" data-opt="c">Whatever the tester feels like</button><button type="button" data-opt="d">Last year's project</button></div>
+      <p class="fb" hidden data-why="Requirements become tests, so 'done' is objective."></p></div>
+    <div class="q" data-ans="c"><p>2. A user asks for a new report during UAT. What is it?</p><div class="opts">
+      <button type="button" data-opt="a">A critical defect</button><button type="button" data-opt="b">A reason to delay launch</button><button type="button" data-opt="c">A change request: log it and schedule it after launch</button><button type="button" data-opt="d">Nothing</button></div>
+      <p class="fb" hidden data-why="Defects block launch; change requests don't."></p></div>
+    <div class="q" data-ans="a"><p>3. What should agent training focus on?</p><div class="opts">
+      <button type="button" data-opt="a">Their daily routine, practised on their own records</button><button type="button" data-opt="b">Every menu and setting</button><button type="button" data-opt="c">The vendor's history</button><button type="button" data-opt="d">Admin settings</button></div>
+      <p class="fb" hidden data-why="Short, role-based, on familiar data."></p></div>
+    <div class="q" data-ans="d"><p>4. Which is the strongest adoption signal?</p><div class="opts">
+      <button type="button" data-opt="a">Number of logins on launch day</button><button type="button" data-opt="b">How many charts exist</button><button type="button" data-opt="c">Number of custom fields</button><button type="button" data-opt="d">Most agents logging activity several days a week, and leaders using the dashboards</button></div>
+      <p class="fb" hidden data-why="Behaviour over time, not launch-day logins."></p></div>
+    <div class="q" data-ans="b"><p>5. Why train two client admins before you leave?</p><div class="opts">
+      <button type="button" data-opt="a">To reduce your invoice</button><button type="button" data-opt="b">So routine admin doesn't depend on you</button><button type="button" data-opt="c">The vendor requires exactly two</button><button type="button" data-opt="d">To share passwords</button></div>
+      <p class="fb" hidden data-why="A healthy CRM survives the consultant leaving."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-7-6">AUTOMANCY LOG · Lesson 7.6 · Launch and Adoption
+Date:
+UAT scripts run / passed / defects / change requests:
+Roles trained and how:
+Dashboards (audience → charts):
+Adoption numbers this week vs target:
+Handover pack contents and client admins:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-7-6">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Every must-have becomes a UAT script; defects block launch, change requests don't.</li>
+      <li>Train each role on its daily routine, with their own data, plus champions and short videos.</li>
+      <li>Few dashboards, one per audience, each chart tied to a decision; the forecast is only as honest as the stages.</li>
+      <li>Measure adoption weekly and act on it.</li>
+      <li>Hypercare, a handover pack and client admins, then a monthly optimisation retainer.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Course</span><a href="https://academy.hubspot.com/" target="_blank" rel="noopener">HubSpot Academy: reporting and sales management</a></li>
+    <li><span class="kind">Course</span><a href="https://trailhead.salesforce.com/content/learn/modules/user-adoption-strategies" target="_blank" rel="noopener">Trailhead: user adoption strategies</a></li>
+    <li><span class="kind">Text</span><a href="https://help.zoho.com/portal/en/kb/crm/reports-and-analytics" target="_blank" rel="noopener">Zoho CRM: reports and analytics</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Run a 10-minute "first morning" drill: learners play agents with a printed task list and must complete it in a trial CRM using only a 3-minute video made by a classmate. Afterwards, the video makers fix whatever confused people. It shows quickly what good, short training looks like.</p>
+  </div>
+</section>
+
+</article>
+</template>

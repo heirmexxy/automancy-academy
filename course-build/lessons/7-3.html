@@ -1,0 +1,327 @@
+<template data-mod="7.3" id="tpl-7-3">
+<article style="--c:var(--rose)">
+
+<header class="lh">
+  <div>
+    <span class="eyebrow">Track 7 · CRM Implementation specialisation · Lesson 7.3</span>
+    <h1>Data Migration: Moving Years of Records Without Breaking Them</h1>
+    <div class="kicker"><span class="pill">≈ 2.5 hours</span><span class="pill">100 XP</span><span class="pill">Guides: Nodo and Echo</span><span class="pill">Tools: Google Sheets, n8n or Make, HubSpot or Zoho import tools</span></div>
+  </div>
+  <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#nodo"/></svg>
+</header>
+<p class="lede">The design is signed. Now Kora's 18,400 spreadsheet rows, two years of WhatsApp-era deals and 130 available listings have to land in the new CRM: clean, linked and owned, without losing anything that matters and without importing the mess. Migration is where most CRM projects lose the team's trust, because the first thing an agent does in a new CRM is look up a client they know. If that client is missing or duplicated, the system is "broken" from day one.</p>
+<div class="outcomes">
+  <div><b>01</b><span>Write a field mapping from old sources to the new data dictionary.</span></div>
+  <div><b>02</b><span>Clean, normalise and de-duplicate data before it reaches the CRM.</span></div>
+  <div><b>03</b><span>Import in the right order with external IDs, and reconcile the counts.</span></div>
+  <div><b>04</b><span>Plan a cutover weekend with a freeze, a delta load and a rollback.</span></div>
+</div>
+
+<!-- ============ STORY ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 1 · 5 MIN</span><h2>"Where is Mr Okonkwo?"</h2></div>
+  <div class="comic">
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Eleven spreadsheets stacked, with different column names.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"><rect x="165" y="30" width="110" height="70" rx="4"/><rect x="175" y="40" width="110" height="70" rx="4"/><rect x="185" y="50" width="110" height="70" rx="4"/></g>
+        <g font-family="JetBrains Mono,monospace" font-size="8" fill="var(--ink)"><text x="192" y="68">Name | Phone No | Bdgt</text><text x="192" y="82">full name | tel | budget</text><text x="192" y="96">CLIENT | number | ₦</text></g>
+        <use href="#nodo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Nodo</b>"Eleven sheets, eleven ways to write a phone number. Before anything touches the CRM, it all goes through one cleaning table."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Three copies of the same client record with slightly different names.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="var(--ink)">
+          <rect x="165" y="30" width="135" height="26" rx="6" fill="var(--card)" stroke="var(--ink)"/><text x="173" y="47">Emeka Okonkwo · 0803…</text>
+          <rect x="165" y="65" width="135" height="26" rx="6" fill="var(--card)" stroke="var(--ink)"/><text x="173" y="82">E. Okonkwo · +234803…</text>
+          <rect x="165" y="100" width="135" height="26" rx="6" fill="var(--card)" stroke="var(--ink)"/><text x="173" y="117">Mr Okonkwo (Lekki)</text>
+        </g>
+        <use href="#echo" x="5" y="45" width="140" height="140"/>
+      </svg>
+      <div class="cap"><b>Echo</b>"Three Mr Okonkwos. Two are the same man. One is his brother. A name is never proof."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="Glitch pressing an import button on a giant unchecked file.">
+        <rect width="320" height="190" fill="#13233A"/>
+        <rect x="170" y="50" width="120" height="70" rx="8" fill="var(--glitch)"/>
+        <text x="230" y="82" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#fff">IMPORT ALL</text>
+        <text x="230" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fff">18,400 rows · Friday 6 p.m.</text>
+        <use href="#glitch" x="5" y="40" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Glitch</b>"Merge all eleven sheets, import them on Friday evening, go live Monday. No time for tests; that's what Monday is for."</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 320 190" role="img" aria-label="A reconciliation table with matching numbers and ticks.">
+        <rect width="320" height="190" fill="var(--paper2)"/>
+        <rect x="170" y="25" width="135" height="140" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <g font-family="JetBrains Mono,monospace" font-size="8.5" fill="var(--ink)"><text x="180" y="48">contacts  4,312 = 4,312 ✓</text><text x="180" y="66">properties  130 = 130 ✓</text><text x="180" y="84">open deals  210 = 210 ✓</text><text x="180" y="102">no owner        0 ✓</text><text x="180" y="120">dupes found     0 ✓</text></g>
+        <use href="#tolu" x="5" y="55" width="130" height="130"/>
+      </svg>
+      <div class="cap"><b>Monday morning</b>Every agent finds their clients, once. The counts match the plan, and the old sheets are frozen, not deleted.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="part" style="--c:#9FD3F7">
+  <div class="part-h"><span class="tag">PART 2 · 55 MIN</span><h2>Concept cards</h2></div>
+
+  <div class="concept">
+    <span class="num">CARD 1 OF 5</span>
+    <h3>The migration plan: scope, mapping, order</h3>
+    <div class="vocab">
+      <div><b>Scope from the audit</b>From 7.1: active people (last 24 months), open deals, available properties. Everything else goes into a dated, read-only archive export the client keeps. Write the scope down; it's what "done" means.</div>
+      <div><b>Field mapping</b>One row per source column: which sheet, which column, which target object and internal property name, and the transformation (e.g. "phone → E.164 +234…", "'3bed' → 3"). Unmapped columns are listed with the reason.</div>
+      <div><b>Order matters</b>Import what others point to first: users and owners → companies → contacts → custom objects (properties) → deals → associations → activities and notes. A deal can't link to a contact that doesn't exist yet.</div>
+    </div>
+<pre class="codebox">Mapping sheet (sample rows)
+source         | column     | → object.property         | transform
+Lekki 2024.xlsx| Phone No   | contact.phone             | to +234… ; blank if invalid
+Lekki 2024.xlsx| Bdgt       | deal.kora_budget_ngn      | "45m" → 45000000 ; text → blank + flag
+Lettings.xlsx  | Status     | deal.dealstage (Lettings) | "viewed"→Viewed ; "app"→Application
+Listings.xlsx  | Beds       | property.kora_bedrooms    | integer 0–10
+All sheets     | Agent      | owner (user email)        | name → user email via staff table</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 2 OF 5</span>
+    <h3>Clean and normalise in a staging table, not in the CRM</h3>
+    <p>Bring every source into one <b>staging</b> sheet or database table with the target columns. Clean there, where it's cheap to fix and easy to re-run. The CRM only ever receives clean rows.</p>
+    <div class="vocab">
+      <div><b>Normalise</b>Trim spaces; emails lowercase; phones to E.164 (<code>+2348031234567</code>); names in proper case; dates to ISO (<code>2025-03-14</code>); dropdown values mapped to the exact allowed labels; money to plain numbers.</div>
+      <div><b>Validate</b>Flag rows that break a rule (no phone and no email, impossible budget, unknown agent) into a <i>rejects</i> tab with the reason. Rejects go back to the client to fix or drop, never silently into the CRM.</div>
+      <div><b>Script it</b>Do the cleaning with formulas or an n8n/Make workflow (or a Code node) that you can re-run on the final export during cutover. A cleaning job done by hand once can't be repeated on the delta.</div>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 3 OF 5</span>
+    <h3>De-duplication lab: merge or keep apart?</h3>
+    <p>Match on <b>strong keys</b> (same normalised email, same normalised phone), not on names. Decide each pair.</p>
+    <script type="application/json" id="pk-7-3">{"opts":[["merge","Merge automatically"],["review","Send to a person to review"],["apart","Keep apart"]],
+     "items":[
+      {"t":"“Emeka Okonkwo, +2348031234567” and “E. Okonkwo, 0803 123 4567”.","best":"merge","why":"Same normalised phone. Names vary, the key doesn't. Merge, keep the fuller name, and keep both rows' history."},
+      {"t":"“Funke Adebayo, funke.a@mail.example” and “Funke Adebayo, no email, different phone”.","best":"review","why":"Same name only. It may be the same person with a new number, or someone else. A person checks before merging."},
+      {"t":"“J. Ade, jade@co.example” and “Jide Ade, JADE@co.example ”.","best":"merge","why":"Same email once lowercased and trimmed. Merge."},
+      {"t":"Two contacts with the same office phone line (the company switchboard), different names and emails.","best":"apart","why":"A shared company number isn't a person key. Keep both contacts, link them to the same company."},
+      {"t":"“Chinedu Obi” in two sheets, no phone or email in either.","best":"review","why":"No strong key at all. Review, or put both in rejects for the agent who owns them to resolve."},
+      {"t":"The same listing “3-bed, 12 Admiralty Way” in Listings.xlsx and in an agent's sheet with a different price.","best":"review","why":"Same property, conflicting facts. A person decides which price is current before import; never let the last import win silently."}],
+     "ok":"✓ Strong keys merge; weak matches go to a person; shared numbers and names never merge on their own.",
+     "bad":"Merging on names loses customers; never merging leaves duplicates. Use strong keys and a review queue."}</script>
+    <div class="ident" data-pick="pk-7-3">
+      <div data-o="items" style="display:grid;gap:8px"></div>
+      <p class="mgoal" data-o="verdict" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 4 OF 5</span>
+    <h3>Import with external IDs, then reconcile</h3>
+    <div class="vocab">
+      <div><b>External ID</b>Give every staging row a stable ID (<code>kora_legacy_id</code>, e.g. <code>LEK24-0812</code>) and import it into a unique property. Re-runs then <i>update</i> instead of duplicating, associations can be built from IDs, and anyone can trace a CRM record back to its source row.</div>
+      <div><b>Test import first</b>Import 20 rows of each object into a sandbox or trial portal. Check the record pages, associations, owners and dropdowns by eye. Then 10% of the data. Then everything.</div>
+      <div><b>Import tools vs. the API</b>The CRM's import wizard handles CSV files with associations for simple cases. For thousands of rows with custom objects and rules, an n8n or Make workflow calling the CRM's batch API (with the vendor's rate limits respected and retries on errors) is repeatable and logged.</div>
+      <div><b>Reconcile</b>After each load: counts per object in staging vs. the CRM; records without an owner; deals without a contact; sample 20 records and compare field by field. Write the numbers in the migration log.</div>
+    </div>
+<pre class="codebox">Reconciliation · load 3 (full)        staging   CRM    diff
+contacts                               4,312    4,312    0
+properties                               130      130    0
+open deals (Sales + Lettings)            210      210    0
+deals without contact                      –        0    ✓
+records without owner                      –        0    ✓
+sample of 20, field-by-field             20/20 match     ✓</pre>
+  </div>
+
+  <div class="concept">
+    <span class="num">CARD 5 OF 5</span>
+    <h3>Cutover: freeze, delta, switch, rollback</h3>
+    <div class="vocab">
+      <div><b>Freeze</b>Agree a moment (e.g. Friday 5 p.m.) after which nobody edits the old sheets. New enquiries over the weekend go to a temporary form or one inbox.</div>
+      <div><b>Delta load</b>Rerun your cleaning workflow on the frozen sheets; thanks to external IDs, it updates what changed since the test loads and adds what's new.</div>
+      <div><b>Switch</b>Point the website forms and integrations at the CRM (7.5), make the old sheets read-only, and keep the archive export.</div>
+      <div><b>Rollback plan</b>Write down what would make you postpone (reconciliation fails, permissions wrong), and how: the sheets are frozen, not deleted, so the team can keep working from them for another week.</div>
+      <div><b>Hypercare</b>For the first two weeks, someone answers "I can't find my client" within the hour, and fixes the data, not just the symptom.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WATCH ============ -->
+<section class="part" style="--c:#C9BBFF">
+  <div class="part-h"><span class="tag">PART 3 · 15 MIN</span><h2>Watch and read</h2></div>
+  <div class="watch">
+    <a class="wcard" href="https://knowledge.hubspot.com/import-and-export/import-objects" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot: import records and associations</b><small>How the import wizard links objects with unique identifiers.</small></span></a>
+    <a class="wcard" href="https://developers.hubspot.com/docs/api/usage-details" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>HubSpot API usage limits</b><small>Rate limits to respect when you migrate with n8n or Make.</small></span></a>
+    <a class="wcard" href="https://help.zoho.com/portal/en/kb/crm/data-administration/import-data" target="_blank" rel="noopener"><span class="play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="#fff"/></svg></span><span><b>Zoho CRM: importing data</b><small>The Zoho import wizard, including duplicate checks.</small></span></a>
+  </div>
+</section>
+
+<!-- ============ GUIDED BUILD ============ -->
+<section class="part" style="--c:#8FE0B5">
+  <div class="part-h"><span class="tag">PART 4 · 50 MIN</span><h2>Solved problem: Kora's migration</h2></div>
+  <div class="prose"><p><b>The goal.</b> 4,312 active people, 130 available properties and 210 open deals in the new CRM with owners and links; zero duplicates; old sheets frozen and archived; every load reconciled and logged.</p></div>
+  <div class="steps">
+    <div class="step"><div>
+      <h4>Staff table and mapping sheet</h4>
+      <p>A <i>staff</i> tab maps every agent name used in the sheets ("Bisi", "Bisola A.", "BA") to one user email. The mapping sheet covers 74 source columns: 41 mapped, 33 dropped with reasons (e.g. "Commission %: stays in finance sheet").</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>One cleaning workflow</h4>
+<pre class="codebox">n8n · KORA · Migrate · Clean
+Google Drive (11 sheets) → Split rows → Code: normalise
+  (trim, lowercase email, phone → +234…, budget → number,
+   stage text → exact stage label, agent → owner email)
+→ Code: validate (rules) → IF ok
+     ✓ → Postgres/Sheet "staging" (upsert on kora_legacy_id)
+     ✗ → "rejects" (row + reason)</pre>
+    </div></div>
+    <div class="step"><div>
+      <h4>De-duplicate</h4>
+      <p>Group staging rows by normalised email, then by phone. Auto-merge on a strong key (keep the most recent non-blank value for each field; keep all notes). 1,240 name-only matches go to a review tab; the office managers clear them in two afternoons.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Test loads into a sandbox</h4>
+      <p>Load 1: 20 of each object. Fix two mapping errors (a stage typo; Ibadan agents missing from the staff table). Load 2: 10%. Reconcile; spot-check with two agents, who each look up five clients they know.</p>
+    </div></div>
+    <div class="step"><div>
+      <h4>Cutover weekend</h4>
+<pre class="codebox">Fri 17:00  freeze sheets (view-only); weekend enquiries → temporary form
+Fri 18:00  delta clean + full load (users → contacts → properties →
+           deals → associations → notes), batch API, 3 retries
+Sat 10:00  reconcile; 20-record sample; permissions test as an agent
+Sat 14:00  go / no-go call with Mrs Adeyemi
+Sun        forms and integrations switched to the CRM (7.5)
+Mon 08:30  hypercare desk open for two weeks</pre>
+      <div class="stats">
+        <div class="stat"><b>18,400</b><span>source rows</span></div>
+        <div class="stat"><b>4,312</b><span>clean contacts loaded</span></div>
+        <div class="stat"><b>0</b><span>reconciliation differences</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="why">
+    <div class="box"><h5>Why this approach works</h5><ul><li>Cleaning is scripted, so the delta reruns it exactly.</li><li>Strong keys merge; people decide the doubtful ones.</li><li>External IDs make every load safe to repeat.</li><li>Agents test with clients they know.</li><li>The old data is frozen and kept, so rollback is real.</li></ul></div>
+    <div class="box"><h5>Common mistakes to avoid</h5><ul><li>Cleaning by hand in the CRM after import.</li><li>Merging on names.</li><li>Importing deals before contacts exist.</li><li>No external ID, so a rerun doubles everything.</li><li>Deleting the old sheets on go-live day.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============ GLITCH HUNT ============ -->
+<section class="part" style="--c:#FF9FA4">
+  <div class="part-h"><span class="tag">PART 5 · 10 MIN</span><h2>Glitch hunt</h2></div>
+  <div class="glitchlab">
+    <div class="say"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div class="bubble"><b>Glitch:</b> The import finished. Green tick. Job done.</div></div>
+    <div class="tablewrap"><table class="dt">
+      <thead><tr><th>#</th><th>What happened after Glitch's import</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>The CRM shows 9,800 contacts. The plan said about 4,300.</td></tr>
+        <tr><td>B</td><td>140 deals have no contact and no property attached.</td></tr>
+        <tr><td>C</td><td>Every phone number starting with 0 lost its first digit.</td></tr>
+        <tr><td>D</td><td>Glitch re-ran the import to fix a typo. Now there are two of everything.</td></tr>
+        <tr><td>E</td><td>On Monday, agents kept updating the old sheets "because the CRM is missing things".</td></tr>
+      </tbody>
+    </table></div>
+    <details class="reveal"><summary>Reveal the answers</summary><div>
+      <ol>
+        <li><b>A:</b> no scope and no de-duplication: inactive people and duplicates came in. Filter to scope, de-duplicate on strong keys, reconcile counts.</li>
+        <li><b>B:</b> wrong order or missing association keys. Import contacts and properties first, then deals with their legacy IDs, then associations.</li>
+        <li><b>C:</b> the spreadsheet treated phones as numbers. Store them as text and normalise to +234… in the cleaning step.</li>
+        <li><b>D:</b> no external ID. Import a unique <code>kora_legacy_id</code> so reruns update records instead of creating new ones.</li>
+        <li><b>E:</b> no freeze and no hypercare. Make old sheets read-only at cutover and fix "missing" reports within the hour.</li>
+      </ol>
+    </div></details>
+  </div>
+</section>
+
+<!-- ============ MISSIONS ============ -->
+<section class="part" style="--c:#FFC59E">
+  <div class="part-h"><span class="tag">PART 6 · 20 MIN+</span><h2>Missions</h2></div>
+  <div class="mission">
+    <span class="tier t-b">BRONZE · +25 XP</span>
+    <h4>Map and clean a messy sheet</h4>
+    <ul><li>Take a messy contact sheet (real with permission, or invented). Write the mapping sheet and clean it with formulas: emails, phones, dropdown values, rejects tab.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>Every row is either in staging with valid values or in rejects with a reason.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-s">SILVER · +50 XP</span>
+    <h4>A repeatable migration workflow</h4>
+    <ul><li>Build an n8n or Make workflow that cleans, validates, de-duplicates on strong keys and loads a trial CRM with an external ID; run it twice.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The second run creates no new records, and your reconciliation table shows zero differences.</li></ul>
+  </div>
+  <div class="mission">
+    <span class="tier t-g">GOLD · +100 XP</span>
+    <h4>Migrate a real client</h4>
+    <ul><li>Plan and run a real migration with a freeze, a delta load and a written rollback plan.</li></ul>
+    <span class="crit">Done when</span>
+    <ul><li>The reconciliation log, the go/no-go decision and two weeks of hypercare notes are submitted (names removed).</li></ul>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="part" style="--c:#D4DDE3">
+  <div class="part-h"><span class="tag">PART 7 · 5 MIN</span><h2>Checkpoint quiz</h2></div>
+  <div class="quiz">
+    <div class="q" data-ans="c"><p>1. In which order should you import?</p><div class="opts">
+      <button type="button" data-opt="a">Deals first; they're the most important</button><button type="button" data-opt="b">Any order</button><button type="button" data-opt="c">Users → companies → contacts → custom objects → deals → associations → notes</button><button type="button" data-opt="d">Notes first</button></div>
+      <p class="fb" hidden data-why="Records must exist before others can link to them."></p></div>
+    <div class="q" data-ans="a"><p>2. What does an external ID (legacy ID) give you?</p><div class="opts">
+      <button type="button" data-opt="a">Safe re-runs that update instead of duplicating, and traceability to the source row</button><button type="button" data-opt="b">Faster logins</button><button type="button" data-opt="c">Free storage</button><button type="button" data-opt="d">Automatic consent</button></div>
+      <p class="fb" hidden data-why="Re-runs match on the ID and update the existing record."></p></div>
+    <div class="q" data-ans="b"><p>3. Two contacts share only a name. What do you do?</p><div class="opts">
+      <button type="button" data-opt="a">Merge them</button><button type="button" data-opt="b">Send the pair to a person to review</button><button type="button" data-opt="c">Delete one</button><button type="button" data-opt="d">Import both and forget it</button></div>
+      <p class="fb" hidden data-why="A name is never proof; strong keys merge, weak matches get reviewed."></p></div>
+    <div class="q" data-ans="d"><p>4. Why clean in a staging table instead of in the CRM?</p><div class="opts">
+      <button type="button" data-opt="a">The CRM can't be edited</button><button type="button" data-opt="b">Staging is prettier</button><button type="button" data-opt="c">It's required by law</button><button type="button" data-opt="d">It's cheap to fix, and the same cleaning reruns on the cutover delta</button></div>
+      <p class="fb" hidden data-why="Scripted cleaning repeats exactly on the final export."></p></div>
+    <div class="q" data-ans="c"><p>5. What makes a rollback possible on cutover weekend?</p><div class="opts">
+      <button type="button" data-opt="a">Deleting the old sheets</button><button type="button" data-opt="b">Importing everything twice</button><button type="button" data-opt="c">Freezing (not deleting) the old sheets and agreeing go/no-go criteria</button><button type="button" data-opt="d">Nothing; never roll back</button></div>
+      <p class="fb" hidden data-why="If reconciliation fails, the team keeps working from the frozen sheets while you fix it."></p></div>
+    <p class="qscore" aria-live="polite"></p>
+    <div><button type="button" class="btn ghost" data-retry hidden>Try the quiz again</button></div>
+  </div>
+</section>
+
+<!-- ============ LOG ============ -->
+<section class="part" style="--c:var(--sun)">
+  <div class="part-h"><span class="tag">PART 8 · 3 MIN</span><h2>Proof-of-work log</h2></div>
+  <div class="logbox">
+<pre id="log-7-3">AUTOMANCY LOG · Lesson 7.3 · Data Migration
+Date:
+Sources and row counts:
+In scope / archived:
+Columns mapped / dropped:
+Rejects and why:
+Duplicates merged automatically / reviewed:
+Reconciliation (staging vs CRM per object):
+Cutover plan and rollback trigger:
+Mission tier completed: Bronze / Silver / Gold</pre>
+    <div><button type="button" class="btn" data-copy="log-7-3">Copy template</button></div>
+  </div>
+</section>
+
+<!-- ============ TAKEAWAYS ============ -->
+<section class="part" style="--c:var(--teal)">
+  <div class="takeaways">
+    <h3>Remember this</h3>
+    <ol>
+      <li>Migrate the scope from the audit; archive the rest.</li>
+      <li>Map every column, clean in staging with a repeatable workflow, reject with reasons.</li>
+      <li>Merge on strong keys; people review weak matches.</li>
+      <li>Import in dependency order with external IDs; reconcile every load.</li>
+      <li>Freeze, delta, switch, with a written rollback and two weeks of hypercare.</li>
+    </ol>
+  </div>
+  <div class="box"><h5>Go deeper · free courses and videos</h5><ul class="res">
+    <li><span class="kind">Text</span><a href="https://developers.hubspot.com/docs/api/crm/imports" target="_blank" rel="noopener">HubSpot Imports API</a></li>
+    <li><span class="kind">Text</span><a href="https://www.zoho.com/crm/developer/docs/api/v7/" target="_blank" rel="noopener">Zoho CRM API (bulk write, upsert)</a></li>
+    <li><span class="kind">Course</span><a href="https://trailhead.salesforce.com/content/learn/modules/lex_implementation_data_management" target="_blank" rel="noopener">Trailhead: Data Management</a></li>
+  </ul></div>
+  <div class="facil"><h4>For facilitators</h4>
+    <p>Hand out the same 60-row messy file to every team with five planted problems (phones as numbers, two spellings of an agent, three name-only duplicates, a deal with no contact, an impossible budget). Teams race to a clean staging tab and a reconciliation table; the first team with zero differences and all five problems explained wins.</p>
+  </div>
+</section>
+
+</article>
+</template>

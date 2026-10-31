@@ -524,6 +524,7 @@ footer{margin-top:28px;font-size:.82rem;color:var(--muted)}
     <div class="stop" style="--c:var(--grape)"><svg><use href="#sage"/></svg><div class="min"><h3><span>Track 4</span> · Sage's Tower (Agentic AI)</h3><p>Tools, memory, RAG, guardrails, MCP, multi-agent systems, code-first agents, evals.</p></div><div class="meta">9 modules<br>+ boss · ≈17 h</div></div>
     <div class="stop" style="--c:var(--rose)"><svg><use href="#echo"/></svg><div class="min"><h3><span>Track 5</span> · The Signal Tower (Growth)</h3><p>WhatsApp, Telegram and voice channels, prospecting agents, social listening, a social media manager, a social inbox, email campaigns, one inbox for every channel, and CRM setup and automation with HubSpot or Zoho.</p></div><div class="meta">9 lessons<br>+ boss · ≈18 h</div></div>
     <div class="stop" style="--c:var(--sky)"><svg><use href="#tolu"/></svg><div class="min"><h3><span>Track 6</span> · Launchpad</h3><p>Client discovery and scoping, pricing and getting paid, portfolio and templates, and the Grand Capstone.</p></div><div class="meta">4 lessons<br>≈9 h</div></div>
+    <div class="stop" style="--c:var(--rose)"><svg><use href="#echo"/></svg><div class="min"><h3><span>Track 7</span> · CRM Implementation (specialisation)</h3><p>A paid add-on for graduates: discovery, solution design, data migration, paid-plan automation, integrations, launch and an implementation agent.</p></div><div class="meta">7 lessons<br>+ boss</div></div>
   </div>
 </section>
 <!-- ============ MODULE ANATOMY ============ -->
@@ -973,21 +974,20 @@ footer{margin-top:28px;font-size:.82rem;color:var(--muted)}
     </div>
   </section>
 
-  <section id="careers-crm" aria-labelledby="crm-h"><div class="sec-head"><h2 id="crm-h" style="font-size:1.6rem">CRM Implementation specialisation <span class="draft">COMING LATER</span></h2><p class="lede">For graduates who want Path 3. Lessons 5.8 and 5.9 teach you to set up and automate a CRM on the free plans. The specialisation goes further: paid-plan features, migrations, an agent that carries out implementations, and running a full implementation for a client.</p></div>
+  <section id="careers-crm" aria-labelledby="crm-h"><div class="sec-head"><h2 id="crm-h" style="font-size:1.6rem">CRM Implementation specialisation <span class="pill2 ok">Track 7 · available</span></h2><p class="lede">For graduates who want Path 3. Lessons 5.8 and 5.9 teach you to set up and automate a CRM on the free plans. The specialisation goes further: paid-plan features, migrations, an agent that carries out implementations, and running a full implementation for a client.</p></div>
     <div class="grid2">
       <div class="box"><h5>Outline (≈ 18 hours)</h5><ol>
-        <li><b>Discovery and requirements:</b> map the sales process, audit the data, agree what success looks like.</li>
-        <li><b>HubSpot in depth:</b> paid-plan workflows, sequences, quotes, custom reports, permissions.</li>
-        <li><b>Zoho CRM in depth:</b> Blueprint, workflow rules, Zoho Flow, and a first look at Deluge scripts.</li>
-        <li><b>Migration:</b> from spreadsheets or another CRM: field mapping, de-duplication, test loads, cut-over day.</li>
-        <li><b>Integrations:</b> website forms, WhatsApp, Paystack, accounting tools, via APIs and webhooks.</li>
-        <li><b>Adoption and handover:</b> training, playbooks, dashboards, and a 30-day check-in.</li>
-        <li><b>Salesforce on-ramp:</b> a guided Trailhead path, and how to prepare for the Platform Administrator exam if you choose to.</li>
-        <li><b>Build a CRM Implementation Agent:</b> an agent team that audits a client's CRM and data, drafts the design (pipeline, fields, automations), plans the migration, and carries out each approved step through the API, with before-and-after checks and a rollback plan.</li>
-        <li><b>Specialisation project:</b> use your agent to implement or optimise a CRM for a real business, with a person approving every change, reviewed by a mentor.</li>
+        <li><a href="#m-7-1"><b>7.1 Discovery and requirements</b></a>: workshops, the process map and its leaks, a data audit, MoSCoW and success measures.</li>
+        <li><a href="#m-7-2"><b>7.2 Solution design</b></a>: objects, the data dictionary, pipelines, teams and permissions.</li>
+        <li><a href="#m-7-3"><b>7.3 Data migration</b></a>: mapping, cleaning in staging, de-duplication, external IDs, reconciliation and cutover.</li>
+        <li><a href="#m-7-4"><b>7.4 Sales and service automation</b></a>: routing, follow-ups, SLA timers and the automation register on paid plans.</li>
+        <li><a href="#m-7-5"><b>7.5 Integrations</b></a>: forms, portals, WhatsApp, email and Paystack, idempotent and monitored.</li>
+        <li><a href="#m-7-6"><b>7.6 Launch and adoption</b></a>: UAT, role-based training, dashboards, adoption and handover.</li>
+        <li><a href="#m-7-7"><b>7.7 The CRM Implementation Agent</b></a>: checks the CRM against the design and applies only approved, verified plans.</li>
+        <li><a href="#boss-7"><b>Boss 7 · Kora Goes Live</b></a>: a full implementation for an estate agency, AI-reviewed against a rubric.</li>
       </ol></div>
       <div class="box"><h5>Who it's for</h5><ul><li>Graduates who finished Track 5</li><li>Sales or operations staff who look after their company's CRM</li><li>Freelancers adding CRM setup to their services</li></ul>
-        <h5 style="margin-top:12px">Price</h5><p>₦25,000 or US$49, with a specialisation certificate. See <a href="#pricing">Pricing</a>.</p>
+        <h5 style="margin-top:12px">Price</h5><p>₦25,000 or US$45, one-time, with a year's access. When you finish, it's listed on your Automancy Academy Certificate. See <a href="#pricing">Pricing</a>.</p>
         <p class="note" style="margin-top:8px">HubSpot, Zoho and Salesforce are trademarks of their owners. This specialisation is independent and not endorsed by them; their own certifications are earned directly from them.</p></div>
     </div>
   </section>
@@ -1558,7 +1558,61 @@ const TRACKS = [
    tl:["Everything so far"],
    r:[R.hf, R.kag, R.n8nAcad]}
   ],
-  boss:null}
+  boss:null},
+ {id:"t7",code:"7",name:"CRM Implementation",sub:"Specialisation · paid add-on",guide:"echo",c:"var(--rose)",spec:"crmspec",
+  blurb:"For graduates who want to implement CRMs for clients: discovery and requirements, solution design, data migration, automation and integrations on paid plans, launch and adoption, and an AI agent that builds and checks, with a person approving every change.",
+  mods:[
+  {t:"Discovery and Requirements",h:"An estate agency with 12 agents wants \"a proper CRM\" by next month.",
+   l:["The five implementation phases","Running discovery workshops","Mapping the sales process and its leaks","Data audit, MoSCoW and success measures"],
+   s:"Turn two workshops with Kora Properties into a signed requirements document with a data audit and a dated plan recommendation.",
+   g:"Glitch interviewed only the owner and marked every requirement \"must\". Find what's wrong.",
+   m:["Map one real sales process and its leaks.","Write a requirements document with a data audit.","Run discovery for a real client and get it signed."],
+   tl:["Google Docs / Notion","Google Sheets","Excalidraw"],
+   r:[yt("CRM implementation requirements gathering"), {n:"HubSpot Academy",u:"https://academy.hubspot.com/",k:"Course"}]},
+  {t:"Solution Design",h:"Is a flat a contact, a company or a deal?",
+   l:["Standard vs. custom objects","The data dictionary","When to split pipelines","Teams, roles and least-privilege permissions"],
+   s:"Design Kora's objects, 27 properties, four pipelines and a permission matrix, and get it signed.",
+   g:"Glitch designed while building: text budgets, a pipeline per agent and everyone as super admin.",
+   m:["Model a business's objects and pipelines.","Write a full solution design.","Design and configure for a real client."],
+   tl:["HubSpot or Zoho trial","Google Sheets","Excalidraw"],
+   r:[{n:"HubSpot: understanding the CRM (developers)",u:"https://developers.hubspot.com/docs/api/crm/understanding-the-crm",k:"Text"}, {n:"Trailhead: Data Modeling",u:"https://trailhead.salesforce.com/content/learn/modules/data_modeling",k:"Course"}]},
+  {t:"Data Migration",h:"\"Where is Mr Okonkwo?\" Three records, two people.",
+   l:["Field mapping and scope","Cleaning in a staging table","De-duplicating on strong keys","External IDs, reconciliation and cutover"],
+   s:"Migrate 18,400 messy rows into 4,312 clean contacts, 130 properties and 210 deals with zero reconciliation differences.",
+   g:"Glitch imported everything twice on Friday evening. Count what went wrong.",
+   m:["Map and clean a messy sheet.","Build a repeatable migration workflow.","Migrate a real client with a rollback plan."],
+   tl:["n8n or Make","Google Sheets","HubSpot / Zoho import"],
+   r:[{n:"HubSpot: import records",u:"https://knowledge.hubspot.com/import-and-export/import-objects",k:"Text"}, {n:"Trailhead: Data Management",u:"https://trailhead.salesforce.com/content/learn/modules/lex_implementation_data_management",k:"Course"}]},
+  {t:"Sales and Service Automation",h:"The Banana Island buyer was called twice, then never.",
+   l:["What paid plans add","Lead routing and fair rotation","Stage follow-ups and SLA timers","Loops, testing and the automation register"],
+   s:"Build Kora's routing, re-route timer, follow-ups and stuck-deal alerts, tested on every branch.",
+   g:"Switching on one workflow created 210 tasks in a second.",
+   m:["Design routing and follow-ups.","Build and test them in a trial.","Run routing for a real team for two weeks."],
+   tl:["HubSpot Sales Hub trial","Zoho CRM trial","n8n"],
+   r:[{n:"HubSpot: create workflows",u:"https://knowledge.hubspot.com/workflows/create-workflows",k:"Text"}, {n:"Zoho CRM Blueprint",u:"https://help.zoho.com/portal/en/kb/crm/automate-business-processes/blueprint",k:"Text"}]},
+  {t:"Integrations",h:"\"The CRM is right only when Bisi updates it.\"",
+   l:["Native, app or middleware","The idempotent upsert-enquiry pattern","WhatsApp and email within the rules","Payments, logs and monitoring"],
+   s:"Forms, portal emails, WhatsApp and Paystack deposits flow into Kora's CRM with no typing, logged and monitored.",
+   g:"A portal resent alerts and a fake webhook moved a deal. Fix both.",
+   m:["Draw the integration map.","Build the upsert and two sources.","Add payments and WhatsApp end to end."],
+   tl:["n8n","WhatsApp Cloud API","Paystack (test)"],
+   r:[{n:"HubSpot private apps",u:"https://developers.hubspot.com/docs/api/private-apps",k:"Text"}, R.paystack]},
+  {t:"Launch, Adoption and Reporting",h:"Week three: half the agents are back on WhatsApp.",
+   l:["UAT from requirements","Role-based training and champions","Dashboards and the weighted forecast","Adoption numbers and handover"],
+   s:"Launch Kora with 22 UAT scripts, role training, three dashboards and four weekly adoption reports.",
+   g:"Glitch trained everyone with 90 slides and left with the only admin login.",
+   m:["Write UAT scripts and a training plan.","Build dashboards and an adoption report.","Launch and hand over for a real client."],
+   tl:["HubSpot or Zoho dashboards","Loom","Google Docs"],
+   r:[{n:"HubSpot dashboards",u:"https://knowledge.hubspot.com/dashboard/create-and-manage-dashboards",k:"Text"}, yt("CRM user adoption best practices")]},
+  {t:"The CRM Implementation Agent",h:"Three clients, one consultant, and an agent that does the careful typing.",
+   l:["What an agent may do, propose or never touch","Narrow tools from the signed design","Plan, dry run, approve, apply, verify","The monthly health check"],
+   s:"Build an n8n agent that diffs the CRM against the design, validates imports and applies only approved, hash-checked plans.",
+   g:"Glitch gave the AI the admin key. It created ID-number fields and merged 600 contacts overnight.",
+   m:["Design the agent's boundaries.","Build the read-only tools and agent.","Add plans with approval in a sandbox."],
+   tl:["n8n AI Agent","HubSpot / Zoho API","Telegram"],
+   r:[{n:"n8n advanced AI",u:"https://docs.n8n.io/advanced-ai/",k:"Text"}, {n:"OWASP Top 10 for LLM apps",u:"https://owasp.org/www-project-top-10-for-large-language-model-applications/",k:"Text"}]}
+  ],
+  boss:{t:"Boss 7 · Kora Goes Live",d:"A full CRM implementation for an estate agency: signed requirements and design, a reconciled migration, routing and follow-ups, integrations that fill the CRM by themselves, launch with training and dashboards, and an implementation agent that only changes the CRM through approved plans."}}
 ];
 
 const TOOLS = [
@@ -1589,9 +1643,9 @@ let totalItems = 0;
 TRACKS.forEach(tr => {
   const el = document.createElement("article");
   el.className = "track"; el.id = tr.id; el.style.setProperty("--c", tr.c);
-  let html = `<div class="track-head"><svg viewBox="0 0 120 120"><use href="#${tr.guide}"/></svg><div><span class="eyebrow">Track ${tr.code} · ${esc(tr.sub)}</span><h3>${esc(tr.name)}</h3><p>${esc(tr.blurb)}</p></div></div><div class="track-body">`;
+  let html = `<div class="track-head"><svg viewBox="0 0 120 120"><use href="#${tr.guide}"/></svg><div><span class="eyebrow">Track ${tr.code} · ${esc(tr.sub)}</span>${tr.spec ? `<span class="pill">Not part of the main course or its certificate requirements</span>` : ""}<h3>${esc(tr.name)}</h3><p>${esc(tr.blurb)}</p></div></div><div class="track-body">`;
   tr.mods.forEach((m,i) => {
-    const id = `${tr.code}.${i+1}`; totalItems++;
+    const id = `${tr.code}.${i+1}`; if(!tr.spec) totalItems++;
     const res = m.r.map(x => `<li><span class="kind">${x.k}</span><a href="${x.u}" target="_blank" rel="noopener">${esc(x.n)}</a></li>`).join("");
     html += `<details class="mod" data-id="${id}"><summary><span class="code">${id}</span><span class="mtitle">${esc(m.t)}<span class="done-mark" ${done[id]?"":"hidden"}>✓</span></span><span class="mtime">60–120 min</span></summary>
     <div class="mbody">
@@ -1631,7 +1685,7 @@ TRACKS.forEach(tr => {
     </svg><figcaption>Sage's anatomy of an agent: it loops between acting with tools and observing results, using memory, until it can answer. Taught across 4.1–4.3.</figcaption></figure>`;
   }
   if(tr.boss){
-    const bid = `B${tr.code}`; totalItems++;
+    const bid = `B${tr.code}`; if(!tr.spec) totalItems++;
     html += `<div class="boss"><svg viewBox="0 0 120 120"><use href="#glitch"/></svg><div><span class="xp">BOSS BATTLE · 300 XP · 2–3 sessions</span><h4>${esc(tr.boss.t)}</h4><p>${esc(tr.boss.d)}</p>${bossLinkHTML(bid, tr.code)}<label class="checkrow" style="margin-top:8px"><input type="checkbox" id="chk-${bid}" data-id="${bid}" ${done[bid]?"checked":""}> Boss defeated</label></div></div>`;
   }
   html += `</div>`;
@@ -1644,7 +1698,7 @@ document.getElementById("toolRoot").innerHTML = TOOLS.map(t=>`<div class="tool">
 const LV = [[0,"Apprentice"],[500,"Tinkerer"],[1500,"Builder"],[3000,"Architect"],[5000,"Orchestrator"]];
 function update(){
   let xp = 0, n = 0;
-  Object.keys(done).forEach(k => { if(done[k]) n++; });
+  Object.keys(done).forEach(k => { if(done[k] && !specOfId(k)) n++; });
   xp = xpParts().total;
   let name = LV[0][1]; LV.forEach(([t,nm]) => { if(xp >= t) name = nm; });
   document.getElementById("lvName").textContent = name;

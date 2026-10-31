@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CERT_NAME, CERT_ORG, CERT_STATEMENT, CREATOR_COURSE_STATEMENT, FLAGSHIP_PROVIDER, FLAGSHIP_TITLE, verifyCertificate, verifyCertificateCourses } from "@/lib/certificate";
+import { CERT_NAME, CERT_ORG, CERT_STATEMENT, CREATOR_COURSE_STATEMENT, FLAGSHIP_PROVIDER, FLAGSHIP_TITLE, SPEC_STATEMENT, verifyCertificate, verifyCertificateCourses } from "@/lib/certificate";
 import { fmtDate } from "@/lib/format";
 import "../verify.css";
 
@@ -29,7 +29,8 @@ export default async function VerifyCertificate({ params }: Props) {
   const valid = c.status === "valid";
   const courses = valid ? await verifyCertificateCourses(c.id).catch(() => []) : [];
   const flagship = courses.some(x => x.title === FLAGSHIP_TITLE && x.provider === FLAGSHIP_PROVIDER);
-  const others = courses.some(x => !(x.title === FLAGSHIP_TITLE && x.provider === FLAGSHIP_PROVIDER));
+  const others = courses.some(x => x.provider !== FLAGSHIP_PROVIDER);
+  const specs = courses.some(x => x.provider === FLAGSHIP_PROVIDER && x.title !== FLAGSHIP_TITLE);
   return (
     <div className="wrap stack">
       <p className="no-print"><span className={`pill ${valid ? "ok" : "bad"}`}>{valid ? "Valid certificate" : "Revoked"}</span></p>
@@ -47,7 +48,8 @@ export default async function VerifyCertificate({ params }: Props) {
       {!valid && <p className="alert bad">This certificate has been revoked and is no longer valid.</p>}
       <section className="card stack" style={{ maxWidth: 820 }}>
         <h3>What this certificate means</h3>
-        {(flagship || !others) && <p>{CERT_STATEMENT}</p>}
+        {(flagship || (!others && !specs)) && <p>{CERT_STATEMENT}</p>}
+        {specs && <p>{SPEC_STATEMENT}</p>}
         {others && <p>{CREATOR_COURSE_STATEMENT}</p>}
       </section>
       <p className="note no-print">To print or save as PDF, use your browser&apos;s Print option. <Link href="/verify">Verify another certificate</Link></p>

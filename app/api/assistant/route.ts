@@ -33,7 +33,8 @@ export async function POST(req: Request) {
 
   if (!item.free && profile.role === "learner") {
     const ent = await getEntitlements(profile.id);
-    if (!ent.course) return json({ error: "Sage helps on Base Camp lessons for free. Enrol in the course to ask about this lesson." }, 403);
+    const spec = item.spec;
+    if (spec ? !(ent as unknown as Record<string, boolean>)[spec] : !ent.course) return json({ error: spec ? "Sage helps on this lesson with the CRM Implementation specialisation." : "Sage helps on Base Camp lessons for free. Enrol in the course to ask about this lesson." }, 403);
   }
 
   try {
