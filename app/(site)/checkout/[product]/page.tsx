@@ -109,6 +109,7 @@ export default async function Checkout({ params, searchParams }: Props) {
             <>
               <h2 style={{ fontSize: "1.3rem" }}>Instalment {plan.nextNo} of {plan.total}</h2>
               <p>You're paying for {p.name} in {plan.total} parts. This payment is <b>{moneyText(plan.amountKobo, "NGN")}</b>.</p>
+              {plan.discountCode && <p className="note">Discount code <b>{plan.discountCode}</b> applies to every instalment of this plan.</p>}
               <p className="note">{plan.nextNo < plan.total ? `Each instalment keeps your access open for 35 days.` : `After this final instalment you have the full 12 months, counted from your first payment.`}</p>
               <input type="hidden" name="plan" value="3" />
               <input type="hidden" name="currency" value="NGN" />
@@ -134,6 +135,10 @@ export default async function Checkout({ params, searchParams }: Props) {
                   <span className="note">{discount ? `A friend's code takes ${Math.round(REFERRAL.friendDiscount * 100)}% off.` : "No discount on this item, but your friend still earns a reward."} You can't use your own code.</span>
                 </label>
               ) : isRenewal ? <p className="note">Referral discounts apply to your first month only, not renewals.</p> : null}
+              <label className="fld">Discount code (optional)
+                <input name="code" defaultValue={normaliseCode(sp.code)} maxLength={32} autoComplete="off" autoCapitalize="characters" />
+                <span className="note">Have a promo code? Enter it here; we check it before you pay. Discounts don&apos;t stack: if you also enter a friend&apos;s code, the bigger discount applies.</span>
+              </label>
             </>
           )}
           <button className="btn" type="submit">Continue to Paystack</button>

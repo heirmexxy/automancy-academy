@@ -9,6 +9,7 @@ import { PRODUCTS, REFERRAL, product } from "@/lib/pricing";
 import { addDays, makeReference, normaliseCode, quote, referralApplies, toMinor, withinRefundWindow, type Currency } from "@/lib/money";
 import { applyRefund, createTransferRecipient, initializeTransaction, listBanks, openInstalmentPlan, refundTransaction, resolveAccount } from "@/lib/paystack";
 import { findReferrer } from "@/lib/referrals";
+import { checkDiscountCode } from "@/lib/discounts";
 import { PAYMENT_UNAVAILABLE, reportCheckoutFailure } from "@/lib/payment-alert";
 
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -49,11 +50,11 @@ export async function startCheckout(formData: FormData) {
   const db = createAdminClient();
   const wantsPlan = s(formData, "plan", 2) === "3";
   let currency: Currency = s(formData, "currency", 3) === "USD" ? "USD" : "NGN";
-  let amount = 0, discount = 0, instNo = 1, total = 1, planRef: string | null = null, refCode: string | null = null;
+  let amount = 0, discount = 0, instNo = 1, total = 1, planRef: string | null = null, refCode: string | null = null, discountCode: string | null = null;
 
   const open = wantsPlan ? await openInstalmentPlan(user.id, p.id) : null;
   if (open) {
-    currency = "NGN"; amount = open.amountKobo; discount = open.discountKobo; instNo = open.nextNo; total = open.total; planRef = open.planRef; refCode = open.referralCode;
+    currency = "NGN"; amount = open.amountKobo; discount = open.discountKobo; instNo = open.nextNo; total = open.total; planRef = open.planRef; refCode = open.referralCode; discountCode = open.discountCode;
   } else {
     let isRenewal = false;
     if (p.id === "member") {
@@ -61,16 +62,25 @@ export async function startCheckout(formData: FormData) {
       isRenewal = (count ?? 0) > 0;
     }
     const raw = s(formData, "ref", 40);
+    // Discount code (Admin → Settings → Discount codes): checked on the server, never trusted from the form.
+    const rawCode = s(formData, "code", 40);
+    let codePercent = 0;
+    if (rawCode) {
+      const c = await checkDiscountCode(rawCode, p.id, user.id);
+      if (!c.ok) redirect(back(pid, { error: c.error, code: normaliseCode(rawCode), ...(raw ? { ref: normaliseCode(raw) } : {}), ...(wantsPlan ? { plan: "3" } : {}) }));
+      codePercent = c.percent; discountCode = c.code;
+    }
     let referral = false;
     if (raw && referralApplies(p, isRenewal)) {
       const r = await findReferrer(raw, user.id, user.email);
-      if ("error" in r) redirect(back(pid, { error: r.error, ref: normaliseCode(raw), ...(wantsPlan ? { plan: "3" } : {}) }));
+      if ("error" in r) redirect(back(pid, { error: r.error, ref: normaliseCode(raw), ...(rawCode ? { code: normaliseCode(rawCode) } : {}), ...(wantsPlan ? { plan: "3" } : {}) }));
       referral = true; refCode = r.code;
       // Attribute the signup to the referrer if nobody has yet.
       await db.from("profiles").update({ referred_by: r.id }).eq("id", user.id).is("referred_by", null);
     }
-    const q = quote(p, { currency, installments: wantsPlan, referral, isRenewal });
+    const q = quote(p, { currency, installments: wantsPlan, referral, isRenewal, codePercent });
     if (!q.ok) redirect(back(pid, { error: q.error }));
+    if (q.discountSource !== "code") discountCode = null; // the friend discount was bigger: the code isn't used up
     amount = q.amountMinor; discount = q.discountMinor; total = q.installmentsTotal; currency = q.currency;
   }
 
@@ -78,7 +88,7 @@ export async function startCheckout(formData: FormData) {
   if (total > 1 && !planRef) planRef = reference;
   const { error } = await db.from("payments").insert({
     user_id: user.id, product: p.id, reference, amount_kobo: amount, currency, status: "initialized",
-    installment_no: instNo, installments_total: total, plan_ref: planRef, referral_code: refCode, discount_kobo: discount
+    installment_no: instNo, installments_total: total, plan_ref: planRef, referral_code: refCode, discount_kobo: discount, discount_code: discountCode
   });
   if (error) { console.error("[checkout] insert failed", error.message); redirect(back(pid, { error: "We couldn't start the payment. Please try again." })); }
 

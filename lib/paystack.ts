@@ -1,4 +1,5 @@
 import "server-only";
+import { recordDiscountRedemption } from "@/lib/discounts";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { COMPANY, SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/config";
@@ -63,7 +64,7 @@ export const verifySignature = (rawBody: string, header: string | null) => verif
 export type PaymentRow = {
   id: string; user_id: string; product: string; reference: string; amount_kobo: number; currency: Currency; status: string;
   installment_no: number; installments_total: number; plan_ref: string | null; referral_code: string | null;
-  discount_kobo: number; paystack_id: number | null; paid_at: string | null; created_at: string;
+  discount_kobo: number; discount_code?: string | null; paystack_id: number | null; paid_at: string | null; created_at: string;
 };
 export type FulfilResult = { ok: boolean; status: string; message: string; payment: PaymentRow | null };
 
@@ -136,6 +137,7 @@ export async function fulfilPayment(reference: string, hooks: FulfilHooks = {}):
     return { ok: true, status: "success", message: "Payment confirmed.", payment: updated };
   }
   try { await grantAccess(updated); } catch (e) { console.error("[paystack] grant failed", e); await audit("fulfil_error", updated.id, { step: "grant", error: String(e) }); }
+  try { await recordDiscountRedemption(updated); } catch (e) { console.error("[paystack] discount record failed", e); await audit("fulfil_error", updated.id, { step: "discount", error: String(e) }); }
   try { await recordReferralEarning(updated); } catch (e) { console.error("[paystack] referral failed", e); await audit("fulfil_error", updated.id, { step: "referral", error: String(e) }); }
   try { await sendReceipt(updated); } catch (e) { console.error("[paystack] receipt failed", e); }
   return { ok: true, status: "success", message: "Payment confirmed.", payment: updated };
@@ -206,7 +208,7 @@ export async function applyRefund(paymentId: string, o: { partial?: boolean; dec
 /** An unfinished Pay-in-3 plan for this product, if the learner has one. */
 export async function openInstalmentPlan(userId: string, productId: string) {
   const db = createAdminClient();
-  const { data: firsts } = await db.from("payments").select("reference, amount_kobo, discount_kobo, referral_code, installments_total, paid_at")
+  const { data: firsts } = await db.from("payments").select("reference, amount_kobo, discount_kobo, referral_code, discount_code, installments_total, paid_at")
     .eq("user_id", userId).eq("product", productId).eq("installment_no", 1).gt("installments_total", 1).eq("status", "success")
     .order("created_at", { ascending: false }).limit(1);
   const first = firsts?.[0];
@@ -218,6 +220,6 @@ export async function openInstalmentPlan(userId: string, productId: string) {
   if (paid >= total) return null;
   return {
     planRef: first.reference as string, nextNo: paid + 1, total, amountKobo: first.amount_kobo as number,
-    discountKobo: first.discount_kobo as number, referralCode: (first.referral_code as string | null) || null, firstPaidAt: first.paid_at as string
+    discountKobo: first.discount_kobo as number, referralCode: (first.referral_code as string | null) || null, discountCode: (first.discount_code as string | null) || null, firstPaidAt: first.paid_at as string
   };
 }

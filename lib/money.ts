@@ -39,11 +39,38 @@ export function referralApplies(p: Pick<Product, "id">, isRenewal: boolean): boo
   return COMMISSION_PRODUCTS.includes(p.id);
 }
 
-export type Quote = { ok: true; listMinor: number; discountMinor: number; amountMinor: number; installmentsTotal: number; currency: Currency }
+/** Discount codes (Admin → Settings): 1–90% off; never 100%, because Paystack can't take a ₦0 payment. */
+export const DISCOUNT_CODE_MAX_PERCENT = 90;
+export type DiscountCodeRow = {
+  code: string; percent: number; active: boolean; products: string[] | null; starts_at: string | null; ends_at: string | null;
+  max_uses: number | null; once_per_user: boolean;
+};
+/** Why a code can't be used for this purchase, or null when it can. Usage counts come from successful payments. */
+export function discountCodeProblem(c: DiscountCodeRow | null | undefined, o: { productId: string; now?: Date; uses: number; usedByBuyer: number }): string | null {
+  if (!c || !c.active) return "That discount code isn't valid.";
+  const now = (o.now || new Date()).getTime();
+  if (c.starts_at && new Date(c.starts_at).getTime() > now) return "That discount code isn't active yet.";
+  if (c.ends_at && new Date(c.ends_at).getTime() <= now) return "That discount code has expired.";
+  if (c.products && c.products.length && !c.products.includes(o.productId)) return "That discount code doesn't apply to this product.";
+  if (c.max_uses != null && o.uses >= c.max_uses) return "That discount code has been fully used.";
+  if (c.once_per_user && o.usedByBuyer > 0) return "You've already used that discount code.";
+  if (!(c.percent >= 1 && c.percent <= DISCOUNT_CODE_MAX_PERCENT)) return "That discount code isn't valid.";
+  return null;
+}
+/** End of the given Lagos calendar day (YYYY-MM-DD), as an ISO time: an "ends on" date includes that whole day. */
+export const endOfLagosDay = (ymd: string) => /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? new Date(Date.parse(ymd + "T23:59:59Z") - 3_600_000).toISOString() : null;
+export const startOfLagosDay = (ymd: string) => /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? new Date(Date.parse(ymd + "T00:00:00Z") - 3_600_000).toISOString() : null;
+
+export type DiscountSource = "referral" | "code" | null;
+export type Quote = { ok: true; listMinor: number; discountMinor: number; amountMinor: number; installmentsTotal: number; currency: Currency; discountSource: DiscountSource }
   | { ok: false; error: string };
 
-/** What the learner pays for one transaction. With installments, this is one instalment (NGN only). */
-export function quote(p: Product, o: { currency: Currency; installments: boolean; referral: boolean; isRenewal: boolean }): Quote {
+/**
+ * What the learner pays for one transaction. With installments, this is one instalment (NGN only).
+ * codePercent: a valid discount code's percentage (Admin → Settings). Discounts don't stack: the larger of the
+ * friend (referral) discount and the code applies. The referrer still earns commission on what is actually paid.
+ */
+export function quote(p: Product, o: { currency: Currency; installments: boolean; referral: boolean; isRenewal: boolean; codePercent?: number }): Quote {
   if (p.ngn <= 0) return { ok: false, error: "This product is free." };
   let listMinor: number; let installmentsTotal = 1; const currency = o.currency;
   if (o.installments) {
@@ -54,8 +81,12 @@ export function quote(p: Product, o: { currency: Currency; installments: boolean
     listMinor = toMinor(currency === "USD" ? p.usd : p.ngn);
   }
   if (listMinor <= 0) return { ok: false, error: "This product has no price in that currency." };
-  const discountMinor = o.referral && discountApplies(p, o.isRenewal) ? Math.round(listMinor * REFERRAL.friendDiscount) : 0;
-  return { ok: true, listMinor, discountMinor, amountMinor: listMinor - discountMinor, installmentsTotal, currency };
+  const refMinor = o.referral && discountApplies(p, o.isRenewal) ? Math.round(listMinor * REFERRAL.friendDiscount) : 0;
+  const pct = Math.min(DISCOUNT_CODE_MAX_PERCENT, Math.max(0, Math.floor(o.codePercent || 0)));
+  const codeMinor = pct > 0 ? Math.round(listMinor * pct / 100) : 0;
+  const discountMinor = Math.max(refMinor, codeMinor);
+  const discountSource: DiscountSource = discountMinor === 0 ? null : codeMinor >= refMinor ? "code" : "referral";
+  return { ok: true, listMinor, discountMinor, amountMinor: listMinor - discountMinor, installmentsTotal, currency, discountSource };
 }
 
 export type Tier = "friend" | "graduate" | "ambassador" | "pack";

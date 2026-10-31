@@ -195,3 +195,37 @@ test("money text", () => {
 test("every paid product has a sensible price", () => {
   for (const p of PRODUCTS.filter(p => p.ngn > 0)) assert.ok(p.usd > 0, p.id);
 });
+
+test("discount codes: percentage, no stacking with referral, cap", () => {
+  const self = P("self");
+  const c = quote(self, { currency: "NGN", installments: false, referral: false, isRenewal: false, codePercent: 20 });
+  assert.equal(c.discountMinor, toMinor(9000)); assert.equal(c.amountMinor, toMinor(36000)); assert.equal(c.discountSource, "code");
+  const small = quote(self, { currency: "NGN", installments: false, referral: true, isRenewal: false, codePercent: 5 });
+  assert.equal(small.discountSource, "referral"); assert.equal(small.discountMinor, toMinor(4500)); // 10% referral beats 5% code
+  const big = quote(self, { currency: "NGN", installments: false, referral: true, isRenewal: false, codePercent: 25 });
+  assert.equal(big.discountSource, "code"); assert.equal(big.amountMinor, toMinor(33750));
+  const capped = quote(self, { currency: "NGN", installments: false, referral: false, isRenewal: false, codePercent: 100 });
+  assert.equal(capped.amountMinor, toMinor(4500)); // capped at 90%: never ₦0
+  const plan = quote(self, { currency: "NGN", installments: true, referral: false, isRenewal: false, codePercent: 10 });
+  assert.equal(plan.amountMinor, toMinor(14400)); // 10% off each ₦16,000 instalment
+  const none = quote(self, { currency: "NGN", installments: false, referral: false, isRenewal: false });
+  assert.equal(none.discountSource, null); assert.equal(none.discountMinor, 0);
+});
+
+test("discount codes: validity rules", () => {
+  const { discountCodeProblem, endOfLagosDay } = M;
+  const base = { code: "LAUNCH20", percent: 20, active: true, products: null, starts_at: null, ends_at: null, max_uses: null, once_per_user: true };
+  const ctx = { productId: "self", uses: 0, usedByBuyer: 0, now: new Date("2026-11-01T12:00:00Z") };
+  assert.equal(discountCodeProblem(base, ctx), null);
+  assert.match(discountCodeProblem(null, ctx), /isn't valid/);
+  assert.match(discountCodeProblem({ ...base, active: false }, ctx), /isn't valid/);
+  assert.match(discountCodeProblem({ ...base, ends_at: "2026-10-31T22:59:59Z" }, ctx), /expired/);
+  assert.match(discountCodeProblem({ ...base, starts_at: "2026-11-05T00:00:00Z" }, ctx), /isn't active yet/);
+  assert.match(discountCodeProblem({ ...base, products: ["cohort"] }, ctx), /doesn't apply/);
+  assert.equal(discountCodeProblem({ ...base, products: ["self", "cohort"] }, ctx), null);
+  assert.match(discountCodeProblem({ ...base, max_uses: 5 }, { ...ctx, uses: 5 }), /fully used/);
+  assert.match(discountCodeProblem(base, { ...ctx, usedByBuyer: 1 }), /already used/);
+  assert.equal(discountCodeProblem({ ...base, once_per_user: false }, { ...ctx, usedByBuyer: 3 }), null);
+  assert.equal(endOfLagosDay("2026-11-30"), "2026-11-30T22:59:59.000Z");
+  assert.equal(endOfLagosDay("bad"), null);
+});

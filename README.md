@@ -59,7 +59,7 @@ npm test                        # unit tests (money, referrals, reviewer)
 ## Deploy
 
 1. **Supabase** (new project, region near your users).
-   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0010). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
+   - SQL editor: run every file in `supabase/migrations/` **in order** (0001 → 0011). 0005 creates the public `tts` Storage bucket; 0008 holds security fixes and must also be run on a database that already has 0001–0007.
    - Authentication → URL configuration: Site URL `https://automancy.cc`; redirect URL `https://automancy.cc/auth/callback` (add `http://localhost:3000/auth/callback` for local).
    - Authentication → Email: keep "Confirm email" on; customise the templates with the Automancy name. Set up custom SMTP (e.g. Resend) for reliable delivery.
 2. **Vercel**: import this repo, add every environment variable above (Production and Preview), deploy. Add the domain `automancy.cc` in Vercel → Domains and set the DNS records Vercel shows at your domain registrar (an A record for `automancy.cc`, and a CNAME for `www` if you want it). Vercel **Pro** is needed for the AI review route's 120-second limit (or lower `maxDuration` to 60 in `app/api/review/route.ts`).
@@ -80,6 +80,10 @@ The Paystack keys are deliberately **not** in this repository or its history. Do
 6. **Keep the secret key secret**: only in Vercel/`.env.local`; never in code, chat, email or screenshots. If it's ever exposed, regenerate it in Paystack and update Vercel.
 
 Checkout is fully built: every price, Pay-in-3 option, referral code box and course Buy button is live on the site. The only missing piece is the keys. Until they are added, clicking Pay shows a polite "we couldn't start your payment, no money was taken" message, the attempt is logged (`audit_log`, action `checkout_failed`) and admins get an email (at most hourly). The moment the keys are in Vercel and you redeploy, the same buttons take real payments; no code change is needed.
+
+## Discount codes
+
+Admin → Settings → **Discount codes**: create a code (e.g. `LAUNCH20`), set the percentage off (1–90%), and optionally which products it covers, start and end dates, a total usage limit and one use per learner. Learners enter it in the *Discount code* box at checkout, or you share `https://automancy.cc/checkout/self?code=LAUNCH20`, which fills it in. The server checks the code before sending the learner to Paystack, so the discount can't be faked. It doesn't stack with a friend's referral discount (the bigger one applies; the referrer still earns commission on what is paid), and on Pay in 3 it applies to every instalment. Uses are counted when a payment succeeds; switch a code off to stop it at once. A used code can't be deleted (it's kept for your records). Creator-marketplace courses aren't discounted. Needs `supabase/migrations/0011_discount_codes.sql`.
 
 ## Going live with WhatsApp
 
