@@ -81,8 +81,8 @@
   },
   "walk:0.1": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-0-1.mp4",
-    "bytes": 4157573,
-    "seconds": 124.2
+    "bytes": 4090182,
+    "seconds": 123.5
   },
   "walk:0.2": {
     "url": "https://YOUR-PROJECT.supabase.co/storage/v1/object/public/wa-media/walk-0-2.mp4",
