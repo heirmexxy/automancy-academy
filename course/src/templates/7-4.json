@@ -1,0 +1,69 @@
+{
+ "id": "7.4",
+ "items": [],
+ "note": "Lesson 7.4 builds automations inside the CRM; they're shown as steps.",
+ "walk": {
+  "title": "Solve it: routing and follow-ups for Kora",
+  "sample": "Rental enquiry, Lekki · ₦900m buyer · returning customer · agent away",
+  "labels": [
+   "Availability",
+   "A01 Route enquiry",
+   "A02 + A04 timers",
+   "A03 Follow-ups",
+   "Test, switch on"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "Kora's target: every enquiry owned within the hour and a first reply in fifteen minutes. The CRM's own workflows do that work.",
+    "show": [
+     "First reply < 15 min",
+     "Every enquiry owned"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Each agent gets an available-for-new-leads switch, and the teams come from the design: Lekki, Ibadan, lettings and senior agents.",
+    "show": [
+     "Available for new leads ✓",
+     "Teams from 7.2"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "A-zero-one routes each new deal: back to an existing owner first, then lettings, then by budget, then by office, rotating among available agents.",
+    "show": [
+     "Existing owner → Lettings → budget → office",
+     "Task: first call in 15 minutes"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "Timers rescue silence. No call logged within sixty minutes? Rotate again and tell the manager. Stuck in offer made for seven days? One alert.",
+    "show": [
+     "A02: 60 min with no activity → re-route",
+     "A04: 7 days in Offer made → alert"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Stage follow-ups and required fields. Viewed creates a feedback call. Budget, offer amount and lost reason are required at the right stages.",
+    "show": [
+     "Viewed → call for feedback tomorrow",
+     "Required fields per stage"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Ten test deals cover every branch. Check owners, tasks and timers, delete the tests, then switch on for new records only and log each automation.",
+    "show": [
+     "10 TEST deals, every branch",
+     "On for new records only",
+     "Automation register updated"
+    ],
+    "data": "tested"
+   }
+  ],
+  "end": "That's the automation: every enquiry routed, silence rescued, and every rule tested before it touched a real client."
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "id": "7.2",
+ "items": [],
+ "note": "Lesson 7.2 (solution design) has no workflow build: its solved problem is a signed design.",
+ "walk": {
+  "title": "Solve it: Kora's CRM design on paper first",
+  "sample": "Contacts · Deals · Properties · 3 teams · 4 pipelines",
+  "labels": [
+   "Draw the model",
+   "Data dictionary",
+   "Pipelines",
+   "Teams and access",
+   "Assignment rules",
+   "Review and sign"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "Requirements are signed. Now we design the CRM on paper, so the build is just following the plan.",
+    "show": [
+     "Input: the signed requirements",
+     "Output: a signed design"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Draw the model. Kora's plan includes custom objects, so Property becomes its own object, linked to contacts and deals.",
+    "show": [
+     "Property = custom object (Zoho: custom module)",
+     "No custom objects? Note it as a limitation"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Write the data dictionary: twenty-seven custom fields, every dropdown value listed, and the stage where each required field becomes required.",
+    "show": [
+     "Contacts 6 · Deals 9 · Properties 12",
+     "Internal names start with kora_"
+    ],
+    "data": "27 fields"
+   },
+   {
+    "at": "3",
+    "say": "Four pipelines, each stage with an exit rule. Sales runs from new enquiry through viewing and offer to legal and payment.",
+    "show": [
+     "Sales · Lettings · Landlords · Tickets",
+     "Every stage has an exit rule"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Teams for Lekki sales, Ibadan sales and lettings. Commission and landlord bank details stay out of the CRM, and only the owner and admin can export.",
+    "show": [
+     "Permission matrix by role",
+     "Sensitive data stays out"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "New enquiries are shared round-robin among available agents whose area matches. Deals are named by property address and buyer surname.",
+    "show": [
+     "Every deal: an owner and a next-step date",
+     "Routing built in 7.4"
+    ]
+   },
+   {
+    "at": "6",
+    "say": "A forty-five-minute walkthrough with two real deals. They spot one gap, short-lets, which goes into lettings with a deal type. Then they sign.",
+    "show": [
+     "Gap found: short-lets",
+     "Design signed"
+    ],
+    "data": "signed"
+   }
+  ],
+  "end": "That's the design: one model, one dictionary, clear pipelines and permissions, signed before anyone clicks Create."
+ }
+}

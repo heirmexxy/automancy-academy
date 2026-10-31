@@ -1,0 +1,212 @@
+{
+ "id": "7.2",
+ "title": "Solution Design: Objects, Pipelines, Teams and Permissions",
+ "track": 7,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.2 · Solution Design: Objects, Pipelines, Teams and Permissions*\n\n_≈ 2.5 hours · with Emeka_\n\nThe requirements say what Kora needs. The solution design says exactly how the CRM will hold it: which records exist and how they link, which fields each record has, how many pipelines and stages, who owns what, and who can see what. It's the blueprint you build from, the document the client signs before you configure anything, and the first thing the next consultant will read."
+  },
+  {
+   "t": "text",
+   "body": "*Is a flat a contact, a company or a deal?*\n\n*Echo:* \"Kora sells and lets properties. A property isn't a person, a company or a sale. So where does it live?\"\n\n*Sage:* \"One property, one landlord, many interested buyers, maybe several deals over the years. That's its own object.\"\n\n*Glitch:* \"Sales, rentals and short-lets in one pipeline. Twenty-three stages. Everyone can see everything. Simple!\"\n\n*The blueprint:* One page that Mrs Adeyemi, the agents and any future consultant can read: records, links, pipelines and who sees what."
+  },
+  {
+   "t": "text",
+   "body": "*Standard objects first, custom objects only when needed*\n\nEvery CRM ships with contacts, companies, deals and activities (and usually tickets for service). Use them wherever they fit: reports, integrations and the mobile app all understand them. Create a *custom object* only for a thing the business manages that is none of these and has its own records, fields and relationships.\n\n_Business · Thing · Where it lives_\n- *Estate agency* · Property (address, type, bedrooms, price, status, landlord) · Custom object \"Property\"\n- *Training school* · Cohort or class · Custom object, or a property on the deal if it's just a label\n- *Car dealer* · Vehicle in stock · Custom object (or the CRM's product library)\n- *Produce supplier* · Product (tomatoes, eggs) · Product library and line items, not a custom object"
+  },
+  {
+   "t": "text",
+   "body": "- *Know where custom objects are allowed*: In HubSpot, custom objects need an Enterprise subscription. On lower tiers, a common workaround is to store the property as a deal property set or use the product library; in Zoho CRM, custom modules are available on paid editions (limits rise with the edition). Check the vendor's current plan page.\n- *Associations with labels*: Links between records can carry a label: a contact is the _landlord_ of one property and an _interested buyer_ on another. Labels let reports and workflows tell the difference."
+  },
+  {
+   "t": "text",
+   "body": "*Properties: naming, types and the data dictionary*\n\nEvery field you create becomes a column in every export, a filter in every report and a thing someone must fill in. Design them in a *data dictionary* before you create any."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Properties: naming, types and the data dictionary): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "- *Internal names never change*: Labels can be renamed; internal names are what integrations and the API use. Prefix custom ones (`kora_`) so they never clash with the vendor's own.\n- *Types decide reports*: Use dropdowns for anything you'll filter on, numbers for money, dates for dates. A budget stored as text (\"₦45m-ish\") can't be summed or filtered.\n- *Required at a stage*: Make fields required when they become knowable: budget when a viewing is booked, lost reason when a deal is lost. Required-at-create forms full of guesses produce junk."
+  },
+  {
+   "t": "text",
+   "body": "*Pipelines lab: one, or several?*\n\nUse a separate pipeline when a process has _different stages_, not just a different label. Decide for each situation."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Pipelines lab: one, or several?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "*Owners, teams and permissions*\n\n- *Owner*: Every contact, deal and ticket has one named owner, the person responsible for the next step. Never a shared \"sales\" user.\n- *Teams*: Group users by office or function (Lekki sales, Ibadan sales, Lettings). Reports and permissions use teams.\n- *Permission levels*: Usually three for records: _everything_, _team's records_, _own records only_, set separately for viewing and editing. Agents: view and edit own; office managers: their team; owner and admin: everything.\n- *Sensitive fields*: Some fields (commission, landlord bank details, ID numbers) shouldn't be in the CRM at all, or only visible to a few people where the plan supports field-level permissions. When in doubt, keep them out.\n- *Least privilege*: Start everyone with the least access their job needs. It's easy to give more and awkward to take away."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Owners, teams and permissions): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "*The solution design document*\n\nEverything above, on as few pages as possible, signed before you build. It also becomes the handover document in 7.6."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The solution design document): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "*Sage:* A good test: could another consultant rebuild this CRM from the document alone? If not, something important is only in your head."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.2",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora's solution design*\n\n*The goal.* A signed design that covers every must-have from 7.1, fits the chosen plan's limits, and that the build in 7.3–7.5 can follow without guessing. (The steps use HubSpot names; Zoho equivalents are in brackets.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Draw the model*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Draw the model): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-2"
+  },
+  {
+   "t": "text",
+   "body": "Kora's chosen plan includes custom objects, so Property is a custom object (Zoho: a custom module). On a plan without them, the fallback would be the product library plus a few deal properties, which the design would note as a limitation."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Write the data dictionary*\n\n27 custom properties across contacts (6), deals (9), properties (12). Every dropdown's values listed. Each required field has the stage it becomes required at. Internal names use the `kora_` prefix."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Pipelines with exit rules*\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Teams, roles and permissions*\n\nTeams: Lekki sales, Ibadan sales, Lettings. Roles from the matrix in Card 4. Commission stays in the finance sheet; landlord bank details and ID documents stay out of the CRM. Only the owner and admin can export."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Assignment and naming rules*\n\nNew portal and website enquiries: round-robin among available agents in the office whose area matches the property (built in 7.4). Deal name: `Property address · Buyer surname`. Every deal needs an owner and a next-step date."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Review and sign*\n\nA 45-minute walkthrough with Mrs Adeyemi and both office managers using two real recent deals as examples. They catch one gap (short-lets), which goes to the Lettings pipeline with a Deal type property. Signed.\n\n- *4* pipelines (3 deal + tickets)\n- *27* custom properties, all documented\n- *4* roles in the permission matrix"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Standard objects wherever they fit; one custom object where they don't.\n- Every field documented before it exists.\n- Pipelines split only where stages differ.\n- Least-privilege permissions agents can trust.\n- Sensitive data kept out on purpose.\n\n*Common mistakes to avoid*\n\n- Creating fields on the fly during the build.\n- A pipeline per office or per agent.\n- Text fields for money, dates and sources.\n- Everyone as super admin \"for now\".\n- Storing ID documents and bank details in the CRM."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I designed while building. Much faster.\n\n*A:* Properties stored as companies, so \"3-bed flat, Admiralty Way\" appears in the company list next to real businesses.\n*B:* Fields named \"Budget\", \"budget2\", \"Client budget (new)\" and \"BUDGET NGN\", all text.\n*C:* A separate pipeline for every agent, \"so they feel ownership\".\n*D:* All 12 agents are super admins.\n*E:* Landlords' bank details and ID card photos attached to contacts."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* a property is its own thing. Use a custom object where the plan allows, or the documented fallback; never disguise it as a company.\n*B:* no data dictionary. One number field, `kora_budget_ngn`; migrate the values and delete the others.\n*C:* pipelines are for processes, not people. Use one pipeline with owners and a \"My deals\" view.\n*D:* anyone can change settings, delete data or export the whole client list. Least privilege: agents edit their own records.\n*E:* sensitive data with no business need in the CRM. Remove it, keep it in the secure system it belongs in, and record the decision."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Model a business",
+   "body": "- For a business you know, draw its objects and associations and list every pipeline with stages and exit rules.\n\n*Done when:*\n- Every custom object is justified (it isn't a contact, company, deal, ticket or product), and each pipeline's stages differ from the others."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Write the full solution design",
+   "body": "- All eight sections from Card 5, including a data dictionary and a permission matrix, within your chosen plan's limits.\n\n*Done when:*\n- Every custom field has an internal name, type, values and when it's required, and someone else could build from the document alone."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Design and configure for a real client",
+   "body": "- Get a real client's design signed, then configure objects, properties, pipelines, teams and permissions in a trial or sandbox.\n\n*Done when:*\n- Two test users with different roles see only what the matrix says, shown in screenshots."
+  },
+  {
+   "t": "quiz",
+   "q": "When is a custom object the right choice?",
+   "options": [
+    "Whenever the client asks for a new list",
+    "For a thing with its own records and links that isn't a contact, company, deal, ticket or product",
+    "For every important field",
+    "Never"
+   ],
+   "answer": 1,
+   "why": "Standard objects first; a custom object for something like a Property."
+  },
+  {
+   "t": "quiz",
+   "q": "Why prefix internal property names (e.g. kora_)?",
+   "options": [
+    "It looks professional",
+    "The CRM requires it",
+    "To hide them from users",
+    "So custom fields never clash with the vendor's and are easy to find in the API"
+   ],
+   "answer": 3,
+   "why": "Integrations use internal names; they should be stable and unambiguous."
+  },
+  {
+   "t": "quiz",
+   "q": "Sales in two offices follow the same steps. How many pipelines?",
+   "options": [
+    "One, with an Office property and team permissions",
+    "Two, one per office",
+    "One per agent",
+    "None"
+   ],
+   "answer": 0,
+   "why": "Separate pipelines are for different processes, not different places."
+  },
+  {
+   "t": "quiz",
+   "q": "What's the safest starting permission for an agent?",
+   "options": [
+    "Super admin, to avoid support requests",
+    "View everything, edit everything",
+    "View and edit their own records; view shared listings",
+    "No access"
+   ],
+   "answer": 2,
+   "why": "Least privilege: easy to give more later."
+  },
+  {
+   "t": "quiz",
+   "q": "When should \"Budget\" become a required field on a sales deal?",
+   "options": [
+    "At creation, always",
+    "At the stage when it becomes known, e.g. Viewing booked",
+    "Never",
+    "Only at Completed"
+   ],
+   "answer": 1,
+   "why": "Required-at-create forms make people type guesses."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Standard objects first; a custom object only for a real, separate thing (and only on a plan that allows it).\n2. Every field goes in the data dictionary before it goes in the CRM.\n3. A new pipeline for a different process; a property for the same process elsewhere.\n4. Owners, teams and least-privilege permissions make agents trust the system.\n5. Keep sensitive data out unless there's a clear need and a secure place for it."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.2 complete!* _Solution Design: Objects, Pipelines, Teams and Permissions_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.3, _Data Migration: Moving Years of Records Without Breaking Them_."
+  }
+ ]
+}

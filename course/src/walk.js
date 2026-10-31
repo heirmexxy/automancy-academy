@@ -221,8 +221,9 @@ function wkSVG(G){
 function wkMount(host, id, part){
   const T = TPLS[id]; const items = (T && T.items || []).filter(it => it.kind === "zap" ? (it.steps || []).length : it.kind === "make" || it.kind === "n8n" ? it.wf : false);
   if(!items.length){
-    const cards = $$(".step", part || host).map(st => { const h = st.querySelector("h4"); const p = st.querySelector("p, li");
-      return {label: h ? h.textContent.trim() : "", say: (h ? h.textContent.trim() + ". " : "") + (p ? wkShort(p.textContent, 300) : ""), detail: p ? p.textContent.trim() : ""}; }).filter(c => c.label);
+    const LB = (T && T.walk && T.walk.labels) || []; /* optional short box labels, one per step card */
+    const cards = $$(".step", part || host).map((st, i) => { const h = st.querySelector("h4"); const p = st.querySelector("p, li");
+      return {label: LB[i] || (h ? h.textContent.trim() : ""), say: (h ? h.textContent.trim() + ". " : "") + (p ? wkShort(p.textContent, 300) : ""), detail: p ? p.textContent.trim() : ""}; }).filter(c => c.label);
     if(cards.length < 2 && !wkClipsFor(id).length) return;
     if(cards.length >= 2) items.push({kind:"cards", name: id.startsWith("B") ? "The build, step by step" : "The solved problem, step by step", cards, walk:(T && T.walk) || null});
   }

@@ -1,0 +1,67 @@
+{
+ "id": "7.6",
+ "items": [],
+ "note": "Lesson 7.6 is about launch and adoption; it's shown as steps.",
+ "walk": {
+  "title": "Solve it: making Kora's team actually use the CRM",
+  "sample": "12 users · 2 offices · 2 champions",
+  "labels": [
+   "UAT week",
+   "Training",
+   "Dashboards",
+   "Adoption",
+   "Handover"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "A CRM nobody uses is just an expensive spreadsheet. We test it with the people who'll use it, train them on their own deals, and measure adoption.",
+    "show": [
+     "Test → train → measure → hand over"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "UAT week. Twenty-two test scripts from the twelve musts, run by Bisi, the office managers and two champions. Nine defects fixed, seven requests logged for later.",
+    "show": [
+     "22 scripts · 9 defects · 7 change requests",
+     "Go / no-go: go"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Training by role, on each person's own migrated deals, plus six short videos. Tunde and Amaka are the champions in each office.",
+    "show": [
+     "4 role sessions",
+     "6 short how-to videos"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "Three dashboards for agents, managers and the owner. The Monday meeting moves from Excel to the owner dashboard from week one.",
+    "show": [
+     "Each chart answers a written question"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Track adoption weekly. In week three, nine of twelve agents log activity, and first reply is down to nineteen minutes from six hours.",
+    "show": [
+     "Active agents: 9 / 12 (target 10)",
+     "First reply: 19 min (was 6 h)",
+     "Action: 1:1s with 3 low-activity agents"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Handover in week four. Two admins trained, hypercare closes, and a monthly optimisation retainer starts.",
+    "show": [
+     "Handover pack delivered",
+     "Monthly retainer starts"
+    ],
+    "data": "live"
+   }
+  ],
+  "end": "That's launch: tested by its users, trained on real deals, measured every week, and handed over with admins in place."
+ }
+}

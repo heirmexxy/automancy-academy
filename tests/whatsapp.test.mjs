@@ -7,7 +7,7 @@ const W = ns.default ?? ns; // tsx loads .ts as CommonJS here: exports land on .
 const {
   verifySignature, signBody, normalisePhone, waIdOf, maskPhone, splitText, toWhatsAppText, parseCommand, parseQuizAnswer,
   parseItemId, formatQuiz, renderCard, cleanScript, cleanCard, awaitingFor, quizFeedback, withButtons, itemXp,
-  courseAccessFrom, reminderDue, within24h, codeFromInt, isLinkCode, waMeLink, appAnchor, decodeEntities, WA, DAY
+  courseAccessFrom, specAccessFrom, reminderDue, within24h, codeFromInt, isLinkCode, waMeLink, appAnchor, decodeEntities, WA, DAY
 } = W;
 
 test("signature: valid, tampered, wrong secret, malformed", () => {
@@ -193,6 +193,14 @@ test("course access mirrors getEntitlements", () => {
   assert.equal(courseAccessFrom([{ product: "cohort", status: "active", expires_at: past }]), false);
   assert.equal(courseAccessFrom([{ product: "self", status: "refunded", expires_at: null }]), false);
   assert.equal(courseAccessFrom([{ product: "member", status: "active", expires_at: null }]), false);
+});
+
+test("specialisation access: only active, unexpired specialisation products", () => {
+  const past = new Date(Date.now() - DAY).toISOString();
+  assert.deepEqual(specAccessFrom([{ product: "crmspec", status: "active", expires_at: null }, { product: "self", status: "active", expires_at: null }], ["crmspec"]), ["crmspec"]);
+  assert.deepEqual(specAccessFrom([{ product: "crmspec", status: "active", expires_at: past }], ["crmspec"]), []);
+  assert.deepEqual(specAccessFrom([{ product: "crmspec", status: "refunded", expires_at: null }], ["crmspec"]), []);
+  assert.equal(courseAccessFrom([{ product: "crmspec", status: "active", expires_at: null }]), false);
 });
 
 test("reminders: inactive ≥ 2 days, at most one per 3 days; 24-hour window", () => {

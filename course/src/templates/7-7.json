@@ -1,0 +1,67 @@
+{
+ "id": "7.7",
+ "items": [],
+ "note": "Lesson 7.7 builds an n8n implementation agent; it's shown as steps.",
+ "walk": {
+  "title": "Solve it: an AI agent that checks Kora's CRM and proposes changes",
+  "sample": "Signed design v3 · Telegram approval · sandbox CRM",
+  "labels": [
+   "Design as data",
+   "Read-only tools",
+   "Agent and prompt",
+   "Approve and apply",
+   "Test guardrails"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "An agent that keeps the CRM matching the signed design. It can read and check freely, but it changes nothing without a person's approval.",
+    "show": [
+     "Read freely · change only by approved plan"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Store the signed design as data: fields and pipelines in a table, with a version number and a signed date. The agent reads that, never a Word file.",
+    "show": [
+     "Design table + version + signed date"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Build the read-only tools first: list the schema, diff it against the design, validate import files, and report data quality. Test each by hand.",
+    "show": [
+     "list_crm_schema · diff_design_vs_crm",
+     "validate_import_file · data_quality_report"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "The agent runs at temperature zero. Its prompt says the design is the only source of truth, numbers come only from tools, and deletions are never proposed.",
+    "show": [
+     "Telegram (your chat only) or monthly schedule",
+     "Design = only source of truth"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Changes go through a plan with a dry run and a hash. You approve on Telegram, and a separate workflow, not the agent, applies it and logs the change.",
+    "show": [
+     "Plan + dry run + hash",
+     "Approve → separate apply workflow"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Test the guardrails. Requests outside the design are refused, hidden instructions in notes are ignored, edited plans fail the hash, and big plans are split.",
+    "show": [
+     "Not in design → refuse and ask",
+     "Hash mismatch → refuse",
+     "Over 200 changes → split"
+    ],
+    "data": "guarded"
+   }
+  ],
+  "end": "That's the implementation agent: it reads, checks and proposes, and a person decides what changes."
+ }
+}

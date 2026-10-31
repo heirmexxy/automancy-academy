@@ -1,0 +1,191 @@
+{
+ "id": "7.3",
+ "title": "Data Migration: Moving Years of Records Without Breaking Them",
+ "track": 7,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.3 · Data Migration: Moving Years of Records Without Breaking Them*\n\n_≈ 2.5 hours · with Miracle_\n\nThe design is signed. Now Kora's 18,400 spreadsheet rows, two years of WhatsApp-era deals and 130 available listings have to land in the new CRM: clean, linked and owned, without losing anything that matters and without importing the mess. Migration is where most CRM projects lose the team's trust, because the first thing an agent does in a new CRM is look up a client they know. If that client is missing or duplicated, the system is \"broken\" from day one."
+  },
+  {
+   "t": "text",
+   "body": "*\"Where is Mr Okonkwo?\"*\n\n*Nodo:* \"Eleven sheets, eleven ways to write a phone number. Before anything touches the CRM, it all goes through one cleaning table.\"\n\n*Echo:* \"Three Mr Okonkwos. Two are the same man. One is his brother. A name is never proof.\"\n\n*Glitch:* \"Merge all eleven sheets, import them on Friday evening, go live Monday. No time for tests; that's what Monday is for.\"\n\n*Monday morning:* Every agent finds their clients, once. The counts match the plan, and the old sheets are frozen, not deleted."
+  },
+  {
+   "t": "text",
+   "body": "*The migration plan: scope, mapping, order*\n\n- *Scope from the audit*: From 7.1: active people (last 24 months), open deals, available properties. Everything else goes into a dated, read-only archive export the client keeps. Write the scope down; it's what \"done\" means.\n- *Field mapping*: One row per source column: which sheet, which column, which target object and internal property name, and the transformation (e.g. \"phone → E.164 +234…\", \"'3bed' → 3\"). Unmapped columns are listed with the reason.\n- *Order matters*: Import what others point to first: users and owners → companies → contacts → custom objects (properties) → deals → associations → activities and notes. A deal can't link to a contact that doesn't exist yet."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The migration plan: scope, mapping, order): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-3"
+  },
+  {
+   "t": "text",
+   "body": "*Clean and normalise in a staging table, not in the CRM*\n\nBring every source into one *staging* sheet or database table with the target columns. Clean there, where it's cheap to fix and easy to re-run. The CRM only ever receives clean rows.\n\n- *Normalise*: Trim spaces; emails lowercase; phones to E.164 (`+2348031234567`); names in proper case; dates to ISO (`2025-03-14`); dropdown values mapped to the exact allowed labels; money to plain numbers.\n- *Validate*: Flag rows that break a rule (no phone and no email, impossible budget, unknown agent) into a _rejects_ tab with the reason. Rejects go back to the client to fix or drop, never silently into the CRM.\n- *Script it*: Do the cleaning with formulas or an n8n/Make workflow (or a Code node) that you can re-run on the final export during cutover. A cleaning job done by hand once can't be repeated on the delta."
+  },
+  {
+   "t": "text",
+   "body": "*De-duplication lab: merge or keep apart?*\n\nMatch on *strong keys* (same normalised email, same normalised phone), not on names. Decide each pair."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: De-duplication lab: merge or keep apart?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-3"
+  },
+  {
+   "t": "text",
+   "body": "*Import with external IDs, then reconcile*\n\n- *External ID*: Give every staging row a stable ID (`kora_legacy_id`, e.g. `LEK24-0812`) and import it into a unique property. Re-runs then _update_ instead of duplicating, associations can be built from IDs, and anyone can trace a CRM record back to its source row.\n- *Test import first*: Import 20 rows of each object into a sandbox or trial portal. Check the record pages, associations, owners and dropdowns by eye. Then 10% of the data. Then everything.\n- *Import tools vs. the API*: The CRM's import wizard handles CSV files with associations for simple cases. For thousands of rows with custom objects and rules, an n8n or Make workflow calling the CRM's batch API (with the vendor's rate limits respected and retries on errors) is repeatable and logged."
+  },
+  {
+   "t": "text",
+   "body": "- *Reconcile*: After each load: counts per object in staging vs. the CRM; records without an owner; deals without a contact; sample 20 records and compare field by field. Write the numbers in the migration log."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Import with external IDs, then reconcile): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-3"
+  },
+  {
+   "t": "text",
+   "body": "*Cutover: freeze, delta, switch, rollback*\n\n- *Freeze*: Agree a moment (e.g. Friday 5 p.m.) after which nobody edits the old sheets. New enquiries over the weekend go to a temporary form or one inbox.\n- *Delta load*: Rerun your cleaning workflow on the frozen sheets; thanks to external IDs, it updates what changed since the test loads and adds what's new.\n- *Switch*: Point the website forms and integrations at the CRM (7.5), make the old sheets read-only, and keep the archive export.\n- *Rollback plan*: Write down what would make you postpone (reconciliation fails, permissions wrong), and how: the sheets are frozen, not deleted, so the team can keep working from them for another week.\n- *Hypercare*: For the first two weeks, someone answers \"I can't find my client\" within the hour, and fixes the data, not just the symptom."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.3",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-3"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora's migration*\n\n*The goal.* 4,312 active people, 130 available properties and 210 open deals in the new CRM with owners and links; zero duplicates; old sheets frozen and archived; every load reconciled and logged."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Staff table and mapping sheet*\n\nA _staff_ tab maps every agent name used in the sheets (\"Bisi\", \"Bisola A.\", \"BA\") to one user email. The mapping sheet covers 74 source columns: 41 mapped, 33 dropped with reasons (e.g. \"Commission %: stays in finance sheet\")."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · One cleaning workflow*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (One cleaning workflow): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-3"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · De-duplicate*\n\nGroup staging rows by normalised email, then by phone. Auto-merge on a strong key (keep the most recent non-blank value for each field; keep all notes). 1,240 name-only matches go to a review tab; the office managers clear them in two afternoons."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Test loads into a sandbox*\n\nLoad 1: 20 of each object. Fix two mapping errors (a stage typo; Ibadan agents missing from the staff table). Load 2: 10%. Reconcile; spot-check with two agents, who each look up five clients they know."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Cutover weekend*\n\n_(Code on screen in the app.)_\n\n- *18,400* source rows\n- *4,312* clean contacts loaded\n- *0* reconciliation differences"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Cleaning is scripted, so the delta reruns it exactly.\n- Strong keys merge; people decide the doubtful ones.\n- External IDs make every load safe to repeat.\n- Agents test with clients they know.\n- The old data is frozen and kept, so rollback is real.\n\n*Common mistakes to avoid*\n\n- Cleaning by hand in the CRM after import.\n- Merging on names.\n- Importing deals before contacts exist.\n- No external ID, so a rerun doubles everything.\n- Deleting the old sheets on go-live day."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* The import finished. Green tick. Job done.\n\n*A:* The CRM shows 9,800 contacts. The plan said about 4,300.\n*B:* 140 deals have no contact and no property attached.\n*C:* Every phone number starting with 0 lost its first digit.\n*D:* Glitch re-ran the import to fix a typo. Now there are two of everything.\n*E:* On Monday, agents kept updating the old sheets \"because the CRM is missing things\"."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* no scope and no de-duplication: inactive people and duplicates came in. Filter to scope, de-duplicate on strong keys, reconcile counts.\n*B:* wrong order or missing association keys. Import contacts and properties first, then deals with their legacy IDs, then associations.\n*C:* the spreadsheet treated phones as numbers. Store them as text and normalise to +234… in the cleaning step.\n*D:* no external ID. Import a unique `kora_legacy_id` so reruns update records instead of creating new ones.\n*E:* no freeze and no hypercare. Make old sheets read-only at cutover and fix \"missing\" reports within the hour."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Map and clean a messy sheet",
+   "body": "- Take a messy contact sheet (real with permission, or invented). Write the mapping sheet and clean it with formulas: emails, phones, dropdown values, rejects tab.\n\n*Done when:*\n- Every row is either in staging with valid values or in rejects with a reason."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): A repeatable migration workflow",
+   "body": "- Build an n8n or Make workflow that cleans, validates, de-duplicates on strong keys and loads a trial CRM with an external ID; run it twice.\n\n*Done when:*\n- The second run creates no new records, and your reconciliation table shows zero differences."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Migrate a real client",
+   "body": "- Plan and run a real migration with a freeze, a delta load and a written rollback plan.\n\n*Done when:*\n- The reconciliation log, the go/no-go decision and two weeks of hypercare notes are submitted (names removed)."
+  },
+  {
+   "t": "quiz",
+   "q": "In which order should you import?",
+   "options": [
+    "Deals first; they're the most important",
+    "Any order",
+    "Users → companies → contacts → custom objects → deals → associations → notes",
+    "Notes first"
+   ],
+   "answer": 2,
+   "why": "Records must exist before others can link to them."
+  },
+  {
+   "t": "quiz",
+   "q": "What does an external ID (legacy ID) give you?",
+   "options": [
+    "Safe re-runs that update instead of duplicating, and traceability to the source row",
+    "Faster logins",
+    "Free storage",
+    "Automatic consent"
+   ],
+   "answer": 0,
+   "why": "Re-runs match on the ID and update the existing record."
+  },
+  {
+   "t": "quiz",
+   "q": "Two contacts share only a name. What do you do?",
+   "options": [
+    "Merge them",
+    "Send the pair to a person to review",
+    "Delete one",
+    "Import both and forget it"
+   ],
+   "answer": 1,
+   "why": "A name is never proof; strong keys merge, weak matches get reviewed."
+  },
+  {
+   "t": "quiz",
+   "q": "Why clean in a staging table instead of in the CRM?",
+   "options": [
+    "The CRM can't be edited",
+    "Staging is prettier",
+    "It's required by law",
+    "It's cheap to fix, and the same cleaning reruns on the cutover delta"
+   ],
+   "answer": 3,
+   "why": "Scripted cleaning repeats exactly on the final export."
+  },
+  {
+   "t": "quiz",
+   "q": "What makes a rollback possible on cutover weekend?",
+   "options": [
+    "Deleting the old sheets",
+    "Importing everything twice",
+    "Freezing (not deleting) the old sheets and agreeing go/no-go criteria",
+    "Nothing; never roll back"
+   ],
+   "answer": 2,
+   "why": "If reconciliation fails, the team keeps working from the frozen sheets while you fix it."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Migrate the scope from the audit; archive the rest.\n2. Map every column, clean in staging with a repeatable workflow, reject with reasons.\n3. Merge on strong keys; people review weak matches.\n4. Import in dependency order with external IDs; reconcile every load.\n5. Freeze, delta, switch, with a written rollback and two weeks of hypercare."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.3 complete!* _Data Migration: Moving Years of Records Without Breaking Them_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.4, _Sales and Service Automation on Paid Plans_."
+  }
+ ]
+}

@@ -1,0 +1,105 @@
+{
+ "id": "B7",
+ "items": [],
+ "note": "Boss 7 is a full implementation project; its deliverables are shown as steps.",
+ "walk": {
+  "title": "Boss 7: Kora goes live",
+  "sample": "Kora Properties · 4 phases · 10 deliverables",
+  "labels": [
+   "D1 Requirements",
+   "D2 Design",
+   "D3 Build",
+   "D4 Migration",
+   "D5 Automations",
+   "D6 Integrations",
+   "D7 UAT, training",
+   "D8 Dashboards",
+   "D9 Agent",
+   "D10 Handover"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "The boss project: take Kora Properties from spreadsheets to a live CRM, in four phases and ten deliverables. Every lesson in this track feeds one of them.",
+    "show": [
+     "4 phases · 10 deliverables"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Phase one. Requirements: the process map with leaks, MoSCoW priorities, the data audit, success measures, and a dated yearly cost.",
+    "show": [
+     "Musts ≤ half the list",
+     "From 7.1"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Then the solution design: objects, data dictionary, pipelines with exit rules, teams, permissions and assignment rules.",
+    "show": [
+     "From 7.2"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "Phase two. Build the design in a sandbox, and prove the permission matrix with two test users.",
+    "show": [
+     "From 7.2 and 7.7"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Migrate at least two thousand messy rows: mapping sheet, cleaning workflow, rejects with reasons, test loads, and a reconciliation log.",
+    "show": [
+     "Cutover and rollback plan",
+     "From 7.3"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Phase three. Automations: routing on every branch, the re-route timer, follow-ups and the stuck-deal alert, all tested with test records.",
+    "show": [
+     "From 7.4"
+    ]
+   },
+   {
+    "at": "6",
+    "say": "Integrations: the upsert sub-workflow, website form, portal parser, WhatsApp acknowledgement and the Paystack deposit in test mode.",
+    "show": [
+     "Daily count check",
+     "From 7.5"
+    ]
+   },
+   {
+    "at": "7",
+    "say": "Phase four. UAT scripts for every must, defect lists, a training plan and three short training videos.",
+    "show": [
+     "From 7.6"
+    ]
+   },
+   {
+    "at": "8",
+    "say": "Dashboards for agents, managers and the owner, a weighted forecast, and a four-week adoption report with actions.",
+    "show": [
+     "From 7.6"
+    ]
+   },
+   {
+    "at": "9",
+    "say": "The implementation agent: read-only tools, plans with a dry run and hash, Telegram approval, and its first monthly health report.",
+    "show": [
+     "From 7.7"
+    ]
+   },
+   {
+    "at": "10",
+    "say": "Finally the handover pack and a five-minute demo: a portal enquiry owned in minutes, a deposit moving a deal, and one approved plan applied.",
+    "show": [
+     "Handover pack + 5-minute demo"
+    ],
+    "data": "live"
+   }
+  ],
+  "end": "That's Kora live. Build each deliverable, then show the demo end to end."
+ }
+}

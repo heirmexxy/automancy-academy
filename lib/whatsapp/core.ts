@@ -355,6 +355,10 @@ export const projectTier = (id: string) => (id.startsWith("B") ? "boss" : "capst
 export function courseAccessFrom(rows: { product: string; status: string; expires_at: string | null }[], now = Date.now()): boolean {
   return rows.some(e => e.status === "active" && (!e.expires_at || new Date(e.expires_at).getTime() > now) && ["self", "cohort", "team"].includes(e.product));
 }
+/** Specialisations bought (products that are a specialisation id, e.g. "crmspec"), active and unexpired. */
+export function specAccessFrom(rows: { product: string; status: string; expires_at: string | null }[], specIds: string[], now = Date.now()): string[] {
+  return [...new Set(rows.filter(e => e.status === "active" && (!e.expires_at || new Date(e.expires_at).getTime() > now) && specIds.includes(e.product)).map(e => e.product))];
+}
 
 /* ── Reminders and the 24-hour window ──────────────────────────────────── */
 export const DAY = 86_400_000;

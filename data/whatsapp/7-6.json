@@ -1,0 +1,191 @@
+{
+ "id": "7.6",
+ "title": "Launch, Adoption and Reporting: Making the Team Use It",
+ "track": 7,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.6 · Launch, Adoption and Reporting: Making the Team Use It*\n\n_≈ 2 hours · with Emeka_\n\nA CRM can be perfectly built and still fail, because people go back to WhatsApp and spreadsheets in week three. Adoption is part of the job you're paid for. This lesson covers user acceptance testing, role-based training, the go-live plan, the dashboards that make the CRM worth opening, the adoption numbers you track, and the handover pack that lets the client run it without you."
+  },
+  {
+   "t": "text",
+   "body": "*Week three*\n\n*Launch day:* Everyone logs in. Mrs Adeyemi sends a happy voice note.\n\n*Week three:* Half the agents are back on WhatsApp. \"The CRM is slow.\" \"I didn't know where to put the offer.\"\n\n*Glitch:* \"I trained them! Every menu, every setting, ninety slides, one afternoon. Not my fault they forgot.\"\n\n*The fix:* Short role-based training, one dashboard everyone uses on Mondays, and adoption numbers you watch every week."
+  },
+  {
+   "t": "text",
+   "body": "*User acceptance testing (UAT)*\n\nBefore launch, real users run real scenarios in the configured CRM (a sandbox or the live portal with test records) and sign off. Every must-have requirement from 7.1 becomes at least one test script."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (User acceptance testing (UAT)): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-6"
+  },
+  {
+   "t": "text",
+   "body": "- *Defects vs. change requests*: A defect is something that doesn't meet a signed requirement: you fix it. A change request is something new (\"can it also…\"): log it, price or schedule it after launch. Keep the two lists separate.\n- *Go/no-go*: Launch when every must-have passes, there are no open critical defects, and the migration reconciliation (7.3) is clean."
+  },
+  {
+   "t": "text",
+   "body": "*Training by role, on their daily routine*\n\n_Role · Their routine (what you train) · Length_\n- *Agent* · Morning: my tasks and new leads → call from the app → log the call and next step → move the stage → upload offer notes · 45 min + 3-min videos\n- *Office manager* · Team dashboard → stuck deals → reassign → Monday meeting · 45 min\n- *Admin* · Check integration log → fix data issues → add users → close tickets · 60 min\n- *Owner* · Read the executive dashboard and forecast; ask the right Monday questions · 30 min\n\n- *Practise on their own deals*: Training uses real (migrated) records: \"find your client from yesterday and log that call\". Recognising their own work is what makes it stick.\n- *Champions*: One respected agent per office gets extra training and answers colleagues' questions first. Peers persuade better than consultants.\n- *Short videos*: Record 2–3-minute Loom videos for each routine; they replace the 90-slide deck and help new staff later."
+  },
+  {
+   "t": "text",
+   "body": "*Dashboards and forecasting leaders trust*\n\n- *One dashboard per audience*: Agents: my open deals by stage, overdue tasks. Managers: team pipeline, stuck deals, response times by agent. Owner: pipeline value and weighted forecast, won/lost this month with reasons, enquiries by source and conversion.\n- *Weighted forecast*: Each open deal's value × its stage's win chance (set in 7.2), summed. It's only honest if stages have exit rules and deals are updated, which is why adoption comes first.\n- *Few charts, each with a decision*: For each chart, write the question it answers and what someone would do about it. A chart with no decision is decoration."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Dashboards and forecasting leaders trust): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-6"
+  },
+  {
+   "t": "text",
+   "body": "*Adoption lab: healthy or warning sign?*"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Adoption lab: healthy or warning sign?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-6"
+  },
+  {
+   "t": "text",
+   "body": "*Hypercare, handover and the retainer*\n\n- *Hypercare (2–4 weeks)*: A named support channel, answers within the hour in office hours, daily data-quality check, and a short weekly report to the owner: adoption numbers, issues fixed, change requests.\n- *Handover pack*: Solution design (7.2), data dictionary, automation register (7.4), integration map and log location (7.5), admin routines, user list and roles, where every credential is stored (not the credentials), vendor support contacts, and the training videos.\n- *Admin ownership*: Two people at the client can add users, edit dropdown values, read the integration log and switch an automation off. Nobody should depend on you to do routine admin.\n- *Optimisation retainer*: Monthly: health check, adoption review, one or two improvements from the change-request list. 7.7's agent does much of the checking; you decide and explain."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.6",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-6"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora's launch and first month*\n\n*The goal.* Launch on time with every must-have passing UAT; by week four, at least 10 of 12 agents log activity four days a week, under 10% of open deals lack a next step, and Mrs Adeyemi runs Monday from the CRM dashboard."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · UAT week*\n\n22 test scripts from the 12 musts, run by Bisi, both office managers and two champions. 9 defects (fixed), 7 change requests (logged for month two, such as WhatsApp templates for viewing reminders). Go/no-go: go."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Training*\n\nFour role sessions on the Thursday before cutover, each on the people's own migrated deals. Six Loom videos (my morning list; log a call; move a stage; record an offer; find a property; mark lost with a reason). Champions: Tunde (Lekki) and Amaka (Ibadan)."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Dashboards*\n\nThree dashboards (agent, manager, owner) with the six owner charts from Card 3, each with its question written in the description. Monday 9:00 meeting moved from Excel to the owner dashboard from the first week."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Adoption tracking*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Adoption tracking): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-6"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Handover*\n\nHandover pack delivered in week four; Bisi and the Lekki office manager trained as admins; hypercare closes; a monthly optimisation retainer starts.\n\n- *22* UAT scripts passed\n- *11/12* agents active in week 4\n- *19 min* median first reply"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Requirements become tests, so \"done\" is objective.\n- Training is the daily routine, on their own data.\n- Leaders use the dashboard, so everyone updates it.\n- Adoption is measured weekly and acted on.\n- The client can run it without you.\n\n*Common mistakes to avoid*\n\n- Skipping UAT \"to save time\".\n- One long feature tour for everyone.\n- Twenty charts nobody asked for.\n- Calling launch day the finish line.\n- Keeping admin knowledge in your head."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Launched! Invoice sent. On to the next client.\n\n*A:* The forecast says ₦2.1 billion this month. Last month's actual was ₦310 million.\n*B:* The client asks for \"just one more report\" every day of UAT, and launch slips three weeks.\n*C:* The only person who knows how to add a user is Glitch.\n*D:* Agents keep a private WhatsApp group \"for the real updates\".\n*E:* The owner's dashboard has 24 charts. She looks at none."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* stale deals and hopeful stages inflate the forecast. Enforce exit rules and next steps, close dead deals, and review stuck deals weekly.\n*B:* change requests mixed with defects. Fix defects; log, price and schedule new requests after launch.\n*C:* no admin handover. Train two client admins and leave a written admin routine.\n*D:* the CRM isn't where work happens. Find out why (slow? missing field? manager not using it?), fix it, and have leaders ask \"is it in the CRM?\" in every meeting.\n*E:* charts without decisions. Cut to six, each with the question it answers and who acts on it."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Write UAT scripts and a training plan",
+   "body": "- Turn five requirements into UAT scripts and write a role-based training plan for a business you know.\n\n*Done when:*\n- Each script has steps, expected results and pass/fail boxes, and each role's training is its daily routine."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Dashboards and an adoption report",
+   "body": "- In a trial CRM with sample data, build agent, manager and owner dashboards and a weekly adoption report with targets.\n- Record one 3-minute training video.\n\n*Done when:*\n- Every chart has a written question and decision, and the adoption report has at least four measured numbers."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Launch and hand over for a real client",
+   "body": "- Run UAT, training and launch for a real team, track adoption for four weeks, and deliver a handover pack.\n\n*Done when:*\n- You submit the UAT sign-off, four weekly adoption reports and the handover pack (names removed), and two client staff can do routine admin."
+  },
+  {
+   "t": "quiz",
+   "q": "Where do UAT scripts come from?",
+   "options": [
+    "The vendor's feature list",
+    "The signed requirements, each must-have at least once",
+    "Whatever the tester feels like",
+    "Last year's project"
+   ],
+   "answer": 1,
+   "why": "Requirements become tests, so 'done' is objective."
+  },
+  {
+   "t": "quiz",
+   "q": "A user asks for a new report during UAT. What is it?",
+   "options": [
+    "A critical defect",
+    "A reason to delay launch",
+    "A change request: log it and schedule it after launch",
+    "Nothing"
+   ],
+   "answer": 2,
+   "why": "Defects block launch; change requests don't."
+  },
+  {
+   "t": "quiz",
+   "q": "What should agent training focus on?",
+   "options": [
+    "Their daily routine, practised on their own records",
+    "Every menu and setting",
+    "The vendor's history",
+    "Admin settings"
+   ],
+   "answer": 0,
+   "why": "Short, role-based, on familiar data."
+  },
+  {
+   "t": "quiz",
+   "q": "Which is the strongest adoption signal?",
+   "options": [
+    "Number of logins on launch day",
+    "How many charts exist",
+    "Number of custom fields",
+    "Most agents logging activity several days a week, and leaders using the dashboards"
+   ],
+   "answer": 3,
+   "why": "Behaviour over time, not launch-day logins."
+  },
+  {
+   "t": "quiz",
+   "q": "Why train two client admins before you leave?",
+   "options": [
+    "To reduce your invoice",
+    "So routine admin doesn't depend on you",
+    "The vendor requires exactly two",
+    "To share passwords"
+   ],
+   "answer": 1,
+   "why": "A healthy CRM survives the consultant leaving."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Every must-have becomes a UAT script; defects block launch, change requests don't.\n2. Train each role on its daily routine, with their own data, plus champions and short videos.\n3. Few dashboards, one per audience, each chart tied to a decision; the forecast is only as honest as the stages.\n4. Measure adoption weekly and act on it.\n5. Hypercare, a handover pack and client admins, then a monthly optimisation retainer."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.6 complete!* _Launch, Adoption and Reporting: Making the Team Use It_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.7, _The CRM Implementation Agent: AI That Builds, Checks and Proposes_."
+  }
+ ]
+}

@@ -1,0 +1,194 @@
+{
+ "id": "7.1",
+ "title": "Discovery and Requirements: Before You Touch the CRM",
+ "track": 7,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.1 · Discovery and Requirements: Before You Touch the CRM*\n\n_≈ 2 hours · with Miracle_\n\nIn 5.8 and 5.9 you set up a free CRM for Harvest Lane and taught it to fill itself. Now a paying client wants the real thing: a CRM for a whole sales team, on a paid plan, replacing spreadsheets and WhatsApp. Most CRM projects that fail were lost in the first week, when nobody wrote down how the business really sells. This lesson is that first week: the discovery workshop, the sales process map, the data audit and a requirements document the client signs before you build anything."
+  },
+  {
+   "t": "text",
+   "body": "*Kora Properties wants \"a proper CRM\"*\n\n*The referral:* Tolu introduces you to Mrs Kemi Adeyemi, who runs Kora Properties in Lekki and has just opened an Ibadan office.\n\n*Echo:* \"Before we choose a plan, let's find out how a buyer actually becomes a sale here. I bet nobody in the office tells it the same way.\"\n\n*Glitch:* \"Skip the questions. Buy Enterprise for all twelve agents, switch on every feature, import the spreadsheets on Friday. What could go wrong?\"\n\n*Two weeks later:* A signed requirements document, a plan sized to the real need, and a team that recognises its own process on the page."
+  },
+  {
+   "t": "text",
+   "body": "*The implementation method in five phases*\n\nEvery professional CRM implementation, whoever the vendor, follows roughly the same shape. You'll use it for the rest of this track.\n\n_Phase · What happens · What the client signs off · Lesson_\n- *1. Discover* · Workshops, process map, data audit, requirements · Requirements document · 7.1\n- *2. Design* · Objects, properties, pipelines, teams and permissions · Solution design · 7.2\n- *3. Build and migrate* · Configure, migrate data, automate, integrate · Test results (UAT) · 7.3–7.5\n- *4. Launch* · Training, cutover, go-live support · Go-live checklist · 7.6\n- *5. Optimise* · Dashboards, health checks, monthly improvements · Monthly review · 7.6, 7.7\n\n*Echo:* Notice what's missing from phase 1: logging in to the CRM. Discovery happens on paper, with people."
+  },
+  {
+   "t": "text",
+   "body": "*The discovery workshop: who, what and how long*\n\nRun two or three short workshops, not one long meeting. Invite the people who do the work, not only the boss who pays.\n\n- *Who*: The owner (goals and budget), one or two top agents (how sales really happen), a new agent (where people get lost), whoever handles admin or accounts (handover after the sale) and, if possible, someone who answers enquiries.\n- *Walk a real deal*: Ask them to tell the story of the last deal they won, step by step, from first message to money in the bank. Then the last one they lost. Write every step, tool and person on sticky notes.\n- *Ask about numbers*: Enquiries per month by source, how fast they're answered, how many become viewings, offers and sales, the average commission. Rough numbers are fine; \"we don't know\" is a finding.\n- *Ask about pain, then about success*: \"What goes wrong most weeks?\" and \"In six months, what would tell you this was worth it?\" The second answer becomes your success measures."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The discovery workshop: who, what and how long): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-1"
+  },
+  {
+   "t": "text",
+   "body": "*Map the process and find the leaks*\n\nTurn the sticky notes into one swimlane map: a lane per role (enquiry handler, agent, manager, admin), steps left to right, and every hand-over marked. Then mark the leaks: places where a lead or a deal can stall or vanish without anyone noticing.\n\n_Kora's step · Today · Leak_\n- *Enquiry arrives* · Portal emails go to one inbox; Instagram DMs to the marketing intern's phone · Weekend enquiries wait until Monday\n- *Assign an agent* · The manager forwards on WhatsApp \"when she can\" · No owner for hours; two agents call the same buyer\n- *Book a viewing* · Agent's personal calendar · No-shows aren't followed up\n- *Offer and negotiation* · WhatsApp and calls · No record of what was offered, so handovers fail\n- *Sale agreed* · Agent tells admin on WhatsApp · Commission and paperwork tracked in a separate sheet"
+  },
+  {
+   "t": "text",
+   "body": "Each leak becomes a requirement. \"Weekend enquiries wait until Monday\" becomes \"Every enquiry gets an automatic acknowledgement within 5 minutes and an owner within 1 working hour.\""
+  },
+  {
+   "t": "text",
+   "body": "*Requirements lab: must, should, could or won't?*\n\nMoSCoW prioritising keeps the first release small enough to finish. Sort Kora's wish list. *Must* means the CRM is useless at launch without it."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Requirements lab: must, should, could or won't?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-1"
+  },
+  {
+   "t": "text",
+   "body": "*The data audit, platform fit and the requirements document*\n- *Audit the data before you quote*: Ask for a copy of every spreadsheet and export. Count rows, duplicates, blank emails and phones, and how many records are still active. \"Nine years of data\" is often 30% duplicates and 60% inactive. The audit sets the migration effort in 7.3, and your price.\n- *Platform fit*: Match requirements to plans, not plans to wishes. List each must-have and which plan tier first provides it (for example, HubSpot workflows start on the Professional tier; Zoho's Blueprint process tool needs its Professional edition or higher). Price the whole team for a year, including onboarding fees and any add-ons.\n- *Total cost of ownership*: Licences × seats × 12, plus onboarding fees, integrations, your build and support, and the team's training time. Compare it with the leak you measured: if faster responses win two more sales a year, what is that worth in commission?"
+  },
+  {
+   "t": "text",
+   "body": "- *The requirements document*: One short document: goals and success measures, the process map, prioritised requirements (MoSCoW), data audit summary, recommended platform and plan with yearly cost, out-of-scope list, risks, and a signature line.\n\nVendor plans, prices and limits change often. Check each vendor's pricing page on the day you advise, quote in the currency you'll be billed in, and write that date in the document."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.1",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-1"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora Properties' requirements*\n\n*The goal.* A signed requirements document Kora's team recognises as their own process, small enough to launch in six weeks, with success measures you can check after three months."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Workshop 1 (90 min): walk real deals*\n\nMrs Adeyemi, two senior agents, one new agent and the office administrator. Walk the last won sale (a three-bedroom flat in Lekki Phase 1) and the last lost rental. Sticky notes on a wall, one colour per role. Photograph everything."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Collect the numbers and the data*\n\nFrom the portals' dashboards and the enquiries inbox: about 400 enquiries a month (portals 55%, Instagram 25%, website 10%, referrals and walk-ins 10%). Median first reply: 6 hours; weekends 40 hours. Ask the administrator for every sheet: 11 spreadsheets, 18,400 rows."
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Audit the data*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Audit the data): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-1"
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Workshop 2 (60 min): play back the map*\n\nShow the swimlane map with the leaks marked. Agents correct it (\"we also get referrals from lawyers\"). Agree the success measures: median first reply under 15 minutes in office hours; 100% of enquiries with an owner within one working hour; viewings-to-offer rate visible each week; Mrs Adeyemi stops building the Monday report by hand."
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Prioritise and size*\n\n12 musts, 6 shoulds, 4 coulds, 3 won'ts. Check each must against the plans. Kora needs automated routing and follow-up workflows, team-based permissions and a property listing record, so a free plan won't do. Compare two options (for example HubSpot Sales Hub Professional and Zoho CRM Professional) for 12 users for a year, from the vendors' pricing pages on the day."
+  },
+  {
+   "t": "text",
+   "body": "*Step 6 · Write it, present it, get it signed*\n\nEight pages at most: goals and measures, map, requirements, data audit, platform recommendation and yearly cost, out of scope (commissions, custom app, old history), risks (agent adoption, portal integrations), timeline and a signature line. Present in 30 minutes; sign in the room or within a week.\n\n- *12* must-haves for launch\n- *32%* duplicates found before quoting\n- *4* success measures agreed"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- The team describes its own process, so it trusts the result.\n- Leaks become requirements; requirements become tests.\n- The data audit sets a realistic migration and price.\n- Platform choice follows the musts, not the brochure.\n- Success measures make the project checkable.\n\n*Common mistakes to avoid*\n\n- Only interviewing the owner.\n- Quoting a migration before seeing the data.\n- Choosing the platform in the first meeting.\n- A wish list with everything marked \"must\".\n- No out-of-scope section."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* I wrote the requirements myself. It saved so much time.\n\n*A:* Interviewed only Mrs Adeyemi, in one 20-minute call.\n*B:* Quoted \"₦400,000 to migrate all 18,400 records\" before opening the files.\n*C:* Marked 31 of 34 requirements as \"must\".\n*D:* Recommended the top Enterprise plan for all 12 agents \"to be safe\".\n*E:* Success measure: \"The team is happy with the CRM.\""
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* the owner describes the process she imagines. Agents describe the one that happens. Interview the people who do the work.\n*B:* a third of the rows were duplicates and most were inactive. Audit first, then quote the migration you'll actually do.\n*C:* if everything is a must, nothing is. Ask \"is the CRM useless at launch without this?\" and move the rest to should and could.\n*D:* buy the lowest tier that meets every must-have. Check each must against each tier; upgrades later are easy, refunds aren't.\n*E:* not measurable. Use numbers you can check: first-reply time, enquiries with an owner, report built by hand or not."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Map one sales process",
+   "body": "- Interview someone who sells (any business) about their last won and lost deal.\n- Draw a swimlane map and mark at least three leaks.\n\n*Done when:*\n- The person you interviewed agrees the map is how it really works, and each leak is written as a requirement."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Write a requirements document",
+   "body": "- For a real or sample business: goals and success measures, process map, MoSCoW requirements, a data audit of a real or sample spreadsheet, and out-of-scope.\n\n*Done when:*\n- No more than half the requirements are musts, every success measure is a number, and the data audit counts duplicates and inactive rows."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run discovery for a real client",
+   "body": "- Run two workshops with a real business, recommend a platform and plan with a dated yearly cost, and present the document.\n\n*Done when:*\n- The client signs (or formally reviews) the requirements, and you submit the document with names removed."
+  },
+  {
+   "t": "quiz",
+   "q": "Who should be in the discovery workshop?",
+   "options": [
+    "Only the owner, who is paying",
+    "Only the IT person",
+    "The owner plus the people who sell, answer enquiries and handle admin",
+    "Nobody; read the CRM vendor's template"
+   ],
+   "answer": 2,
+   "why": "The people who do the work know how sales really happen, and where they leak."
+  },
+  {
+   "t": "quiz",
+   "q": "Why audit the client's data before quoting the migration?",
+   "options": [
+    "Duplicates and inactive records change the effort and what's worth migrating",
+    "CRMs reject spreadsheets",
+    "To charge per row",
+    "It isn't necessary"
+   ],
+   "answer": 0,
+   "why": "Kora's 18,400 rows were 32% duplicates and mostly inactive."
+  },
+  {
+   "t": "quiz",
+   "q": "In MoSCoW, what does \"must\" mean?",
+   "options": [
+    "The client mentioned it first",
+    "It's the most expensive feature",
+    "The vendor recommends it",
+    "The CRM is useless at launch without it"
+   ],
+   "answer": 3,
+   "why": "A small set of musts lets the first release launch in weeks."
+  },
+  {
+   "t": "quiz",
+   "q": "How should you choose the plan tier?",
+   "options": [
+    "The top tier, to be safe",
+    "The lowest tier that provides every must-have, priced for the team for a year",
+    "The free plan, always",
+    "Whatever the client's friend uses"
+   ],
+   "answer": 1,
+   "why": "Check each must against each tier; upgrade later when a should becomes a must."
+  },
+  {
+   "t": "quiz",
+   "q": "Which is a good success measure?",
+   "options": [
+    "\"The team likes it\"",
+    "\"Better sales\"",
+    "\"Median first reply under 15 minutes in office hours\"",
+    "\"Use all the features\""
+   ],
+   "answer": 2,
+   "why": "A number you can check after three months."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Discover, design, build and migrate, launch, optimise: discovery happens on paper, with people.\n2. Walk real won and lost deals with the people who do the work.\n3. Every leak in the process map becomes a requirement, and every requirement a test.\n4. Audit the data before you quote; prioritise with MoSCoW; buy the lowest tier that meets the musts.\n5. Get numeric success measures and a signature before you build."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.1 complete!* _Discovery and Requirements: Before You Touch the CRM_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.2, _Solution Design: Objects, Pipelines, Teams and Permissions_."
+  }
+ ]
+}

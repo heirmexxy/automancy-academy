@@ -1,0 +1,68 @@
+{
+ "id": "7.3",
+ "items": [],
+ "note": "Lesson 7.3 (migration) is a process; the cleaning workflow is shown as steps.",
+ "walk": {
+  "title": "Solve it: moving Kora's records without breaking them",
+  "sample": "18,400 rows · 11 sheets · 74 source columns",
+  "labels": [
+   "Mapping sheet",
+   "Cleaning workflow",
+   "De-duplicate",
+   "Test loads",
+   "Cutover weekend"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "Eleven spreadsheets, eighteen thousand four hundred rows, and the same agent spelled three ways. We move only what's worth keeping, and we prove it arrived.",
+    "show": [
+     "Plan → clean → test → cut over"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "A staff table maps every agent name used in the sheets to one user email. The mapping sheet covers all seventy-four columns: forty-one mapped, thirty-three dropped with reasons.",
+    "show": [
+     "Bisi · Bisola A. · BA → one email",
+     "41 mapped · 33 dropped with reasons"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "One repeatable n8n workflow cleans everything: trim, lowercase emails, phones to plus two three four, budgets to numbers, stages to exact labels.",
+    "show": [
+     "Normalise → validate → staging",
+     "Bad rows → rejects, with a reason"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "De-duplicate on strong keys: email first, then phone. Name-only matches go to a review tab, and the office managers clear them in two afternoons.",
+    "show": [
+     "Auto-merge on email or phone",
+     "1,240 name-only matches reviewed by people"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Test loads into a sandbox: twenty of each object, then ten percent. Two mapping errors are found and fixed before the real load.",
+    "show": [
+     "Load 1: 20 per object · Load 2: 10%",
+     "Agents spot-check clients they know"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Cutover weekend. Friday the sheets freeze and the full load runs. Saturday we reconcile and make the go decision. Monday the hypercare desk opens.",
+    "show": [
+     "Fri: freeze + full load",
+     "Sat: reconcile, go / no-go",
+     "Mon: hypercare for two weeks"
+    ],
+    "data": "reconciled"
+   }
+  ],
+  "end": "That's the migration: mapped, cleaned, de-duplicated, tested and reconciled, with a rollback plan if anything fails."
+ }
+}

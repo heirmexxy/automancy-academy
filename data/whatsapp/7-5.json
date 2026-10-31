@@ -1,0 +1,190 @@
+{
+ "id": "7.5",
+ "title": "Integrations: Forms, Portals, WhatsApp, Email and Payments",
+ "track": 7,
+ "free": false,
+ "voice": "female",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.5 · Integrations: Forms, Portals, WhatsApp, Email and Payments*\n\n_≈ 2.5 hours · with Miracle_\n\nA CRM only stays true if information flows into it without anyone typing. For Kora that means: website forms and property-portal enquiries arrive as deals; WhatsApp conversations and emails attach to the right contact; an acknowledgement goes out in minutes; and when a buyer pays the holding deposit on Paystack, the deal moves and the accounts team knows. This lesson is the integration layer: what to connect natively, what to build in n8n, and how to keep it secure, idempotent and within every platform's limits."
+  },
+  {
+   "t": "text",
+   "body": "*\"The CRM is right only when Bisi updates it\"*\n\n*Week 2 after launch:* Portal enquiries arrive by email. Bisi, the administrator, retypes them into the CRM. When she's off, the CRM goes stale.\n\n*Echo:* \"Offers and promises live in twelve phones. When an agent leaves, so does the history.\"\n\n*Glitch:* \"I connected the website straight to the CRM. The private token is in the page's code, so it's quick!\"\n\n*Nodo:* \"Everything flows in by itself, through one place we can watch. Secrets stay on the server.\""
+  },
+  {
+   "t": "text",
+   "body": "*Native, marketplace app or middleware?*\n\n_Connection · Best first choice · Why_\n- *Website forms* · The CRM's own forms (embedded), or the form tool's native integration · Handles consent fields, tracking and duplicates out of the box\n- *Gmail / Outlook* · Native inbox connection and logging · Emails attach to contacts automatically\n- *Property portals (email alerts)* · n8n: parse the alert email, upsert · No native integration; the format is the portal's\n- *WhatsApp Business* · A marketplace inbox app, or n8n with the Cloud API · Depends on budget and plan; both must follow WhatsApp's rules\n- *Paystack* · n8n: verified webhook → CRM · Money events need signature checks and idempotency"
+  },
+  {
+   "t": "text",
+   "body": "- *Prefer native when it does the job*: Fewer moving parts, supported by the vendor, survives you. Use middleware when native doesn't exist, can't apply your rules, or would cost an expensive tier just for one feature.\n- *Secrets live on the server*: Private app tokens, API keys and webhook secrets go in n8n credentials or environment variables, never in a web page, a spreadsheet or a WhatsApp message (Glitch's mistake)."
+  },
+  {
+   "t": "text",
+   "body": "*The upsert-enquiry pattern*\n\nEvery source (form, portal, Instagram, WhatsApp) calls one sub-workflow, so the rules live in one place. You built a version of this in 5.9; here it handles a paid CRM with custom objects and routing."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The upsert-enquiry pattern): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-5"
+  },
+  {
+   "t": "text",
+   "body": "- *Idempotent*: Running it twice with the same input changes nothing the second time. Portals resend; webhooks retry; people double-click. Without step 1, every retry creates a duplicate deal.\n- *Rate limits and retries*: CRM APIs limit requests per second and per day; respect the vendor's published limits, batch where possible, and retry with a wait on \"429 Too Many Requests\" or 5xx errors."
+  },
+  {
+   "t": "text",
+   "body": "*WhatsApp and email: history in the CRM, rules respected*\n\n- *Business number, not personal phones*: To bring WhatsApp into the CRM, conversations must run through the business's WhatsApp Business Platform number (Cloud API or a provider), not agents' personal WhatsApp. Agree this change with the team early: it's the biggest adoption hurdle.\n- *The 24-hour window and templates*: Free-form replies are allowed within 24 hours of the customer's last message. Outside it, only pre-approved templates (e.g. the enquiry acknowledgement, viewing reminders). Templates are charged per message; check Meta's current rates for Nigeria.\n- *Opt-in*: Only message people who gave you their number for this purpose and agreed to WhatsApp contact; record it on the contact (the consent field from 7.2).\n- *Email*: Connect each agent's inbox natively so sent and received emails log to the contact. Exclude private and personal mail by logging only to known contacts."
+  },
+  {
+   "t": "text",
+   "body": "*Integration lab: safe or unsafe?*"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Integration lab: safe or unsafe?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-5"
+  },
+  {
+   "t": "text",
+   "body": "*Payments and monitoring*\n\n- *Money moves deals, carefully*: A holding deposit or rent payment on Paystack can move a deal and notify accounts. Verify the webhook signature, confirm the transaction with Paystack's API, match it to the deal by a reference you created (not by name or amount), and store the Paystack reference on the deal. Never let a payment event close a deal as Won on its own if the business needs a signed contract first.\n- *An integration log*: One table: time, source, event ID, result (created/updated/skipped/error), CRM IDs, error message. It answers \"did the enquiry from Mrs X arrive?\" in seconds.\n- *Monitoring*: An error workflow alerts you on failures; a daily check compares counts (portal emails received vs. deals created); a weekly look at the API usage page. Tokens expire and portals change their email format: you want to know the same day, not when an agent complains."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.5",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-5"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora's integration layer*\n\n*The goal.* Website and portal enquiries become owned deals within 5 minutes without anyone typing; WhatsApp and email history sits on the contact; a deposit paid on Paystack moves the deal and tells accounts; every event is logged and failures alert the same day."
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · KORA · Upsert enquiry (sub-workflow)*\n\nBuilt once, as in Card 2, with a `kora_integration_log` table (Supabase or Google Sheets). Inputs validated; CRM calls via a private app token (scopes: contacts, deals, custom objects; nothing else) stored in n8n credentials."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · Sources*"
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Sources): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-5"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · Acknowledge within minutes*\n\nWhen routing (7.4) sets the owner, n8n sends the approved WhatsApp template _enquiryreceived_ (\"Hi {{1}}, thanks for your enquiry about {{2}}. {{3}} from Kora will call you shortly.\") if the contact gave a phone and WhatsApp consent; otherwise an email from the agent's address."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · Paystack deposit → deal*\n\n_(Code on screen in the app.)_"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Monitor*\n\nError workflow → Telegram alert to you and the office manager. 7:00 daily check: portal emails received yesterday vs. deals created from portals; mismatch → alert. Monthly: token expiry dates and API usage in the register.\n\n- *0* enquiries typed by hand\n- *4 min* median enquiry → acknowledgement\n- *1* place to look when something's missing"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- One upsert, many sources: rules in one place.\n- Idempotent on event IDs, so retries are harmless.\n- Secrets only on the server, with narrow scopes.\n- Money events verified twice and matched by reference.\n- A log and a daily count catch silent failures.\n\n*Common mistakes to avoid*\n\n- Tokens in browser code or shared sheets.\n- Matching payments by name or amount.\n- Letting a payment mark a deal Won.\n- Messaging people outside WhatsApp's rules.\n- No alert when a portal changes its email format."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* Everything's connected to everything. Isn't that the point?\n\n*A:* A portal resent last week's alerts; 60 duplicate deals appeared.\n*B:* A fake webhook call moved a deal to \"Legal and payment\" with no money received.\n*C:* Since Tuesday, no portal enquiries have arrived in the CRM. Nobody noticed until Friday.\n*D:* The integration's token had full admin scopes \"in case we need them later\".\n*E:* A buyer's good email was replaced with a blank when they sent a WhatsApp from a new number."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* not idempotent. Store each source event ID and skip ones already processed.\n*B:* no signature check and no server-side verification. Verify the HMAC and confirm the transaction with Paystack before moving anything.\n*C:* the portal changed its email format and the parser silently failed. Alert on parse errors and compare daily counts.\n*D:* excess privilege. Give tokens only the scopes they need; rotate on staff or contractor changes.\n*E:* blind overwrite. Never replace a value with a blank; only fill gaps or update with verified newer data."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Draw the integration map",
+   "body": "- For a business you know, list every source of customer information and decide native, marketplace app or middleware for each, with the reason and the security rule.\n\n*Done when:*\n- Every connection has a named owner, where its secret lives, and how failures are noticed."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build the upsert and two sources",
+   "body": "- Build the upsert-enquiry sub-workflow against a trial CRM, plus a form webhook (with a secret) and an email parser.\n\n*Done when:*\n- Sending the same event three times creates one deal, the integration log shows all three, and a parse failure raises an alert."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Payments and WhatsApp, end to end",
+   "body": "- Add a Paystack test-mode deposit that moves a deal after verification, and a WhatsApp test-number acknowledgement template.\n\n*Done when:*\n- A forged webhook is rejected, a real test payment moves the right deal once, and the acknowledgement arrives on your phone."
+  },
+  {
+   "t": "quiz",
+   "q": "What makes an integration idempotent?",
+   "options": [
+    "Processing the same event twice changes nothing the second time",
+    "It runs every minute",
+    "It uses the newest API version",
+    "It has no errors"
+   ],
+   "answer": 0,
+   "why": "Store event IDs; skip ones you've already handled."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should the CRM's private app token live?",
+   "options": [
+    "In the website's JavaScript",
+    "In a shared Google Sheet",
+    "In the server's credentials or environment variables",
+    "In a WhatsApp group for the team"
+   ],
+   "answer": 2,
+   "why": "Secrets stay on the server, with only the scopes needed."
+  },
+  {
+   "t": "quiz",
+   "q": "A Paystack webhook says a deposit was paid. What do you do before moving the deal?",
+   "options": [
+    "Nothing; trust it",
+    "Check the buyer's name matches",
+    "Mark the deal Won",
+    "Verify the signature, confirm with Paystack's API, and match your own reference"
+   ],
+   "answer": 3,
+   "why": "Money events are verified twice and matched by a reference you created."
+  },
+  {
+   "t": "quiz",
+   "q": "A buyer last messaged on WhatsApp three days ago. Can you send a free-form follow-up?",
+   "options": [
+    "Yes, any time",
+    "No; outside 24 hours only an approved template, to an opted-in contact",
+    "Only from a personal phone",
+    "Only on weekends"
+   ],
+   "answer": 1,
+   "why": "WhatsApp's customer service window is 24 hours."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you notice a silently broken portal parser?",
+   "options": [
+    "Wait for an agent to complain",
+    "Check once a quarter",
+    "Alert on parse errors and compare daily counts of emails vs. deals",
+    "You can't"
+   ],
+   "answer": 2,
+   "why": "Count-based checks catch failures that don't throw errors."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. Native where it does the job; middleware where it doesn't or where rules must apply.\n2. One idempotent upsert sub-workflow for every source; never overwrite good data with blanks.\n3. Secrets on the server with narrow scopes; webhooks verified.\n4. WhatsApp through the business number, inside the 24-hour window or with templates, to opted-in contacts.\n5. Payments verified twice and matched by reference; every integration logged and monitored."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.5 complete!* _Integrations: Forms, Portals, WhatsApp, Email and Payments_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.6, _Launch, Adoption and Reporting: Making the Team Use It_."
+  }
+ ]
+}

@@ -1,0 +1,89 @@
+{
+ "id": "7.1",
+ "items": [],
+ "note": "Lesson 7.1 (discovery) has no workflow build: its solved problem is a signed requirements document.",
+ "walk": {
+  "title": "Solve it: from a messy office to a signed requirements document",
+  "sample": "Kora Properties, Lekki and Ibadan · 400 enquiries a month · 11 spreadsheets",
+  "labels": [
+   "Workshop 1",
+   "Collect numbers",
+   "Audit the data",
+   "Workshop 2",
+   "Prioritise and size",
+   "Write and sign"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "Kora Properties loses enquiries between portals, Instagram and eleven spreadsheets. Before we open any CRM, we find out how deals really move and agree what success means.",
+    "show": [
+     "Kora Properties · Lekki and Ibadan",
+     "Goal: a signed requirements document"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Workshop one, ninety minutes. Mrs Adeyemi, two senior agents, a new agent and the administrator walk the last won sale and the last lost rental on sticky notes.",
+    "show": [
+     "One colour per role",
+     "Photograph everything"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Now the numbers. About four hundred enquiries a month, over half from the portals. The median first reply is six hours, and forty hours at weekends.",
+    "show": [
+     "Portals 55% · Instagram 25% · website 10%",
+     "First reply: 6 h (weekends 40 h)"
+    ],
+    "data": "11 sheets · 18,400 rows"
+   },
+   {
+    "at": "3",
+    "say": "The data audit. Of eighteen thousand four hundred rows, a third are duplicates. Only about four thousand three hundred people were active in the last two years.",
+    "show": [
+     "Duplicates: 5,900 (32%)",
+     "No phone or email: 1,100",
+     "Active: 4,300 people · 210 open deals"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "So the decision: migrate active people, open deals and available properties, and archive the rest as a read-only export.",
+    "show": [
+     "Migrate active records",
+     "Archive the rest, read-only"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Workshop two plays the map back with the leaks marked. The agents correct it, and everyone agrees the success measures.",
+    "show": [
+     "First reply under 15 minutes (office hours)",
+     "Every enquiry owned within 1 working hour",
+     "No more hand-built Monday report"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Prioritise with MoSCoW: twelve musts, six shoulds, four coulds, three won'ts. Routing, workflows and team permissions rule out a free plan.",
+    "show": [
+     "12 must · 6 should · 4 could · 3 won't",
+     "Compare two paid plans for 12 users, priced on the day"
+    ]
+   },
+   {
+    "at": "6",
+    "say": "Write it in eight pages at most, present it in thirty minutes, and get it signed in the room or within a week.",
+    "show": [
+     "Goals · map · requirements · audit",
+     "Platform and yearly cost · out of scope · risks",
+     "Timeline and signature line"
+    ],
+    "data": "signed"
+   }
+  ],
+  "end": "That's discovery: real deals mapped, the data measured, success agreed, and a signed document before anything is built."
+ }
+}

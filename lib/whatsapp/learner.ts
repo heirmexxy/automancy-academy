@@ -2,12 +2,12 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSettings } from "@/lib/settings";
 import { hasAnthropic } from "@/lib/config";
-import { itemById, FREE_IDS } from "@/lib/course";
+import { itemById, FREE_IDS, SPECS, specOf } from "@/lib/course";
 import { cleanProgress, type PrevProgress } from "@/lib/learn";
 import { getTierSpec, reviewSubmission } from "@/lib/reviewer";
 import { LIMITS, TIER_LABEL, isTier, lagosDay, lagosDayStartIso, normaliseLinks, redactSecrets, tiersFor } from "@/lib/reviewer-core";
 import { askSage, chargeQuestion, DAILY_QUESTIONS, MAX_QUESTION } from "@/lib/assistant";
-import { MISSION_XP, courseAccessFrom, itemXp, lagosDate, projectTier } from "@/lib/whatsapp/core";
+import { MISSION_XP, courseAccessFrom, itemXp, lagosDate, projectTier, specAccessFrom } from "@/lib/whatsapp/core";
 
 /**
  * Learner-side work for the WhatsApp bot. The webhook has no browser session, so these run with the service role
@@ -18,7 +18,7 @@ import { MISSION_XP, courseAccessFrom, itemXp, lagosDate, projectTier } from "@/
 type Json = Record<string, unknown>;
 const isObj = (v: unknown): v is Json => !!v && typeof v === "object" && !Array.isArray(v);
 
-export type Learner = { id: string; name: string; email: string; role: string; course: boolean };
+export type Learner = { id: string; name: string; email: string; role: string; course: boolean; specs: string[] };
 
 /** Profile + course access (the getEntitlements rule, read with the service role). */
 export async function loadLearner(userId: string): Promise<Learner | null> {
@@ -31,11 +31,19 @@ export async function loadLearner(userId: string): Promise<Learner | null> {
   return {
     id: p.id as string, email: (p.email as string) || "", role: (p.role as string) || "learner",
     name: String(p.full_name || "").trim().split(/\s+/)[0] || "",
-    course: courseAccessFrom((ens || []) as { product: string; status: string; expires_at: string | null }[])
+    course: courseAccessFrom((ens || []) as { product: string; status: string; expires_at: string | null }[]),
+    specs: specAccessFrom((ens || []) as { product: string; status: string; expires_at: string | null }[], Object.keys(SPECS))
   };
 }
 /** May this learner open the item? Base Camp is free; staff can open everything (as in /api/assistant). */
-export const canOpen = (l: Pick<Learner, "course" | "role">, itemId: string) => FREE_IDS.has(itemId) || l.course || l.role === "admin" || l.role === "reviewer";
+export const canOpen = (l: Pick<Learner, "course" | "role"> & { specs?: string[] }, itemId: string) => {
+  if (l.role === "admin" || l.role === "reviewer") return true;
+  const spec = specOf(itemId); /* specialisation lessons need that specialisation, not the main course */
+  if (spec) return (l.specs || []).includes(spec);
+  return FREE_IDS.has(itemId) || l.course;
+};
+/** What a locked item needs, for "(…)" notes and the pricing message. */
+export const lockNote = (itemId: string) => { const spec = specOf(itemId); return spec ? SPECS[spec]?.name || "specialisation" : "full course"; };
 
 export type ProgressRow = { done: Record<string, unknown>; state: Json; xp: number; week_xp: number | null; week_start: string | null };
 export async function loadProgress(userId: string): Promise<ProgressRow> {
@@ -113,7 +121,7 @@ export async function submitWork(learner: Learner, input: { itemId: string; tier
   if (raw.length > LIMITS.maxContent) return fail(`That's too long. Keep it under ${LIMITS.maxContent.toLocaleString()} characters: paste the key evidence and link to the rest.`);
   const links = normaliseLinks(raw.match(/https?:\/\/[^\s<>"')]+/g) || []);
 
-  if (!FREE_IDS.has(itemId) && !learner.course) return fail("Reviews for this lesson come with the full course. Base Camp reviews are free.", false);
+  if (!canOpen(learner, itemId)) return fail(specOf(itemId) ? `Reviews for this lesson come with the ${lockNote(itemId)}.` : "Reviews for this lesson come with the full course. Base Camp reviews are free.", false);
 
   const admin = createAdminClient();
   const day = lagosDay();
@@ -179,7 +187,7 @@ export async function askSageFor(learner: Learner, itemId: string, question: str
   const item = itemById(itemId);
   if (!item) return "Open a lesson first (reply LESSON 0.1), then ask your question.";
   if (question.length > MAX_QUESTION) return `Keep questions under ${MAX_QUESTION} characters.`;
-  if (!item.free && learner.role === "learner" && !learner.course) return "Sage helps on Base Camp lessons for free. Enrol in the course to ask about this lesson.";
+  if (!canOpen(learner, itemId)) return specOf(itemId) ? `Sage helps on this lesson with the ${lockNote(itemId)}.` : "Sage helps on Base Camp lessons for free. Enrol in the course to ask about this lesson.";
   try {
     const used = await chargeQuestion(learner.id);
     if (used === null) return `You've asked ${DAILY_QUESTIONS()} questions today, the daily limit. Try the community help board, or come back tomorrow.`;

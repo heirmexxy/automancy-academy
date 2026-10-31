@@ -383,5 +383,61 @@
   "track": 6,
   "free": false,
   "cards": 43
+ },
+ {
+  "id": "7.1",
+  "title": "Discovery and Requirements: Before You Touch the CRM",
+  "track": 7,
+  "free": false,
+  "cards": 33
+ },
+ {
+  "id": "7.2",
+  "title": "Solution Design: Objects, Pipelines, Teams and Permissions",
+  "track": 7,
+  "free": false,
+  "cards": 37
+ },
+ {
+  "id": "7.3",
+  "title": "Data Migration: Moving Years of Records Without Breaking Them",
+  "track": 7,
+  "free": false,
+  "cards": 32
+ },
+ {
+  "id": "7.4",
+  "title": "Sales and Service Automation on Paid Plans",
+  "track": 7,
+  "free": false,
+  "cards": 31
+ },
+ {
+  "id": "7.5",
+  "title": "Integrations: Forms, Portals, WhatsApp, Email and Payments",
+  "track": 7,
+  "free": false,
+  "cards": 32
+ },
+ {
+  "id": "7.6",
+  "title": "Launch, Adoption and Reporting: Making the Team Use It",
+  "track": 7,
+  "free": false,
+  "cards": 32
+ },
+ {
+  "id": "7.7",
+  "title": "The CRM Implementation Agent: AI That Builds, Checks and Proposes",
+  "track": 7,
+  "free": false,
+  "cards": 35
+ },
+ {
+  "id": "B7",
+  "title": "Boss 7: Kora Goes Live",
+  "track": 7,
+  "free": false,
+  "cards": 29
  }
 ]

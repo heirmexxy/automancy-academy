@@ -1,0 +1,186 @@
+{
+ "id": "7.4",
+ "title": "Sales and Service Automation on Paid Plans",
+ "track": 7,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Lesson 7.4 · Sales and Service Automation on Paid Plans*\n\n_≈ 2.5 hours · with Emeka_\n\nIn 5.9 you automated a free CRM from the outside, with n8n doing the work. Paid plans add strong automation _inside_ the CRM: workflows, lead routing, sequences, stage rules and service-level timers. Used well, they mean every enquiry has an owner in minutes and no deal waits silently. Used badly, they send agents fifty tasks a day and customers three identical emails. This lesson is about choosing what to automate, building it in the right place, and keeping a register so the next person knows what's running."
+  },
+  {
+   "t": "text",
+   "body": "*The Banana Island buyer, called twice and then never*\n\n*Monday:* A ₦850m enquiry arrives. Two agents grab it from the shared inbox and both call within five minutes.\n\n*Nine days later:* Each assumed the other had it. After the viewing, nobody followed up. The buyer bought elsewhere.\n\n*Glitch:* \"Easy fix: a task for every agent every time anything changes. And an email to the buyer every day until they reply.\"\n\n*Bolt:* \"One owner, set by a rule, in minutes. One follow-up when the customer has done something. Nothing else.\""
+  },
+  {
+   "t": "text",
+   "body": "*What paid plans add, and where each automation should live*\n\n_Need · HubSpot (paid) · Zoho CRM (paid) · Or n8n / Make_\n- *If X happens to a record, do Y* · Workflows (Professional and up) · Workflow rules (limits by edition) · When it spans other systems\n- *Assign new leads to people* · Rotate records in workflows; lead rotation · Assignment rules (round-robin) · For custom routing logic\n- *Enforce a step-by-step process* · Stage-required properties, approvals (higher tiers) · Blueprint (Professional and up) · Rarely\n- *Personal follow-up emails* · Sequences (Starter and up, limits by tier) · Cadences (higher editions) · Not recommended\n- *Service response timers* · Help desk SLAs (Service Hub) · Escalation rules (Zoho Desk) · For simple alerts"
+  },
+  {
+   "t": "text",
+   "body": "- *Rule of thumb*: Automation that only touches CRM records lives in the CRM (people can see and switch it off there, and it survives your contract ending). Automation that crosses systems (WhatsApp, Paystack, portals, AI) lives in n8n or Make, calling the CRM's API.\n- *Check the tier*: Feature names and limits move between tiers often. Confirm every automation in your design against the client's actual subscription before you promise it."
+  },
+  {
+   "t": "text",
+   "body": "*Lead routing: one owner, fast and fair*\n\n- *Route on facts*: Office (from the property's area), deal type (sale or rental), budget band (luxury to senior agents), language. Never on \"whoever sees it first\".\n- *Fair rotation*: Round-robin within the eligible group, skipping people marked unavailable (leave, off today). Re-route if the owner hasn't touched the lead within the agreed time.\n- *Existing customers first*: If the person already has an owner (an open deal or a recent sale), they go back to that owner, not into the rotation.\n- *Tell the customer something*: An automatic acknowledgement within minutes (email, or a WhatsApp template in 7.5) with the agent's name. Then a real person."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (Lead routing: one owner, fast and fair): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-4"
+  },
+  {
+   "t": "text",
+   "body": "*Follow-ups lab: automate it, or not?*\n\nGood automations fire on something the customer did, once, with a clear owner. Decide each one."
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: Follow-ups lab: automate it, or not?. It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#m-7-4"
+  },
+  {
+   "t": "text",
+   "body": "*Loops, re-enrolment and testing safely*\n\n- *Loops*: Workflow A updates a field that triggers workflow B, which updates a field that triggers A. Guard with clear triggers (a stage _changes to_ X, not \"is X\"), and never let two automations write the same field.\n- *Re-enrolment*: Decide whether a record can enter a workflow twice (a deal that goes back to Viewed after a second viewing: yes; a welcome email: no). Most CRMs make this a setting; set it on purpose.\n- *Test records and test mode*: Build in a sandbox or with test records owned by you, named `TEST · …`, with your own email and phone. Many CRMs can run a workflow on one chosen record; use it before switching on for everyone.\n- *Switching on for existing records*: Turning on a workflow can enrol every matching record at once (200 open deals → 200 tasks). Choose \"only new records from now\" unless you mean it."
+  },
+  {
+   "t": "text",
+   "body": "*The automation register*\n\nEvery automation, in or outside the CRM, gets one row. The register is part of the handover, and the first place to look when \"something weird keeps happening\"."
+  },
+  {
+   "t": "link",
+   "body": "Code example on screen (The automation register): open it in the app.",
+   "url": "https://automancy.cc/learn#m-7-4"
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:7.4",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#m-7-4"
+  },
+  {
+   "t": "text",
+   "body": "*Solved problem: Kora's first six automations*\n\n*The goal.* Every enquiry has one owner within 5 minutes in office hours and a first call within 15; no deal waits more than 7 days unseen; tenants' requests escalate on time; agents get at most a handful of automated tasks a day. (HubSpot names; Zoho equivalents in brackets.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 1 · Availability and teams*\n\nEach agent has an \"Available for new leads\" checkbox (or the CRM's own availability setting). Teams from 7.2: Lekki sales, Ibadan sales, Lettings, Senior agents."
+  },
+  {
+   "t": "text",
+   "body": "*Step 2 · A01 Route new enquiry*\n\nDeal-based workflow, trigger: deal created in Sales or Lettings. Branch on the routing rule in Card 2 (existing owner → Lettings → budget → office). Rotate among available members of the chosen team. Create task \"First call\" due in 15 minutes during office hours (next opening time otherwise). (Zoho: assignment rule with round-robin, plus a workflow rule creating the task.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 3 · A02 and A04: timers that rescue silence*\n\nA02: if no call or email is logged 60 minutes after assignment (office hours), rotate again and notify the office manager. A04: deal in Offer made for 7 days with no activity: one notification to owner and manager. Both: no re-enrolment until the deal changes stage."
+  },
+  {
+   "t": "text",
+   "body": "*Step 4 · A03 Stage follow-ups and required fields*\n\nStage changes to Viewed: one task \"Call for feedback\" tomorrow. Required fields per stage from the design: Budget at Viewing booked, Offer amount at Offer made, Lost reason at Lost. (Zoho: Blueprint transitions with mandatory fields.)"
+  },
+  {
+   "t": "text",
+   "body": "*Step 5 · Test, then switch on for new records only*\n\nTen `TEST · …` deals covering each branch (rental, ₦900m, Ibadan, existing customer, agent unavailable). Check owners, tasks and timers, then delete the test records. Switch each workflow on for new records only. Add every automation to the register.\n\n- *6* automations in the register\n- *5 min* enquiry to owner (target)\n- *≤ 6* automated tasks per agent per day"
+  },
+  {
+   "t": "text",
+   "body": "*Why this approach works*\n\n- Routing on facts, rotation for fairness.\n- Timers catch silence, once.\n- Stage triggers fire on customer actions.\n- Tested on every branch before switch-on.\n- A register makes it maintainable.\n\n*Common mistakes to avoid*\n\n- A task for every field change.\n- Daily automated emails to buyers.\n- Two workflows writing the same field.\n- Switching on for all existing records by accident.\n- Automations nobody wrote down."
+  },
+  {
+   "t": "text",
+   "body": "*Glitch hunt*\n\n*Glitch:* More automation means more productivity. Obviously.\n\n*A:* Switching on \"Viewing feedback task\" created 210 tasks in one second.\n*B:* A deal flips between Offer made and Viewed every few minutes.\n*C:* An agent on leave keeps receiving new luxury leads.\n*D:* A returning buyer gets a brand-new agent, who calls without knowing their history.\n*E:* Something sends a WhatsApp at 2 a.m., and nobody knows what."
+  },
+  {
+   "t": "reveal",
+   "prompt": "Made your call on each one? Tap Reveal to check.",
+   "answer": "*A:* enrolled all existing records. Switch on for new records only, or test on one record first.\n*B:* two automations writing the same field: a loop. One owner per field; trigger on \"changes to\".\n*C:* rotation ignores availability. Rotate only among available agents, and keep the flag up to date.\n*D:* existing customers should return to their owner. Check for an open owner before rotating.\n*E:* no register, no quiet hours. List every automation with its owner, and only send outside office hours if the customer asked."
+  },
+  {
+   "t": "task",
+   "tier": "b",
+   "title": "Bronze (+25 XP): Design routing and follow-ups",
+   "body": "- For a business you know, write its routing rule and three stage-based follow-ups, each with its trigger, action, owner and re-enrolment choice.\n\n*Done when:*\n- Every automation fires on something the customer did or on a timer, once, with a named owner."
+  },
+  {
+   "t": "task",
+   "tier": "s",
+   "title": "Silver (+50 XP): Build and test them in a trial",
+   "body": "- Build routing and two follow-ups in a HubSpot or Zoho trial (or with n8n against a free CRM). Test every branch with TEST records.\n- Write the automation register.\n\n*Done when:*\n- A test log shows each branch working, nothing fired twice, and every automation is in the register."
+  },
+  {
+   "t": "task",
+   "tier": "g",
+   "title": "Gold (+100 XP): Run routing for a real team",
+   "body": "- Switch on routing and follow-ups for a real sales team and measure enquiry-to-owner and first-reply times for two weeks.\n\n*Done when:*\n- You submit before-and-after times and the team's feedback on task volume."
+  },
+  {
+   "t": "quiz",
+   "q": "Where should an automation that only updates CRM records live?",
+   "options": [
+    "Always in n8n",
+    "In the CRM's own workflows, if the plan includes them",
+    "In a spreadsheet",
+    "Nowhere"
+   ],
+   "answer": 1,
+   "why": "People can see and switch it off there, and it survives your contract ending."
+  },
+  {
+   "t": "quiz",
+   "q": "A returning buyer with an open deal sends a new enquiry. Who should own it?",
+   "options": [
+    "The next agent in the rotation",
+    "The manager",
+    "Whoever answers first",
+    "Their existing owner"
+   ],
+   "answer": 3,
+   "why": "Existing relationships come before rotation."
+  },
+  {
+   "t": "quiz",
+   "q": "How do you avoid automation loops?",
+   "options": [
+    "Trigger on a value changing to X, and never let two automations write the same field",
+    "Run workflows less often",
+    "Use more workflows",
+    "Turn off re-enrolment everywhere"
+   ],
+   "answer": 0,
+   "why": "One owner per field and clear triggers prevent ping-pong."
+  },
+  {
+   "t": "quiz",
+   "q": "What's the risk when you switch on a new workflow?",
+   "options": [
+    "None",
+    "It deletes old records",
+    "It may enrol every existing matching record at once",
+    "It logs everyone out"
+   ],
+   "answer": 2,
+   "why": "Choose 'new records only' unless you mean to act on existing ones."
+  },
+  {
+   "t": "quiz",
+   "q": "Which follow-up is spam?",
+   "options": [
+    "One feedback call task after a viewing",
+    "A daily email to a buyer until they reply",
+    "An alert when an offer has been silent for 7 days",
+    "An SLA escalation on a tenant ticket"
+   ],
+   "answer": 1,
+   "why": "Short sequences stop on reply; daily blasts don't."
+  },
+  {
+   "t": "text",
+   "body": "*Remember this*\n\n1. CRM-only automation lives in the CRM; cross-system automation lives in n8n or Make.\n2. Route on facts, rotate fairly among available people, return customers to their owner.\n3. Automate customer-triggered, single, owned steps and silence timers; never noise.\n4. Prevent loops, choose re-enrolment on purpose, test every branch, switch on for new records.\n5. Every automation goes in the register with an owner."
+  },
+  {
+   "t": "done",
+   "body": "*Lesson 7.4 complete!* _Sales and Service Automation on Paid Plans_ is done and saved to your progress, on WhatsApp and in the app.\n\nNext up: Lesson 7.5, _Integrations: Forms, Portals, WhatsApp, Email and Payments_."
+  }
+ ]
+}

@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasSupabase } from "@/lib/config";
-import { FREE_IDS, itemById } from "@/lib/course";
+import { FREE_IDS, SPECS, itemById, specOf } from "@/lib/course";
 import { canSend, reminderTemplate, sendTemplate } from "@/lib/whatsapp/api";
-import { clip, courseAccessFrom, decodeEntities, itemLabel, reminderDue } from "@/lib/whatsapp/core";
+import { clip, courseAccessFrom, decodeEntities, itemLabel, reminderDue, specAccessFrom } from "@/lib/whatsapp/core";
 import { firstUndone } from "@/lib/whatsapp/lessons";
 
 /**
@@ -73,7 +73,8 @@ export async function GET(req: Request) {
     if (!reminderDue({ lastActive, lastReminder: sess?.last_reminder_at || null, linkedAt: link.linked_at }, now)) continue;
     const done = (prog?.done || {}) as Record<string, unknown>;
     const course = courseAccessFrom(enrBy.get(link.user_id) || [], now);
-    const open = (id: string) => course || FREE_IDS.has(id);
+    const specs = specAccessFrom(enrBy.get(link.user_id) || [], Object.keys(SPECS), now);
+    const open = (id: string) => { const sp = specOf(id); return sp ? specs.includes(sp) : course || FREE_IDS.has(id); };
     const current = sess?.user_id === link.user_id && sess.item_id && done[sess.item_id] !== true && open(sess.item_id) ? itemById(sess.item_id) : null;
     const next = current || firstUndone(done, i => open(i.id));
     if (!next) continue; // finished, or only paid lessons left (a reminder would be promotional)

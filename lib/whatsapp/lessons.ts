@@ -1,7 +1,7 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
-import { COURSE, itemById, type CourseItem } from "@/lib/course";
+import { COURSE, SPECS, itemById, specOf, type CourseItem } from "@/lib/course";
 import { cleanScript, decodeEntities, fileIdOf, type MediaManifest, type Script } from "@/lib/whatsapp/core";
 
 /**
@@ -47,8 +47,10 @@ export function loadMedia(): MediaManifest {
 
 /** The item after `id` in course order, or null at the end. */
 export function nextItem(id: string): CourseItem | null {
-  const i = COURSE.items.findIndex(x => x.id === id);
-  return i >= 0 && i + 1 < COURSE.items.length ? COURSE.items[i + 1] : null;
+  const spec = specOf(id); /* a specialisation runs on its own: its last item is the end */
+  const list = spec ? SPECS[spec].items : COURSE.items;
+  const i = list.findIndex(x => x.id === id);
+  return i >= 0 && i + 1 < list.length ? list[i + 1] : null;
 }
 /** First item not yet done (optionally only among those the learner may open). */
 export function firstUndone(done: Record<string, unknown>, canOpen: (item: CourseItem) => boolean = () => true): CourseItem | null {

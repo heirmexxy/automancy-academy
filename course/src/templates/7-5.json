@@ -1,0 +1,67 @@
+{
+ "id": "7.5",
+ "items": [],
+ "note": "Lesson 7.5 connects outside sources to the CRM with n8n; the flows are shown as steps.",
+ "walk": {
+  "title": "Solve it: every enquiry into Kora's CRM, once",
+  "sample": "Portal email · website form · Instagram · WhatsApp · Paystack deposit",
+  "labels": [
+   "Upsert enquiry",
+   "Connect sources",
+   "Acknowledge fast",
+   "Paystack deposit",
+   "Monitor"
+  ],
+  "steps": [
+   {
+    "at": null,
+    "say": "Enquiries arrive from five places. We build one safe door into the CRM, connect every source to it, and watch it daily.",
+    "show": [
+     "One sub-workflow, many sources"
+    ]
+   },
+   {
+    "at": "1",
+    "say": "Build the upsert-enquiry sub-workflow once. It validates inputs, finds or creates the contact and deal, and logs every call with a private token.",
+    "show": [
+     "Token scopes: contacts, deals, custom objects",
+     "Every call logged"
+    ]
+   },
+   {
+    "at": "2",
+    "say": "Connect the sources: the website form with a secret header, portal emails parsed from Gmail, Instagram from the growth desk, and WhatsApp with its signature checked.",
+    "show": [
+     "Each source → the same upsert",
+     "Gmail message id stops duplicates"
+    ]
+   },
+   {
+    "at": "3",
+    "say": "When routing sets an owner, send the approved WhatsApp template, only if the person consented. Otherwise, an email from the agent.",
+    "show": [
+     "Template: enquiry_received",
+     "Consent first"
+    ]
+   },
+   {
+    "at": "4",
+    "say": "Deposits through Paystack. Verify the signature, confirm the amount, then move the deal to legal and payment. Never mark it won: that needs the signed agreement.",
+    "show": [
+     "Verify HMAC + amount",
+     "Deal → Legal and payment"
+    ]
+   },
+   {
+    "at": "5",
+    "say": "Monitor it. Errors go to Telegram. Every morning at seven, portal emails received are compared with deals created, and any gap raises an alert.",
+    "show": [
+     "Error workflow → Telegram",
+     "Daily count check at 7:00"
+    ],
+    "data": "monitored"
+   }
+  ],
+  "end": "That's integration: one idempotent door, every source through it, and a daily check that nothing slipped through."
+ }
+}

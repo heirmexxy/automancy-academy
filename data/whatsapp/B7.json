@@ -1,0 +1,136 @@
+{
+ "id": "B7",
+ "title": "Boss 7: Kora Goes Live",
+ "track": 7,
+ "free": false,
+ "voice": "male",
+ "cards": [
+  {
+   "t": "text",
+   "body": "*Boss 7: Kora Goes Live*\n\n_≈ 4 sessions · 10–12 hours · with Emeka_\n\nEverything from Track 7, as one client engagement. You take Kora Properties from spreadsheets and WhatsApp to a CRM the whole team uses: discovery, a signed design, a clean migration, routing and follow-ups, integrations that fill the CRM by themselves, a launch with training and dashboards, and an agent that keeps it healthy. You deliver it the way a paying client would expect: documents, evidence and a handover they can run without you."
+  },
+  {
+   "t": "text",
+   "body": "*\"Six weeks. Two offices. No lost buyers.\"*\n\n*The brief:* Mrs Adeyemi signs your proposal: twelve agents, two offices, four pipelines, go-live in six weeks.\n\n*Echo:* \"Everything you learned in this track, in order. Discover, design, migrate, automate, integrate, launch, and leave it healthy.\"\n\n*Sage:* \"Use me for the careful, repetitive parts. You approve every change I propose.\"\n\n*Glitch:* \"I've prepared three surprises for your project. Real clients have them too.\""
+  },
+  {
+   "t": "text",
+   "body": "*What Kora's CRM must do at go-live*\n- *Capture* · Every website, portal and Instagram enquiry becomes a contact and a deal in the right pipeline, with no typing, no duplicates and the message logged (7.5).\n- *Own* · Every enquiry has one owner within 5 minutes in office hours: returning clients to their owner, then rentals, luxury budget and office rules, rotating among available agents; re-route if untouched after 60 minutes (7.4).\n- *Move* · Sales, Lettings and Landlord pipelines with exit rules and required fields per stage; one follow-up task per customer action; stuck-deal alerts once (7.2, 7.4).\n- *Protect* · Agents see and edit their own records, managers their team, owner and admin everything; commissions, ID documents and bank details stay out of the CRM; only owner and admin export (7.2).\n- *Remember* · Active people, available properties and open deals migrated with owners and links; old sheets frozen and archived; zero reconciliation differences (7.3)."
+  },
+  {
+   "t": "text",
+   "body": "- *Talk* · WhatsApp through the business number with an approved acknowledgement template to opted-in contacts; agents' emails logged to contacts (7.5).\n- *Get paid* · A Paystack holding deposit, verified twice and matched by reference, moves the deal to \"Legal and payment\" and notifies accounts; never sets Won (7.5).\n- *Show* · Agent, manager and owner dashboards; weighted forecast; adoption report every week for four weeks (7.6).\n- *Stay healthy* · An implementation agent that diffs the CRM against the signed design, validates import files and writes a monthly health report; changes only through approved, hash-checked plans (7.7)."
+  },
+  {
+   "t": "video",
+   "caption": "*Watch it built.* The animated walkthrough shows the build step by step.",
+   "media": "walk:B7",
+   "youtube": null,
+   "app": "https://automancy.cc/learn#boss-7"
+  },
+  {
+   "t": "text",
+   "body": "*Your mission: Ten deliverables, four phases*\n\nWork through the deliverables in order. Each one has its own message below."
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D1 · Requirements document*\n\nProcess map with leaks, MoSCoW requirements (musts ≤ half), data audit, success measures, platform and plan with a dated yearly cost, out of scope, risks. Role-play the workshops with classmates or use the sample notes provided by your facilitator. (7.1)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 1 · D2 · Solution design*\n\nObjects and labelled associations, data dictionary, pipelines with exit rules and required fields, teams and permission matrix, assignment rules, naming conventions, what stays out. (7.2)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D3 · Configured CRM*\n\nThe design built in a trial or sandbox (applied through the D9 agent's approved plans where you can), with two test users proving the permission matrix. (7.2, 7.7)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 2 · D4 · Migration*\n\nMapping sheet, repeatable cleaning workflow, rejects with reasons, de-duplication on strong keys, test loads, full load with external IDs, reconciliation log, cutover and rollback plan. Use the sample Kora files (at least 2,000 messy rows). (7.3)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D5 · Automations*\n\nRouting (all branches), re-route timer, stage follow-ups, stuck-deal alert, ticket escalation; tested with TEST records; automation register. (7.4)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 3 · D6 · Integrations*\n\nIdempotent upsert-enquiry sub-workflow; website form (secret), portal email parser, WhatsApp acknowledgement template, Paystack deposit (test mode); integration log; error alerts and the daily count check. (7.5)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D7 · UAT and training*\n\nUAT scripts for every must-have with results; defect and change-request lists; role-based training plan; three 2–3-minute training videos. (7.6)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D8 · Dashboards and adoption*\n\nAgent, manager and owner dashboards (each chart with its question); weighted forecast; a simulated four-week adoption report with targets and actions. (7.6)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D9 · Implementation agent*\n\nRead-only tools, plan with dry run and hash, Telegram approval, separate apply workflow, change log, first monthly health report. (7.7)"
+  },
+  {
+   "t": "text",
+   "body": "*Phase 4 · D10 · Handover and demo*\n\nHandover pack and a 5-minute demo: an enquiry arriving from a portal email and owned in minutes; a returning buyer going to their agent; an agent who can't see a colleague's deal; a deposit moving a deal; the owner dashboard; one approved agent plan applied and verified."
+  },
+  {
+   "t": "link",
+   "body": "The 20 tests. Use test records, your own phone and email, and test modes only. The full list is on screen in the app, ready to copy.",
+   "url": "https://automancy.cc/learn#boss-7"
+  },
+  {
+   "t": "text",
+   "body": "*Is Kora ready to go live?*\n\n*Signed and scoped*\n- Requirements and solution design signed; out-of-scope written _(must)_\n- Plan tier checked against every must-have, with a dated yearly cost\n\n*Data you can trust*\n- Migration reconciled with zero differences; old sheets frozen and archived _(must)_\n- No merges on names; review queue cleared\n\n*Safe*\n- Permission matrix proven with test users; sensitive data kept out _(must)_\n- Secrets only on the server; webhooks verified; payments matched by reference _(must)_\n- The agent changes the CRM only through approved, hash-checked plans _(must)_\n\n*Working*\n- All 20 tests pass and are logged\n- Automation register and integration log complete\n- WhatsApp only to opted-in contacts, inside the rules\n\n*Used*\n- UAT signed; role-based training and videos delivered\n- Dashboards answer named questions; adoption tracked weekly\n- Handover pack delivered; two client admins trained"
+  },
+  {
+   "t": "link",
+   "body": "Hands-on lab: the readiness check (tick it off for your score). It's interactive, so open it in the app and try it there.",
+   "url": "https://automancy.cc/learn#boss-7"
+  },
+  {
+   "t": "text",
+   "body": "*Glitch's curveballs: open one at the start of phases 2, 3 and 4*\n\n*Glitch:* Clients change their minds. Data surprises you. People resist. Let's practise all three.\n\nThink each one through when you reach that phase, then tap Reveal to compare with the reference answer."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 1 · open at the start of Phase 2*\nHalfway through the design, Mrs Adeyemi announces a short-let business (furnished flats by the night) launching next month, and wants it \"in the CRM from day one\". Budget and timeline don't change. What do you do with the design, the plan tier and the scope?",
+   "answer": "*Short-lets mid-design:* treat it as a change request, not a quiet addition. Short-lets follow the Lettings stages closely, so the cheapest fit is a _Deal type_ value (Short-let) in the Lettings pipeline plus two properties (nightly rate, minimum stay), added to the data dictionary and re-signed. Check the plan's property and pipeline limits. Write the impact (2 extra days of build, no change to launch date by moving a \"should\" to month two) and get it approved in writing."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 2 · open at the start of Phase 3*\nDuring the test load you discover that one senior agent's sheet (1,900 rows) holds clients he says are \"his personal clients\" and refuses to put into the CRM. Two of them have open deals worth ₦600m. How do you handle the data, the people and the project?",
+   "answer": "*The \"personal clients\" sheet:* the data belongs to the business, but this is a people problem first. Meet the agent and Mrs Adeyemi together: explain that permissions mean only he (and his manager) will see his clients, and show him in the sandbox. Migrate his clients owned by him. If the business decides otherwise, that's the owner's call, recorded in the decision log; you don't migrate around him secretly. Open deals are a must: the two ₦600m deals go in."
+  },
+  {
+   "t": "reveal",
+   "prompt": "*Curveball 3 · open at the start of Phase 4*\nThree weeks after go-live, the adoption report shows the Ibadan office at 3 of 5 agents active and 41% of their deals without a next step. Lekki is fine. Mrs Adeyemi asks whether the CRM \"works for Ibadan at all\". Diagnose and respond with numbers.",
+   "answer": "*Ibadan adoption:* compare by office: activity per agent, next-step gaps, time to first reply, logins from mobile. Typical findings: Ibadan joined late and missed the in-person training; the champion left; network issues make the web app slow, so the mobile app wasn't installed. Respond with a half-day on-site session on their own deals, a new champion, mobile app set-up, and the office manager running the Monday review from the dashboard. Report the same numbers two weeks later."
+  },
+  {
+   "t": "text",
+   "body": "*The rubric: 80 points to win*\n_Area · Full marks when… · Points_\n- *Discovery and design* · Leaks become requirements; musts ≤ half; numeric success measures; design complete enough to rebuild from; within plan limits · 15\n- *Migration* · Scripted cleaning, strong-key de-duplication, external IDs, zero reconciliation differences, real rollback plan · 15\n- *Automation* · Routing on facts with fair rotation and returning-owner rule; single, owned follow-ups; no loops; register complete · 15\n- *Integrations* · Idempotent upsert; secrets on server; verified webhooks; WhatsApp within rules; payments matched by reference; monitoring catches silent failures · 15\n- *Security and permissions* · Least privilege proven; sensitive data out; exports restricted; agent has no route to delete, change access or move money · 10\n- *Launch and adoption* · UAT from requirements; role-based training; dashboards tied to decisions; adoption measured and acted on; handover pack and client admins · 15"
+  },
+  {
+   "t": "text",
+   "body": "- *Implementation agent* · Read-only tools, plans with dry run and hash, separate apply, verified change log, useful health report · 10\n- *Curveballs* · All three handled · 5\n- *Total* · Win at 80 or more, with every must-have in the go-live check passing · 100"
+  },
+  {
+   "t": "task",
+   "tier": "boss",
+   "title": "Boss 7: Kora Goes Live",
+   "body": "Build ten deliverables, four phases:\n- Phase 1 · D1 · Requirements document\n- Phase 1 · D2 · Solution design\n- Phase 2 · D3 · Configured CRM\n- Phase 2 · D4 · Migration\n- Phase 3 · D5 · Automations\n- Phase 3 · D6 · Integrations\n- Phase 4 · D7 · UAT and training\n- Phase 4 · D8 · Dashboards and adoption\n- Phase 4 · D9 · Implementation agent\n- Phase 4 · D10 · Handover and demo\n\nScore 80 or more on the rubric to win. Send your links (documents, sheets, workflow exports, demo video: whatever your deliverables are) and a short write-up of each one.\n\nThe full brief and rubric are in the app: https://automancy.cc/learn#boss-7"
+  },
+  {
+   "t": "link",
+   "body": "*Echo:* Different designs can win. Use these to find gaps, not to copy.\n\n*Compare only after you've finished.* The reference build (code, examples and answers) is in the app. Open it once your own build is done.",
+   "url": "https://automancy.cc/learn#boss-7"
+  },
+  {
+   "t": "text",
+   "body": "*CRM Implementation specialisation complete*\n\n1. You can run discovery and write requirements a client signs.\n2. You design CRMs that fit the business and the plan, with permissions people trust.\n3. You migrate messy data cleanly and reversibly.\n4. You automate and integrate safely, so the CRM fills itself.\n5. You launch, drive adoption, hand over, and keep it healthy with an agent you control."
+  },
+  {
+   "t": "done",
+   "body": "*Boss 7 complete!* _Kora Goes Live_ is done and saved to your progress, on WhatsApp and in the app.\n\nThat's the whole CRM Implementation specialisation. Well done: it goes on your certificate once the boss project is accepted."
+  }
+ ]
+}

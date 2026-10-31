@@ -893,6 +893,8 @@ def build_item(item, idx, order, src, sb7, videos, clips):
     done = f"*{label_for(item)} complete!* _{short}_ is done and saved to your progress, on WhatsApp and in the app."
     if nxt:
         done += f"\n\nNext up: {label_for(nxt)}, _{nxt['title']}_."
+    elif item.get("spec"):
+        done += f"\n\nThat's the whole {item.get('trackName') or 'specialisation'}. Well done: it goes on your certificate once the boss project is accepted."
     else:
         done += "\n\nThat's the whole course. Well done: you built it all."
     sc.cards.append({"t": "done", "body": clean(done)})
@@ -1098,9 +1100,15 @@ def main():
     outdir = os.path.join(ROOT, "data", "whatsapp")
     os.makedirs(outdir, exist_ok=True)
 
+    # Specialisation items follow the core course: each specialisation is its own sequence ("next up" stays inside it),
+    # and the guide alternates on the global position, as coachFor() does in course/src/platform.js.
+    groups = [(0, order)]
+    for sp in (idx.get("spec") or {}).values():
+        groups.append((sum(len(g) for _, g in groups), [dict(it, title=html.unescape(it["title"])) for it in sp["items"]]))
+
     index, all_errs, stats = [], [], {}
     samples = {}
-    for i, item in enumerate(order):
+    for i, item, order in ((base + j, it, g) for base, g in groups for j, it in enumerate(g)):
         fid = item["id"].replace(".", "-")
         src = open(os.path.join(ROOT, "course-build", "lessons", fid + ".html"), encoding="utf-8").read()
         cards = build_item(item, i, order, src, sb7, videos, clips)

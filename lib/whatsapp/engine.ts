@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL, hasAnthropic } from "@/lib/config";
-import { COURSE, itemById, percentDone, type CourseItem } from "@/lib/course";
+import { ALL_ITEMS, COURSE, itemById, percentDone, specOf, type CourseItem } from "@/lib/course";
 import { LIMITS, redactSecrets } from "@/lib/reviewer-core";
 import { markRead, sendOut } from "@/lib/whatsapp/api";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/lib/whatsapp/core";
 import { firstUndone, loadMedia, loadScript, nextItem, titleOf } from "@/lib/whatsapp/lessons";
 import { mediaIdFor } from "@/lib/whatsapp/media";
-import { askSageFor, canOpen, loadLearner, loadProgress, markItemDone, submitWork, type Learner } from "@/lib/whatsapp/learner";
+import { askSageFor, canOpen, lockNote, loadLearner, loadProgress, markItemDone, submitWork, type Learner } from "@/lib/whatsapp/learner";
 
 /**
  * The WhatsApp conversation state machine. Called from the webhook (after the 200 is sent).
@@ -345,16 +345,20 @@ async function advance(conv: Conv, learner: Learner) {
   const script = loadScript(sess.item_id);
   if (script && sess.card_index < script.cards.length - 1) return deliver(conv, learner, sess.item_id, sess.card_index + 1);
   const n = nextItem(sess.item_id);
-  if (!n) return finished(conv);
+  if (!n) return finished(conv, sess.item_id);
   return deliver(conv, learner, n.id, 0);
 }
 
 function pricing(conv: Conv, item: CourseItem) {
+  const spec = specOf(item.id);
+  if (spec) return conv.say(`${itemLabel(item.id)} · ${titleOf(item)} is part of the ${lockNote(item.id)}, sold separately from the main course.\n\nUnlock it here: ${SITE_URL}/checkout/${spec}`,
+    [btn("TRACKS", "Other tracks"), MENU_BTN]);
   return conv.say(`${itemLabel(item.id)} · ${titleOf(item)} is part of the full course. Base Camp (lessons 0.1 to 0.6 and Boss 0) is free.\n\nEnrol to unlock every lesson, project and review: ${SITE_URL}/pricing`,
     [btn("LESSONS 0", "Base Camp"), MENU_BTN]);
 }
 
-function finished(conv: Conv) {
+function finished(conv: Conv, lastId?: string | null) {
+  if (lastId && specOf(lastId)) return conv.say(`You've finished the ${lockNote(lastId)}. Brilliant work.\n\nIt's added to your certificate once its boss project is accepted: ${SITE_URL}/account#certificate`, [btn("PROGRESS", "My progress"), MENU_BTN]);
   return conv.say(`You've reached the end of the course. Brilliant work.\n\nCheck your certificate progress at ${SITE_URL}/account#certificate`, [btn("PROGRESS", "My progress"), MENU_BTN]);
 }
 
@@ -385,7 +389,7 @@ async function doneMessage(learner: Learner, item: CourseItem, body: string, ctx
   const label = itemLabel(item.id);
   const r = await markItemDone(learner.id, item.id);
   const n = nextItem(item.id);
-  const nextLine = n ? `\n\nNext up: ${itemLabel(n.id)} · ${titleOf(n)}${canOpen(learner, n.id) ? "" : " (full course)"}` : "\n\nThat was the last item in the course.";
+  const nextLine = n ? `\n\nNext up: ${itemLabel(n.id)} · ${titleOf(n)}${canOpen(learner, n.id) ? "" : ` (${lockNote(n.id)})`}` : `\n\nThat was the last item in the ${specOf(item.id) ? lockNote(item.id) : "course"}.`;
   if (!r.ok && r.reason === "needs_review") {
     return withButtons(`${body}\n\nThis project counts as done once your submission is accepted. Tap Back to return to the task, or submit it in the app: ${ctx.appUrl}${nextLine}`,
       [btn("BACK", "Back to task"), btn("NEXT", n ? "Next lesson" : "Finish"), MENU_BTN], footer);
@@ -466,11 +470,11 @@ async function lessonsList(conv: Conv, learner: Learner, track: number | null) {
   const p = await loadProgress(learner.id);
   const sess = conv.session!;
   const t = track ?? (sess.item_id ? itemById(sess.item_id)?.track : firstUndone(p.done)?.track) ?? 0;
-  const items = COURSE.items.filter(i => i.track === t);
+  const items = ALL_ITEMS.filter(i => i.track === t);
   if (!items.length) return tracksList(conv, learner);
   const rows: Row[] = items.slice(0, items.length <= 9 ? 9 : 10).map(i => ({
     id: `LESSON ${i.id}`, title: `${i.id} ${titleOf(i)}`,
-    description: `${p.done[i.id] === true ? "✓ Done · " : ""}${canOpen(learner, i.id) ? "" : "Full course · "}${titleOf(i)}`
+    description: `${p.done[i.id] === true ? "✓ Done · " : ""}${canOpen(learner, i.id) ? "" : (specOf(i.id) ? "Specialisation · " : "Full course · ")}${titleOf(i)}`
   }));
   if (items.length <= 9) rows.push({ id: "TRACKS", title: "Other tracks", description: "Choose a different track" });
   return conv.send([{ type: "list", body: `*Track ${t}: ${items[0].trackName}*\nChoose a lesson.`, button: "Lessons", rows, sectionTitle: `Track ${t}`, footer: "Or type LESSON 3.4 · TRACKS" }]);
@@ -478,11 +482,11 @@ async function lessonsList(conv: Conv, learner: Learner, track: number | null) {
 
 async function tracksList(conv: Conv, learner: Learner) {
   const p = await loadProgress(learner.id);
-  const tracks = [...new Set(COURSE.items.map(i => i.track))].slice(0, 10);
+  const tracks = [...new Set(ALL_ITEMS.map(i => i.track))].slice(0, 10);
   const rows: Row[] = tracks.map(t => {
-    const items = COURSE.items.filter(i => i.track === t);
+    const items = ALL_ITEMS.filter(i => i.track === t);
     const done = items.filter(i => p.done[i.id] === true).length;
-    return { id: `LESSONS ${t}`, title: `${t}. ${items[0].trackName}`, description: `${done}/${items.length} done${items.every(i => canOpen(learner, i.id)) ? "" : " · full course"}` };
+    return { id: `LESSONS ${t}`, title: `${t}. ${items[0].trackName}`, description: `${done}/${items.length} done${items.every(i => canOpen(learner, i.id)) ? "" : ` · ${lockNote(items[0].id)}`}` };
   });
   return conv.send([{ type: "list", body: "Choose a track.", button: "Tracks", rows, sectionTitle: "Tracks" }]);
 }
