@@ -17,6 +17,7 @@ import {
   scoreQuiz, slugify, submitProblems, validSlug, type QuizQ
 } from "@/app/(site)/courses/_lib/core";
 import { loadPrices } from "@/lib/price-settings";
+import { runCourseAgent } from "@/lib/course-agent";
 
 /** Every action re-checks who is asking; writes use the service role only after those checks (RLS still guards direct API use). */
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -316,10 +317,16 @@ export async function submitCourse(formData: FormData) {
     await db().from("courses").update({ status: "submitted", submitted_at: now }).eq("id", course.id);
   } else back({ error: "This course can't be submitted right now." });
   await audit(userId, "course_submit", course.id, { title: course.title, live: course.status === "live" });
-  await emailAdmins(`Course submitted: ${course.title}`, `<p><b>${esc(course.title)}</b> is waiting for review${course.status === "live" ? " (changes to a live course)" : ""}.</p><p><a href="${esc(SITE_URL)}/admin/courses/${course.id}">Review it</a></p>`);
-  await emailUser(userId, `We've received "${course.title}"`, `<p>Thanks! We review courses in about ${MARKET.reviewDays} working days and will email you when we're done.</p>`);
+  // The Course Review Agent checks it now; it emails the admins itself when a person needs to decide.
+  let run: Awaited<ReturnType<typeof runCourseAgent>> = null;
+  try { run = await runCourseAgent(course.id, { trigger: "submit" }); }
+  catch (e) {
+    console.error("[course-agent] failed", e);
+    await emailAdmins(`Course submitted: ${course.title}`, `<p><b>${esc(course.title)}</b> is waiting for review${course.status === "live" ? " (changes to a live course)" : ""}. The review agent couldn't run; please review it yourself.</p><p><a href="${esc(SITE_URL)}/admin/courses/${course.id}">Review it</a></p>`);
+  }
+  if (!run?.applied) await emailUser(userId, `We've received "${course.title}"`, `<p>Thanks! We review courses in about ${MARKET.reviewDays} working days and will email you when we're done.</p>`);
   revalidatePath("/teach/studio");
-  back({ submitted: "1" });
+  back({ submitted: run?.applied ? `agent_${run.applied}` : "1" });
 }
 
 export async function withdrawCourse(formData: FormData) {
@@ -594,4 +601,14 @@ export async function toggleCourseCode(formData: FormData) {
   await audit(userId, "course_code_toggle", course.id, { code, active });
   revalidatePath(`/teach/studio/${course.id}`);
   redirect(`/teach/studio/${course.id}` + q({ saved: "code" }) + "#discounts");
+}
+
+/** Admin → Courses → a course: run the Course Review Agent again (recommendation only; nothing is applied). */
+export async function adminRunCourseAgent(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = s(formData, "course_id", 64);
+  try { await runCourseAgent(id, { trigger: "admin", actorId: admin.id }); }
+  catch (e) { console.error("[course-agent] failed", e); redirect(`/admin/courses/${id}` + q({ error: "The review agent couldn't run. Try again in a minute." })); }
+  revalidatePath(`/admin/courses/${id}`);
+  redirect(`/admin/courses/${id}` + q({ agent: "1" }) + "#agent");
 }

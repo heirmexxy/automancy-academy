@@ -43,7 +43,7 @@ export type ReviewOutcome = {
   meta: { model: string; input_tokens?: number; output_tokens?: number; at: string; similarity: number };
 };
 
-async function callClaude(system: string, user: string, maxTokens: number) {
+export async function callClaude(system: string, user: string, maxTokens: number) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_API_KEY is not set");
   const ctrl = new AbortController();

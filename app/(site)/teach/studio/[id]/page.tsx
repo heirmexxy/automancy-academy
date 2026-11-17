@@ -51,7 +51,10 @@ export default async function EditCourse({ params, searchParams }: Props) {
       </header>
 
       {sp.error && <p className="alert bad" role="alert">{sp.error}</p>}
-      {sp.submitted && <p className="alert ok" role="status">Submitted. We review courses in about {MARKET.reviewDays} working days and will email you.</p>}
+      {sp.submitted === "agent_approve" && <p className="alert ok" role="status">Your course passed review and is live. We&apos;ve emailed you the link.</p>}
+      {sp.submitted === "agent_changes" && <p className="alert bad" role="alert">Your course needs a few changes before it can go live: see the review note below (we&apos;ve emailed it too). Make the changes and submit again.</p>}
+      {sp.submitted === "agent_reject" && <p className="alert bad" role="alert">We can&apos;t publish this course because it breaks our standards: see the review note below. Reply to our email if you think this is a mistake.</p>}
+      {sp.submitted === "1" && <p className="alert ok" role="status">Submitted. We review courses in about {MARKET.reviewDays} working days and will email you.</p>}
       {sp.withdrawn && <p className="alert ok" role="status">Withdrawn from review. You can edit again.</p>}
       {c.review_note && (c.status === "changes_requested" || c.status === "rejected" || c.status === "unlisted" || c.status === "live") && (
         <div className={`alert ${c.status === "rejected" ? "bad" : "warn"}`}><b>Reviewer's note:</b> <span style={{ whiteSpace: "pre-line" }}>{c.review_note}</span></div>

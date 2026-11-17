@@ -5,10 +5,12 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtDate, ngn, usd } from "@/lib/format";
 import { flatLessons, getCourse, getCreator, getCurriculum } from "@/lib/marketplace";
-import { adminApproveCourse, adminHideReview, adminRejectCourse, adminRequestChanges, adminSetFree, adminSetListing } from "@/lib/actions/marketplace";
+import { adminApproveCourse, adminRunCourseAgent, adminHideReview, adminRejectCourse, adminRequestChanges, adminSetFree, adminSetListing } from "@/lib/actions/marketplace";
 import { KIND_LABEL, STANDARDS, STATUS_LABEL, normaliseQuiz, statusTone, submitProblems, type LessonKind } from "../../../courses/_lib/core";
 import { Markdown, VideoEmbed } from "../../../courses/_components/Markdown";
 import "../../../courses/marketplace.css";
+import { latestAgentRun } from "@/lib/course-agent";
+import { DECISION_LABEL } from "@/lib/course-agent-rules";
 
 export const metadata: Metadata = { title: "Admin · Review course" };
 export const dynamic = "force-dynamic";
@@ -20,7 +22,8 @@ export default async function ReviewCourse({ params, searchParams }: Props) {
   const sp = await searchParams;
   const c = await getCourse(id);
   if (!c) notFound();
-  const [creator, curriculum, { data: reviews }, { data: prof }] = await Promise.all([
+  const [agent, creator, curriculum, { data: reviews }, { data: prof }] = await Promise.all([
+    latestAgentRun(c.id).catch(() => null),
     getCreator(c.creator_id), getCurriculum(c.id, true),
     createAdminClient().from("course_reviews").select("id, rating, body, hidden, created_at").eq("course_id", c.id).order("created_at", { ascending: false }).limit(100),
     createAdminClient().from("profiles").select("email").eq("id", c.creator_id).maybeSingle()
@@ -42,6 +45,28 @@ export default async function ReviewCourse({ params, searchParams }: Props) {
       {sp.saved && <p className="alert ok" role="status">Saved.</p>}
       {problems.length > 0 && <div className="alert warn"><b>Automatic checks:</b><ul className="mk-problems">{problems.map(p => <li key={p}>{p}</li>)}</ul></div>}
       {c.review_note && <p className="alert">Last note to creator: {c.review_note}</p>}
+
+      <div id="agent" className="card stack">
+        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontSize: "1.2rem" }}>Course Review Agent</h2>
+          <form action={adminRunCourseAgent}><H /><button className="btn alt sm" type="submit">{agent ? "Run again" : "Run the agent"}</button></form>
+        </div>
+        {sp.agent && <p className="alert ok" role="status">The agent has re-checked this course (recommendation only; nothing was changed).</p>}
+        {!agent ? <p className="note">The agent hasn&apos;t checked this course yet. It runs automatically when a creator submits.</p> : <>
+          <p>
+            <span className={`pill ${agent.report.decision === "approve" ? "ok" : agent.report.decision === "reject" ? "bad" : "warn"}`}>{DECISION_LABEL[agent.report.decision]}</span>{" "}
+            {agent.applied ? <b>Applied automatically</b> : <span className="note">Recommendation</span>}
+            <span className="note"> · {fmtDate(agent.at)} · {agent.report.stats.lessons} lessons, {agent.report.stats.practical} tasks/quizzes, {agent.report.stats.videos} videos, {agent.report.stats.words.toLocaleString("en-NG")} words · AI read: {agent.ai === "used" ? "yes" : agent.ai === "failed" ? "failed (rules only)" : "off (no Anthropic key)"}</span>
+          </p>
+          {agent.report.findings.length === 0 ? <p className="note">Every rule passed.</p> : (
+            <ul className="mk-problems">{agent.report.findings.map((f, i) => (
+              <li key={i}><span className={`pill ${f.severity === "reject" ? "bad" : f.severity === "changes" ? "warn" : ""}`}>{f.severity === "person" ? "check" : f.severity}</span> <b>{STANDARDS.find(x => x.key === f.standard)?.title || f.standard}:</b> {f.message}{f.where ? <span className="note"> ({f.where})</span> : null}</li>
+            ))}</ul>
+          )}
+          {agent.report.passed.length > 0 && <p className="note">Passed: {agent.report.passed.map(k => STANDARDS.find(x => x.key === k)?.title || k).join(", ")}.</p>}
+          <p className="note">The agent checks the rules a machine can check reliably. You still decide anything marked &ldquo;check&rdquo;, and you can always override it below.</p>
+        </>}
+      </div>
 
       <div className="card bold stack">
         <h2 style={{ fontSize: "1.2rem" }}>Decision</h2>
