@@ -4,6 +4,7 @@
 #   First time:   curl -fsSL https://raw.githubusercontent.com/heirmexxy/automancy-academy/main/scripts/deploy-vps.sh -o deploy-automancy.sh && bash deploy-automancy.sh
 #   Update later: bash deploy-automancy.sh            (pulls the latest code, rebuilds, restarts; keeps your keys)
 #   HTTPS only:   bash deploy-automancy.sh --ssl      (once automancy.cc points at this server)
+#   Change keys:  bash deploy-automancy.sh --keys     (asks for the Supabase, admin and Paystack values again)
 #
 # On a server where Dokploy's Traefik already owns ports 80/443 (like srv878622), it does what Titan does:
 # no Nginx; the app listens on the Docker bridge (172.17.0.1) and a file in /etc/dokploy/traefik/dynamic/
@@ -119,31 +120,48 @@ else
   git clone -q --depth 1 "$REPO" "$APP_DIR"
 fi
 
-# ── 5. Keys (asked once, kept in /etc/automancy/env) ─────────────────────────
-ask() { # ask VAR "Question" [secret]
-  local v=""
-  while [ -z "$v" ]; do
-    if [ "${3:-}" = "secret" ]; then read -r -s -p "  $2: " v; echo; else read -r -p "  $2: " v; fi
-    v="$(echo "$v" | tr -d '[:space:]')"
-  done
-  printf '%s=%s\n' "$1" "$v" >> "$ENV_FILE"
+# ── 5. Keys (each asked until it's saved, kept in /etc/automancy/env) ────────
+# Re-running after an interruption only asks for what's still missing. To change a key: bash deploy-automancy.sh --keys
+mkdir -p "$(dirname "$ENV_FILE")"; touch "$ENV_FILE"; chmod 600 "$ENV_FILE"
+has() { grep -qE "^$1=.+" "$ENV_FILE"; }
+put() { # put VAR value (replaces any earlier line for VAR)
+  local tmp; tmp="$(mktemp)"; grep -vE "^#?$1=" "$ENV_FILE" > "$tmp" || true
+  printf '%s=%s\n' "$1" "$2" >> "$tmp"; cat "$tmp" > "$ENV_FILE"; rm -f "$tmp"; chmod 600 "$ENV_FILE"
 }
-if [ ! -s "$ENV_FILE" ]; then
-  say "Your keys (typed here, saved only on this server; secret keys don't show while you type)"
-  mkdir -p "$(dirname "$ENV_FILE")"; umask 077; : > "$ENV_FILE"
-  ask NEXT_PUBLIC_SUPABASE_URL "Supabase Project URL (https://….supabase.co)"
-  ask NEXT_PUBLIC_SUPABASE_ANON_KEY "Supabase publishable key (sb_publishable_…)"
-  ask SUPABASE_SERVICE_ROLE_KEY "Supabase secret key (sb_secret_…)" secret
-  ask ADMIN_EMAILS "Admin email (the account you'll sign up with)"
-  read -r -p "  Paystack secret key (sk_test_… or sk_live_…; press Enter to add later): " pk; echo
-  cron_secret="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
-  cat >> "$ENV_FILE" <<EOF
-PAYSTACK_SECRET_KEY=$(echo "${pk:-}" | tr -d '[:space:]')
-NEXT_PUBLIC_SITE_URL=https://$DOMAIN
-NEXT_PUBLIC_SUPPORT_EMAIL=support@$DOMAIN
-NEXT_PUBLIC_PRIVACY_EMAIL=privacy@$DOMAIN
-EMAIL_FROM="Automancy Academy <hello@$DOMAIN>"
-CRON_SECRET=$cron_secret
+ask() { # ask VAR "Question" [secret] [optional]
+  local v
+  [ -t 0 ] || die "$1 isn't saved yet and this run can't ask for it. Run: bash deploy-automancy.sh"
+  while :; do
+    if [ "${3:-}" = secret ]; then read -r -s -p "  $2: " v; echo; else read -r -p "  $2: " v; fi
+    v="$(printf '%s' "$v" | tr -d '[:space:]')"
+    if [ -n "$v" ]; then put "$1" "$v"; [ "${3:-}" = secret ] && echo "    (received, ${#v} characters)"; return 0; fi
+    [ "${4:-}" = optional ] && return 0
+    echo "    This one is needed. Paste it and press Enter."
+  done
+}
+if [ "${1:-}" = "--keys" ]; then
+  for k in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY ADMIN_EMAILS PAYSTACK_SECRET_KEY NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY; do
+    sed -i -E "/^$k=/d" "$ENV_FILE"
+  done
+fi
+if ! has NEXT_PUBLIC_SUPABASE_URL || ! has NEXT_PUBLIC_SUPABASE_ANON_KEY || ! has SUPABASE_SERVICE_ROLE_KEY || ! has ADMIN_EMAILS || ! grep -qE '^PAYSTACK_SECRET_KEY=' "$ENV_FILE"; then
+  say "Your keys (saved only on this server). Secret keys don't show while you paste them: paste, then press Enter."
+fi
+has NEXT_PUBLIC_SUPABASE_URL      || ask NEXT_PUBLIC_SUPABASE_URL "Supabase Project URL (https://….supabase.co)"
+has NEXT_PUBLIC_SUPABASE_ANON_KEY || ask NEXT_PUBLIC_SUPABASE_ANON_KEY "Supabase publishable key (sb_publishable_…)"
+has SUPABASE_SERVICE_ROLE_KEY     || ask SUPABASE_SERVICE_ROLE_KEY "Supabase secret key (sb_secret_…), hidden" secret
+has ADMIN_EMAILS                  || ask ADMIN_EMAILS "Admin email(s), comma-separated, no spaces"
+if ! grep -qE '^PAYSTACK_SECRET_KEY=' "$ENV_FILE"; then
+  ask PAYSTACK_SECRET_KEY "Paystack SECRET key (sk_live_… or sk_test_…), hidden; Enter to skip" secret optional
+  has PAYSTACK_SECRET_KEY || put PAYSTACK_SECRET_KEY ""
+  ask NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY "Paystack PUBLIC key (pk_live_… or pk_test_…); Enter to skip" "" optional
+fi
+has NEXT_PUBLIC_SITE_URL      || put NEXT_PUBLIC_SITE_URL "https://$DOMAIN"
+has NEXT_PUBLIC_SUPPORT_EMAIL || put NEXT_PUBLIC_SUPPORT_EMAIL "support@$DOMAIN"
+has NEXT_PUBLIC_PRIVACY_EMAIL || put NEXT_PUBLIC_PRIVACY_EMAIL "privacy@$DOMAIN"
+has EMAIL_FROM                || put EMAIL_FROM "\"Automancy Academy <hello@$DOMAIN>\""
+has CRON_SECRET               || put CRON_SECRET "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+grep -q '^# Add later' "$ENV_FILE" || cat >> "$ENV_FILE" <<'EOF'
 # Add later (then run: bash deploy-automancy.sh), remove the leading # first:
 #RESEND_API_KEY=
 #ANTHROPIC_API_KEY=
@@ -155,9 +173,17 @@ CRON_SECRET=$cron_secret
 #WHATSAPP_VERIFY_TOKEN=
 #WHATSAPP_BUSINESS_NUMBER=
 EOF
-  chmod 600 "$ENV_FILE"
-else
-  say "Using the keys already saved in $ENV_FILE (edit it with: nano $ENV_FILE)"
+say "Keys saved in $ENV_FILE"
+
+# ── 5b. Keep going even if the browser terminal disconnects ──────────────────
+LOG=/var/log/automancy-deploy.log
+if [ -z "${AUTOMANCY_DETACHED:-}" ]; then
+  say "Building now (5–10 minutes). If this window disconnects, the build carries on: reconnect and run  tail -f $LOG"
+  AUTOMANCY_DETACHED=1 setsid nohup bash "$(readlink -f "$0")" > "$LOG" 2>&1 < /dev/null &
+  pid=$!
+  tail -n +1 --pid="$pid" -f "$LOG" 2>/dev/null || true
+  rc=0; wait "$pid" 2>/dev/null || rc=$?
+  exit $rc
 fi
 
 # ── 6. Build ─────────────────────────────────────────────────────────────────
