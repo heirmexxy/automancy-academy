@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { getProfile } from "@/lib/auth";
 import { hasSupabase } from "@/lib/config";
+import { MenuCloser } from "./MenuCloser";
 
 /** Public header. Learners who are signed in see "My course"; admins also see "Admin". */
 export async function SiteHeader() {
@@ -31,6 +32,7 @@ export async function SiteHeader() {
           </>}
         </nav>
       </div>
+      <MenuCloser />
     </header>
   );
 }
