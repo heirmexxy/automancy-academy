@@ -120,8 +120,6 @@ export default async function AdminSettings({ searchParams }: { searchParams: Pr
           <span><b>Live calls visible.</b> Shows live-call links and schedules to cohort learners in the course.</span></label>
         <label className="check"><input type="checkbox" name="ai_review_auto" defaultChecked={!!s.ai_review_auto} />
           <span><b>AI review decides automatically.</b> When off, every AI review waits for a person in Admin → AI reviews before the learner sees the result.</span></label>
-        <label className="check"><input type="checkbox" name="course_agent_auto" defaultChecked={!!s.course_agent_auto} />
-          <span><b>Course Review Agent decides automatically.</b> When a creator submits a course, the agent checks it against the creator standards and approves it, requests changes or rejects it, emailing the creator. Courses it isn&apos;t sure about wait for a person. When off, it only leaves a recommendation in Admin → Courses.</span></label>
         <div className="row"><button className="btn" type="submit">Save settings</button></div>
       </form>
 

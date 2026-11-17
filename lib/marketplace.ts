@@ -107,12 +107,12 @@ export async function progressFor(userId: string, courseId: string) {
 
 // ── Email ─────────────────────────────────────────────────────────────────────
 
-const wrap = (body: string) => `<div style="font-family:system-ui,sans-serif;max-width:560px">${body}
+export const wrapEmail = (body: string) => `<div style="font-family:system-ui,sans-serif;max-width:560px">${body}
   <p style="color:#666;font-size:13px">${esc(SITE_NAME)} · Questions? ${esc(SUPPORT_EMAIL)}</p></div>`;
 export async function emailUser(userId: string, subject: string, bodyHtml: string) {
   try {
     const { data } = await db().from("profiles").select("email").eq("id", userId).maybeSingle();
-    if (data?.email) await sendEmail(String(data.email), subject, wrap(bodyHtml));
+    if (data?.email) await sendEmail(String(data.email), subject, wrapEmail(bodyHtml));
   } catch (e) { console.error("[marketplace] email failed", e); }
 }
 export async function emailAdmins(subject: string, bodyHtml: string) {
@@ -122,7 +122,7 @@ export async function emailAdmins(subject: string, bodyHtml: string) {
       const { data } = await db().from("profiles").select("email").eq("role", "admin").limit(10);
       to = (data || []).map(r => String(r.email));
     }
-    await Promise.all(to.map(e => sendEmail(e, subject, wrap(bodyHtml))));
+    await Promise.all(to.map(e => sendEmail(e, subject, wrapEmail(bodyHtml))));
   } catch (e) { console.error("[marketplace] admin email failed", e); }
 }
 export const courseLink = (c: Pick<Course, "slug">) => `${SITE_URL}/courses/${c.slug}`;

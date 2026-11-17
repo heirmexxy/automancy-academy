@@ -303,9 +303,14 @@ fi
 
 if [ "$MODE" = nginx ] && command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then ufw allow 'Nginx Full' >/dev/null; fi
 
-# ── 9. Daily WhatsApp job (harmless until WhatsApp is set up) ────────────────
+# ── 9. Scheduled jobs: daily WhatsApp reminders, hourly and daily agents ─────
 CRON_SECRET_VAL="$(grep -E '^CRON_SECRET=' "$ENV_FILE" | cut -d= -f2)"
-echo "30 7 * * * root curl -fsS -m 600 -H 'Authorization: Bearer $CRON_SECRET_VAL' http://$BIND:$PORT/api/whatsapp/reminders >/dev/null 2>&1" > /etc/cron.d/automancy
+cat > /etc/cron.d/automancy <<EOF
+# Automancy Academy (written by deploy-vps.sh). Times are the server's clock (UTC on Hostinger).
+30 7 * * * root curl -fsS -m 600 -H 'Authorization: Bearer $CRON_SECRET_VAL' http://$BIND:$PORT/api/whatsapp/reminders >/dev/null 2>&1
+17 * * * * root curl -fsS -m 600 -H 'Authorization: Bearer $CRON_SECRET_VAL' 'http://$BIND:$PORT/api/agents/run?tick=hourly' >/dev/null 2>&1
+5 7 * * * root curl -fsS -m 900 -H 'Authorization: Bearer $CRON_SECRET_VAL' 'http://$BIND:$PORT/api/agents/run?tick=daily' >/dev/null 2>&1
+EOF
 chmod 644 /etc/cron.d/automancy
 
 # ── 10. HTTPS if the domain already points here ──────────────────────────────

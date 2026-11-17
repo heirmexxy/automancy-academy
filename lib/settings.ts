@@ -2,8 +2,8 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { FEATURES } from "@/lib/config";
 
-export type Settings = { cohort_open: boolean; live_calls_visible: boolean; next_cohort_date: string | null; ai_review_auto: boolean; course_agent_auto: boolean };
-const DEFAULTS: Settings = { cohort_open: FEATURES.cohortDefault, live_calls_visible: false, next_cohort_date: null, ai_review_auto: true, course_agent_auto: true };
+export type Settings = { cohort_open: boolean; live_calls_visible: boolean; next_cohort_date: string | null; ai_review_auto: boolean };
+const DEFAULTS: Settings = { cohort_open: FEATURES.cohortDefault, live_calls_visible: false, next_cohort_date: null, ai_review_auto: true };
 
 /** Runtime feature switches stored in the `settings` table (Admin → Settings). */
 export async function getSettings(): Promise<Settings> {

@@ -8,6 +8,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="wrap admin">
       <aside aria-label="Admin">
         <Link href="/admin">Overview</Link>
+        <Link href="/admin/agents">Agents</Link>
+        <Link href="/admin/support">Support</Link>
         <Link href="/admin/learners">Learners</Link>
         <Link href="/admin/payments">Payments</Link>
         <Link href="/admin/refunds">Refunds</Link>

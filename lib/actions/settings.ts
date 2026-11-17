@@ -17,7 +17,6 @@ export async function saveSettings(formData: FormData) {
     cohort_open: formData.get("cohort_open") === "on",
     live_calls_visible: formData.get("live_calls_visible") === "on",
     ai_review_auto: formData.get("ai_review_auto") === "on",
-    course_agent_auto: formData.get("course_agent_auto") === "on",
     next_cohort_date: rawDate || null
   };
 

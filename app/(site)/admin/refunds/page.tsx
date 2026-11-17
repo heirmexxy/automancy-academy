@@ -24,6 +24,9 @@ export default async function Refunds({ searchParams }: { searchParams: Promise<
   const reqs = data || [];
   const payIds = [...new Set(reqs.map(r => r.payment_id as string))];
   const userIds = [...new Set(reqs.map(r => r.user_id as string))];
+  const reqIds = reqs.map(r => String(r.id));
+  const { data: recs } = reqIds.length ? await db.from("agent_flags").select("target_id, message").eq("agent", "refunds").eq("status", "open").in("target_id", reqIds) : { data: [] as { target_id: string; message: string }[] };
+  const agentRec = new Map((recs || []).map(f => [String(f.target_id), String(f.message)]));
   const [{ data: pays }, { data: profs }] = await Promise.all([
     payIds.length ? db.from("payments").select("id, product, reference, amount_kobo, currency, status, paid_at, installment_no, installments_total").in("id", payIds) : Promise.resolve({ data: [] as never[] }),
     userIds.length ? db.from("profiles").select("id, email, full_name").in("id", userIds) : Promise.resolve({ data: [] as never[] })
@@ -53,6 +56,7 @@ export default async function Refunds({ searchParams }: { searchParams: Promise<
             </div>
             <p className="note">{u?.email} · requested {fmtDate(r.created_at)} · paid {p?.paid_at ? fmtDate(p.paid_at) : "-"} · {inWindow ? "within the refund window" : "OUTSIDE the refund window"}{p ? ` · payment ${p.status} · ${p.reference}` : ""}{p && p.installments_total > 1 ? ` · instalment ${p.installment_no}/${p.installments_total}` : ""}</p>
             <p style={{ whiteSpace: "pre-wrap" }}>{r.reason}</p>
+            {agentRec.get(String(r.id)) && <p className="alert">Refund Agent: {agentRec.get(String(r.id))}</p>}
             {r.admin_note && <p className="note">Note: {r.admin_note}{r.decided_at ? ` (${fmtDate(r.decided_at)})` : ""}</p>}
             {r.status === "open" && p?.status === "success" && (
               <div className="grid2">

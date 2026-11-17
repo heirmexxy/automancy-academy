@@ -2,7 +2,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { esc } from "@/lib/format";
-import { getSettings } from "@/lib/settings";
+import { getAgentSettings } from "@/lib/agents/run";
 import { loadPrices } from "@/lib/price-settings";
 import { callClaude } from "@/lib/reviewer";
 import { STANDARDS } from "@/app/(site)/courses/_lib/core";
@@ -13,7 +13,7 @@ import { SITE_URL } from "@/lib/config";
 /**
  * Course Review Agent. Runs when a creator submits a course (and on demand from Admin → Courses):
  * the rules in course-agent-rules.ts, then, if ANTHROPIC_API_KEY is set, an AI read against the same standards
- * that can only make the decision stricter. With "Course review agent decides" on (Admin → Settings) it applies
+ * that can only make the decision stricter. With it set to act (Admin → Agents) it applies
  * approve / request changes / reject itself; otherwise, and always for "needs a person", it leaves a
  * recommendation on the course's review page. Every run is logged in audit_log (action course_agent_review).
  */
@@ -76,9 +76,9 @@ export async function runCourseAgent(courseId: string, o: { trigger: "submit" | 
     catch (e) { ai = "failed"; console.error("[course-agent] AI read failed", e); report = combineWithAi(report, { decision: "person", findings: [] }); }
   }
 
-  const settings = await getSettings();
+  const agentCfg = (await getAgentSettings()).course_review;
   const inReview = c.status === "submitted" || (c.status === "live" && c.changes_pending);
-  const auto = o.trigger === "submit" && settings.course_agent_auto && inReview && report.decision !== "person";
+  const auto = o.trigger === "submit" && agentCfg.enabled && agentCfg.auto && inReview && report.decision !== "person";
   let applied: AgentDecision | null = null;
   if (auto) { await apply(c, report.decision, report); applied = report.decision; }
 
