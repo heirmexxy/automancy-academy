@@ -11,7 +11,7 @@
 # It leaves your other sites alone: its own Node 20 in /opt/automancy-node (the system Node is not touched),
 # its own systemd service (automancy), its own Nginx site file, and a free local port.
 # Keys live in /etc/automancy/env (readable by root only), never in the code.
-set -euo pipefail
+set -Eeuo pipefail
 
 DOMAIN="automancy.cc"
 REPO="https://github.com/heirmexxy/automancy-academy.git"
@@ -25,6 +25,17 @@ SITE_FILE="/etc/nginx/sites-available/${DOMAIN}"
 say()  { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 warn() { printf '\n\033[1;33m!!  %s\033[0m\n' "$*"; }
 die()  { printf '\n\033[1;31mXX  %s\033[0m\n' "$*"; exit 1; }
+trap 'printf "\n\033[1;31mXX  Stopped at line %s of the script (command: %s). Send Claude a screenshot of this.\033[0m\n" "$LINENO" "$BASH_COMMAND"' ERR
+
+# Install only what's missing, and don't let an unrelated broken package source stop us.
+need_pkgs() {
+  local missing=() p
+  for p in "$@"; do dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p"); done
+  [ ${#missing[@]} -eq 0 ] && return 0
+  say "Installing: ${missing[*]}"
+  apt-get update -qq >/tmp/automancy-apt.log 2>&1 || warn "apt-get update reported problems with some package sources (see /tmp/automancy-apt.log); continuing."
+  apt-get install -y -qq "${missing[@]}" >>/tmp/automancy-apt.log 2>&1 || { tail -15 /tmp/automancy-apt.log; die "Couldn't install ${missing[*]}. Send Claude a screenshot of the lines above."; }
+}
 
 [ "$(id -u)" = "0" ] || die "Run this as root (in Hostinger's browser terminal you already are)."
 command -v apt-get >/dev/null || die "This script expects Ubuntu or Debian."
@@ -66,16 +77,13 @@ export DEBIAN_FRONTEND=noninteractive
 if [ "$MODE" = traefik ]; then
   say "Dokploy's Traefik runs this server's websites: Automancy plugs into it (like Titan), no Nginx"
   ip -4 addr show docker0 2>/dev/null | grep -q '172.17.0.1/' || die "Expected the Docker bridge at 172.17.0.1 and didn't find it. Nothing was changed. Send Claude: ip -4 addr show docker0"
-  apt-get update -qq
-  apt-get install -y -qq git curl ca-certificates xz-utils >/dev/null
+  need_pkgs git curl ca-certificates xz-utils
   BIND=172.17.0.1
 else
   if ss -ltnp 2>/dev/null | grep -E ':80\s' | grep -vq nginx; then
     die "Something other than Nginx is using port 80: $(ss -ltnp | grep -E ':80\s' | head -1). Nothing was changed. Send this line to Claude."
   fi
-  say "Installing system packages (git, nginx, certbot)"
-  apt-get update -qq
-  apt-get install -y -qq git curl ca-certificates xz-utils nginx certbot python3-certbot-nginx >/dev/null
+  need_pkgs git curl ca-certificates xz-utils nginx certbot python3-certbot-nginx
   systemctl enable --now nginx >/dev/null
   BIND=127.0.0.1
 fi
