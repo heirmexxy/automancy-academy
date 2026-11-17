@@ -73,6 +73,16 @@ npm test                        # unit tests (money, referrals, reviewer)
 5. **Admin → Lesson audio → Generate all lesson audio** once (after Azure keys are set), so Story Mode and Listen are instant.
 6. **Test the money loop** with Paystack test keys (or one small live purchase you then refund): buy, refund, Pay in 3, referral. Checklist in `docs/placeholders/payments.md`.
 
+### Deploy on your own VPS (no Firebase)
+
+On an Ubuntu/Debian server (e.g. a Hostinger KVM), as root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/heirmexxy/automancy-academy/main/scripts/deploy-vps.sh -o deploy-automancy.sh && bash deploy-automancy.sh
+```
+
+It asks for the Supabase URL, publishable key, secret key, admin email and (optionally) the Paystack secret key, saves them in `/etc/automancy/env` (root only), builds the site with its own Node 20 in `/opt/automancy-node` (the system Node is untouched), runs it as the `automancy` systemd service on a free local port, adds an Nginx site for automancy.cc, sets up the daily WhatsApp job in `/etc/cron.d/automancy`, and turns on HTTPS (Let's Encrypt) once the domain's A record points at the server (`bash deploy-automancy.sh --ssl` to retry). Run `bash deploy-automancy.sh` again to update to the latest code; to add a key, `nano /etc/automancy/env` then run it again.
+
 ## Going live with Paystack
 
 The Paystack keys are deliberately **not** in this repository or its history. Do this when taking the product live:
