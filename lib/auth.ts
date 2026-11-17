@@ -1,6 +1,8 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { adminEmails } from "@/lib/config";
 
 export type Profile = {
   id: string; email: string; full_name: string | null; role: "learner" | "reviewer" | "admin";
@@ -18,7 +20,18 @@ export async function getProfile(): Promise<Profile | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  return (data as Profile) ?? null;
+  const p = (data as Profile) ?? null;
+  // Self-repair: an account listed in ADMIN_EMAILS (with a confirmed email) that isn't an admin yet is promoted now,
+  // e.g. when it signed in before ADMIN_EMAILS was set or signed in through a magic link.
+  if (p && p.role !== "admin" && user.email && user.email_confirmed_at && adminEmails().includes(user.email.toLowerCase())) {
+    const { error } = await createAdminClient().from("profiles").update({ role: "admin" }).eq("id", user.id);
+    if (!error) {
+      const { data: again } = await createAdminClient().from("profiles").select("role").eq("id", user.id).maybeSingle();
+      if (again?.role === "admin") return { ...p, role: "admin" };
+      console.error("[auth] couldn't promote", user.email, "- the role change was blocked in the database");
+    }
+  }
+  return p;
 }
 
 export async function requireUser(next = "/learn") {
