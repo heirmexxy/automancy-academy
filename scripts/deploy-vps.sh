@@ -5,6 +5,9 @@
 #   Update later: bash deploy-automancy.sh            (pulls the latest code, rebuilds, restarts; keeps your keys)
 #   HTTPS only:   bash deploy-automancy.sh --ssl      (once automancy.cc points at this server)
 #
+# On a server where Dokploy's Traefik already owns ports 80/443 (like srv878622), it does what Titan does:
+# no Nginx; the app listens on the Docker bridge (172.17.0.1) and a file in /etc/dokploy/traefik/dynamic/
+# routes automancy.cc to it, with Traefik's own Let's Encrypt certificate.
 # It leaves your other sites alone: its own Node 20 in /opt/automancy-node (the system Node is not touched),
 # its own systemd service (automancy), its own Nginx site file, and a free local port.
 # Keys live in /etc/automancy/env (readable by root only), never in the code.
@@ -26,10 +29,19 @@ die()  { printf '\n\033[1;31mXX  %s\033[0m\n' "$*"; exit 1; }
 [ "$(id -u)" = "0" ] || die "Run this as root (in Hostinger's browser terminal you already are)."
 command -v apt-get >/dev/null || die "This script expects Ubuntu or Debian."
 
+TRAEFIK_DIR="/etc/dokploy/traefik/dynamic"
+TRAEFIK_FILE="$TRAEFIK_DIR/automancy.yml"
+MODE=nginx
+if ss -ltnp 2>/dev/null | grep -E ':80\s' | grep -q docker-proxy && [ -d "$TRAEFIK_DIR" ]; then MODE=traefik; fi
+
 SERVER_IP="$(curl -fsS -4 --max-time 10 https://api.ipify.org || hostname -I | awk '{print $1}')"
 
 # ── HTTPS ────────────────────────────────────────────────────────────────────
 ssl() {
+  if [ "$MODE" = traefik ]; then
+    say "HTTPS: Dokploy's Traefik gets the certificate by itself within a minute or two of the domain pointing here."
+    return 0
+  fi
   local admin dns www_dns
   admin="$(grep -E '^ADMIN_EMAILS=' "$ENV_FILE" 2>/dev/null | cut -d= -f2 | cut -d, -f1 || true)"
   dns="$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}' || true)"
@@ -50,14 +62,23 @@ ssl() {
 if [ "${1:-}" = "--ssl" ]; then ssl; exit 0; fi
 
 # ── 1. System packages ───────────────────────────────────────────────────────
-if ss -ltnp 2>/dev/null | grep -E ':80\s' | grep -vq nginx; then
-  die "Something other than Nginx is using port 80: $(ss -ltnp | grep -E ':80\s' | head -1). Nothing was changed. Send this line to Claude."
-fi
-say "Installing system packages (git, nginx, certbot)"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq git curl ca-certificates xz-utils nginx certbot python3-certbot-nginx >/dev/null
-systemctl enable --now nginx >/dev/null
+if [ "$MODE" = traefik ]; then
+  say "Dokploy's Traefik runs this server's websites: Automancy plugs into it (like Titan), no Nginx"
+  ip -4 addr show docker0 2>/dev/null | grep -q '172.17.0.1/' || die "Expected the Docker bridge at 172.17.0.1 and didn't find it. Nothing was changed. Send Claude: ip -4 addr show docker0"
+  apt-get update -qq
+  apt-get install -y -qq git curl ca-certificates xz-utils >/dev/null
+  BIND=172.17.0.1
+else
+  if ss -ltnp 2>/dev/null | grep -E ':80\s' | grep -vq nginx; then
+    die "Something other than Nginx is using port 80: $(ss -ltnp | grep -E ':80\s' | head -1). Nothing was changed. Send this line to Claude."
+  fi
+  say "Installing system packages (git, nginx, certbot)"
+  apt-get update -qq
+  apt-get install -y -qq git curl ca-certificates xz-utils nginx certbot python3-certbot-nginx >/dev/null
+  systemctl enable --now nginx >/dev/null
+  BIND=127.0.0.1
+fi
 
 # ── 2. Node 20, just for this app ────────────────────────────────────────────
 if [ ! -x "$NODE_DIR/bin/node" ] || [ "$("$NODE_DIR/bin/node" -v)" != "$NODE_VERSION" ]; then
@@ -161,7 +182,7 @@ WorkingDirectory=$APP_DIR
 EnvironmentFile=$ENV_FILE
 Environment=NODE_ENV=production
 Environment=NEXT_TELEMETRY_DISABLED=1
-ExecStart=$NODE_DIR/bin/node $APP_DIR/node_modules/next/dist/bin/next start -p $PORT -H 127.0.0.1
+ExecStart=$NODE_DIR/bin/node $APP_DIR/node_modules/next/dist/bin/next start -p $PORT -H $BIND
 Restart=always
 RestartSec=5
 
@@ -171,11 +192,51 @@ EOF
 systemctl daemon-reload
 systemctl enable "$SERVICE" >/dev/null
 systemctl restart "$SERVICE"
-for i in $(seq 1 30); do curl -fsS -o /dev/null "http://127.0.0.1:$PORT/" && break; sleep 2; done
-curl -fsS -o /dev/null "http://127.0.0.1:$PORT/" || die "The site didn't start. Send Claude: journalctl -u $SERVICE -n 60 --no-pager"
+for i in $(seq 1 30); do curl -fsS -o /dev/null "http://$BIND:$PORT/" && break; sleep 2; done
+curl -fsS -o /dev/null "http://$BIND:$PORT/" || die "The site didn't start. Send Claude: journalctl -u $SERVICE -n 60 --no-pager"
 
-# ── 8. Nginx (only on first run; certbot edits this file for HTTPS later) ────
-if [ ! -f "$SITE_FILE" ]; then
+# ── 8. Route automancy.cc to the app ────────────────────────────────────────
+if [ "$MODE" = traefik ]; then
+  say "Telling Dokploy's Traefik to send $DOMAIN here (with HTTPS)"
+  cat > "$TRAEFIK_FILE" <<EOF
+# Automancy Academy: written by scripts/deploy-vps.sh. Traefik reloads this file by itself.
+http:
+  routers:
+    automancy-web:
+      rule: Host(\`$DOMAIN\`) || Host(\`www.$DOMAIN\`)
+      entryPoints: [web]
+      middlewares: [automancy-https]
+      service: automancy
+    automancy:
+      rule: Host(\`$DOMAIN\`)
+      entryPoints: [websecure]
+      service: automancy
+      tls:
+        certResolver: letsencrypt
+    automancy-www:
+      rule: Host(\`www.$DOMAIN\`)
+      entryPoints: [websecure]
+      middlewares: [automancy-www]
+      service: automancy
+      tls:
+        certResolver: letsencrypt
+  middlewares:
+    automancy-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    automancy-www:
+      redirectRegex:
+        regex: '^https?://www\\.automancy\\.cc/(.*)'
+        replacement: 'https://automancy.cc/\${1}'
+        permanent: true
+  services:
+    automancy:
+      loadBalancer:
+        servers:
+          - url: http://$BIND:$PORT
+EOF
+elif [ ! -f "$SITE_FILE" ]; then
   say "Adding the Nginx site for $DOMAIN"
   cat > "$SITE_FILE" <<EOF
 server {
@@ -201,14 +262,16 @@ EOF
 else
   sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#proxy_pass http://127.0.0.1:$PORT;#" "$SITE_FILE"
 fi
-nginx -t >/dev/null 2>&1 || { nginx -t; die "Nginx config test failed (your other sites were not changed). Send Claude the lines above."; }
-systemctl reload nginx
+if [ "$MODE" = nginx ]; then
+  nginx -t >/dev/null 2>&1 || { nginx -t; die "Nginx config test failed (your other sites were not changed). Send Claude the lines above."; }
+  systemctl reload nginx
+fi
 
-if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then ufw allow 'Nginx Full' >/dev/null; fi
+if [ "$MODE" = nginx ] && command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then ufw allow 'Nginx Full' >/dev/null; fi
 
 # ── 9. Daily WhatsApp job (harmless until WhatsApp is set up) ────────────────
 CRON_SECRET_VAL="$(grep -E '^CRON_SECRET=' "$ENV_FILE" | cut -d= -f2)"
-echo "30 7 * * * root curl -fsS -m 600 -H 'Authorization: Bearer $CRON_SECRET_VAL' http://127.0.0.1:$PORT/api/whatsapp/reminders >/dev/null 2>&1" > /etc/cron.d/automancy
+echo "30 7 * * * root curl -fsS -m 600 -H 'Authorization: Bearer $CRON_SECRET_VAL' http://$BIND:$PORT/api/whatsapp/reminders >/dev/null 2>&1" > /etc/cron.d/automancy
 chmod 644 /etc/cron.d/automancy
 
 # ── 10. HTTPS if the domain already points here ──────────────────────────────
