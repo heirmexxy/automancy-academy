@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PRODUCTS } from "@/lib/pricing";
 import { DISCOUNT_CODE_MAX_PERCENT, endOfLagosDay, normaliseCode, startOfLagosDay } from "@/lib/money";
+import { loadPrices } from "@/lib/price-settings";
 
 const s = (f: FormData, k: string, max = 300) => String(f.get(k) ?? "").trim().slice(0, max);
 const back: (q: Record<string, string>) => never = q => redirect(`/admin/settings?${new URLSearchParams(q).toString()}#discounts`);
@@ -16,6 +17,7 @@ async function audit(actor: string, action: string, target: string, detail: unkn
 
 /** Admin → Settings → Discount codes: create a code, or update the settings of an existing one. */
 export async function saveDiscountCode(formData: FormData) {
+  await loadPrices();
   const admin = await requireAdmin();
   const raw = s(formData, "code", 40);
   const code = normaliseCode(raw);

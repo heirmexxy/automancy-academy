@@ -16,6 +16,7 @@ import {
   CATEGORIES, LESSON_KINDS, LEVELS, MARKET, QUIZ_PASS, STANDARDS, httpsUrl, isEditable, normaliseQuiz, parseVideo, priceProblem,
   scoreQuiz, slugify, submitProblems, validSlug, type QuizQ
 } from "@/app/(site)/courses/_lib/core";
+import { loadPrices } from "@/lib/price-settings";
 
 /** Every action re-checks who is asking; writes use the service role only after those checks (RLS still guards direct API use). */
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
@@ -120,6 +121,7 @@ export async function createCourse(formData: FormData) {
 }
 
 export async function saveCourseDetails(formData: FormData) {
+  await loadPrices();
   const id = s(formData, "course_id", 64);
   const { userId, course } = await ownCourse(id);
   const back: (o: Record<string, string>) => never = o => redirect(`/teach/studio/${course.id}` + q(o) + "#details");
@@ -300,6 +302,7 @@ export async function deleteLesson(formData: FormData) {
 // ── Review workflow (creator side) ────────────────────────────────────────────
 
 export async function submitCourse(formData: FormData) {
+  await loadPrices();
   const { userId, course } = await ownCourse(s(formData, "course_id", 64), false);
   const back: (o: Record<string, string>) => never = o => redirect(`/teach/studio/${course.id}` + q(o));
   const lessons = flatLessons(await getCurriculum(course.id, true));
@@ -329,6 +332,7 @@ export async function withdrawCourse(formData: FormData) {
 // ── Learner ───────────────────────────────────────────────────────────────────
 
 export async function buyCourse(formData: FormData) {
+  await loadPrices();
   const courseId = s(formData, "course_id", 64);
   const slug = s(formData, "slug", 80);
   const user = await requireUser(`/courses/${slug}`);
@@ -416,6 +420,7 @@ export async function saveCourseReview(formData: FormData) {
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
 export async function adminDecideCreator(formData: FormData) {
+  await loadPrices();
   const admin = await requireAdmin();
   const userId = s(formData, "user_id", 64);
   const decision = s(formData, "decision", 12);
@@ -450,6 +455,7 @@ async function adminCourse(formData: FormData) {
 }
 
 export async function adminApproveCourse(formData: FormData) {
+  await loadPrices();
   const { admin, c, note } = await adminCourse(formData);
   const problems = submitProblems(c, flatLessons(await getCurriculum(c.id, true)));
   if (problems.length && formData.get("override") !== "on") redirect(`/admin/courses/${c.id}` + q({ error: "Not ready: " + problems.slice(0, 4).join(" ") + " (tick 'approve anyway' to override)." }));
@@ -521,6 +527,7 @@ export async function adminHideReview(formData: FormData) {
 }
 
 export async function adminReleaseEarnings() {
+  await loadPrices();
   const admin = await requireAdmin();
   const n = await releaseDueEarnings();
   await audit(admin.id, "creator_earnings_release", "all", { count: n });

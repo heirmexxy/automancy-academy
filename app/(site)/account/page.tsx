@@ -12,6 +12,7 @@ import Purchases from "@/components/account/Purchases";
 import Referral from "@/components/account/Referral";
 import Certificate from "@/components/account/Certificate";
 import WhatsApp from "@/components/account/WhatsApp";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Your account" };
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
 type Row = { full_name: string | null; email: string; city: string | null; public_profile: boolean; marketing_consent: boolean };
 
 export default async function Account({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   const user = await requireUser("/account");
   const db = await createClient();

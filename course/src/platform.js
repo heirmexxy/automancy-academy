@@ -447,7 +447,7 @@ document.addEventListener("submit", e => {
 /* ---------- PRICING (draft) ---------- */
 const PLANS = [
   {id:"free", n:"Base Camp", ngn:0, usd:0, per:"", tag:"Track 0 free: 6 lessons and Boss 0.", f:["6 lessons + Boss 0 with all labs","Listen button on every lesson","Dashboard, XP, badges and streaks","#general and #base-camp chat"], cta:"Start free"},
-  {id:"self", n:"Self-paced", ngn:45000, usd:79, per:"one-time", sub:"or 3 × ₦17,000", tag:"The full course at your own pace, with the community.", f:["All 49 lessons, 6 boss projects and the capstone","Community chat, journal and help board","Weekly challenges for 12 months","Certificate review included","12 months' access"], cta:"Enrol"},
+  {id:"self", n:"Self-paced", ngn:45000, usd:79, per:"one-time", sub:"or 3 × ₦16,000", tag:"The full course at your own pace, with the community.", f:["All 48 lessons, 6 boss projects and the capstone","Community chat, journal and help board","Weekly challenges for 12 months","Certificate review included","12 months' access"], cta:"Enrol"},
   {id:"cohort", n:"Cohort bootcamp", ngn:150000, usd:399, per:"13 weeks", sub:"Early bird ₦120,000 ($299) · or 3 × ₦55,000", tag:"Learn with a group, live every week, with a mentor.", f:["Everything in Self-paced","13 weekly live build calls","Mentor review of every boss project","Cohort room and accountability group","Template bundle and Story Mode included","3 months of Membership free"], cta:"Reserve a seat", hot:true},
   {id:"member", n:"Membership", ngn:7500, usd:15, per:"/month", sub:"or ₦75,000 ($150) a year", tag:"After the course: jobs, challenges and community.", f:["Profile on the Hire talent page","Job and gig alerts","Weekly challenges and leagues","Community and new lessons as they're released"], cta:"Join"}
 ];
@@ -458,7 +458,7 @@ const ADDONS = [
   {id:"crmspec", n:"CRM Implementation specialisation", ngn:25000, usd:45, per:"one-time", sub:"Track 7", tag:"Implement CRMs for clients: discovery, design, migration, paid-plan automation, integrations, launch and a CRM Implementation Agent, with a boss project. For graduates of Track 5.", f:[], cta:"Get Track 7"}
 ];
 const EMPLOYER = [
-  {id:"post", n:"Per role", ngn:20000, usd:49, per:"per post", sub:"Your first post is free", tag:"Post one role to graduates and the jobs room for 30 days.", f:["Applicants with portfolios","Shortlist in your inbox"], cta:"Post a role"},
+  {id:"post", n:"Per role", ngn:20000, usd:49, per:"per post", tag:"Post one role to graduates and the jobs room for 30 days.", f:["Applicants with portfolios","Shortlist in your inbox"], cta:"Post a role"},
   {id:"emp", n:"Talent access", ngn:100000, usd:199, per:"/month", sub:"or ₦900,000 a year", tag:"Unlimited posts and full talent search.", f:["Search and filter all graduates","Request intros directly","Priority on new cohorts"], cta:"Start", hot:true},
   {id:"place", n:"Placement", ngn:0, usd:0, per:"", pct:"10% of first-year salary", tag:"We shortlist and you pay only when you hire.", f:["Shortlist in 5 working days","Replacement within 60 days"], cta:"Talk to us"}
 ];
@@ -473,7 +473,7 @@ function renderPricing(){
   $$("[data-cur]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cur === S.cur)));
   $("#planGrid").innerHTML = PLANS.map(planCard).join("");
   $("#addonGrid").innerHTML = ADDONS.map(planCard).join("");
-  const rows = [["Base Camp lessons + Boss 0",1,1,1,0],["All 49 lessons, 6 bosses, capstone",0,1,1,0],["Listen button",1,1,1,1],["Community chat and journal","Part",1,1,1],["Weekly challenges",0,1,1,1],["Live build calls",0,0,1,0],["Mentor review",0,0,1,0],["Certificate",0,1,1,0],["Template bundle",0,0,1,0],["Story Mode",0,0,1,0],["Hire talent profile",0,0,"3 months",1]];
+  const rows = [["Base Camp lessons + Boss 0",1,1,1,0],["All 48 lessons, 6 bosses, capstone",0,1,1,0],["Listen button",1,1,1,1],["Community chat and journal","Part",1,1,1],["Weekly challenges",0,1,1,1],["Live build calls",0,0,1,0],["Mentor review",0,0,1,0],["Certificate",0,1,1,0],["Template bundle",0,0,1,0],["Story Mode",0,0,1,0],["Hire talent profile",0,0,"3 months",1]];
   $("#cmpTable").innerHTML = `<thead><tr><th></th>${PLANS.map(p => `<th>${esc(p.n)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r[0])}</td>${r.slice(1).map(v => `<td>${v === 1 ? '<span class="ck" aria-label="Included">✓</span>' : v === 0 ? '<span class="note" aria-label="Not included">–</span>' : esc(v)}</td>`).join("")}</tr>`).join("")}</tbody>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-cur]"); if(!b) return; S.cur = b.dataset.cur; saveS(); renderView(curView); });
@@ -530,7 +530,7 @@ function renderCert(){
   $("#certCard").innerHTML = `${st.ok ? "" : '<div class="wm" aria-hidden="true">PREVIEW</div>'}
     <svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/><circle cx="32" cy="32" r="22" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/><text x="32" y="37" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-weight="800" font-size="14" fill="#13233A">AA</text></svg>
     <div><div class="ttl">Automancy Academy</div><h2>Certificate in AI Automation</h2></div>
-    <div><p class="note">This certifies that</p><div class="nm">${esc(S.profile.name || "Your Name")}</div><p style="max-width:52ch;margin-top:8px">has completed 49 lessons, six practical boss projects and a reviewed capstone, building automations, AI agents and growth systems with Zapier, Make and n8n.</p></div>
+    <div><p class="note">This certifies that</p><div class="nm">${esc(S.profile.name || "Your Name")}</div><p style="max-width:52ch;margin-top:8px">has completed 48 lessons, six practical boss projects and a reviewed capstone, building automations, AI agents and growth systems with Zapier, Make and n8n.</p></div>
     <div class="meta2"><span>ID ${certId()}</span><span>${st.ok ? "Issued " + d.toLocaleDateString("en-GB", {day:"numeric", month:"long", year:"numeric"}) : "Not yet issued"}</span><span>Verify at ${esc(SITE_HOST)}/verify</span></div>`;
 }
 on("#certLinkedIn", "click", e => { if(e.currentTarget.getAttribute("aria-disabled") === "true"){ e.preventDefault(); toast("Meet every criterion first. Your progress is on the left."); } });

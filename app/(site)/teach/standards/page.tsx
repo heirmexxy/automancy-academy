@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { CATEGORIES, MARKET, STANDARDS } from "../../courses/_lib/core";
 import "../../courses/marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = {
   title: "Creator standards and course specifications",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 const n = (x: number) => x.toLocaleString("en-NG");
 
-const SPECS: [string, string, string][] = [
+const specs = (): [string, string, string][] => [
   ["Title", "5–120 characters", "Say what learners will do: \"Automate your shop's WhatsApp orders with Make\", not \"Make Masterclass\"."],
   ["Subtitle", "Up to 200 characters", "One line on the result. Optional, but courses with one sell better."],
   ["Description", `${n(MARKET.minDescription)}–10,000 characters`, "Who it's for, what they'll build, what they need before starting (tools, accounts, budget), and what's inside. Formatting below."],
@@ -74,7 +75,8 @@ One or two sentences on the result of this lesson.
 ## Check your work
 - It's done when ...`;
 
-export default function Standards() {
+export default async function Standards() {
+  await loadPrices();
   return (
     <div className="wrap stack" style={{ gap: 28, paddingBottom: 40 }}>
       <section className="mk-hero">
@@ -130,7 +132,7 @@ export default function Standards() {
         <div className="card" style={{ overflowX: "auto" }}>
           <table className="dt">
             <thead><tr><th>Item</th><th>Requirement</th><th>Guidance</th></tr></thead>
-            <tbody>{SPECS.map(([a, b, c]) => <tr key={a}><td><b>{a}</b></td><td>{b}</td><td>{c}</td></tr>)}</tbody>
+            <tbody>{specs().map(([a, b, c]) => <tr key={a}><td><b>{a}</b></td><td>{b}</td><td>{c}</td></tr>)}</tbody>
           </table>
         </div>
         <p className="note">Categories: {CATEGORIES.join(", ")}.</p>

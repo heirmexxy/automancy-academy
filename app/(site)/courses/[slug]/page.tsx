@@ -10,6 +10,7 @@ import { buyCourse, enrolFree, saveCourseReview } from "@/lib/actions/marketplac
 import { KIND_LABEL, MARKET, STATUS_LABEL, type LessonKind } from "../_lib/core";
 import { Markdown, Stars } from "../_components/Markdown";
 import "../marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CoursePage({ params, searchParams }: Props) {
+  await loadPrices();
   const { slug } = await params;
   const sp = await searchParams;
   const c = await getCourseBySlug(slug);

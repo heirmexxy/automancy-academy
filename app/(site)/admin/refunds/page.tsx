@@ -7,11 +7,13 @@ import { REFERRAL, product } from "@/lib/pricing";
 import { fmtDate } from "@/lib/format";
 import { moneyText, refundDeadline, type Currency } from "@/lib/money";
 import { adminApproveRefund, adminDeclineRefund } from "@/lib/actions/payments";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Refunds · Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function Refunds({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   await requireAdmin();
   const sp = await searchParams;
   const show = sp.show === "all" ? "all" : "open";

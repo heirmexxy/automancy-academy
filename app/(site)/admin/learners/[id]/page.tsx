@@ -8,6 +8,7 @@ import { PRODUCTS, product } from "@/lib/pricing";
 import { fmtDate } from "@/lib/format";
 import { moneyText, type Currency } from "@/lib/money";
 import { adminGrantAccess, adminRevokeAccess } from "@/lib/actions/payments";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Learner · Admin" };
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function LearnerDetail({ params, searchParams }: Props) {
+  await loadPrices();
   await requireAdmin();
   const { id } = await params;
   const sp = await searchParams;

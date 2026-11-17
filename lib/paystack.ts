@@ -7,6 +7,7 @@ import { product } from "@/lib/pricing";
 import { esc, fmtDate } from "@/lib/format";
 import { accessPlan, moneyText, verifySignature as verifyHmac, type Currency } from "@/lib/money";
 import { recordReferralEarning } from "@/lib/referrals";
+import { loadPrices } from "@/lib/price-settings";
 
 /**
  * Paystack (https://paystack.com/docs/api/) called with fetch, plus payment fulfilment shared by the webhook
@@ -84,6 +85,7 @@ const isCourse = (m: unknown): m is { kind: "course"; course_id?: string; user_i
   !!m && typeof m === "object" && (m as Record<string, unknown>).kind === "course";
 
 export async function fulfilPayment(reference: string, hooks: FulfilHooks = {}): Promise<FulfilResult> {
+  await loadPrices();
   const db = createAdminClient();
   const { data: pay } = await db.from("payments").select("*").eq("reference", reference).maybeSingle();
   let payment = pay as PaymentRow | null;
@@ -189,6 +191,7 @@ async function sendReceipt(p: PaymentRow) {
  * Pay-in-3 plan) marked refunded, the referral earning reversed, any open/approved request marked refunded.
  */
 export async function applyRefund(paymentId: string, o: { partial?: boolean; decidedBy?: string | null } = {}) {
+  await loadPrices();
   const db = createAdminClient();
   const { data: pay } = await db.from("payments").select("*").eq("id", paymentId).maybeSingle();
   const p = pay as PaymentRow | null;
@@ -208,6 +211,7 @@ export async function applyRefund(paymentId: string, o: { partial?: boolean; dec
 
 /** An unfinished Pay-in-3 plan for this product, if the learner has one. */
 export async function openInstalmentPlan(userId: string, productId: string) {
+  await loadPrices();
   const db = createAdminClient();
   const { data: firsts } = await db.from("payments").select("reference, amount_kobo, discount_kobo, referral_code, discount_code, installments_total, paid_at")
     .eq("user_id", userId).eq("product", productId).eq("installment_no", 1).gt("installments_total", 1).eq("status", "success")

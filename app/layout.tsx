@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/config";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "Automancy Academy · Learn AI automation that runs real businesses", template: "%s · Automancy Academy" },
-  description: "Build automations and AI agents with Zapier, Make and n8n, on real Nigerian business problems. 49 lessons, 6 projects, a reviewed capstone and a certificate.",
+  description: "Build automations and AI agents with Zapier, Make and n8n, on real Nigerian business problems. 48 lessons, 6 projects, a reviewed capstone and a certificate.",
   openGraph: { type: "website", siteName: "Automancy Academy" }
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#13233A" };

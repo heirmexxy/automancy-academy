@@ -11,6 +11,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CATEGORIES, KIND_LABEL, LESSON_KINDS, LEVELS, MARKET, STATUS_LABEL, isEditable, lessonProblem, statusTone, submitProblems, type LessonKind } from "../../../courses/_lib/core";
 import "../../../courses/marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Edit course" };
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<str
 const Hidden = ({ id }: { id: string }) => <input type="hidden" name="course_id" value={id} />;
 
 export default async function EditCourse({ params, searchParams }: Props) {
+  await loadPrices();
   const { id } = await params;
   const sp = await searchParams;
   const user = await requireUser(`/teach/studio/${id}`);

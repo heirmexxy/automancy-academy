@@ -8,6 +8,7 @@ import { ngn } from "@/lib/format";
 import { AVAILABILITY } from "../community/_lib/rules";
 import { IntroForm } from "./_components/IntroForm";
 import { HIRE_COLS, type HireProfile } from "./_lib";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = {
   title: "Hire talent",
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 const uniq = (xs: string[]) => [...new Map(xs.filter(Boolean).map(x => [x.toLowerCase(), x])).values()].sort((a, b) => a.localeCompare(b));
 
 export default async function Hire({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   let all: HireProfile[] = [];
   if (hasSupabase()) {

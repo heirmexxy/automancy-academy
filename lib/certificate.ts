@@ -23,7 +23,7 @@ export const LINKEDIN_ORG_ID = process.env.LINKEDIN_ORG_ID || "";
 
 /** One-paragraph wording of what the certificate certifies (also used on the legal page). */
 export const CERT_STATEMENT =
-  "For the flagship AI Automation course, the Automancy Academy Certificate certifies that the holder completed all 49 lessons of the course " +
+  "For the flagship AI Automation course, the Automancy Academy Certificate certifies that the holder completed all 48 lessons of the course " +
   "and passed every lesson's checkpoint quiz at 4 out of 5 or better, built six practical boss projects that each scored " +
   "80 or more out of 100 with every must-have safety and go-live check met, and completed a grand capstone that took a " +
   "small business's operations from orders and payments to monitoring and a written handover, also scoring 80 or more. " +

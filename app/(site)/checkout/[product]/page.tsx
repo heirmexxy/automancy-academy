@@ -12,6 +12,7 @@ import { discountApplies, moneyText, normaliseCode, referralApplies } from "@/li
 import { openInstalmentPlan } from "@/lib/paystack";
 import { joinWaitlist, startCheckout } from "@/lib/actions/payments";
 import "../checkout.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Checkout" };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ function Waitlist({ pid, title, children, done }: { pid: string; title: string; 
 }
 
 export default async function Checkout({ params, searchParams }: Props) {
+  await loadPrices();
   const { product: pid } = await params;
   const sp = await searchParams;
   const user = await requireUser(`/checkout/${pid}`);

@@ -9,12 +9,14 @@ import { moneyText } from "@/lib/money";
 import { fulfilPayment } from "@/lib/paystack";
 import { handleCoursePayment } from "@/lib/marketplace";
 import "../checkout.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Payment" };
 export const dynamic = "force-dynamic";
 
 /** Paystack sends the learner back here with ?reference= (and ?trxref=). We verify server-side before showing anything. */
 export default async function Callback({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   const reference = (sp.reference || sp.trxref || "").slice(0, 100);
   const user = await requireUser(`/checkout/callback${reference ? `?reference=${encodeURIComponent(reference)}` : ""}`);

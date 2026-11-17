@@ -8,6 +8,7 @@ import { applyPercent, makeReference, moneyText, normaliseCode, type Currency } 
 import { checkDiscountCode } from "@/lib/discounts";
 import { initializeTransaction, type PaymentRow } from "@/lib/paystack";
 import { MARKET, availableAt, creatorEarning, toNgnKobo, type CourseStatus, type Level, type LessonKind } from "@/app/(site)/courses/_lib/core";
+import { loadPrices } from "@/lib/price-settings";
 
 /**
  * Creator marketplace (writer H). Payments contract with writer A:
@@ -137,6 +138,7 @@ export type PurchaseResult = { ok: true; url: string } | { ok: false; error: str
  * refCode is stored on the payment for attribution only; marketplace courses pay no referral commission (yet).
  */
 export async function startCoursePurchase(userId: string, email: string, courseId: string, refCode?: string | null, currency: Currency = "NGN", discountCode?: string | null): Promise<PurchaseResult> {
+  await loadPrices();
   const c = await getCourse(courseId);
   if (!c || c.status !== "live") return { ok: false, error: "This course isn't on sale." };
   if (c.is_free) return { ok: false, error: "This course is free: use Enrol." };
@@ -187,6 +189,7 @@ export async function startCoursePurchase(userId: string, email: string, courseI
  * amount against the price we quoted, grants access and records the creator's earning. Idempotent on payment id.
  */
 export async function handleCoursePayment(payment: PaymentRow): Promise<{ ok: boolean; message: string }> {
+  await loadPrices();
   const d = db();
   const { data: row } = await d.from("payments").select("*").eq("id", payment.id).maybeSingle();
   const p = row as PaymentRow | null;
@@ -259,6 +262,7 @@ export async function healEnrollment(userId: string, courseId: string) {
 
 /** Pending earnings whose refund window has closed become available. Returns how many changed. */
 export async function releaseDueEarnings(): Promise<number> {
+  await loadPrices();
   const { data } = await db().from("creator_earnings").update({ status: "available" }).eq("status", "pending").lte("available_at", new Date().toISOString()).select("id");
   return data?.length ?? 0;
 }

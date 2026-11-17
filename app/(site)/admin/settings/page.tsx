@@ -8,6 +8,8 @@ import { deleteDiscountCode, saveDiscountCode, toggleDiscountCode } from "@/lib/
 import { PRODUCTS } from "@/lib/pricing";
 import { DISCOUNT_CODE_MAX_PERCENT, moneyText, type DiscountCodeRow } from "@/lib/money";
 import { SITE_URL } from "@/lib/config";
+import { loadPrices, priceDefaults } from "@/lib/price-settings";
+import { PricesForm } from "./PricesForm";
 
 export const metadata: Metadata = { title: "Settings · Admin" };
 export const dynamic = "force-dynamic";
@@ -70,6 +72,7 @@ type Audit = { id: number; actor: string | null; detail: { changed?: string[]; b
 
 export default async function AdminSettings({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdmin();
+  const prices = await loadPrices(true);
   const sp = await searchParams;
   const s = await getSettings();
   let log: Audit[] = [];
@@ -119,6 +122,8 @@ export default async function AdminSettings({ searchParams }: { searchParams: Pr
           <span><b>AI review decides automatically.</b> When off, every AI review waits for a person in Admin → AI reviews before the learner sees the result.</span></label>
         <div className="row"><button className="btn" type="submit">Save settings</button></div>
       </form>
+
+      <PricesForm s={prices} d={priceDefaults()} msg={{ saved: sp.prices_saved, reset: sp.reset, error: sp.price_error }} />
 
       <section id="discounts" className="stack" style={{ marginTop: 10 }}>
         <h2 style={{ fontSize: "1.3rem" }}>Discount codes</h2>

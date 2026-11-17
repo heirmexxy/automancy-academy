@@ -5,6 +5,7 @@ import { REFERRAL, product } from "@/lib/pricing";
 import { fmtDate } from "@/lib/format";
 import { moneyText, refundDeadline, withinRefundWindow, type Currency } from "@/lib/money";
 import { requestRefund } from "@/lib/actions/payments";
+import { REFUND_DETAIL_MIN, REFUND_REASONS } from "@/lib/refund-reasons";
 
 /**
  * The learner's payments, receipts, access and refund requests. Server component; reads with the learner's own
@@ -38,7 +39,8 @@ export default async function Purchases({ refund }: { refund?: string }) {
   return (
     <div className="stack" aria-labelledby="purchases-h">
       <h2 id="purchases-h" style={{ fontSize: "1.5rem" }}>Purchases and access</h2>
-      {refund === "requested" && <p className="alert ok" role="status">Refund request sent. We reply within 3 working days.</p>}
+      {refund === "requested" && <p className="alert ok" role="status">Refund request sent. We reply within 5 working days.</p>}
+      {refund === "need-reason" && <p className="alert bad" role="alert">Please choose what went wrong and explain it in at least {REFUND_DETAIL_MIN} characters. We refund for genuine problems with what you bought.</p>}
       {refund === "not-eligible" && <p className="alert bad" role="alert">That payment can't be refunded online: refunds must be requested within {REFERRAL.refundWindowDays} days of paying, with a short reason.</p>}
 
       <div className="card">
@@ -82,8 +84,15 @@ export default async function Purchases({ refund }: { refund?: string }) {
               {canRefund ? (
                 <form action={requestRefund} className="stack" style={{ gap: 8 }}>
                   <input type="hidden" name="payment_id" value={p.id} />
-                  <label className="fld">Request a refund (until {fmtDate(refundDeadline(p.paid_at!))})
-                    <textarea name="reason" required minLength={5} maxLength={2000} placeholder="Tell us briefly why. It helps us improve." style={{ minHeight: 80 }} />
+                  <p className="note"><b>Request a refund</b> (until {fmtDate(refundDeadline(p.paid_at!))}). We refund for genuine problems with what you bought, not for a change of mind, lack of time or stopping partway. <a href="/legal/refunds">Refund policy</a>.</p>
+                  <label className="fld">What went wrong?
+                    <select name="reason_key" required defaultValue="">
+                      <option value="" disabled>Choose one</option>
+                      {REFUND_REASONS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+                    </select></label>
+                  <label className="fld">Explain what happened
+                    <textarea name="reason" required minLength={REFUND_DETAIL_MIN} maxLength={2000} placeholder="Which lesson or feature, what you expected, what happened, and what you've tried (e.g. contacting support)." style={{ minHeight: 90 }} />
+                    <span className="note">At least {REFUND_DETAIL_MIN} characters. We read every request and reply within 5 working days.</span>
                   </label>
                   <button className="btn alt sm" type="submit">Request a refund</button>
                 </form>
@@ -91,7 +100,7 @@ export default async function Purchases({ refund }: { refund?: string }) {
             </details>
           );
         })}
-        <p className="note">Refund policy: you can ask for a full refund within {REFERRAL.refundWindowDays} days of a payment. Refunding ends the access that payment gave (for Pay in 3, the whole plan). Money goes back to the card or account you paid with, usually within 5 to 10 working days.</p>
+        <p className="note">Refund policy: within {REFERRAL.refundWindowDays} days of a payment you can ask for a refund for a genuine problem with what you bought; we review every request. Refunding ends the access that payment gave (for Pay in 3, the whole plan). Money goes back to the card or account you paid with, usually within 5 to 10 working days.</p>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { fmtDate } from "@/lib/format";
 import { PlanCard, WaitlistForm } from "@/components/landing/PlanCard";
 import { SecHead } from "@/components/landing/SecHead";
 import { plans, addons, business, curOf, priceText, periodText, LESSONS, BOSSES, FREE_LESSONS, type Cur } from "@/components/landing/data";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Pricing", description: "Start free. Self-paced course, Membership, add-ons and team options, in naira or US dollars." };
 
@@ -47,6 +48,7 @@ function CurrencyToggle({ cur }: { cur: Cur }) {
 }
 
 export default async function Pricing({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   const cur = curOf(sp.cur);
   const settings = await getSettings();
@@ -123,7 +125,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
         <div className="faq">
           <details><summary>Which payment methods can I use?</summary><p>In naira: cards, bank transfer and USSD through Paystack. In US dollars: international Visa and Mastercard through Paystack. We never see or store your card details.</p></details>
           <details><summary>How does paying in instalments work?</summary><p>Where a plan shows &ldquo;3 payments&rdquo;, you pay the first instalment now and the others a month apart, in naira. Each payment unlocks the course until the next one is due; after the last payment, your full access period counts from your first payment. Details are in the <Link href="/legal/terms#payments">terms</Link>.</p></details>
-          <details><summary>Can I get a refund?</summary><p>Yes: a full refund within {REFERRAL.refundWindowDays} days of payment if you've completed less than 30% of the paid lessons and haven't claimed a certificate. Cohort seats are refundable until the first live call. Add-ons can't be refunded once downloaded or used, and Membership can be cancelled any time without partial refunds. <Link href="/legal/refunds">Full refund policy</Link>.</p></details>
+          <details><summary>Can I get a refund?</summary><p>For genuine problems, yes: the course isn't as described, a technical problem we couldn't fix stopped you, you never got access, or you were charged twice. Ask within {REFERRAL.refundWindowDays} days, with less than 30% of the paid lessons done and no certificate claimed. We don't refund a change of mind, lack of time or stopping partway; Base Camp is free so you can decide first. Cohort seats are refundable until the first live call. Add-ons can't be refunded once downloaded or used, and Membership can be cancelled any time without partial refunds. <Link href="/legal/refunds">Full refund policy</Link>.</p></details>
           <details><summary>Do prices change with the exchange rate?</summary><p>Naira and dollar prices are set separately. The price you pay is locked when you pay.</p></details>
           <details><summary>Can my employer pay?</summary><p>Yes. For 5 or more people, use team seats; for anything else, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> and we'll send an invoice.</p></details>
         </div>

@@ -7,6 +7,7 @@ import { moneyText } from "@/lib/money";
 import { fulfilPayment } from "@/lib/paystack";
 import { flatLessons, getCourseBySlug, getCurriculum, handleCoursePayment, isEnrolled } from "@/lib/marketplace";
 import "../../marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Payment" };
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<s
 
 /** Paystack returns here (callback_url set by startCoursePurchase). Verification happens server-side in A's fulfilPayment. */
 export default async function CoursePaid({ params, searchParams }: Props) {
+  await loadPrices();
   const { slug } = await params;
   const sp = await searchParams;
   const reference = (sp.reference || sp.trxref || "").slice(0, 100);

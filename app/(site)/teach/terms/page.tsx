@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { COMPANY, SUPPORT_EMAIL } from "@/lib/config";
 import { MARKET } from "../../courses/_lib/core";
 import "../../courses/marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Creator terms", description: "The agreement between Automancy Academy and the creators who sell courses on it, in plain English." };
 
 const n = (x: number) => x.toLocaleString("en-NG");
 
-export default function CreatorTerms() {
+export default async function CreatorTerms() {
+  await loadPrices();
   const share = Math.round(MARKET.revenueShare * 100);
   return (
     <section className="narrow stack">

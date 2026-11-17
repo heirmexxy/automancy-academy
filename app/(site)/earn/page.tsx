@@ -9,6 +9,7 @@ import { listBanks } from "@/lib/paystack";
 import { referralSummary } from "@/lib/referrals";
 import { requestPayout, savePayoutAccount } from "@/lib/actions/payments";
 import "../checkout/checkout.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Earn with Automancy", description: "Refer friends to Automancy Academy and earn up to 30% of what they pay." };
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 const EARN_STATUS: Record<string, string> = { pending: "warn", approved: "ok", paid: "ok", reversed: "bad" };
 
 export default async function Earn({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   const user = await getUser();
   const r = user ? await referralSummary(user.id) : null;

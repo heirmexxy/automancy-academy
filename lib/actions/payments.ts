@@ -6,11 +6,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSettings } from "@/lib/settings";
 import { SITE_URL, hasPaystack } from "@/lib/config";
 import { PRODUCTS, REFERRAL, product } from "@/lib/pricing";
+import { formatRefundReason } from "@/lib/refund-reasons";
 import { addDays, makeReference, normaliseCode, quote, referralApplies, toMinor, withinRefundWindow, type Currency } from "@/lib/money";
 import { applyRefund, createTransferRecipient, initializeTransaction, listBanks, openInstalmentPlan, refundTransaction, resolveAccount } from "@/lib/paystack";
 import { findReferrer } from "@/lib/referrals";
 import { checkDiscountCode } from "@/lib/discounts";
 import { PAYMENT_UNAVAILABLE, reportCheckoutFailure } from "@/lib/payment-alert";
+import { loadPrices } from "@/lib/price-settings";
 
 const s = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const back = (pid: string, q: Record<string, string>) => `/checkout/${encodeURIComponent(pid)}?${new URLSearchParams(q).toString()}`;
@@ -34,6 +36,7 @@ export async function joinWaitlist(formData: FormData) {
 }
 
 export async function startCheckout(formData: FormData) {
+  await loadPrices();
   const pid = s(formData, "product", 40);
   const user = await requireUser(`/checkout/${pid}`);
   const p = product(pid);
@@ -107,12 +110,14 @@ export async function startCheckout(formData: FormData) {
 // ── Learner: refunds ──────────────────────────────────────────────────────────
 
 export async function requestRefund(formData: FormData) {
+  await loadPrices();
   const user = await requireUser("/account");
   const paymentId = s(formData, "payment_id", 64);
-  const reason = s(formData, "reason", 2000);
+  const reason = formatRefundReason(s(formData, "reason_key", 40), s(formData, "reason", 2000));
+  if (!reason) redirect("/account?refund=need-reason#purchases");
   const db = createAdminClient();
   const { data: pay } = await db.from("payments").select("id, user_id, status, paid_at").eq("id", paymentId).maybeSingle();
-  const ok = pay && pay.user_id === user.id && pay.status === "success" && withinRefundWindow(pay.paid_at as string) && reason.length >= 5;
+  const ok = pay && pay.user_id === user.id && pay.status === "success" && withinRefundWindow(pay.paid_at as string);
   if (ok) {
     const { data: existing } = await db.from("refund_requests").select("id").eq("payment_id", paymentId).in("status", ["open", "approved", "refunded"]).limit(1);
     if (!existing?.length) await db.from("refund_requests").insert({ user_id: user.id, payment_id: paymentId, reason });
@@ -156,6 +161,7 @@ export async function savePayoutAccount(formData: FormData) {
 }
 
 export async function requestPayout() {
+  await loadPrices();
   const user = await requireUser("/earn");
   const db = createAdminClient();
   const [{ data: acct }, { data: rows }, { data: openPayout }] = await Promise.all([
@@ -186,6 +192,7 @@ export async function requestPayout() {
 // ── Admin: refunds ────────────────────────────────────────────────────────────
 
 export async function adminApproveRefund(formData: FormData) {
+  await loadPrices();
   const admin = await requireAdmin();
   const id = s(formData, "id", 64);
   const manual = s(formData, "mode", 10) === "manual";
@@ -255,6 +262,7 @@ export async function adminRevokeAccess(formData: FormData) {
 // ── Admin: referrals and payouts ─────────────────────────────────────────────
 
 export async function adminApproveEarnings(formData: FormData) {
+  await loadPrices();
   const admin = await requireAdmin();
   const referrer = s(formData, "referrer_id", 64);
   let q = createAdminClient().from("referral_earnings").update({ status: "approved" }).eq("status", "pending").lte("available_at", new Date().toISOString());

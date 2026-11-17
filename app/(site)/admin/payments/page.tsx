@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PRODUCTS, product } from "@/lib/pricing";
 import { fmtDate } from "@/lib/format";
 import { moneyText, safeSearch, type Currency } from "@/lib/money";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Payments · Admin" };
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export const dynamic = "force-dynamic";
 const STATUSES = ["success", "initialized", "failed", "refunded", "partially_refunded"];
 
 export default async function Payments({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   await requireAdmin();
   const sp = await searchParams;
   const status = STATUSES.includes(sp.status || "") ? sp.status! : "";

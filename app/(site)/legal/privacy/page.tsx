@@ -4,6 +4,7 @@ import { COMPANY, SUPPORT_EMAIL, SITE_URL, SITE_NAME } from "@/lib/config";
 import { REFERRAL } from "@/lib/pricing";
 import { LegalPage } from "../LegalPage";
 import { PRIVACY_EMAIL, DPO_NAME, DB_REGION, FINANCE_RETENTION_YEARS, DELETION_DAYS } from "../meta";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Privacy policy", description: "How Automancy Academy collects, uses and protects your personal data under the Nigeria Data Protection Act 2023." };
 
@@ -18,7 +19,8 @@ const PROCESSORS: [string, string, string, string][] = [
   ["Google Fonts", "Delivering the typefaces the site uses", "Your browser requests the fonts directly, so Google receives your IP address and browser details", "Global"]
 ];
 
-export default function Privacy() {
+export default async function Privacy() {
+  await loadPrices();
   return (
     <LegalPage title="Privacy policy" current="/legal/privacy" summary={<ul>
       <li>We collect what we need to run the course: your account, progress, the work you submit and your payment records.</li>

@@ -33,7 +33,7 @@ export function PlanCard({ p, cur, compact = false, back = "/pricing" }: { p: Pr
       <h3 id={`p-${p.id}`}>{p.name}</h3>
       <p className="price">{priceText(p, cur)}{period && <small>{period}</small>}</p>
       {p.installments && (cur === "ngn"
-        ? <p className="note">or {p.installments.count} payments of {ngn(p.installments.ngn)}</p>
+        ? <p className="note">or {p.installments.count} payments of {ngn(p.installments.ngn)} ({ngn(p.installments.count * p.installments.ngn)} in total)</p>
         : <p className="note">Pay in {p.installments.count} is available in naira.</p>)}
       <p>{p.blurb}</p>
       {!compact && p.features.length > 0 && <ul>{p.features.map(f => <li key={f}>{f}</li>)}</ul>}

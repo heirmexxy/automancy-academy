@@ -4,7 +4,11 @@
  */
 
 /** PLACEHOLDER business rules to confirm (see docs/placeholders/marketplace.md). Price limits also live in 0007_marketplace.sql. */
-export const MARKET = {
+/** Prices, share and refund window are defaults: Admin → Settings → Prices and fees overrides them (lib/price-settings.ts). */
+export const MARKET: {
+  revenueShare: number; minPriceNgn: number; maxPriceNgn: number; minPriceUsd: number; maxPriceUsd: number;
+  refundWindowDays: number; reviewDays: number; minLessons: number; minDescription: number; maxBody: number;
+} = {
   revenueShare: 0.70,      // creator's share after payment-processor fees
   minPriceNgn: 2000,
   maxPriceNgn: 500000,
@@ -15,7 +19,7 @@ export const MARKET = {
   minLessons: 3,
   minDescription: 200,
   maxBody: 50000
-} as const;
+};
 
 /**
  * The standards every creator course is reviewed against. Shown on /teach/standards and as the

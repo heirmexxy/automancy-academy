@@ -5,6 +5,7 @@ import { hasSupabase } from "@/lib/config";
 import { getCreator } from "@/lib/marketplace";
 import { MARKET } from "../courses/_lib/core";
 import "../courses/marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Teach on Automancy", description: "Create a practical course, we review it, and you keep 70% of every sale after payment fees." };
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export const dynamic = "force-dynamic";
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 export default async function Teach() {
+  await loadPrices();
   const user = hasSupabase() ? await getUser().catch(() => null) : null;
   const creator = user ? await getCreator(user.id) : null;
   const cta = creator?.status === "approved" ? { href: "/teach/studio", label: "Open the creator studio" }

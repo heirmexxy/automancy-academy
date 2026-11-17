@@ -6,6 +6,7 @@ import {
   AMBASSADOR_WINDOW_DAYS, DAY_MS, commissionMinor, commissionTier, earningAvailableAt, ngnEquivalentMinor,
   isSelfReferral, normaliseCode, type Currency, type Tier
 } from "@/lib/money";
+import { loadPrices } from "@/lib/price-settings";
 
 export const referralLink = (code: string) => `${SITE_URL}/?ref=${encodeURIComponent(code)}`;
 
@@ -38,6 +39,7 @@ export async function paidReferralsRecent(referrerId: string): Promise<number> {
 }
 
 export async function currentTier(referrerId: string, productId = "self"): Promise<{ tier: Tier; rate: number }> {
+  await loadPrices();
   const [hasCertificate, paidReferrals90d] = await Promise.all([hasValidCertificate(referrerId), paidReferralsRecent(referrerId)]);
   return commissionTier({ productId, hasCertificate, paidReferrals90d });
 }
@@ -46,6 +48,7 @@ type PaymentRow = { id: string; user_id: string; product: string; amount_kobo: n
 
 /** Creates the pending earning for a successful referred payment, on the amount actually paid (this instalment, after discount). Idempotent (payment_id is unique). */
 export async function recordReferralEarning(payment: PaymentRow) {
+  await loadPrices();
   if (!payment.referral_code) return null;
   const db = createAdminClient();
   const [{ data: ref }, { data: buyer }] = await Promise.all([
@@ -72,6 +75,7 @@ export type EarningRow = { id: string; payment_id: string; buyer_id: string; amo
 
 /** Everything the learner's referral views need. Call only for the signed-in user's own id. */
 export async function referralSummary(userId: string) {
+  await loadPrices();
   const db = createAdminClient();
   const [{ data: prof }, { count: signups }, { data: earnings }, { data: account }, { data: payouts }] = await Promise.all([
     db.from("profiles").select("referral_code").eq("id", userId).maybeSingle(),

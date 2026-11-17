@@ -9,12 +9,14 @@ import { creatorEarnings, getCreator } from "@/lib/marketplace";
 import { createCourse, updateCreatorProfile } from "@/lib/actions/marketplace";
 import { MARKET, STATUS_LABEL, statusTone, type CourseStatus } from "../../courses/_lib/core";
 import "../../courses/marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Creator studio" };
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function Studio({ searchParams }: Props) {
+  await loadPrices();
   const sp = await searchParams;
   const user = await requireUser("/teach/studio");
   const creator = await getCreator(user.id);

@@ -7,6 +7,7 @@ import { liveCourses } from "@/lib/catalogue";
 import { CATEGORIES } from "./_lib/core";
 import { CourseCard } from "./_components/CourseCard";
 import "./marketplace.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Explore more courses", description: "Practical automation, AI and business courses from Automancy and independent creators, reviewed before they go live." };
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function Catalogue({ searchParams }: Props) {
+  await loadPrices();
   const sp = await searchParams;
   const term = safeSearch(sp.q);
   const cat = (CATEGORIES as readonly string[]).includes(sp.category || "") ? sp.category! : "";
@@ -41,10 +43,10 @@ export default async function Catalogue({ searchParams }: Props) {
       </form>
 
       {!filtered && (
-        <Link href="/" className="card bold mk-flag" style={{ textDecoration: "none", color: "var(--ink)" }}>
+        <Link href="/signup" className="card bold mk-flag" style={{ textDecoration: "none", color: "var(--ink)" }}>
           <p className="eyebrow">Flagship · by Automancy</p>
           <h2 style={{ fontSize: "1.6rem" }}>Automancy Academy: AI automation, from zero to paid client work</h2>
-          <p>49 lessons, 6 boss projects and a capstone. Zapier, Make, n8n, AI agents, growth and CRM, following Tolu's produce business in Ibadan. Base Camp is free.</p>
+          <p>48 lessons, 6 boss projects and a capstone. Zapier, Make, n8n, AI agents, growth and CRM, following Tolu's produce business in Ibadan. Base Camp is free.</p>
           <p><b>{flagship ? `${ngn(flagship.ngn)} · ` : ""}Start free →</b></p>
         </Link>
       )}

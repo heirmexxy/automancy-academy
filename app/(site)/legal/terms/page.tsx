@@ -5,12 +5,14 @@ import { REFERRAL, product } from "@/lib/pricing";
 import { ngn } from "@/lib/format";
 import { LegalPage } from "../LegalPage";
 import { COURTS } from "../meta";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Terms of use", description: "The agreement between you and Automancy Academy." };
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
-export default function Terms() {
+export default async function Terms() {
+  await loadPrices();
   const self = product("self");
   const months = self?.accessDays ? Math.round(self.accessDays / 30.4) : 12;
   return (

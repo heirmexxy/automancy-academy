@@ -5,11 +5,13 @@ import { Problem, Guide, Plan, HowItWorks, Audiences, Marketplace, Success, Fina
 import { Course } from "@/components/landing/Course";
 import { PricingPreview } from "@/components/landing/PricingPreview";
 import { Faq } from "@/components/landing/Faq";
+import { loadPrices } from "@/lib/price-settings";
 
 /** Public landing page (StoryBrand order: hero, problem, guide, plan, the product, audiences, price, success, FAQ, call to action). */
 export const revalidate = 300;
 
 export default async function Home() {
+  await loadPrices();
   const settings = await getSettings();
   return (
     <>

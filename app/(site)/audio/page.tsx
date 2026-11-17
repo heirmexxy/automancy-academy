@@ -7,6 +7,7 @@ import { product } from "@/lib/pricing";
 import { ngn } from "@/lib/format";
 import { decodeEntities, lessonVoice } from "@/lib/tts";
 import "./audio.css";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Story Mode audio" };
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 const itemLabel = (i: CourseItem) => (i.kind === "boss" ? `Boss ${i.id.slice(1)}` : i.kind === "capstone" ? `Capstone · ${i.id}` : `Lesson ${i.id}`);
 
 export default async function StoryAudio() {
+  await loadPrices();
   const user = await requireUser("/audio");
   const [profile, ent] = await Promise.all([getProfile(), getEntitlements(user.id)]);
   const admin = profile?.role === "admin";

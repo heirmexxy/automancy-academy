@@ -5,6 +5,7 @@ import "./careers.css";
 import { product } from "@/lib/pricing";
 import { SecHead, Steps } from "@/components/landing/SecHead";
 import { priceText } from "@/components/landing/data";
+import { loadPrices } from "@/lib/price-settings";
 
 export const metadata: Metadata = { title: "Careers", description: "Six career paths from the same course, the free credentials to add, and the CRM Implementation specialisation." };
 
@@ -48,6 +49,7 @@ const PATHS: Path[] = [
 ];
 
 export default async function Careers({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await loadPrices();
   const sp = await searchParams;
   const crm = product("crmspec");
   return (
