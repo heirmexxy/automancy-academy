@@ -5,6 +5,7 @@
 #   Update later: bash deploy-automancy.sh            (pulls the latest code, rebuilds, restarts; keeps your keys)
 #   HTTPS only:   bash deploy-automancy.sh --ssl      (once automancy.cc points at this server)
 #   Change keys:  bash deploy-automancy.sh --keys     (asks for the Supabase, admin and Paystack values again)
+#   Extra keys:   bash deploy-automancy.sh --add-keys (Resend, Anthropic, Azure: asked one by one, no editor needed)
 #
 # On a server where Dokploy's Traefik already owns ports 80/443 (like srv878622), it does what Titan does:
 # no Nginx; the app listens on the Docker bridge (172.17.0.1) and a file in /etc/dokploy/traefik/dynamic/
@@ -72,6 +73,41 @@ ssl() {
   say "HTTPS is on: https://$DOMAIN"
 }
 if [ "${1:-}" = "--ssl" ]; then ssl; exit 0; fi
+
+# ── Optional keys, asked one by one (no editor needed): bash deploy-automancy.sh --add-keys ──
+if [ "${1:-}" = "--add-keys" ]; then
+  [ -f "$ENV_FILE" ] || die "Run the full setup first: bash deploy-automancy.sh"
+  [ -t 0 ] || die "Run this in the terminal so it can ask you questions."
+  setkey() { # setkey NAME value  (replaces any earlier or commented-out line)
+    local tmp; tmp="$(mktemp)"; grep -vE "^#?$1=" "$ENV_FILE" > "$tmp" || true
+    printf '%s=%s\n' "$1" "$2" >> "$tmp"; cat "$tmp" > "$ENV_FILE"; rm -f "$tmp"; chmod 600 "$ENV_FILE"
+  }
+  askkey() { # askkey NAME "Question" [hidden]
+    local v
+    if [ "${3:-}" = hidden ]; then read -r -s -p "  $2: " v; echo; else read -r -p "  $2: " v; fi
+    v="$(printf '%s' "$v" | tr -d '[:space:]')"
+    if [ -n "$v" ]; then setkey "$1" "$v"; echo "    saved ($1, ${#v} characters)"; changed=1; else echo "    skipped"; fi
+  }
+  changed=0
+  say "Optional keys. Paste each one and press Enter, or just press Enter to skip. Keys don't show while you paste."
+  askkey RESEND_API_KEY "Resend API key (re_…), for emails" hidden
+  if grep -qE '^RESEND_API_KEY=.+' "$ENV_FILE"; then
+    read -r -p "  Send emails from (Enter for support@$DOMAIN): " from
+    from="$(printf '%s' "${from:-support@$DOMAIN}" | tr -d '[:space:]')"
+    setkey EMAIL_FROM "\"Automancy Academy <$from>\""; echo "    emails will come from $from"; changed=1
+  fi
+  askkey ANTHROPIC_API_KEY "Anthropic API key (sk-ant-…), for the AI reviewer, Sage and smarter agents" hidden
+  askkey AZURE_SPEECH_KEY "Azure Speech key, for the Nigerian voices" hidden
+  if grep -qE '^AZURE_SPEECH_KEY=.+' "$ENV_FILE" && ! grep -qE '^AZURE_SPEECH_REGION=.+' "$ENV_FILE"; then
+    askkey AZURE_SPEECH_REGION "Azure Speech region (e.g. westeurope)"
+  fi
+  if [ "$changed" = 1 ]; then
+    systemctl restart "$SERVICE" && say "Saved and restarted. The new keys are in use now."
+  else
+    say "Nothing changed."
+  fi
+  exit 0
+fi
 
 # ── 1. System packages ───────────────────────────────────────────────────────
 export DEBIAN_FRONTEND=noninteractive
